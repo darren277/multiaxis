@@ -1,0 +1,15 @@
+{
+    "axes":
+        [
+            {"label": "x", "description": "The x-axis", "min": 0, "max": 10, "step": 1},
+            {"label": "y", "min": 0, "max": 10, "step": 1},
+            {"label": "z", "min": 0, "max": 10, "step": 1}
+        ],
+    "points":
+        [
+            [1, 2, 3, "red", ["metadata-attr-1", "metadata-attr-2"]],
+            [2, 3, 4, "blue", ["metadata-attr-1", "metadata-attr-2"]],
+            [3, 4, 5, "green", ["metadata-attr-1", "metadata-attr-2"]],
+            [4, 5, 6, "yellow", ["metadata-attr-1", "metadata-attr-2"]]
+        ]
+}
