@@ -7,9 +7,9 @@
         ],
     "points":
         [
-            [1, 2, 3, "red", {"size": 1.0}],
-            [2, 3, 4, "blue", {"size": 0.8}],
-            [3, 4, 5, "green", {"size": 0.4}],
-            [4, 5, 6, "yellow", {"size": 1.1}]
+            [1, 2, 3, "red", {"size": 1.0, "label":  "point 1"}],
+            [2, 3, 4, "blue", {"size": 0.8, "label":  "point 2"}],
+            [3, 4, 5, "green", {"size": 0.4, "label":  "point 3"}],
+            [4, 5, 6, "yellow", {"size": 1.1, "label":  "point 4"}]
         ]
 }

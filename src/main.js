@@ -93,10 +93,28 @@ loader.load(
             let pointMaterial = new THREE.MeshBasicMaterial({color: point[3]});
             let pointMesh = new THREE.Mesh(pointGeometry, pointMaterial);
             scene.add(pointMesh);
+
+            if (point[4]?.label) {
+                const loader = new FontLoader();
+                loader.load( 'three/fonts/helvetiker_regular.typeface.json', function ( font ) {
+                    let pointLabel = new TextGeometry(point[4].label, {font: font, size: point[4]?.size ?? 1, depth: 0.01});
+                    let labelCoordinates = determineLabelCoordinates(point[0], point[1], point[2], point[4]?.size ?? 0.1);
+                    pointLabel.translate(labelCoordinates[0], labelCoordinates[1], labelCoordinates[2]);
+                    let pointLabelMaterial = new THREE.MeshBasicMaterial({color: point[3]});
+                    let pointLabelMesh = new THREE.Mesh(pointLabel, pointLabelMaterial);
+                    scene.add(pointLabelMesh);
+                });
+            }
         }
     }
 );
 
+function determineLabelCoordinates(p1, p2, p3, radius) {
+    let x = p1 + (radius * 2);
+    let y = p2;
+    let z = p3;
+    return [x, y, z];
+};
 
 camera.position.z = 25;
 
