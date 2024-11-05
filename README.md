@@ -25,3 +25,11 @@ The plotted data will consist of an array of data `points`, which in turn will c
         ]
 }
 ```
+
+# Using Custom Data
+
+If you'd like to load your own custom data, simply place the `JSON` file into `data/`, and then modify the `datasrc` meta tag's content attribute to include the file name (without extension).
+
+```html
+<meta name="datasrc" content="data" />
+```
