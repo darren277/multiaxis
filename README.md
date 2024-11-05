@@ -6,7 +6,7 @@ Next, we will include lines drawn at each of the three axes with zero points at 
 
 The axes will be defined with a label, as well as a `min`, `max`, and `step` value to draw guiding ticks.
 
-The plotted data will consist of an array of data `points`, which in turn will consist of three coordinate values, a color, a magnitude ("POP POP!"), and another array consisting of arbitrarily typed values for later exploration.
+The plotted data will consist of an array of data `points`, which in turn will consist of three coordinate values, a color, a magnitude (["pop pop!"](https://www.youtube.com/watch?v=G_P5pC0RgSY)), and another array consisting of arbitrarily typed values for later exploration.
 
 ```json
 {
@@ -18,10 +18,10 @@ The plotted data will consist of an array of data `points`, which in turn will c
         ],
     "points":
         [
-            [1, 2, 3, "red", 0.5, ["metadata-attr-1", "metadata-attr-2"]],
-            [2, 3, 4, "blue", 23, ["metadata-attr-1", "metadata-attr-2"]],
-            [3, 4, 5, "green", 42, ["metadata-attr-1", "metadata-attr-2"]],
-            [4, 5, 6, "yellow", 69, ["metadata-attr-1", "metadata-attr-2"]]
+            [1, 2, 3, "red", {"size": 1.0, "label":  "point 1"}],
+            [2, 3, 4, "blue", {"size": 0.8, "label":  "point 2"}],
+            [3, 4, 5, "green", {"size": 0.4, "label":  "point 3"}],
+            [4, 5, 6, "yellow", {"size": 1.1, "label":  "point 4"}]
         ]
 }
 ```
