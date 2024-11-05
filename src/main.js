@@ -16,9 +16,10 @@ const loader = new THREE.FileLoader();
 
 const controls = new OrbitControls( camera, renderer.domElement );
 
+var data_src = document.getElementsByName('datasrc')[0].content;
 
 loader.load(
-    'data.json',
+    `./data/${data_src}.json`,
     function ( data ) {
         const graphData = JSON.parse(data);
 
