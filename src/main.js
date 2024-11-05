@@ -88,7 +88,7 @@ loader.load(
 
         // draw the points...
         for (let point of graphData.points) {
-            let pointGeometry = new THREE.SphereGeometry(0.1);
+            let pointGeometry = new THREE.SphereGeometry(point[4]?.size ?? 0.1);
             pointGeometry.translate(point[0], point[1], point[2]);
             let pointMaterial = new THREE.MeshBasicMaterial({color: point[3]});
             let pointMesh = new THREE.Mesh(pointGeometry, pointMaterial);
