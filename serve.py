@@ -39,21 +39,21 @@ class MyHandler(SimpleHTTPRequestHandler):
             self.send_header("Content-type", "text/css")
             self.end_headers()
             self.wfile.write(open('style.css', 'rb').read())
-        elif self.path == '/src/main.js':
+        elif self.path.startswith('/src/main.js'):
             self.send_response(200)
             self.send_header("Content-type", "application/javascript")
             self.end_headers()
             self.wfile.write(open('src/main.js', 'rb').read())
-        elif self.path == '/data.json':
-            self.send_response(200)
-            self.send_header("Content-type", "application/json")
-            self.end_headers()
-            self.wfile.write(open('data.json', 'rb').read())
         elif self.path == '/three/fonts/helvetiker_regular.typeface.json':
             self.send_response(200)
             self.send_header("Content-type", "application/json")
             self.end_headers()
             self.wfile.write(open('helvetiker_regular.typeface.json', 'rb').read())
+        elif self.path.endswith('.json'):
+            self.send_response(200)
+            self.send_header("Content-type", "application/json")
+            self.end_headers()
+            self.wfile.write(open(f'.{self.path}', 'rb').read())
         else:
             self.send_response(404)
             self.send_header("Content-type", "text/html")
