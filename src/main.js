@@ -1,10 +1,7 @@
 import * as THREE from 'three';
 
-//import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
 import { TextGeometry} from 'textgeometry';
-//import { FontLoader } from 'three/addons/loaders/FontLoader.js';
 import { FontLoader } from 'fontloader';
-//import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { OrbitControls } from 'orbitcontrols';
 
 const surrounding_opacity = 0.1;
@@ -16,13 +13,7 @@ const height = container.clientHeight;
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x000000);
 const camera = new THREE.PerspectiveCamera( 75, width / height, 0.1, 1000 );
-//const renderer = new THREE.WebGLRenderer({ antialias: true });
-//const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 const renderer = new THREE.WebGLRenderer();
-
-// <div id="c"></div>
-//document.body.appendChild( renderer.domElement );
-//document.getElementById('c').appendChild( renderer.domElement );
 
 renderer.setSize(width, height);
 
@@ -32,17 +23,6 @@ container.appendChild(renderer.domElement);
 const loader = new THREE.FileLoader();
 
 const controls = new OrbitControls( camera, renderer.domElement );
-
-//controls.enableDamping = true; // Add smooth damping
-//controls.dampingFactor = 0.05;
-//controls.screenSpacePanning = false;
-//controls.minDistance = 5;
-//controls.minDistance = 0.1;
-//controls.maxDistance = 50;
-//controls.maxPolarAngle = Math.PI / 2;
-
-//controls.target.set(0, 0, 0);
-
 
 function onWindowResize() {
     camera.aspect = window.innerWidth / window.innerHeight;
@@ -60,9 +40,7 @@ loader.load(
     function ( data ) {
         const graphData = JSON.parse(data);
 
-        // draw the surrounding box...
         let box = new THREE.BoxGeometry(graphData.axes[0].max, graphData.axes[1].max, graphData.axes[2].max);
-        // center the box...
         box.translate(graphData.axes[0].max / 2, graphData.axes[1].max / 2, graphData.axes[2].max / 2);
         let boxMaterial = new THREE.MeshBasicMaterial({color: 0x00ff00, transparent: true, opacity: surrounding_opacity});
         let boxMesh = new THREE.Mesh(box, boxMaterial);
@@ -151,13 +129,6 @@ loader.load(
             graphData.axes[1].max,
             graphData.axes[2].max
         );
-
-        //camera.position.set(maxDimension * 1.5, maxDimension * 1.5, maxDimension * 1.5);
-        //camera.lookAt(maxDimension / 2, maxDimension / 2, maxDimension / 2);
-        //camera.position.set( 10, 10, 10 );
-        //camera.lookAt( 0, 0, 0 );
-
-        //animate();
     }
 );
 
