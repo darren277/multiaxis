@@ -18,10 +18,52 @@
         }
     </script>
 
-    <style> body { margin: 0; } </style>
+    <style>
+        body { margin: 0; }
+
+        .threejs-container {
+            position: relative;
+            width: 100%;
+            height: 600px;
+            background: #000;
+            z-index: 9999;
+        }
+
+        #c {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .threejs h1 {
+            color: white;
+            text-align: center;
+            padding: 20px 0;
+            margin: 0;
+        }
+
+        #c canvas {
+            background-color: rgba(255,0,0,0.2) !important;
+            z-index: 9999 !important;
+            position: relative !important;
+        }
+    </style>
 </head>
 <body>
 <h1>What is up though?</h1>
+<a href="#below">Scroll down</a>
+<h3 id="above">ABOVE</h3>
+<section class="threejs">
+    <h1>Three JS</h1>
+    <div class="threejs-container">
+        <div id="c"></div>
+        <button id="orbit-toggle-btn" style="position: absolute; top: 1em; right: 1em; z-index: 9999; padding: 0.5em 1em; cursor: pointer;">Orbit: ON</button>
+    </div>
+</section>
+<h3 id="below">BELOW</h3>
+<a href="#above">Scroll up</a>
+<!-- LOTS OF EMPTY SPACE -->
+<div style="height: 1000px;"></div>
 <script type="module" src="./src/main.js"></script>
 </body>
 </html>

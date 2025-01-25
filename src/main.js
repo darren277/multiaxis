@@ -9,15 +9,49 @@ import { OrbitControls } from 'orbitcontrols';
 
 const surrounding_opacity = 0.1;
 
+const container = document.getElementById('c');
+const width = container.clientWidth;
+const height = container.clientHeight;
+
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+scene.background = new THREE.Color(0x000000);
+const camera = new THREE.PerspectiveCamera( 75, width / height, 0.1, 1000 );
+//const renderer = new THREE.WebGLRenderer({ antialias: true });
+//const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 const renderer = new THREE.WebGLRenderer();
-renderer.setSize( window.innerWidth, window.innerHeight );
-document.body.appendChild( renderer.domElement );
+
+// <div id="c"></div>
+//document.body.appendChild( renderer.domElement );
+//document.getElementById('c').appendChild( renderer.domElement );
+
+renderer.setSize(width, height);
+
+renderer.setPixelRatio(window.devicePixelRatio);
+container.appendChild(renderer.domElement);
 
 const loader = new THREE.FileLoader();
 
 const controls = new OrbitControls( camera, renderer.domElement );
+
+//controls.enableDamping = true; // Add smooth damping
+//controls.dampingFactor = 0.05;
+//controls.screenSpacePanning = false;
+//controls.minDistance = 5;
+//controls.minDistance = 0.1;
+//controls.maxDistance = 50;
+//controls.maxPolarAngle = Math.PI / 2;
+
+//controls.target.set(0, 0, 0);
+
+
+function onWindowResize() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+window.addEventListener('resize', onWindowResize, false);
+
 
 var data_src = document.getElementsByName('datasrc')[0].content;
 
@@ -55,7 +89,7 @@ loader.load(
 
             // draw the labels...
             const loader = new FontLoader();
-            loader.load( 'three/fonts/helvetiker_regular.typeface.json', function ( font ) {
+            loader.load( 'scripts/helvetiker_regular.typeface.json', function ( font ) {
                 let axisLabel = new TextGeometry(axis.label, {font: font, size: 1, depth: 0.01});
                 if (axis.label === 'x') {
                     axisLabel.translate(axis.max, 0, 0);
@@ -100,7 +134,7 @@ loader.load(
 
             if (point[4]?.label) {
                 const loader = new FontLoader();
-                loader.load( 'three/fonts/helvetiker_regular.typeface.json', function ( font ) {
+                loader.load( 'scripts/helvetiker_regular.typeface.json', function ( font ) {
                     let pointLabel = new TextGeometry(point[4].label, {font: font, size: point[4]?.size ?? 1, depth: 0.01});
                     let labelCoordinates = determineLabelCoordinates(point[0], point[1], point[2], point[4]?.size ?? 0.1);
                     pointLabel.translate(labelCoordinates[0], labelCoordinates[1], labelCoordinates[2]);
@@ -110,8 +144,41 @@ loader.load(
                 });
             }
         }
+
+        // Set initial camera position based on the data
+        const maxDimension = Math.max(
+            graphData.axes[0].max,
+            graphData.axes[1].max,
+            graphData.axes[2].max
+        );
+
+        //camera.position.set(maxDimension * 1.5, maxDimension * 1.5, maxDimension * 1.5);
+        //camera.lookAt(maxDimension / 2, maxDimension / 2, maxDimension / 2);
+        //camera.position.set( 10, 10, 10 );
+        //camera.lookAt( 0, 0, 0 );
+
+        //animate();
     }
 );
+
+const testGeo = new THREE.BoxGeometry(1, 1, 1);
+const testMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+const testCube = new THREE.Mesh(testGeo, testMat);
+scene.add(testCube);
+
+camera.position.set(5, 5, 5);
+camera.lookAt(0, 0, 0);
+
+
+const orbitToggleBtn = document.getElementById('orbit-toggle-btn');
+let orbitEnabled = true;
+
+orbitToggleBtn.addEventListener('click', () => {
+  orbitEnabled = !orbitEnabled;
+  controls.enabled = orbitEnabled;
+  orbitToggleBtn.innerText = orbitEnabled ? 'Orbit: ON' : 'Orbit: OFF';
+});
+
 
 function determineLabelCoordinates(p1, p2, p3, radius) {
     let x = p1 + (radius * 2);
@@ -120,7 +187,16 @@ function determineLabelCoordinates(p1, p2, p3, radius) {
     return [x, y, z];
 };
 
-camera.position.z = 25;
 
-function animate() { renderer.render( scene, camera ); }
-renderer.setAnimationLoop( animate );
+function animate() {
+    requestAnimationFrame(animate);
+
+    controls.update();
+
+    testCube.rotation.x += 0.01;
+    testCube.rotation.y += 0.01;
+
+    renderer.render(scene, camera);
+}
+
+animate();
