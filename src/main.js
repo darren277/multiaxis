@@ -1,8 +1,11 @@
 import * as THREE from 'three';
 
-import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
-import { FontLoader } from 'three/addons/loaders/FontLoader.js';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+//import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
+import { TextGeometry} from 'textgeometry';
+//import { FontLoader } from 'three/addons/loaders/FontLoader.js';
+import { FontLoader } from 'fontloader';
+//import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { OrbitControls } from 'orbitcontrols';
 
 const surrounding_opacity = 0.1;
 
