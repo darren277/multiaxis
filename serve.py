@@ -44,7 +44,7 @@ class MyHandler(SimpleHTTPRequestHandler):
             self.send_header("Content-type", "application/javascript")
             self.end_headers()
             self.wfile.write(open('src/main.js', 'rb').read())
-        elif self.path == '/three/fonts/helvetiker_regular.typeface.json':
+        elif self.path == '/scripts/helvetiker_regular.typeface.json':
             self.send_response(200)
             self.send_header("Content-type", "application/json")
             self.end_headers()
