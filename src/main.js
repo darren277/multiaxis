@@ -1,5 +1,5 @@
-import { setupScene } from './sceneSetup.js';
-import { attachUIListeners } from './ui/attachUIListeners.js';
+import { setupScene } from './config/sceneSetup.js';
+import { attachUIListeners } from './config/attachUIListeners.js';
 
 import drawPipelineConfig from './config/drawPipelineConfig.js';
 import uiPanelConfig from './config/uiPanelConfig.js';

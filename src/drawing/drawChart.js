@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { TextGeometry} from 'textgeometry';
 import { FontLoader } from 'fontloader';
 
-import { determineLabelCoordinates } from '../utils.js';
+import { determineLabelCoordinates } from '../config/utils.js';
 
 import chartConfig from './chartConfig.js';
 
