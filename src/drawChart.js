@@ -5,105 +5,126 @@ import { FontLoader } from 'fontloader';
 
 import { determineLabelCoordinates } from './utils.js';
 
+import chartConfig from './chartConfig.js';
+
 
 const surrounding_opacity = 0.1;
 
 
-function drawChart( scene, data ) {
+/**
+ * Draw a 3D chart into the scene, using the given config object.
+ * If no config is passed in, we default to the imported 'chartConfig'.
+ */
+function drawChart( scene, data, config = chartConfig ) {
     const graphData = JSON.parse(data);
 
-    // draw the surrounding box...
-    let box = new THREE.BoxGeometry(graphData.axes[0].max, graphData.axes[1].max, graphData.axes[2].max);
+    // --- 1) Surrounding box ---
+    const xSize = graphData.axes[0].max;
+    const ySize = graphData.axes[1].max;
+    const zSize = graphData.axes[2].max;
 
-    // center the box...
-    box.translate(graphData.axes[0].max / 2, graphData.axes[1].max / 2, graphData.axes[2].max / 2);
-    let boxMaterial = new THREE.MeshBasicMaterial({color: 0x00ff00, transparent: true, opacity: surrounding_opacity});
-    let boxMesh = new THREE.Mesh(box, boxMaterial);
+    const boxGeometry = config.surroundingBox.geometry(xSize, ySize, zSize);
+    // Center the box if you want
+    boxGeometry.translate(xSize / 2, ySize / 2, zSize / 2);
+
+    const boxMaterial = config.surroundingBox.material();
+    const boxMesh = new THREE.Mesh(boxGeometry, boxMaterial);
     scene.add(boxMesh);
 
-    // draw the axes...
-    for (let axis of graphData.axes) {
-        let label = axis.label;
+    // --- 2) Axes, labels, and ticks ---
+    const loader = new FontLoader();
 
-        let axisGeometry = new THREE.BoxGeometry(axis.max, 0.1, 0.1);
-        if (axis.label === 'x') {
-            axisGeometry = new THREE.BoxGeometry(axis.max, 0.1, 0.1);
-        }
-        else if (axis.label === 'y') {
-            axisGeometry = new THREE.BoxGeometry(0.1, axis.max, 0.1);
-        }
-        else if (axis.label === 'z') {
-            axisGeometry = new THREE.BoxGeometry(0.1, 0.1, axis.max);
-        }
+    // You probably only want to load your font once, rather than re-loading for each axis/point.
+    loader.load(config.fontUrl, (font) => {
+        graphData.axes.forEach((axis) => {
+            // Axis geometry & material
+            const axisGeometry = config.axis.geometry(axis.label, axis.max);
+            const axisMaterial = config.axis.material();
+            const axisMesh = new THREE.Mesh(axisGeometry, axisMaterial);
+            scene.add(axisMesh);
 
-        let axisMaterial = new THREE.MeshBasicMaterial({color: 0x00ff00});
-        let axisMesh = new THREE.Mesh(axisGeometry, axisMaterial);
-        scene.add(axisMesh);
-
-        // draw the labels...
-        const loader = new FontLoader();
-        loader.load( 'scripts/helvetiker_regular.typeface.json', function ( font ) {
-            let axisLabel = new TextGeometry(axis.label, {font: font, size: 1, depth: 0.01});
+            // Axis label
+            const axisLabelGeo = new TextGeometry(axis.label, {
+                font,
+                size: config.axisLabels.size,
+                depth: config.axisLabels.depth,
+            });
+            // Reposition label
             if (axis.label === 'x') {
-                axisLabel.translate(axis.max, 0, 0);
+                axisLabelGeo.translate(axis.max, 0, 0);
+            } else if (axis.label === 'y') {
+                axisLabelGeo.translate(0, axis.max, 0);
+            } else if (axis.label === 'z') {
+                axisLabelGeo.translate(0, 0, axis.max);
             }
-            else if (axis.label === 'y') {
-                axisLabel.translate(0, axis.max, 0);
-            }
-            else if (axis.label === 'z') {
-                axisLabel.translate(0, 0, axis.max);
-            }
-            let axisLabelMaterial = new THREE.MeshBasicMaterial({color: 0x00ff00});
-            let axisLabelMesh = new THREE.Mesh(axisLabel, axisLabelMaterial);
+            const axisLabelMat = config.axisLabels.material(axis.label);
+            const axisLabelMesh = new THREE.Mesh(axisLabelGeo, axisLabelMat);
             scene.add(axisLabelMesh);
+
+            // Ticks
+            for (let i = axis.min; i <= axis.max; i += axis.step) {
+                const tickGeometry = config.axisTicks.geometry();
+                if (axis.label === 'x') {
+                    tickGeometry.translate(i, 0, 0);
+                } else if (axis.label === 'y') {
+                    tickGeometry.translate(0, i, 0);
+                } else if (axis.label === 'z') {
+                    tickGeometry.translate(0, 0, i);
+                }
+                const tickMaterial = config.axisTicks.material();
+                const tickMesh = new THREE.Mesh(tickGeometry, tickMaterial);
+                scene.add(tickMesh);
+            }
         });
 
-        // draw the ticks...
-        for (let i = axis.min; i <= axis.max; i += axis.step) {
-        let tickGeometry = new THREE.BoxGeometry(0.1, 0.1, 0.1);
-            if (axis.label === 'x') {
-                tickGeometry.translate(i, 0, 0);
+        // --- 3) Plot data points ---
+        graphData.points.forEach((point) => {
+            // point is like [ x, y, z, color, { size, label } ]
+
+            // geometry & material
+            const pointGeometry = config.points.geometry(point);
+            // translate geometry to correct location
+            pointGeometry.translate(point[0], point[1], point[2]);
+
+            const pointMaterial = config.points.material(point);
+            const pointMesh = new THREE.Mesh(pointGeometry, pointMaterial);
+            scene.add(pointMesh);
+
+            // If there is a label for this point, draw it
+            if (point[4]?.label) {
+                const labelGeo = new TextGeometry(point[4].label, {
+                    font,
+                    size: config.pointLabels.size(point), // call the function
+                    depth: config.pointLabels.depth,
+                });
+                const labelCoordinates = determineLabelCoordinates(
+                    point[0],
+                    point[1],
+                    point[2],
+                    point[4]?.size ?? 0.1
+                );
+                labelGeo.translate(
+                    labelCoordinates[0],
+                    labelCoordinates[1],
+                    labelCoordinates[2]
+                );
+
+                const labelMat = config.pointLabels.material(point);
+                const labelMesh = new THREE.Mesh(labelGeo, labelMat);
+                scene.add(labelMesh);
             }
-            else if (axis.label === 'y') {
-                tickGeometry.translate(0, i, 0);
-            }
-            else if (axis.label === 'z') {
-                tickGeometry.translate(0, 0, i);
-            }
+        });
 
-            let tickMaterial = new THREE.MeshBasicMaterial({color: 0x00ffff});
-            let tickMesh = new THREE.Mesh(tickGeometry, tickMaterial);
-            scene.add(tickMesh);
-        }
-    }
+        // 4) Optionally adjust camera, lighting, etc. based on data
+        // ...
 
-    // draw the points...
-    for (let point of graphData.points) {
-        let pointGeometry = new THREE.SphereGeometry(point[4]?.size ?? 0.1);
-        pointGeometry.translate(point[0], point[1], point[2]);
-        let pointMaterial = new THREE.MeshBasicMaterial({color: point[3]});
-        let pointMesh = new THREE.Mesh(pointGeometry, pointMaterial);
-        scene.add(pointMesh);
-
-        if (point[4]?.label) {
-            const loader = new FontLoader();
-            loader.load( 'scripts/helvetiker_regular.typeface.json', function ( font ) {
-                let pointLabel = new TextGeometry(point[4].label, {font: font, size: point[4]?.size ?? 1, depth: 0.01});
-                let labelCoordinates = determineLabelCoordinates(point[0], point[1], point[2], point[4]?.size ?? 0.1);
-                pointLabel.translate(labelCoordinates[0], labelCoordinates[1], labelCoordinates[2]);
-                let pointLabelMaterial = new THREE.MeshBasicMaterial({color: point[3]});
-                let pointLabelMesh = new THREE.Mesh(pointLabel, pointLabelMaterial);
-                scene.add(pointLabelMesh);
-            });
-        }
-    }
-
-    // Set initial camera position based on the data
-    const maxDimension = Math.max(
-        graphData.axes[0].max,
-        graphData.axes[1].max,
-        graphData.axes[2].max
-    );
+        // Set initial camera position based on the data
+//        const maxDimension = Math.max(
+//            graphData.axes[0].max,
+//            graphData.axes[1].max,
+//            graphData.axes[2].max
+//        );
+    });
 }
 
 export { drawChart };
