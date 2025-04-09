@@ -24,6 +24,15 @@ const loader = new THREE.FileLoader();
 
 const controls = new OrbitControls( camera, renderer.domElement );
 
+//controls.enableDamping = true; // Add smooth damping
+//controls.dampingFactor = 0.05;
+//controls.screenSpacePanning = false;
+//controls.minDistance = 5;
+//controls.minDistance = 0.1;
+//controls.maxDistance = 50;
+//controls.maxPolarAngle = Math.PI / 2;
+//controls.target.set(0, 0, 0);
+
 function onWindowResize() {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
@@ -40,7 +49,10 @@ loader.load(
     function ( data ) {
         const graphData = JSON.parse(data);
 
+        // draw the surrounding box...
         let box = new THREE.BoxGeometry(graphData.axes[0].max, graphData.axes[1].max, graphData.axes[2].max);
+
+        // center the box...
         box.translate(graphData.axes[0].max / 2, graphData.axes[1].max / 2, graphData.axes[2].max / 2);
         let boxMaterial = new THREE.MeshBasicMaterial({color: 0x00ff00, transparent: true, opacity: surrounding_opacity});
         let boxMesh = new THREE.Mesh(box, boxMaterial);
@@ -137,6 +149,9 @@ const testMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
 const testCube = new THREE.Mesh(testGeo, testMat);
 scene.add(testCube);
 
+//camera.position.set(maxDimension * 1.5, maxDimension * 1.5, maxDimension * 1.5);
+//camera.lookAt(maxDimension / 2, maxDimension / 2, maxDimension / 2);
+//camera.position.set( 10, 10, 10 );
 camera.position.set(5, 5, 5);
 camera.lookAt(0, 0, 0);
 
