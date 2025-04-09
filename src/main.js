@@ -4,9 +4,8 @@ import { TextGeometry} from 'textgeometry';
 import { FontLoader } from 'fontloader';
 import { OrbitControls } from 'orbitcontrols';
 
-import drawChart from './drawChart.js';
-
-const surrounding_opacity = 0.1;
+import { drawChart } from './drawChart.js';
+import { determineLabelCoordinates } from './utils.js';
 
 const container = document.getElementById('c');
 const width = container.clientWidth;
@@ -48,13 +47,8 @@ var data_src = document.getElementsByName('datasrc')[0].content;
 
 loader.load(
     `./data/${data_src}.json`,
-    drawChart(data)
+    (data) => drawChart(scene, data)
 );
-
-const testGeo = new THREE.BoxGeometry(1, 1, 1);
-const testMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-const testCube = new THREE.Mesh(testGeo, testMat);
-scene.add(testCube);
 
 //camera.position.set(maxDimension * 1.5, maxDimension * 1.5, maxDimension * 1.5);
 //camera.lookAt(maxDimension / 2, maxDimension / 2, maxDimension / 2);
@@ -73,21 +67,14 @@ orbitToggleBtn.addEventListener('click', () => {
 });
 
 
-function determineLabelCoordinates(p1, p2, p3, radius) {
-    let x = p1 + (radius * 2);
-    let y = p2;
-    let z = p3;
-    return [x, y, z];
-};
-
 
 function animate() {
     requestAnimationFrame(animate);
 
     controls.update();
 
-    testCube.rotation.x += 0.01;
-    testCube.rotation.y += 0.01;
+    //testCube.rotation.x += 0.01;
+    //testCube.rotation.y += 0.01;
 
     renderer.render(scene, camera);
 }

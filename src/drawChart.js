@@ -1,4 +1,15 @@
-function drawChart( data ) {
+import * as THREE from 'three';
+
+import { TextGeometry} from 'textgeometry';
+import { FontLoader } from 'fontloader';
+
+import { determineLabelCoordinates } from './utils.js';
+
+
+const surrounding_opacity = 0.1;
+
+
+function drawChart( scene, data ) {
     const graphData = JSON.parse(data);
 
     // draw the surrounding box...
