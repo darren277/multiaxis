@@ -7,6 +7,16 @@ import uiPanelConfig from './config/uiPanelConfig.js';
 import * as THREE from 'three'; // for any references you still need
 // Or import { FileLoader } from 'three'; if you just need the loader
 
+
+let startTime = null;
+
+let state = {
+    sheetMusic: null,
+
+    // Add any other state variables you need to track
+}
+
+
 document.addEventListener('DOMContentLoaded', () => {
     // 1) Setup the scene
     const { scene, camera, renderer, controls } = setupScene('c');
@@ -23,12 +33,25 @@ document.addEventListener('DOMContentLoaded', () => {
     // We’ll use a FileLoader to grab each data file
     const fileLoader = new THREE.FileLoader();
 
-    // If each pipeline entry has a dataSrc property, we can do them one by one:
-    drawPipelineConfig.forEach((pipelineItem) => {
-        var data_src = document.getElementsByName('datasrc')[0].content;
-        const jsonPath = `./data/${data_src}.json`;
+    var data_sources = document.getElementsByName('datasrc')
 
-        // TODO: For more complex scenarios with multiple data sources: const jsonPath = `./data/${pipelineItem.dataSrc}.json`;
+    for (let i = 0; i < data_sources.length; i++) {
+        var drawFunc;
+
+        // Write now we will be using the following mechanism for defining the pipeline rather than `drawPipelineConfig`:
+        var data_src = data_sources[i].content;
+        console.log("data_src: ", data_src);
+
+        if (data_src === 'data') {
+            drawFunc = drawPipelineConfig[0].drawFunc;
+        } else if (data_src === 'music') {
+            drawFunc = drawPipelineConfig[1].drawFunc;
+        } else {
+            console.error(`Unknown data source: ${data_src}`);
+            return;
+        }
+
+        const jsonPath = `./data/${data_src}.json`;
 
         fileLoader.load(
             jsonPath,
@@ -36,13 +59,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = JSON.parse(rawData);
                 console.log(`Loaded ${jsonPath}`, data);
                 // call the draw function
-                pipelineItem.drawFunc(scene, data);
+                //pipelineItem.drawFunc(scene, data);
+                drawFunc(scene, data, state);
             },
             undefined, // onProgress
             (err) => {
                 console.error(`Error loading ${jsonPath}`, err);
             }
         );
+    }
+
+    // If each pipeline entry has a dataSrc property, we can do them one by one:
+    drawPipelineConfig.forEach((pipelineItem) => {
+        // TODO: For more complex scenarios with multiple data sources: const jsonPath = `./data/${pipelineItem.dataSrc}.json`;
     });
 
     // 4) Setup UI listeners
@@ -51,6 +80,20 @@ document.addEventListener('DOMContentLoaded', () => {
     // 5) Animate loop
     function animate() {
         requestAnimationFrame(animate);
+
+        const timestamp = Date.now();
+
+        // If you have any custom animations or updates, do them here
+
+        // sheetMusic...
+        if (state.sheetMusic) {
+            if (!startTime) startTime = timestamp;
+            const elapsedMs = timestamp - startTime;
+            const elapsedSec = elapsedMs / 1000;
+
+            state.sheetMusic.update(elapsedSec);
+        }
+
         controls.update();
         renderer.render(scene, camera);
     }
