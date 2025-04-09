@@ -3,9 +3,12 @@ import { attachUIListeners } from './config/attachUIListeners.js';
 
 import drawPipelineConfig from './config/drawPipelineConfig.js';
 import uiPanelConfig from './config/uiPanelConfig.js';
+import { presentationKeyDownHandler } from './drawing/drawPresentation.js';
 
 import * as THREE from 'three'; // for any references you still need
 // Or import { FileLoader } from 'three'; if you just need the loader
+
+import {update as tweenUpdate} from 'tween'
 
 
 let startTime = null;
@@ -61,7 +64,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log(`Loaded ${jsonPath}`, data);
                 // call the draw function
                 //pipelineItem.drawFunc(scene, data);
-                drawFunc(scene, data, state);
+                if (data_src === 'music') {drawFunc(scene, data, state);}
+                else {drawFunc(scene, data);}
             },
             undefined, // onProgress
             (err) => {
@@ -77,6 +81,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 4) Setup UI listeners
     attachUIListeners(uiPanelConfig, uiState);
+
+    // 5) Add any event listeners...
+    window.addEventListener('keydown', (event) => {
+        // presentationKeyDownHandler = (camera, event)
+        presentationKeyDownHandler(camera, event);
+    });
 
     // 5) Animate loop
     function animate() {
@@ -96,6 +106,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             state.sheetMusic.update(scaledElapsedSec);
         }
+
+
+        tweenUpdate();
 
         controls.update();
         renderer.render(scene, camera);
