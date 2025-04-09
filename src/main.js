@@ -27,6 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
         controls,
         orbitEnabled: true,
         // anything else we might want the UI to manipulate
+        tempoScale: 1.0,
     };
 
     // 3) Load data & run the drawing pipeline
@@ -91,7 +92,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const elapsedMs = timestamp - startTime;
             const elapsedSec = elapsedMs / 1000;
 
-            state.sheetMusic.update(elapsedSec);
+            const scaledElapsedSec = elapsedSec * uiState.tempoScale;
+
+            state.sheetMusic.update(scaledElapsedSec);
         }
 
         controls.update();
