@@ -2,3 +2,5 @@
 .idea/
 
 data/experimental*.json
+
+.env
