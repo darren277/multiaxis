@@ -1,5 +1,5 @@
 import { setupScene } from './sceneSetup.js';
-import { createUI } from './ui/createUI.js';
+import { attachUIListeners } from './ui/attachUIListeners.js';
 
 import drawPipelineConfig from './config/drawPipelineConfig.js';
 import uiPanelConfig from './config/uiPanelConfig.js';
@@ -7,7 +7,7 @@ import uiPanelConfig from './config/uiPanelConfig.js';
 import * as THREE from 'three'; // for any references you still need
 // Or import { FileLoader } from 'three'; if you just need the loader
 
-function main() {
+document.addEventListener('DOMContentLoaded', () => {
     // 1) Setup the scene
     const { scene, camera, renderer, controls } = setupScene('c');
 
@@ -19,10 +19,7 @@ function main() {
         // anything else we might want the UI to manipulate
     };
 
-    // 3) Build the UI from config
-    createUI(uiPanelConfig, uiState);
-
-    // 4) Load data & run the drawing pipeline
+    // 3) Load data & run the drawing pipeline
     // We’ll use a FileLoader to grab each data file
     const fileLoader = new THREE.FileLoader();
 
@@ -48,6 +45,9 @@ function main() {
         );
     });
 
+    // 4) Setup UI listeners
+    attachUIListeners(uiPanelConfig, uiState);
+
     // 5) Animate loop
     function animate() {
         requestAnimationFrame(animate);
@@ -56,6 +56,5 @@ function main() {
     }
 
     animate();
-}
+})
 
-main();

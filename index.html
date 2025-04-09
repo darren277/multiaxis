@@ -54,11 +54,47 @@
 <a href="#below">Scroll down</a>
 <h3 id="above">ABOVE</h3>
 <section class="threejs">
-    <h1>Three JS</h1>
-    <div class="threejs-container">
-        <div id="c"></div>
-        <button id="orbit-toggle-btn" style="position: absolute; top: 1em; right: 1em; z-index: 9999; padding: 0.5em 1em; cursor: pointer;">Orbit: ON</button>
+  <h1>Three JS</h1>
+  <div class="threejs-container" style="position: relative;">
+    <!-- The Three.js canvas will be appended into this DIV -->
+    <div id="c" style="width: 600px; height: 400px;"></div>
+
+    <!-- UI container (floating overlay) -->
+    <div
+      id="ui-container"
+      style="
+        position: absolute;
+        top: 1em;
+        right: 1em;
+        z-index: 9999;
+        background-color: rgba(255, 255, 255, 0.2);
+        padding: 0.5em;"
+    >
+      <!-- Orbit Toggle Button -->
+      <button
+        id="orbit-toggle-btn"
+        style="
+          display: block;
+          width: 120px;
+          margin-bottom: 0.5em;
+          cursor: pointer;"
+      >
+        Orbit: ON
+      </button>
+
+      <!-- Example Slider -->
+      <label for="zoom-slider" style="margin-right: 0.5em;">Zoom:</label>
+      <input
+        type="range"
+        id="zoom-slider"
+        min="1"
+        max="100"
+        value="5"
+        step="1"
+        style="width: 100px;"
+      />
     </div>
+  </div>
 </section>
 <h3 id="below">BELOW</h3>
 <a href="#above">Scroll up</a>
