@@ -1,82 +1,61 @@
-import * as THREE from 'three';
+import { setupScene } from './sceneSetup.js';
+import { createUI } from './ui/createUI.js';
 
-import { TextGeometry} from 'textgeometry';
-import { FontLoader } from 'fontloader';
-import { OrbitControls } from 'orbitcontrols';
+import drawPipelineConfig from './config/drawPipelineConfig.js';
+import uiPanelConfig from './config/uiPanelConfig.js';
 
-import { drawChart } from './drawChart.js';
-import { determineLabelCoordinates } from './utils.js';
+import * as THREE from 'three'; // for any references you still need
+// Or import { FileLoader } from 'three'; if you just need the loader
 
-const container = document.getElementById('c');
-const width = container.clientWidth;
-const height = container.clientHeight;
+function main() {
+    // 1) Setup the scene
+    const { scene, camera, renderer, controls } = setupScene('c');
 
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x000000);
-const camera = new THREE.PerspectiveCamera( 75, width / height, 0.1, 1000 );
-const renderer = new THREE.WebGLRenderer();
+    // 2) Create a shared state for the UI
+    const uiState = {
+        camera,
+        controls,
+        orbitEnabled: true,
+        // anything else we might want the UI to manipulate
+    };
 
-renderer.setSize(width, height);
+    // 3) Build the UI from config
+    createUI(uiPanelConfig, uiState);
 
-renderer.setPixelRatio(window.devicePixelRatio);
-container.appendChild(renderer.domElement);
+    // 4) Load data & run the drawing pipeline
+    // We’ll use a FileLoader to grab each data file
+    const fileLoader = new THREE.FileLoader();
 
-const loader = new THREE.FileLoader();
+    // If each pipeline entry has a dataSrc property, we can do them one by one:
+    drawPipelineConfig.forEach((pipelineItem) => {
+        var data_src = document.getElementsByName('datasrc')[0].content;
+        const jsonPath = `./data/${data_src}.json`;
 
-const controls = new OrbitControls( camera, renderer.domElement );
+        // TODO: For more complex scenarios with multiple data sources: const jsonPath = `./data/${pipelineItem.dataSrc}.json`;
 
-//controls.enableDamping = true; // Add smooth damping
-//controls.dampingFactor = 0.05;
-//controls.screenSpacePanning = false;
-//controls.minDistance = 5;
-//controls.minDistance = 0.1;
-//controls.maxDistance = 50;
-//controls.maxPolarAngle = Math.PI / 2;
-//controls.target.set(0, 0, 0);
+        fileLoader.load(
+            jsonPath,
+            (rawData) => {
+                const data = JSON.parse(rawData);
+                console.log(`Loaded ${jsonPath}`, data);
+                // call the draw function
+                pipelineItem.drawFunc(scene, data);
+            },
+            undefined, // onProgress
+            (err) => {
+                console.error(`Error loading ${jsonPath}`, err);
+            }
+        );
+    });
 
-function onWindowResize() {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    // 5) Animate loop
+    function animate() {
+        requestAnimationFrame(animate);
+        controls.update();
+        renderer.render(scene, camera);
+    }
+
+    animate();
 }
 
-window.addEventListener('resize', onWindowResize, false);
-
-
-var data_src = document.getElementsByName('datasrc')[0].content;
-
-loader.load(
-    `./data/${data_src}.json`,
-    (data) => drawChart(scene, data)
-);
-
-//camera.position.set(maxDimension * 1.5, maxDimension * 1.5, maxDimension * 1.5);
-//camera.lookAt(maxDimension / 2, maxDimension / 2, maxDimension / 2);
-//camera.position.set( 10, 10, 10 );
-camera.position.set(5, 5, 5);
-camera.lookAt(0, 0, 0);
-
-
-const orbitToggleBtn = document.getElementById('orbit-toggle-btn');
-let orbitEnabled = true;
-
-orbitToggleBtn.addEventListener('click', () => {
-  orbitEnabled = !orbitEnabled;
-  controls.enabled = orbitEnabled;
-  orbitToggleBtn.innerText = orbitEnabled ? 'Orbit: ON' : 'Orbit: OFF';
-});
-
-
-
-function animate() {
-    requestAnimationFrame(animate);
-
-    controls.update();
-
-    //testCube.rotation.x += 0.01;
-    //testCube.rotation.y += 0.01;
-
-    renderer.render(scene, camera);
-}
-
-animate();
+main();

@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { TextGeometry} from 'textgeometry';
 import { FontLoader } from 'fontloader';
 
-import { determineLabelCoordinates } from './utils.js';
+import { determineLabelCoordinates } from '../utils.js';
 
 import chartConfig from './chartConfig.js';
 
@@ -16,7 +16,7 @@ const surrounding_opacity = 0.1;
  * If no config is passed in, we default to the imported 'chartConfig'.
  */
 function drawChart( scene, data, config = chartConfig ) {
-    const graphData = JSON.parse(data);
+    const graphData = data;
 
     // --- 1) Surrounding box ---
     const xSize = graphData.axes[0].max;
