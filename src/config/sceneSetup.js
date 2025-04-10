@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'orbitcontrols';
 
-export function setupScene(containerId = 'c') {
+export function setupScene(containerId = 'c', overlayElements = []) {
     // 1) Setup container
     const container = document.getElementById(containerId);
     const width = container.clientWidth;
@@ -16,10 +16,25 @@ export function setupScene(containerId = 'c') {
     camera.position.set(5, 5, 5); // or wherever
 
     // 4) Renderer
-    const renderer = new THREE.WebGLRenderer();
+    const renderer = new THREE.WebGLRenderer({
+        canvas: container.querySelector('canvas'),
+        antialias: true
+    });
+
     renderer.setSize(width, height);
     renderer.setPixelRatio(window.devicePixelRatio);
     container.appendChild(renderer.domElement);
+
+
+    // Add any optional overlay elements
+    for (const element of overlayElements) {
+        const el = document.createElement(element.tagName);
+        el.id = element.id;
+        for (const [key, value] of Object.entries(element.attrs)) {
+            el.setAttribute(key, value);
+        }
+        container.appendChild(el);
+    }
 
     // 5) Orbit Controls
     const controls = new OrbitControls(camera, renderer.domElement);
