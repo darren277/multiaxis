@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <title>{{ threejs_drawings.name }}</title>
 
-    {% for data_src in threejs_drawings.data_sources %}
-        <meta name="datasrc" content="{{ data_src }}" />
-    {% endfor %}
+    <meta name="threejs_drawing_name" content="{{ threejs_drawings.name.lower() }}" />
 
     {% for key, value in threejs_drawings.custom_meta.items() %}
         <meta name="{{ key }}" content="{{ value }}" />

@@ -99,7 +99,7 @@ def serve_texture(filename, ext):
         else:
             abort(404)
 
-@app.route('/scripts/helvetiker_regular.typeface.json')
+@app.route('/threejs/scripts/helvetiker_regular.typeface.json')
 def serve_helvetiker():
     """Serve the helvetiker_regular.typeface.json font file."""
     json_path = 'helvetiker_regular.typeface.json'

@@ -196,4 +196,10 @@ ANIMATIONS_DICT = {
             'custom_overlays': [ADVENTURE_NAVIGATION_OVERLAY],
             'custom_meta': dict(),
         },
+    'room':
+        {
+            'name': 'Room',
+            'data_sources': [],
+            'custom_meta': dict(),
+        },
 }
