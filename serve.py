@@ -1,4 +1,6 @@
 """"""
+from animations import ANIMATIONS_DICT
+
 HOST = 'localhost'
 PORT = 8000
 
