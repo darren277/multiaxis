@@ -4,7 +4,7 @@ PORT = 8000
 
 THREEJS_VERSION = b'0.169.0'
 
-from flask import Flask, Response, send_file, abort
+from flask import Flask, Response, send_file, abort, render_template
 import os
 
 
@@ -14,13 +14,15 @@ app = Flask(__name__)
 @app.route('/index.html')
 def serve_index():
     """Serve index.html with the __THREEJS_VERSION__ placeholder replaced."""
-    try:
-        with open('index.html', 'rb') as f:
-            content = f.read()
-        content = content.replace(b'__THREEJS_VERSION__', THREEJS_VERSION)
-        return Response(content, mimetype='text/html')
-    except OSError:
-        abort(404)
+    return render_template('index.html', threejs_version=THREEJS_VERSION, threejs_drawings=ANIMATIONS_DICT['multiaxis'])
+
+@app.route('/threejs/<animation>')
+def serve_threejs(animation):
+    """
+    Serve the three.js library.
+    Example: /threejs/animation -> /threejs/animation on disk
+    """
+    return render_template('index.html', threejs_version=THREEJS_VERSION, threejs_drawings=ANIMATIONS_DICT.get(animation, ANIMATIONS_DICT['multiaxis']))
 
 @app.route('/style.css')
 def serve_style():
