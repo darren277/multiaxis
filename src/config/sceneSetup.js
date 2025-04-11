@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import Stats from 'stats';
 import { OrbitControls } from 'orbitcontrols';
+import { VRButton } from 'vrbutton';
 
 export function setupScene(containerId = 'c', overlayElements = [], startPosition = { x: 0, y: 2, z: 5 }) {
     // 1) Setup container
@@ -22,6 +23,9 @@ export function setupScene(containerId = 'c', overlayElements = [], startPositio
         canvas: container.querySelector('canvas'),
         antialias: true
     });
+
+    renderer.xr.enabled = true;
+    document.body.appendChild(VRButton.createButton(renderer));
 
     renderer.setSize(width, height);
     renderer.setPixelRatio(window.devicePixelRatio);

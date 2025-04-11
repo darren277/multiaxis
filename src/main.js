@@ -29,7 +29,6 @@ import * as THREE from 'three'; // for any references you still need
 
 import {update as tweenUpdate} from 'tween'
 
-
 let previousShadowMap = false;
 
 let startTime = null;
@@ -365,7 +364,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 5) Animate loop
     function animate() {
-        requestAnimationFrame(animate);
+        //requestAnimationFrame(animate);
+        // Required for XR
+        renderer.setAnimationLoop(() => {
+            // your scene updates
+            renderer.render(scene, camera);
+        });
 
         camera.updateProjectionMatrix();
 
