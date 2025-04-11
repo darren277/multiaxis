@@ -1,10 +1,10 @@
 """"""
-from animations import ANIMATIONS_DICT
+from animations import ANIMATIONS_DICT, FULLSCREEN_CSS, EMBEDDED_CSS
 
 HOST = 'localhost'
 PORT = 8000
 
-THREEJS_VERSION = b'0.169.0'
+THREEJS_VERSION = '0.169.0'
 
 from flask import Flask, Response, send_file, abort, render_template
 import os
@@ -16,7 +16,9 @@ app = Flask(__name__)
 @app.route('/index.html')
 def serve_index():
     """Serve index.html with the __THREEJS_VERSION__ placeholder replaced."""
-    return render_template('index.html', threejs_version=THREEJS_VERSION, threejs_drawings=ANIMATIONS_DICT['multiaxis'])
+    css = FULLSCREEN_CSS
+    #css = EMBEDDED_CSS
+    return render_template('index.html', threejs_css=css, threejs_version=THREEJS_VERSION, threejs_drawings=ANIMATIONS_DICT['multiaxis'])
 
 @app.route('/threejs/<animation>')
 def serve_threejs(animation):
@@ -24,7 +26,9 @@ def serve_threejs(animation):
     Serve the three.js library.
     Example: /threejs/animation -> /threejs/animation on disk
     """
-    return render_template('index.html', threejs_version=THREEJS_VERSION, threejs_drawings=ANIMATIONS_DICT.get(animation, ANIMATIONS_DICT['multiaxis']))
+    #css = FULLSCREEN_CSS
+    css = EMBEDDED_CSS
+    return render_template('index.html', threejs_css=css, threejs_version=THREEJS_VERSION, threejs_drawings=ANIMATIONS_DICT.get(animation, ANIMATIONS_DICT['multiaxis']))
 
 @app.route('/style.css')
 def serve_style():
