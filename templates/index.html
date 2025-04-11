@@ -5,11 +5,11 @@
     <title>{{ threejs_drawings.name }}</title>
 
     {% for data_src in threejs_drawings.data_sources %}
-        <meta name="datasrc" content="{{ data_src }}"></meta>
+        <meta name="datasrc" content="{{ data_src }}" />
     {% endfor %}
 
-    {% for key, value in threejs_drawings.custom_meta %}
-        <meta name="{{ key }}" content="{{ value }}"></meta>
+    {% for key, value in threejs_drawings.custom_meta.items() %}
+        <meta name="{{ key }}" content="{{ value }}" />
     {% endfor %}
 
     <script type="importmap">
@@ -67,7 +67,13 @@
 {% if fullscreen %}
 {% if small_header %}
 <header>
-    <h2>My Header</h2>
+    <h2>{{ threejs_drawings.name }}</h2>
+    <label for="scene-select" style="margin-right: 0.5em;">Choose animation:</label>
+    <select id="scene-select">
+        {% for nav_item in nav_items %}
+            <option value="{{ nav_item }}" {% if nav_item == threejs_drawings.name.lower() %}selected{% endif %}>{{ nav_item }}</option>
+        {% endfor %}
+    </select>
 </header>
 {% endif %}
 {% else %}
@@ -101,6 +107,16 @@
 </main>
 
 {% if fullscreen %}
+{% if small_header %}
+<script>
+    const sceneSelect = document.getElementById('scene-select');
+
+    sceneSelect.addEventListener('change', (event) => {
+        const selectedScene = event.target.value;
+        window.location.href = `/threejs/${selectedScene}`;
+    });
+</script>
+{% endif %}
 {% else %}
 <h3 id="below">BELOW</h3>
 <a href="#above">Scroll up</a>
@@ -109,7 +125,7 @@
 {% endif %}
 
 {% if threejs_drawings %}
-<script type="module" src="./src/main.js"></script>
+<script type="module" src="{{ main_js_path }}"></script>
 {% endif %}
 </body>
 </html>

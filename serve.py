@@ -16,9 +16,10 @@ app = Flask(__name__)
 @app.route('/index.html')
 def serve_index():
     """Serve index.html with the __THREEJS_VERSION__ placeholder replaced."""
-    css = FULLSCREEN_CSS
-    #css = EMBEDDED_CSS
-    fullscreen = True
+    #css = FULLSCREEN_CSS
+    css = EMBEDDED_CSS
+    #fullscreen = True
+    fullscreen = False
     return render_template(
         'index.html',
         fullscreen=fullscreen,
@@ -26,7 +27,9 @@ def serve_index():
         #threejs_css=css,
         threejs_css=SMALL_HEADER_CSS,
         threejs_version=THREEJS_VERSION,
-        threejs_drawings=ANIMATIONS_DICT['multiaxis']
+        threejs_drawings=ANIMATIONS_DICT['multiaxis'],
+        nav_items=ANIMATIONS_DICT.keys(),
+        main_js_path='./src/main.js'
     )
 
 @app.route('/threejs/<animation>')
@@ -35,16 +38,20 @@ def serve_threejs(animation):
     Serve the three.js library.
     Example: /threejs/animation -> /threejs/animation on disk
     """
-    #css = FULLSCREEN_CSS
-    css = EMBEDDED_CSS
-    fullscreen = False
+    print('animation nav:', animation)
+    css = FULLSCREEN_CSS
+    fullscreen = True
     return render_template(
         'index.html',
         fullscreen=fullscreen,
-        small_header=False,
-        threejs_css=css,
+        small_header=True,
+        #threejs_css=css,
+        threejs_css=SMALL_HEADER_CSS,
         threejs_version=THREEJS_VERSION,
-        threejs_drawings=ANIMATIONS_DICT.get(animation, ANIMATIONS_DICT['multiaxis'])
+        threejs_drawings=ANIMATIONS_DICT.get(animation, ANIMATIONS_DICT['multiaxis']),
+        nav_items=ANIMATIONS_DICT.keys(),
+        #main_js_path='./src/main.js',
+        main_js_path = '/src/main.js'
     )
 
 @app.route('/style.css')
@@ -67,7 +74,7 @@ def serve_js(filename):
     else:
         abort(404)
 
-@app.route('/textures/<path:filename>.<ext>')
+@app.route('/threejs/textures/<path:filename>.<ext>')
 def serve_texture(filename, ext):
     """
     Serve any image file under /textures/.
@@ -101,7 +108,7 @@ def serve_helvetiker():
     else:
         abort(404)
 
-@app.route('/<path:filename>.json')
+@app.route('/threejs/<path:filename>.json')
 def serve_json(filename):
     """
     Serve any .json file from the current directory or subdirs,

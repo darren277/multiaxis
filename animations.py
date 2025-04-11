@@ -156,6 +156,17 @@ main {
     display: block;       /* remove default inline canvas spacing */
     background-color: black;
 }
+
+
+header {
+    height: 60px;
+    background: #333;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    padding: 0 1em;
+    box-sizing: border-box;
+}
 """
 
 
@@ -163,7 +174,8 @@ ANIMATIONS_DICT = {
     'multiaxis':
         {
             'name': 'Multiaxis',
-            'data_sources': ['data']
+            'data_sources': ['data'],
+            'custom_meta': dict(),
         },
     'music':
         {
@@ -182,5 +194,6 @@ ANIMATIONS_DICT = {
             'name': 'Adventure',
             'data_sources': ['adventure'],
             'custom_overlays': [ADVENTURE_NAVIGATION_OVERLAY],
+            'custom_meta': dict(),
         },
 }
