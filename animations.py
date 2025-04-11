@@ -202,4 +202,16 @@ ANIMATIONS_DICT = {
             'data_sources': [],
             'custom_meta': dict(),
         },
+    'cayley':
+        {
+            'name': 'Cayley',
+            'data_sources': ['cayley'],
+            'custom_meta': dict(),
+        },
+    'force':
+        {
+            'name': 'Force',
+            'data_sources': ['force'],
+            'custom_meta': dict(),
+        },
 }
