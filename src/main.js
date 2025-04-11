@@ -1,12 +1,31 @@
 import { setupScene } from './config/sceneSetup.js';
 import { attachUIListeners } from './config/attachUIListeners.js';
 
+import { drawImage } from './drawing/drawImage.js';
+
+import { GUI } from 'lil-gui';
+
+// Import our modular “draw” functions
+import { drawLights, updateLights, lightingParams, bulbLuminousPowers, hemiLuminousIrradiances } from './drawing/drawLights.js';
+import { drawFloor } from './drawing/drawFloor.js';
+import { drawWalls } from './drawing/drawWalls.js';
+
+import { usePanoramicCubeBackground, useProceduralBackground } from './drawing/drawBackground.js';
+
 import drawPipelineConfig from './config/drawPipelineConfig.js';
 import uiPanelConfig from './config/uiPanelConfig.js';
+import { presentationKeyDownHandler } from './drawing/drawPresentation.js';
+import { onAdventureKeyDown, buildSceneItems, updateLabelPosition, drawAdventureElements } from './drawing/drawAdventure.js';
+
+import { SCENE_ITEMS } from './drawing/sceneItems.js'; // Import your scene items
 
 import * as THREE from 'three'; // for any references you still need
 // Or import { FileLoader } from 'three'; if you just need the loader
 
+import {update as tweenUpdate} from 'tween'
+
+
+let previousShadowMap = false;
 
 let startTime = null;
 
@@ -17,9 +36,45 @@ let state = {
 }
 
 
+const textureLoader = new THREE.TextureLoader();
+
+
+function drawRoom(scene) {
+    // ~~~~~~~~~~~~~~~~~~
+    // Draw lights
+    const lights = drawLights(scene, lightingParams, bulbLuminousPowers, hemiLuminousIrradiances);
+    let bulbLight = lights.bulbLight;
+    let bulbMat   = lights.bulbMat;
+    let hemiLight = lights.hemiLight;
+
+    // ~~~~~~~~~~~~~~~~~~
+    // Draw floor
+    const floorMat = drawFloor(scene, textureLoader);
+
+    // ~~~~~~~~~~~~~~~~~~
+    // Draw walls (and sphere)
+    const { cubeMat, ballMat } = drawWalls(scene, textureLoader);
+
+
+    // ~~~~~~~~~~~~~~~~~~
+    // GUI
+    const gui = new GUI();
+    gui.add(lightingParams, 'hemiIrradiance', Object.keys(hemiLuminousIrradiances));
+    gui.add(lightingParams, 'bulbPower', Object.keys(bulbLuminousPowers));
+    gui.add(lightingParams, 'exposure', 0, 1);
+    gui.add(lightingParams, 'shadows');
+    gui.open();
+
+    return {bulbLight, bulbMat, hemiLight, floorMat, cubeMat, ballMat};
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     // 1) Setup the scene
-    const { scene, camera, renderer, controls } = setupScene('c');
+    const { scene, camera, renderer, controls, stats } = setupScene('c', drawAdventureElements);
+
+    const {adventureSteps, allPhotoEntries} = buildSceneItems(scene, SCENE_ITEMS);
+
+    const {bulbLight, bulbMat, hemiLight, floorMat, cubeMat, ballMat} = drawRoom(scene);
 
     // 2) Create a shared state for the UI
     const uiState = {
@@ -28,11 +83,20 @@ document.addEventListener('DOMContentLoaded', () => {
         orbitEnabled: true,
         // anything else we might want the UI to manipulate
         tempoScale: 1.0,
+        currentStepId: `view_${SCENE_ITEMS[0].id}`,
     };
+
+    // --- OPTION 1: Panoramic cube skybox ---
+    //usePanoramicCubeBackground(scene);
+
+    // --- OPTION 2: Simple procedural background ---
+    /////useProceduralBackground(scene);
 
     // 3) Load data & run the drawing pipeline
     // We’ll use a FileLoader to grab each data file
     const fileLoader = new THREE.FileLoader();
+
+    //drawImage(scene, 'textures/Canestra_di_frutta_Caravaggio.jpg');
 
     var data_sources = document.getElementsByName('datasrc')
 
@@ -61,7 +125,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log(`Loaded ${jsonPath}`, data);
                 // call the draw function
                 //pipelineItem.drawFunc(scene, data);
-                drawFunc(scene, data, state);
+                if (data_src === 'music') {drawFunc(scene, data, state);}
+                //////else {drawFunc(scene, data);}
             },
             undefined, // onProgress
             (err) => {
@@ -78,9 +143,26 @@ document.addEventListener('DOMContentLoaded', () => {
     // 4) Setup UI listeners
     attachUIListeners(uiPanelConfig, uiState);
 
+    // 5) Add any event listeners...
+    window.addEventListener('keydown', (event) => {
+        //presentationKeyDownHandler(camera, event);
+
+        onAdventureKeyDown(camera, event, adventureSteps, controls, uiState);
+    });
+
+    console.log("camera.position: ", camera.position);
+    //console.log("camera.lookAt: ", camera.getWorldDirection());
+    console.log("camera", camera);
+    //console.log("controls.target: ", controls.target);
+
     // 5) Animate loop
     function animate() {
         requestAnimationFrame(animate);
+
+        camera.updateProjectionMatrix();
+        //controls.target.copy({ x: 0, y: 2, z: -10 });
+        //controls.target.copy(camera.position);
+        //controls.update();
 
         const timestamp = Date.now();
 
@@ -97,7 +179,35 @@ document.addEventListener('DOMContentLoaded', () => {
             state.sheetMusic.update(scaledElapsedSec);
         }
 
+        // Update label positions
+        allPhotoEntries.forEach(({ mesh, labelEl }) => {
+            updateLabelPosition(mesh, labelEl, camera, renderer);
+        });
+
+        // LIGHT STUFF //
+        // Tone Mapping
+        renderer.toneMappingExposure = Math.pow(lightingParams.exposure, 5.0);
+
+        // Shadows
+        renderer.shadowMap.enabled = lightingParams.shadows;
+        bulbLight.castShadow = lightingParams.shadows;
+        if (lightingParams.shadows !== previousShadowMap) {
+            previousShadowMap = lightingParams.shadows;
+        }
+
+        // Update the lights
+        updateLights({bulbLight, bulbMat, hemiLight, lightingParams, bulbLuminousPowers, hemiLuminousIrradiances});
+
+        // Animate the bulb bouncing
+        const time = Date.now() * 0.0005;
+        bulbLight.position.y = Math.cos(time) * 0.75 + 1.25;
+
+        tweenUpdate();
+
         controls.update();
+
+        stats.update();
+
         renderer.render(scene, camera);
     }
 

@@ -45,6 +45,16 @@ class MyHandler(SimpleHTTPRequestHandler):
             self.end_headers()
             #self.wfile.write(open('src/main.js', 'rb').read())
             self.wfile.write(open(f'.{self.path}', 'rb').read())
+        elif self.path.startswith('/textures/') and self.path.endswith('.jpg'):
+            self.send_response(200)
+            self.send_header("Content-type", "image/jpeg")
+            self.end_headers()
+            # check if file exists, otherwise, default to `/textures/Canestra_di_frutta_Caravaggio.jpg`...
+            import os
+            if not os.path.exists(f'src{self.path}'):
+                self.wfile.write(open('src/textures/Canestra_di_frutta_Caravaggio.jpg', 'rb').read())
+            else:
+                self.wfile.write(open(f'src{self.path}', 'rb').read())
         elif self.path == '/scripts/helvetiker_regular.typeface.json':
             self.send_response(200)
             self.send_header("Content-type", "application/json")
