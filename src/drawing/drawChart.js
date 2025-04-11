@@ -15,7 +15,7 @@ const surrounding_opacity = 0.1;
  * Draw a 3D chart into the scene, using the given config object.
  * If no config is passed in, we default to the imported 'chartConfig'.
  */
-function drawChart( scene, data, config = chartConfig ) {
+function drawChart( scene, data, state, config = chartConfig ) {
     const graphData = data;
 
     // --- 1) Surrounding box ---
