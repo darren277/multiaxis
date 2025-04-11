@@ -363,33 +363,28 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 5) Animate loop
-    function animate() {
-        //requestAnimationFrame(animate);
-        // Required for XR
-        renderer.setAnimationLoop(() => {
-            // your scene updates
-            renderer.render(scene, camera);
-        });
+    renderer.setAnimationLoop((timestamp, frame) => {
+        // Update controls (if using OrbitControls or similar)
+        controls.update();
 
-        camera.updateProjectionMatrix();
-
-        const timestamp = Date.now();
-
-        // Call the animation callback for the current drawing
+        // Update UI state and call your animation callback
+        uiState.rect = renderer.domElement.getBoundingClientRect();
         if (threejsDrawing.animationCallback) {
-            uiState.rect = renderer.domElement.getBoundingClientRect();
             threejsDrawing.animationCallback(renderer, timestamp, threejsDrawing, uiState, camera);
         }
 
+        // Update camera projection if needed
+        camera.updateProjectionMatrix();
+
+        // Run any tweens or animations
         tweenUpdate();
 
-        controls.update();
-
+        // Update debug stats
         stats.update();
 
+        // Final render
         renderer.render(scene, camera);
-    }
+    });
 
-    animate();
 })
 
