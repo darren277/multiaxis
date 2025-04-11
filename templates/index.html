@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>ThreeJS Demo</title>
+    <title>{{ threejs_drawings.name }}</title>
 
-    {% for data_src in threejs_drawings %}
+    {% for data_src in threejs_drawings.data_sources %}
         <meta name="datasrc" content="{{ data_src }}"></meta>
     {% endfor %}
 
@@ -75,11 +75,10 @@
     </style>
 </head>
 <body>
-<h1>What is up though?</h1>
+<h1>{{ threejs_drawings.name }}</h1>
 <a href="#below">Scroll down</a>
 <h3 id="above">ABOVE</h3>
 <section class="threejs">
-    <h1>Three JS</h1>
     <div class="threejs-container" style="position: relative;">
         <!-- The Three.js canvas will be appended into this DIV -->
         <div id="c" style="position: relative">
