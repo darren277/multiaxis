@@ -1,5 +1,5 @@
 // Example: 10 items placed around the scene
-const SCENE_ITEMS = [
+const SCENE_ITEMS_OLD = [
     {
         id: "photo1",
         position: { x: 0, y: 2, z: 0 },
@@ -30,6 +30,88 @@ const SCENE_ITEMS = [
         caption: "<h2>Photo 10</h2><p>Hidden waterfall in the forest.</p>",
     },
 ];
+
+const SCENE_ITEMS = [
+    // The "center" or "home" slide
+    {
+        id: "slide1_center",
+        position: { x: 0, y: 2, z: -10 },
+        image: "textures/slide1_main.jpg",
+        caption: "<h2>Welcome</h2><p>This is the central vantage point.</p>",
+    },
+
+    // Back arrow pointing toward the user (slightly in front or angled)
+    {
+        id: "slide1_backArrow",
+        position: { x: 0, y: -2, z: -9 },
+        image: "textures/arrow_back.jpg",
+        caption: "<h3>Back Arrow</h3><p>Click me to return.</p>",
+    },
+
+    // Two slides further "left" of center
+    {
+        id: "slide_left1",
+        position: { x: -15, y: 2, z: -10 }, // 15 units left of center
+        image: "textures/slide_left1.jpg",
+        caption: "<h2>Slide Left 1</h2><p>First left step.</p>",
+    },
+    {
+        id: "slide_left2",
+        position: { x: -30, y: 2, z: -10 }, // another 15 units left
+        image: "textures/slide_left2.jpg",
+        caption: "<h2>Slide Left 2</h2><p>Second left step.</p>",
+    },
+
+    // Two slides further "up" of center
+    {
+        id: "slide_top1",
+        position: { x: 0, y: 12, z: -10 }, // 6 to 10 units up from center
+        image: "textures/slide_top1.jpg",
+        caption: "<h2>Slide Top 1</h2><p>First top step.</p>",
+    },
+    {
+        id: "slide_top2",
+        position: { x: 0, y: 22, z: -10 }, // another 10 units up
+        image: "textures/slide_top2.jpg",
+        caption: "<h2>Slide Top 2</h2><p>Second top step.</p>",
+    },
+
+    // Two slides further "right" of center
+    {
+        id: "slide_right1",
+        position: { x: 15, y: 2, z: -10 },
+        image: "textures/slide_right1.jpg",
+        caption: "<h2>Slide Right 1</h2><p>First right step.</p>",
+    },
+    {
+        id: "slide_right2",
+        position: { x: 30, y: 2, z: -10 },
+        image: "textures/slide_right2.jpg",
+        caption: "<h2>Slide Right 2</h2><p>Second right step.</p>",
+    },
+];
+
+const INTRO_BANNERS = [
+    // Three banners around the central slide
+    {
+        id: "slide1_leftBanner",
+        position: { x: -5, y: 2, z: -10 },
+        image: "textures/banner_left.jpg",
+        caption: "<h3>Left Banner</h3><p>Click me to go left.</p>",
+    },
+    {
+        id: "slide1_topBanner",
+        position: { x: 0, y: 6, z: -10 },
+        image: "textures/banner_top.jpg",
+        caption: "<h3>Top Banner</h3><p>Click me to go up.</p>",
+    },
+    {
+        id: "slide1_rightBanner",
+        position: { x: 5, y: 2, z: -10 },
+        image: "textures/banner_right.jpg",
+        caption: "<h3>Right Banner</h3><p>Click me to go right.</p>",
+    },
+]
 
 
 export { SCENE_ITEMS };
