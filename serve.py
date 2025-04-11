@@ -1,5 +1,5 @@
 """"""
-from animations import ANIMATIONS_DICT, FULLSCREEN_CSS, EMBEDDED_CSS
+from animations import ANIMATIONS_DICT, FULLSCREEN_CSS, EMBEDDED_CSS, SMALL_HEADER_CSS
 
 HOST = 'localhost'
 PORT = 8000
@@ -18,7 +18,16 @@ def serve_index():
     """Serve index.html with the __THREEJS_VERSION__ placeholder replaced."""
     css = FULLSCREEN_CSS
     #css = EMBEDDED_CSS
-    return render_template('index.html', threejs_css=css, threejs_version=THREEJS_VERSION, threejs_drawings=ANIMATIONS_DICT['multiaxis'])
+    fullscreen = True
+    return render_template(
+        'index.html',
+        fullscreen=fullscreen,
+        small_header=True,
+        #threejs_css=css,
+        threejs_css=SMALL_HEADER_CSS,
+        threejs_version=THREEJS_VERSION,
+        threejs_drawings=ANIMATIONS_DICT['multiaxis']
+    )
 
 @app.route('/threejs/<animation>')
 def serve_threejs(animation):
@@ -28,7 +37,15 @@ def serve_threejs(animation):
     """
     #css = FULLSCREEN_CSS
     css = EMBEDDED_CSS
-    return render_template('index.html', threejs_css=css, threejs_version=THREEJS_VERSION, threejs_drawings=ANIMATIONS_DICT.get(animation, ANIMATIONS_DICT['multiaxis']))
+    fullscreen = False
+    return render_template(
+        'index.html',
+        fullscreen=fullscreen,
+        small_header=False,
+        threejs_css=css,
+        threejs_version=THREEJS_VERSION,
+        threejs_drawings=ANIMATIONS_DICT.get(animation, ANIMATIONS_DICT['multiaxis'])
+    )
 
 @app.route('/style.css')
 def serve_style():

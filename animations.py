@@ -30,6 +30,40 @@ EMBEDDED_CSS = """
 """
 
 FULLSCREEN_CSS = """
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden; /* prevents scroll bars if scene is bigger than window */
+}
+
+/* 2) This container #c is our Three.js “stage” */
+#c {
+    position: absolute; /* let it fill the entire window */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* 3) If needed, override the default canvas background or styling: */
+#c canvas {
+    display: block; /* remove any default inline-block spacing */
+    background-color: #000; /* or transparent if you prefer */
+}
+
+/* 4) If you have an overlay UI, it must be position: absolute as well */
+#ui-container {
+    position: absolute;
+    top: 1em;
+    right: 1em;
+    z-index: 9999;
+    background-color: rgba(255, 255, 255, 0.2);
+    padding: 0.5em;
+}
+
 .threejs-container {
     position: fixed;
     top: 0;
@@ -39,7 +73,91 @@ FULLSCREEN_CSS = """
     background: #000;
     z-index: 9999;
 }
+
+/* The CSS selector for element name (`<section>`) and class (`.threejs`) is: */
+main.threejs {
+    position: fixed; /* let it fill the entire window */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.threejs-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    z-index: 9999;
+}
+
+#c {
+    position: absolute; /* let it fill the entire window */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    background-color: #000; /* or transparent if you prefer */
+    /* remove any default inline-block spacing */
+    display: block;
+}
 """
+
+SMALL_HEADER_CSS = """
+/* 1) Make the page and body fill the browser window */
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* 2) Use flex layout on the body to have a fixed-height header + flexible main */
+body {
+    display: flex;
+    flex-direction: column;
+}
+
+/* 3) A small header bar at the top */
+header {
+    height: 60px;           /* fixed height */
+    background: #333;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    padding-left: 1em;
+    box-sizing: border-box; /* so padding doesn’t add extra height */
+}
+
+/* 4) The main area takes the remaining space */
+main {
+    flex: 1;               /* fill leftover vertical space */
+    display: flex;         /* so that #c can fill it if needed */
+    flex-direction: column;
+    position: relative;    /* if you want absolutely positioned overlays inside */
+}
+
+/* 5) The Three.js container */
+#c {
+    flex: 1;              /* fill the rest of main */
+    position: relative;
+    width: 100%;          /* not strictly necessary, but often used for clarity */
+    /* no hard-coded height; let flex fill the space */
+}
+
+/* 6) If you're directly putting <canvas> in #c: */
+#c canvas {
+    width: 100%;
+    height: 100%;
+    display: block;       /* remove default inline canvas spacing */
+    background-color: black;
+}
+"""
+
 
 ANIMATIONS_DICT = {
     'multiaxis':

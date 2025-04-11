@@ -64,13 +64,21 @@
     </style>
 </head>
 <body>
+{% if fullscreen %}
+{% if small_header %}
+<header>
+    <h2>My Header</h2>
+</header>
+{% endif %}
+{% else %}
 <h1>{{ threejs_drawings.name }}</h1>
 <a href="#below">Scroll down</a>
 <h3 id="above">ABOVE</h3>
-<section class="threejs">
+{% endif %}
+<main class="threejs">
     <div class="threejs-container" style="position: relative;">
         <!-- The Three.js canvas will be appended into this DIV -->
-        <div id="c" style="position: relative">
+        <div id="c" style="position: relative;">
             <canvas></canvas>
         </div>
 
@@ -90,11 +98,18 @@
             {% endif %}
         </div>
     </div>
-</section>
+</main>
+
+{% if fullscreen %}
+{% else %}
 <h3 id="below">BELOW</h3>
 <a href="#above">Scroll up</a>
 <!-- LOTS OF EMPTY SPACE -->
 <div style="height: 1000px;"></div>
+{% endif %}
+
+{% if threejs_drawings %}
 <script type="module" src="./src/main.js"></script>
+{% endif %}
 </body>
 </html>
