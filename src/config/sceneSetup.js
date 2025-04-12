@@ -41,6 +41,7 @@ export function setupScene(containerId = 'c', overlayElements = [], startPositio
     // Add any optional overlay elements
     for (const element of overlayElements) {
         const el = document.createElement(element.tagName);
+        el.className = element.className;
         el.id = element.id;
         for (const [key, value] of Object.entries(element.attrs)) {
             el.setAttribute(key, value);

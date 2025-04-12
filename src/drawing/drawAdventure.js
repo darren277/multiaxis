@@ -36,7 +36,7 @@ function createCaptionedPhoto(scene, item) {
     scene.add(mesh);
 
     const labelEl = document.createElement('div');
-    labelEl.className = 'caption-label';
+    labelEl.className = 'caption-label' + item.customClasses;
     labelEl.innerHTML = item.caption; // HTML content allowed
     labelEl.style.position = 'absolute';
     labelEl.style.transform = 'translate(-50%, 0)';
@@ -273,6 +273,7 @@ const drawAdventureElements = [
     {
         tagName: 'div',
         id: 'labelContainer',
+        className: '',
         attrs: {
             position: 'absolute',
             top: '0',
@@ -286,6 +287,7 @@ const drawAdventureElements = [
     {
         tagName: 'div',
         id: 'overlayText',
+        className: '',
         attrs: {
             position: 'absolute',
             top: '10px',
