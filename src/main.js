@@ -171,6 +171,11 @@ const THREEJS_DRAWINGS = {
 
                 const scaledElapsedSec = elapsedSec * uiState.tempoScale;
 
+                if (!threejsDrawing.data.sheetMusic) {
+                    // it takes a few seconds to load the sheet music
+                    console.warn("No sheet music data found");
+                    return;
+                }
                 threejsDrawing.data.sheetMusic.update(scaledElapsedSec);
             },
             'data': {
