@@ -64,3 +64,13 @@ export const lightingParams = {
     bulbPower: Object.keys( bulbLuminousPowers )[4],
     hemiIrradiance: Object.keys( hemiLuminousIrradiances )[0]
 };
+
+
+export function drawBasicLights(scene, threejsDrawing) {
+    const light = new THREE.DirectionalLight(0xffffff, 1);
+    light.position.set(5, 5, 5);
+    scene.add(light);
+
+    const ambient = new THREE.AmbientLight(0x404040);
+    scene.add(ambient);
+}

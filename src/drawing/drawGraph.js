@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { forceSimulation, forceManyBody, forceLink, forceCenter } from 'd3-force-3d';
+import { drawBasicLights } from './drawLights.js';
 
 function drawGraph(scene, data, state) {
     console.log('data', data);
@@ -211,15 +212,6 @@ function drawForceGraph(scene, threejsDrawing, state) {
     threejsDrawing.data.graphData = gData;
 
     drawBasicLights(scene, threejsDrawing);
-}
-
-function drawBasicLights(scene, threejsDrawing) {
-    const light = new THREE.DirectionalLight(0xffffff, 1);
-    light.position.set(5, 5, 5);
-    scene.add(light);
-
-    const ambient = new THREE.AmbientLight(0x404040);
-    scene.add(ambient);
 }
 
 
