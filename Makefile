@@ -6,7 +6,6 @@ s3:
 s3-config:
 	aws s3 cp src/config/sceneSetup.js s3://$(BUCKET_NAME)/scripts/threejs/config/sceneSetup.js
 	aws s3 cp src/config/utils.js s3://$(BUCKET_NAME)/scripts/threejs/config/utils.js
-	aws s3 cp src/config/drawPipelineConfig.js s3://$(BUCKET_NAME)/scripts/threejs/config/drawPipelineConfig.js
 	aws s3 cp src/config/uiPanelConfig.js s3://$(BUCKET_NAME)/scripts/threejs/config/uiPanelConfig.js
 	aws s3 cp src/config/attachUIListeners.js s3://$(BUCKET_NAME)/scripts/threejs/config/attachUIListeners.js
 

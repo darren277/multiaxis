@@ -12,7 +12,6 @@ import { roomDrawing } from './drawing/drawRoom.js';
 
 import { drawGraph, drawForceDirectedGraph, updateForceGraph, onMouseDown, onMouseUp, onMouseMove } from './drawing/drawGraph.js';
 
-import drawPipelineConfig from './config/drawPipelineConfig.js';
 import uiPanelConfig from './config/uiPanelConfig.js';
 import { presentationKeyDownHandler } from './drawing/drawPresentation.js';
 import { adventureDrawing } from './drawing/drawAdventure.js';
