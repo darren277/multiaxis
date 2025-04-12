@@ -168,4 +168,107 @@ function onMouseUp(state) {
     state.draggedNode = null;
 }
 
-export { drawGraph, drawForceDirectedGraph, updateForceGraph, onMouseMove, onMouseDown, onMouseUp };
+
+// 1. Define your graph data
+const graphData = {
+    nodes: [
+        { id: '0' },
+        { id: '1' },
+        { id: '2' },
+        { id: '3' }
+    ],
+    links: [
+        { source: '0', target: '1' },
+        { source: '1', target: '2' },
+        { source: '2', target: '3' },
+        { source: '3', target: '0' }
+    ]
+};
+
+function drawForceGraph(scene, threejsDrawing, state) {
+    // Random tree
+    const N = 40;
+    const gData = {
+        nodes: [...Array(N).keys()].map(i => ({ id: i })),
+        links: [...Array(N).keys()].filter(id => id).map(id => ({source: id, target: Math.round(Math.random() * (id-1))}))
+    };
+
+    // assign random stating position...
+    gData.nodes.forEach(node => {node.x = Math.random() * 5; node.y = Math.random() * 5; node.z = Math.random() * 5;});
+
+    const {
+        simulation,
+        nodeSpheres,
+        linkLines,
+    } = drawForceDirectedGraph(scene, gData);
+
+    simulation.tick(10); // progress the simulation some steps
+
+    threejsDrawing.data.simulation = simulation;
+    threejsDrawing.data.nodeSpheres = nodeSpheres;
+    threejsDrawing.data.linkLines = linkLines;
+
+    threejsDrawing.data.graphData = gData;
+
+    drawBasicLights(scene, threejsDrawing);
+}
+
+function drawBasicLights(scene, threejsDrawing) {
+    const light = new THREE.DirectionalLight(0xffffff, 1);
+    light.position.set(5, 5, 5);
+    scene.add(light);
+
+    const ambient = new THREE.AmbientLight(0x404040);
+    scene.add(ambient);
+}
+
+
+
+const cayleyDrawing = {
+    'sceneElements': [],
+    'drawFuncs': [
+        {'func': drawGraph, 'dataSrc': 'cayley'}
+    ],
+    'uiState': null,
+    'eventListeners': null,
+    'animationCallback': (renderer, timestamp, threejsDrawing, uiState, camera) => {
+    },
+    'data': {
+        'sheetMusic': null,
+    }
+}
+
+const forceDrawing = {
+    'sceneElements': [],
+    'drawFuncs': [
+        //{'func': drawForceGraph, 'dataSrc': 'force'}
+        {'func': drawForceGraph, 'dataSrc': null}
+    ],
+    'uiState': null,
+    'eventListeners': {
+        'mousedown': (e, other) => {
+            const {camera, data, controls, uiState} = other;
+            onMouseDown(camera, data, e);
+        },
+        'mouseup': (e, other) => {
+            const {camera, data, controls, uiState} = other;
+            onMouseUp(data);
+        },
+        'mousemove': (e, other) => {
+            const {camera, data, controls, uiState} = other;
+            data.rect = uiState.rect;
+            onMouseMove(camera, data, e);
+        }
+    },
+    'animationCallback': (renderer, timestamp, threejsDrawing, uiState, camera) => {
+        threejsDrawing.data.simulation.tick(); // progress the simulation
+        updateForceGraph(threejsDrawing.data.graphData, threejsDrawing.data.nodeSpheres, threejsDrawing.data.linkLines); // reflect new positions
+    },
+    'data': {
+        'simulation': null,
+        'dragging': false,
+        'draggedNode': null
+    }
+}
+
+export { cayleyDrawing, forceDrawing };
