@@ -6,7 +6,7 @@ import { drawImage } from './drawing/drawImage.js';
 import { usePanoramicCubeBackground, useProceduralBackground } from './drawing/drawBackground.js';
 
 import { drawChart } from './drawing/drawChart.js';
-import { drawSheetMusic } from './drawing/drawSheetMusic.js';
+import { musicDrawing } from './drawing/drawSheetMusic.js';
 
 import { roomDrawing } from './drawing/drawRoom.js';
 
@@ -21,9 +21,6 @@ import * as THREE from 'three'; // for any references you still need
 // Or import { FileLoader } from 'three'; if you just need the loader
 
 import {update as tweenUpdate} from 'tween'
-
-
-let startTime = null;
 
 
 const textureLoader = new THREE.TextureLoader();
@@ -48,32 +45,7 @@ const loadDataSource = (scene, dataSrc, drawFunc, state) => {
 const THREEJS_DRAWINGS = {
     'room': roomDrawing,
     'adventure': adventureDrawing,
-    'music':
-        {
-            'sceneElements': [],
-            'drawFuncs': [
-                {'func': drawMusic, 'dataSrc': 'music'}
-            ],
-            'uiState': {tempoScale: 1.0},
-            'eventListeners': null,
-            'animationCallback': (renderer, timestamp, threejsDrawing, uiState, camera) => {
-                if (!startTime) startTime = timestamp;
-                const elapsedMs = timestamp - startTime;
-                const elapsedSec = elapsedMs / 1000;
-
-                const scaledElapsedSec = elapsedSec * uiState.tempoScale;
-
-                if (!threejsDrawing.data.sheetMusic) {
-                    // it takes a few seconds to load the sheet music
-                    console.warn("No sheet music data found");
-                    return;
-                }
-                threejsDrawing.data.sheetMusic.update(scaledElapsedSec);
-            },
-            'data': {
-                'sheetMusic': null,
-            }
-        },
+    'music': musicDrawing,
     'multiaxis':
         {
             'sceneElements': [],
@@ -190,9 +162,6 @@ function drawBasicLights(scene, threejsDrawing) {
     scene.add(ambient);
 }
 
-function drawMusic(scene, data, state) {
-    state.data.sheetMusic = drawSheetMusic(scene, data);
-}
 
 document.addEventListener('DOMContentLoaded', () => {
     const drawingName = document.querySelector('meta[name="threejs_drawing_name"]').content;
