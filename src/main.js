@@ -236,12 +236,6 @@ const THREEJS_DRAWINGS = {
             'animationCallback': (renderer, timestamp, threejsDrawing, uiState, camera) => {
                 threejsDrawing.data.simulation.tick(); // progress the simulation
                 updateForceGraph(threejsDrawing.data.graphData, threejsDrawing.data.nodeSpheres, threejsDrawing.data.linkLines); // reflect new positions
-                for (const node of Object.values(threejsDrawing.data.graphData.nodes)) {
-//                    node.x = node.fx;
-//                    node.y = node.fy;
-//                    node.z = node.fz;
-                    if (!Number.isFinite(node.x)) console.warn("Node position invalid", node);
-                }
             },
             'data': {
                 'simulation': null,

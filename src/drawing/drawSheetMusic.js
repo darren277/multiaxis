@@ -13,8 +13,6 @@ import * as THREE from 'three';
  * @param {Object} data The parsed JSON data
  */
 export function drawSheetMusic(scene, data) {
-    console.log('drawSheetMusic called');
-
     // 1) Parse the tempo & note info from your data
     //    MIDO typically gives you microseconds_per_beat or 'tempo'
     //    in microseconds (e.g. 600000 => 0.6s per quarter note => 100BPM).
@@ -71,7 +69,7 @@ export function drawSheetMusic(scene, data) {
                 const durationSec = durationTicks * secondsPerTick;
 
                 // For debugging, let's log the times:
-                console.log(`pitch=${msg.note}, startSec=${startSec.toFixed(2)}, endSec=${endSec.toFixed(2)}`);
+                console.debug(`pitch=${msg.note}, startSec=${startSec.toFixed(2)}, endSec=${endSec.toFixed(2)}`);
 
                 // Vertical position: e.g. pitch 60 => y=2, up/down 0.1 per semitone
                 const yPos = 2 + (msg.note - 60) * 0.1;
