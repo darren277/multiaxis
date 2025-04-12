@@ -45,7 +45,7 @@ function drawQuantum(scene, threejsDrawing) {
 
     function generateGeometry() {
         // updateGroupGeometry( mesh,
-            var sphere = new THREE.SphereBufferGeometry(
+            var sphere = new THREE.SphereGeometry(
                 data.radius, data.widthSegments, data.heightSegments, data.phiStart, data.phiLength, data.thetaStart, data.thetaLength
             )
         // );
