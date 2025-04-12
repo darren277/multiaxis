@@ -1,7 +1,23 @@
 import * as THREE from 'three';
+import { TextGeometry} from 'textgeometry';
+import { FontLoader } from 'fontloader';
+
+function loadFont(url) {
+    const loader = new FontLoader();
+    let font;
+
+    loader.load(url, (font) => {
+        font = font;
+    });
+
+    return font;
+}
+
+const fontUrl = 'scripts/helvetiker_regular.typeface.json';
+const font = loadFont(fontUrl);
 
 function draw_letter(letter, x, y, z) {
-    var geometry = new THREE.TextGeometry( letter, {
+    var geometry = new TextGeometry( letter, {
             font: font,
             size: 3,
             height: 0.1,
@@ -127,13 +143,12 @@ function drawQuantum(scene, threejsDrawing) {
 const quantumDrawing = {
     'sceneElements': [],
     'drawFuncs': [
-        //{'func': drawGeo, 'dataSrc': 'geojson'}
         {'func': drawQuantum, 'dataSrc': null}
     ],
     'uiState': null,
     'eventListeners': null,
     'animationCallback': (renderer, timestamp, threejsDrawing, uiState, camera) => {
-        threejsDrawing.group.rotation.y += 0.005;
+        threejsDrawing.data.group.rotation.y += 0.005;
     },
     'data': {
         'group': null,
