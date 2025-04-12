@@ -226,4 +226,10 @@ ANIMATIONS_DICT = {
             'data_sources': ['geo3d'],
             'custom_meta': dict(),
         },
+    'quantum':
+        {
+            'name': 'Quantum',
+            'data_sources': ['quantum'],
+            'custom_meta': dict(),
+        },
 }

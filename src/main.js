@@ -10,6 +10,7 @@ import { musicDrawing } from './drawing/drawSheetMusic.js';
 import { roomDrawing } from './drawing/drawRoom.js';
 import { cayleyDrawing, forceDrawing } from './drawing/drawGraph.js';
 import { geoDrawing, geoDrawing3d } from './drawing/drawGeo.js';
+import { quantumDrawing } from './drawing/drawQuantum.js';
 
 import uiPanelConfig from './config/uiPanelConfig.js';
 import { presentationKeyDownHandler } from './drawing/drawPresentation.js';
@@ -62,6 +63,7 @@ const THREEJS_DRAWINGS = {
     'force': forceDrawing,
     'geo': geoDrawing,
     'geo3d': geoDrawing3d,
+    'quantum': quantumDrawing,
 };
 
 
