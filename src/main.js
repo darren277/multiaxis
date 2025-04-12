@@ -15,9 +15,7 @@ import { drawGraph, drawForceDirectedGraph, updateForceGraph, onMouseDown, onMou
 import drawPipelineConfig from './config/drawPipelineConfig.js';
 import uiPanelConfig from './config/uiPanelConfig.js';
 import { presentationKeyDownHandler } from './drawing/drawPresentation.js';
-import { onAdventureKeyDown, buildSceneItems, updateLabelPosition, drawAdventureElements } from './drawing/drawAdventure.js';
-
-import { SCENE_ITEMS } from './drawing/sceneItems.js'; // Import your scene items
+import { adventureDrawing } from './drawing/drawAdventure.js';
 
 import * as THREE from 'three'; // for any references you still need
 // Or import { FileLoader } from 'three'; if you just need the loader
@@ -49,37 +47,7 @@ const loadDataSource = (scene, dataSrc, drawFunc, state) => {
 
 const THREEJS_DRAWINGS = {
     'room': roomDrawing,
-    'adventure': {
-        'sceneElements': drawAdventureElements,
-        'drawFuncs': [
-            // NOTE: var data_sources = document.getElementsByName('datasrc')
-            // This whole thing was WAY overcomplicating it...
-            // We will define the data sources right here instead.
-            {'func': drawAdventure, 'dataSrc': null}
-        ],
-        'uiState': {
-            'currentStepId': `view_${SCENE_ITEMS[0].id}`
-        },
-        'eventListeners': {
-            'keydown': (e, other) => {
-                // Handle keydown events for the adventure
-                //{camera, event, adventureSteps, controls, uiState}
-                const {camera, data, controls, uiState} = other;
-                const {adventureSteps} = data;
-                onAdventureKeyDown(camera, e, adventureSteps, controls, uiState);
-            }
-        },
-        'animationCallback': (renderer, timestamp, threejsDrawing, uiState, camera) => {
-            // Update label positions
-            threejsDrawing.data.allPhotoEntries.forEach(({ mesh, labelEl }) => {
-                updateLabelPosition(mesh, labelEl, camera, renderer);
-            });
-        },
-        'data': {
-            'adventureSteps': null,
-            'allPhotoEntries': null,
-        }
-    },
+    'adventure': adventureDrawing,
     'music':
         {
             'sceneElements': [],
@@ -220,12 +188,6 @@ function drawBasicLights(scene, threejsDrawing) {
 
     const ambient = new THREE.AmbientLight(0x404040);
     scene.add(ambient);
-}
-
-function drawAdventure(scene, threejsDrawing) {
-    const {adventureSteps, allPhotoEntries} = buildSceneItems(scene, SCENE_ITEMS);
-    threejsDrawing.data.adventureSteps = adventureSteps;
-    threejsDrawing.data.allPhotoEntries = allPhotoEntries;
 }
 
 function drawMusic(scene, data, state) {
