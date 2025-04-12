@@ -33,9 +33,8 @@ export function setupScene(containerId = 'c', overlayElements = [], startPositio
 
 
     // Stats (optional)
-    console.log("stats", Stats);
     const stats = new Stats();
-    container.appendChild( stats.dom );
+    //container.appendChild( stats.dom );
 
 
     // Add any optional overlay elements
