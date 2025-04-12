@@ -99,6 +99,7 @@ def serve_texture(filename, ext):
         else:
             abort(404)
 
+@app.route('/scripts/helvetiker_regular.typeface.json')
 @app.route('/threejs/scripts/helvetiker_regular.typeface.json')
 def serve_helvetiker():
     """Serve the helvetiker_regular.typeface.json font file."""
@@ -108,13 +109,17 @@ def serve_helvetiker():
     else:
         abort(404)
 
+@app.route('/data/<path:filename>.json')
 @app.route('/threejs/<path:filename>.json')
 def serve_json(filename):
     """
     Serve any .json file from the current directory or subdirs,
     capturing anything that ends with .json.
     """
-    path = f'{filename}.json'
+    if not filename.startswith('data/'):
+        path = f'data/{filename}.json'
+    else:
+        path = f'{filename}.json'
     if os.path.exists(path):
         return send_file(path, mimetype='application/json')
     else:
