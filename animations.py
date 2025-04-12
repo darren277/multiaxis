@@ -214,4 +214,16 @@ ANIMATIONS_DICT = {
             'data_sources': ['force'],
             'custom_meta': dict(),
         },
+    'geo':
+        {
+            'name': 'Geo',
+            'data_sources': ['geo'],
+            'custom_meta': dict(),
+        },
+    'geo3d':
+        {
+            'name': 'Geo3D',
+            'data_sources': ['geo3d'],
+            'custom_meta': dict(),
+        },
 }
