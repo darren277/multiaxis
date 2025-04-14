@@ -2,21 +2,16 @@ import * as THREE from 'three';
 import { TextGeometry} from 'textgeometry';
 import { FontLoader } from 'fontloader';
 
-function loadFont(url) {
+function loadFont(url, callback) {
     const loader = new FontLoader();
     let font;
 
     loader.load(url, (font) => {
-        font = font;
+        callback(font);
     });
-
-    return font;
 }
 
-const fontUrl = 'scripts/helvetiker_regular.typeface.json';
-const font = loadFont(fontUrl);
-
-function draw_letter(letter, x, y, z) {
+function draw_letter(font, letter, x, y, z) {
     var geometry = new TextGeometry( letter, {
             font: font,
             size: 3,
@@ -36,7 +31,7 @@ function draw_letter(letter, x, y, z) {
     return mesh;
 };
 
-function drawQuantum(scene, threejsDrawing) {
+function drawQuantumCallback(scene, threejsDrawing, font) {
     const twoPi = Math.PI * 2;
 
     const data = {
@@ -128,17 +123,23 @@ function drawQuantum(scene, threejsDrawing) {
     scene.add( draw_line(0, 0, -20, 0, -2, -18) );
     scene.add( draw_line(0, 0, -20, 0, 2, -18) );
 
-
-    scene.add(draw_letter("X", -22, 2, 2));
+    scene.add(draw_letter(font, "X", -22, 2, 2));
 
     const axesHelper = new THREE.AxesHelper( 100 );
 
     scene.add( group );
-    scene.add( axesHelper );
+    //scene.add( axesHelper );
 
     threejsDrawing.data.group = group;
 };
 
+
+function drawQuantum(scene, threejsDrawing) {
+    const fontUrl = 'scripts/helvetiker_regular.typeface.json';
+    loadFont(fontUrl, (font) => {
+        drawQuantumCallback(scene, threejsDrawing, font);
+    });
+}
 
 const quantumDrawing = {
     'sceneElements': [],
@@ -148,6 +149,9 @@ const quantumDrawing = {
     'uiState': null,
     'eventListeners': null,
     'animationCallback': (renderer, timestamp, threejsDrawing, uiState, camera) => {
+        if (!threejsDrawing.data.group) {
+            return;
+        }
         threejsDrawing.data.group.rotation.y += 0.005;
     },
     'data': {
