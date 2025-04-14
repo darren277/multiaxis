@@ -232,4 +232,10 @@ ANIMATIONS_DICT = {
             'data_sources': ['quantum'],
             'custom_meta': dict(),
         },
+    'svg':
+        {
+            'name': 'SVG',
+            'data_sources': ['svg'],
+            'custom_meta': dict(),
+        },
 }

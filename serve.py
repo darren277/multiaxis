@@ -99,6 +99,30 @@ def serve_texture(filename, ext):
         else:
             abort(404)
 
+# imagery (jpg, jpeg, png, svg, etc)...
+@app.route('/threejs/imagery/<path:filename>.<ext>')
+def serve_image(filename, ext):
+    """
+    Serve any image file under /images/.
+    Example: /images/Canestra_di_frutta_Caravaggio.jpg
+    """
+    path = os.path.join('src', 'imagery', f'{filename}.{ext}')
+    print(f"Serving image: {path}")
+    if ext not in ['jpg', 'jpeg', 'png', 'svg']:
+        abort(404)
+    if ext == 'jpg' or ext == 'jpeg':
+        mimetype = 'image/jpeg'
+    elif ext == 'png':
+        mimetype = 'image/png'
+    elif ext == 'svg':
+        mimetype = 'image/svg+xml'
+    else:
+        abort(404)
+    if os.path.exists(path):
+        return send_file(path, mimetype=mimetype)
+    else:
+        abort(404)
+
 @app.route('/scripts/helvetiker_regular.typeface.json')
 @app.route('/threejs/scripts/helvetiker_regular.typeface.json')
 def serve_helvetiker():
