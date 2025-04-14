@@ -40,3 +40,8 @@ s3-textures:
 	aws s3 cp src/textures/hardwood2_diffuse.jpg s3://$(BUCKET_NAME)/textures/hardwood2_diffuse.jpg
 	aws s3 cp src/textures/hardwood2_roughness.jpg s3://$(BUCKET_NAME)/textures/hardwood2_roughness.jpg
 	aws s3 cp src/textures/sun_temple_stripe.jpg s3://$(BUCKET_NAME)/textures/sun_temple_stripe.jpg
+
+# $env:PATH += ";C:\Program Files\Inkscape\bin"
+convert-svg:
+	inkscape --actions="file-open:src/imagery/OpenProject.svg; select-all; object-to-path; text-to-path; stroke-to-path; export-plain-svg:src/imagery/OpenProject.paths.svg; export-do; file-close"
+
