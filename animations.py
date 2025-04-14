@@ -244,4 +244,10 @@ ANIMATIONS_DICT = {
             'data_sources': ['library'],
             'custom_meta': dict(),
         },
+    'plot':
+        {
+            'name': 'Plot',
+            'data_sources': ['plot'],
+            'custom_meta': dict(),
+        },
 }

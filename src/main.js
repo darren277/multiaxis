@@ -13,6 +13,7 @@ import { geoDrawing, geoDrawing3d } from './drawing/drawGeo.js';
 import { quantumDrawing } from './drawing/drawQuantum.js';
 import { svgDrawing } from './drawing/drawSvg.js';
 import { libraryDrawing } from './drawing/drawLibrary.js';
+import { plotFunctionDrawing } from './drawing/drawPlotFunction.js';
 
 import uiPanelConfig from './config/uiPanelConfig.js';
 import { presentationKeyDownHandler } from './drawing/drawPresentation.js';
@@ -68,6 +69,7 @@ const THREEJS_DRAWINGS = {
     'quantum': quantumDrawing,
     'svg': svgDrawing,
     'library': libraryDrawing,
+    'plot': plotFunctionDrawing,
 };
 
 
