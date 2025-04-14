@@ -188,7 +188,7 @@ def find_matching_d(soup, d, circle=False):
             if possible_match.get("d", "") == d:
                 return possible_match
 
-def annotated_svg_paths(svg_str):
+def annotate_svg_paths(svg_str):
     soup = BeautifulSoup(svg_str, "lxml")
 
     # Remove all namespaces
@@ -197,54 +197,27 @@ def annotated_svg_paths(svg_str):
     for g in soup.find_all("g"):
         group_id = g.get("id")
 
-        # If there's a path in that group...
-        path = g.find("path")
-        if not path:
-            continue  # no <path> here, skip
+        # You can also grab group-level fill/stroke
+        fill_color = g.get("fill", "")
+        stroke_color = g.get("stroke", "")
 
-        path_id = path.get("id", "")
-
-        fill_color = g.get("fill")
-        if fill_color:
-            path["data-orig-fill"] = fill_color
-
-        # Mark the path if this group or path is identified as "rect"
-        if path_id.startswith("rect") or group_id.startswith("rect"):
-            path["data-orig-type"] = "rect"
-        # Mark the path if this group or path is identified as "text"
-        elif path_id.startswith("text") or group_id.startswith("text"):
-            print('==> IS TEXT:', path_id)
-            path["data-orig-type"] = "text"
-
-        # Find all paths inside the group
+        # Loop over all paths in this group
         paths = g.find_all("path")
-
         for path in paths:
             path_id = path.get("id", "") or ""
+            d_attr = path.get("d", "")
 
+            # If group has fill, store it on each path
+            if fill_color and not path.get("data-orig-fill"):
+                path["data-orig-fill"] = fill_color
+
+            # Classify shape by ID or heuristic:
             if path_id.startswith("rect") or group_id.startswith("rect"):
                 path["data-orig-type"] = "rect"
             elif path_id.startswith("text") or group_id.startswith("text"):
                 path["data-orig-type"] = "text"
-            elif path_id.startswith("path") or group_id.startswith("path"):
-                # special case for "badge" (hexagon shape):
-                d = path.get("d", "")
-                if d.startswith("M") and d.count("L") == 5:
-                    path["data-orig-type"] = "badge"
-
-                    # in this case, fill_color is `stroke`...
-                    fill_color = g.get("stroke", "")
-
-                    # look up matching `d` path...
-                    possible_match = find_matching_d(soup, d)
-                    if possible_match:
-                        # set the fill color
-                        #fill_color = path.get("data-orig-fill", "")
-                        if not possible_match.get("data-orig-fill"):
-                            print("SETTING FILL COLOR:", fill_color)
-                            possible_match["data-orig-fill"] = fill_color
-                        possible_match["data-orig-type"] = "badge"
             elif path_id.startswith("circle") or group_id.startswith("circle"):
+                path["data-orig-type"] = "circle"
                 d = path.get("d", "")
 
                 # relative circle with matching `d` value...
@@ -256,12 +229,28 @@ def annotated_svg_paths(svg_str):
                 path["data-orig-type"] = "circle"
                 path["data-orig-fill"] = fill_color
             else:
-                print('==> UNKNOWN TYPE:', path_id)
+                # Example: If it starts with "path" or group is "path"
+                # then check for M... L... for your "badge" shape
+                if d_attr.startswith("M") and d_attr.count("L") == 5:
+                    d = path.get("d", "")
+                    path["data-orig-type"] = "badge"
+
+                    # look up matching `d` path...
+                    possible_match = find_matching_d(soup, d)
+                    if possible_match:
+                        # set the fill color
+                        #fill_color = path.get("data-orig-fill", "")
+                        if not possible_match.get("data-orig-fill"):
+                            print("SETTING FILL COLOR:", stroke_color)
+                            possible_match["data-orig-fill"] = stroke_color
+                        possible_match["data-orig-type"] = "badge"
+                else:
+                    print('==> UNKNOWN TYPE:', path_id)
 
     return str(soup)
 
 
-result = annotated_svg_paths(open("src/imagery/OpenProject_out.svg").read())
+result = annotate_svg_paths(open("src/imagery/OpenProject_out.svg").read())
 
 with open("src/imagery/OpenProject_out_annotated.svg", "w") as f:
     # strip
