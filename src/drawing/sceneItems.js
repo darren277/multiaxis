@@ -38,6 +38,7 @@ const SCENE_ITEMS = [
         position: { x: 0, y: 2, z: -10 },
         image: "textures/slide1_main.jpg",
         caption: "<h2>Welcome</h2><p>This is the central vantage point.</p>",
+        customClasses: " bounce pulse",
     },
 
     // Back arrow pointing toward the user (slightly in front or angled)
@@ -45,7 +46,8 @@ const SCENE_ITEMS = [
         id: "slide1_backArrow",
         position: { x: 0, y: -2, z: -9 },
         image: "textures/arrow_back.jpg",
-        caption: "<h3>Back Arrow</h3><p>Click me to return.</p>",
+        caption: "<h1>⬇️</h1><h3>Back Arrow</h3><p>Click me to return.</p>",
+        customClasses: " bounce-pulse"
     },
 
     // Two slides further "left" of center
@@ -53,13 +55,13 @@ const SCENE_ITEMS = [
         id: "slide_left1",
         position: { x: -15, y: 2, z: -10 }, // 15 units left of center
         image: "textures/slide_left1.jpg",
-        caption: "<h2>Slide Left 1</h2><p>First left step.</p>",
+        caption: "<h1>⬅️</h1><h2>Slide Left 1</h2><p>First left step.</p>",
     },
     {
         id: "slide_left2",
         position: { x: -30, y: 2, z: -10 }, // another 15 units left
         image: "textures/slide_left2.jpg",
-        caption: "<h2>Slide Left 2</h2><p>Second left step.</p>",
+        caption: "<h1>⬆️</h1><h2>Slide Left 2</h2><p>Second left step.</p>",
     },
 
     // Two slides further "up" of center
@@ -67,7 +69,7 @@ const SCENE_ITEMS = [
         id: "slide_top1",
         position: { x: 0, y: 12, z: -10 }, // 6 to 10 units up from center
         image: "textures/slide_top1.jpg",
-        caption: "<h2>Slide Top 1</h2><p>First top step.</p>",
+        caption: "<h1>➡️</h2><h2>Slide Top 1</h2><p>First top step.</p>",
     },
     {
         id: "slide_top2",

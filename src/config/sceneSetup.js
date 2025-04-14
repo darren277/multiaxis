@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import Stats from 'stats';
 import { OrbitControls } from 'orbitcontrols';
+import { VRButton } from 'vrbutton';
 
 export function setupScene(containerId = 'c', overlayElements = [], startPosition = { x: 0, y: 2, z: 5 }) {
     // 1) Setup container
@@ -23,20 +24,23 @@ export function setupScene(containerId = 'c', overlayElements = [], startPositio
         antialias: true
     });
 
+    renderer.xr.enabled = true;
+    document.body.appendChild(VRButton.createButton(renderer));
+
     renderer.setSize(width, height);
     renderer.setPixelRatio(window.devicePixelRatio);
     container.appendChild(renderer.domElement);
 
 
     // Stats (optional)
-    console.log("stats", Stats);
     const stats = new Stats();
-    container.appendChild( stats.dom );
+    //container.appendChild( stats.dom );
 
 
     // Add any optional overlay elements
     for (const element of overlayElements) {
         const el = document.createElement(element.tagName);
+        el.className = element.className;
         el.id = element.id;
         for (const [key, value] of Object.entries(element.attrs)) {
             el.setAttribute(key, value);

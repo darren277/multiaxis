@@ -1,0 +1,204 @@
+{
+  "nodes": [
+    [
+      1,
+      2,
+      3
+    ],
+    [
+      1,
+      3,
+      2
+    ],
+    [
+      2,
+      1,
+      3
+    ],
+    [
+      2,
+      3,
+      1
+    ],
+    [
+      3,
+      1,
+      2
+    ],
+    [
+      3,
+      2,
+      1
+    ]
+  ],
+  "edges": [
+    {
+      "source": [
+        1,
+        2,
+        3
+      ],
+      "target": [
+        2,
+        3,
+        1
+      ],
+      "label": "r",
+      "color": "gray"
+    },
+    {
+      "source": [
+        1,
+        2,
+        3
+      ],
+      "target": [
+        2,
+        1,
+        3
+      ],
+      "label": "s",
+      "color": "gray"
+    },
+    {
+      "source": [
+        1,
+        3,
+        2
+      ],
+      "target": [
+        3,
+        2,
+        1
+      ],
+      "label": "r",
+      "color": "gray"
+    },
+    {
+      "source": [
+        1,
+        3,
+        2
+      ],
+      "target": [
+        3,
+        1,
+        2
+      ],
+      "label": "s",
+      "color": "gray"
+    },
+    {
+      "source": [
+        2,
+        1,
+        3
+      ],
+      "target": [
+        1,
+        3,
+        2
+      ],
+      "label": "r",
+      "color": "gray"
+    },
+    {
+      "source": [
+        2,
+        1,
+        3
+      ],
+      "target": [
+        1,
+        2,
+        3
+      ],
+      "label": "s",
+      "color": "gray"
+    },
+    {
+      "source": [
+        2,
+        3,
+        1
+      ],
+      "target": [
+        3,
+        1,
+        2
+      ],
+      "label": "r",
+      "color": "gray"
+    },
+    {
+      "source": [
+        2,
+        3,
+        1
+      ],
+      "target": [
+        3,
+        2,
+        1
+      ],
+      "label": "s",
+      "color": "gray"
+    },
+    {
+      "source": [
+        3,
+        1,
+        2
+      ],
+      "target": [
+        1,
+        2,
+        3
+      ],
+      "label": "r",
+      "color": "gray"
+    },
+    {
+      "source": [
+        3,
+        1,
+        2
+      ],
+      "target": [
+        1,
+        3,
+        2
+      ],
+      "label": "s",
+      "color": "gray"
+    },
+    {
+      "source": [
+        3,
+        2,
+        1
+      ],
+      "target": [
+        2,
+        1,
+        3
+      ],
+      "label": "r",
+      "color": "gray"
+    },
+    {
+      "source": [
+        3,
+        2,
+        1
+      ],
+      "target": [
+        2,
+        3,
+        1
+      ],
+      "label": "s",
+      "color": "gray"
+    }
+  ]
+}

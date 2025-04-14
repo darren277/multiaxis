@@ -1,6 +1,8 @@
 import * as THREE from 'three'; // for any references you still need
 import {Tween, Easing} from 'tween'
 
+import { SCENE_ITEMS } from './sceneItems.js'; // Import your scene items
+
 let currentViewIndex = 0;
 
 
@@ -36,7 +38,7 @@ function createCaptionedPhoto(scene, item) {
     scene.add(mesh);
 
     const labelEl = document.createElement('div');
-    labelEl.className = 'caption-label';
+    labelEl.className = 'caption-label' + item.customClasses;
     labelEl.innerHTML = item.caption; // HTML content allowed
     labelEl.style.position = 'absolute';
     labelEl.style.transform = 'translate(-50%, 0)';
@@ -273,6 +275,7 @@ const drawAdventureElements = [
     {
         tagName: 'div',
         id: 'labelContainer',
+        className: '',
         attrs: {
             position: 'absolute',
             top: '0',
@@ -286,6 +289,7 @@ const drawAdventureElements = [
     {
         tagName: 'div',
         id: 'overlayText',
+        className: '',
         attrs: {
             position: 'absolute',
             top: '10px',
@@ -297,4 +301,42 @@ const drawAdventureElements = [
     }
 ]
 
-export { goToStep, onAdventureKeyDown, buildSceneItems, updateLabelPosition, drawAdventureElements };
+function drawAdventure(scene, threejsDrawing) {
+    const {adventureSteps, allPhotoEntries} = buildSceneItems(scene, SCENE_ITEMS);
+    threejsDrawing.data.adventureSteps = adventureSteps;
+    threejsDrawing.data.allPhotoEntries = allPhotoEntries;
+}
+
+const adventureDrawing = {
+    'sceneElements': drawAdventureElements,
+    'drawFuncs': [
+        // NOTE: var data_sources = document.getElementsByName('datasrc')
+        // This whole thing was WAY overcomplicating it...
+        // We will define the data sources right here instead.
+        {'func': drawAdventure, 'dataSrc': null}
+    ],
+    'uiState': {
+        'currentStepId': `view_${SCENE_ITEMS[0].id}`
+    },
+    'eventListeners': {
+        'keydown': (e, other) => {
+            // Handle keydown events for the adventure
+            //{camera, event, adventureSteps, controls, uiState}
+            const {camera, data, controls, uiState} = other;
+            const {adventureSteps} = data;
+            onAdventureKeyDown(camera, e, adventureSteps, controls, uiState);
+        }
+    },
+    'animationCallback': (renderer, timestamp, threejsDrawing, uiState, camera) => {
+        // Update label positions
+        threejsDrawing.data.allPhotoEntries.forEach(({ mesh, labelEl }) => {
+            updateLabelPosition(mesh, labelEl, camera, renderer);
+        });
+    },
+    'data': {
+        'adventureSteps': null,
+        'allPhotoEntries': null,
+    }
+}
+
+export { adventureDrawing };

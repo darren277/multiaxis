@@ -156,6 +156,17 @@ main {
     display: block;       /* remove default inline canvas spacing */
     background-color: black;
 }
+
+
+header {
+    height: 60px;
+    background: #333;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    padding: 0 1em;
+    box-sizing: border-box;
+}
 """
 
 
@@ -163,7 +174,8 @@ ANIMATIONS_DICT = {
     'multiaxis':
         {
             'name': 'Multiaxis',
-            'data_sources': ['data']
+            'data_sources': ['data'],
+            'custom_meta': dict(),
         },
     'music':
         {
@@ -182,5 +194,72 @@ ANIMATIONS_DICT = {
             'name': 'Adventure',
             'data_sources': ['adventure'],
             'custom_overlays': [ADVENTURE_NAVIGATION_OVERLAY],
+            'custom_meta': dict(),
+        },
+    'room':
+        {
+            'name': 'Room',
+            'data_sources': [],
+            'custom_meta': dict(),
+        },
+    'cayley':
+        {
+            'name': 'Cayley',
+            'data_sources': ['cayley'],
+            'custom_meta': dict(),
+        },
+    'force':
+        {
+            'name': 'Force',
+            'data_sources': ['force'],
+            'custom_meta': dict(),
+        },
+    'geo':
+        {
+            'name': 'Geo',
+            'data_sources': ['geo'],
+            'custom_meta': dict(),
+        },
+    'geo3d':
+        {
+            'name': 'Geo3D',
+            'data_sources': ['geo3d'],
+            'custom_meta': dict(),
+        },
+    'quantum':
+        {
+            'name': 'Quantum',
+            'data_sources': ['quantum'],
+            'custom_meta': dict(),
+        },
+    'svg':
+        {
+            'name': 'SVG',
+            'data_sources': ['svg'],
+            'custom_meta': dict(),
+        },
+    'library':
+        {
+            'name': 'Library',
+            'data_sources': ['library'],
+            'custom_meta': dict(),
+        },
+    'plot':
+        {
+            'name': 'Plot',
+            'data_sources': ['plot'],
+            'custom_meta': dict(),
+        },
+    'rubiks':
+        {
+            'name': 'Rubiks',
+            'data_sources': ['rubiks'],
+            'custom_meta': dict(),
+        },
+    'chess':
+        {
+            'name': 'Chess',
+            'data_sources': ['chess'],
+            'custom_meta': dict(),
         },
 }

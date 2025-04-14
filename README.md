@@ -1,5 +1,17 @@
 # multiaxis
 
+## About
+
+Well, this project has certainly grown in scope since its inception.
+
+Originally, it was just meant to be a simple 3D graphing library for plotting points in three dimensions (basically, 3d charts).
+
+I've continued to add new things to it, making it more and more modular and extensible until the point where it is now my entire Three.js ecosystem for drawing all kinds of things using one central library.
+
+## Main Use Cases
+
+### 3D Graphing
+
 First we will create a three dimensional graph drawing space.
 
 Next, we will include lines drawn at each of the three axes with zero points at the center.
@@ -25,6 +37,40 @@ The plotted data will consist of an array of data `points`, which in turn will c
         ]
 }
 ```
+
+### Presentations
+
+TBD...
+
+### Knowledge Management
+
+TBD...
+
+### Education
+
+TBD...
+
+### Other
+
+#### Building Blocks
+
+I will give a sort of ontology of the different modular pieces from which the above more complex use cases can be built.
+
+##### The Set
+
+Camera, Scene, Renderer, and Controls.
+
+##### Drawables
+
+Geometrics, Lights, Procedurals, Images, HTML, Etc.
+
+##### Animation
+
+Animation loop, tweening, slideshows, etc.
+
+##### Control Panel
+
+...
 
 # Using Custom Data
 

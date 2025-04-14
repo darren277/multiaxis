@@ -1,5 +1,7 @@
 import * as THREE from 'three';
 
+let startTime = null;
+
 /**
  * A simplistic function that:
  *   1) Draws 5 staff lines
@@ -12,9 +14,7 @@ import * as THREE from 'three';
  * @param {THREE.Scene} scene The Three.js scene
  * @param {Object} data The parsed JSON data
  */
-export function drawSheetMusic(scene, data) {
-    console.log('drawSheetMusic called');
-
+function drawSheetMusic(scene, data) {
     // 1) Parse the tempo & note info from your data
     //    MIDO typically gives you microseconds_per_beat or 'tempo'
     //    in microseconds (e.g. 600000 => 0.6s per quarter note => 100BPM).
@@ -71,7 +71,7 @@ export function drawSheetMusic(scene, data) {
                 const durationSec = durationTicks * secondsPerTick;
 
                 // For debugging, let's log the times:
-                console.log(`pitch=${msg.note}, startSec=${startSec.toFixed(2)}, endSec=${endSec.toFixed(2)}`);
+                console.debug(`pitch=${msg.note}, startSec=${startSec.toFixed(2)}, endSec=${endSec.toFixed(2)}`);
 
                 // Vertical position: e.g. pitch 60 => y=2, up/down 0.1 per semitone
                 const yPos = 2 + (msg.note - 60) * 0.1;
@@ -119,4 +119,36 @@ export function drawSheetMusic(scene, data) {
         },
     };
 }
+
+function drawMusic(scene, data, state) {
+    state.data.sheetMusic = drawSheetMusic(scene, data);
+}
+
+const musicDrawing = {
+    'sceneElements': [],
+    'drawFuncs': [
+        {'func': drawMusic, 'dataSrc': 'music'}
+    ],
+    'uiState': {tempoScale: 1.0},
+    'eventListeners': null,
+    'animationCallback': (renderer, timestamp, threejsDrawing, uiState, camera) => {
+        if (!startTime) startTime = timestamp;
+        const elapsedMs = timestamp - startTime;
+        const elapsedSec = elapsedMs / 1000;
+
+        const scaledElapsedSec = elapsedSec * uiState.tempoScale;
+
+        if (!threejsDrawing.data.sheetMusic) {
+            // it takes a few seconds to load the sheet music
+            console.warn("No sheet music data found");
+            return;
+        }
+        threejsDrawing.data.sheetMusic.update(scaledElapsedSec);
+    },
+    'data': {
+        'sheetMusic': null,
+    }
+}
+
+export { musicDrawing };
 
