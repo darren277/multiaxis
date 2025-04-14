@@ -238,4 +238,10 @@ ANIMATIONS_DICT = {
             'data_sources': ['svg'],
             'custom_meta': dict(),
         },
+    'library':
+        {
+            'name': 'Library',
+            'data_sources': ['library'],
+            'custom_meta': dict(),
+        },
 }

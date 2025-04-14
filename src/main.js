@@ -12,6 +12,7 @@ import { cayleyDrawing, forceDrawing } from './drawing/drawGraph.js';
 import { geoDrawing, geoDrawing3d } from './drawing/drawGeo.js';
 import { quantumDrawing } from './drawing/drawQuantum.js';
 import { svgDrawing } from './drawing/drawSvg.js';
+import { libraryDrawing } from './drawing/drawLibrary.js';
 
 import uiPanelConfig from './config/uiPanelConfig.js';
 import { presentationKeyDownHandler } from './drawing/drawPresentation.js';
@@ -66,6 +67,7 @@ const THREEJS_DRAWINGS = {
     'geo3d': geoDrawing3d,
     'quantum': quantumDrawing,
     'svg': svgDrawing,
+    'library': libraryDrawing,
 };
 
 
