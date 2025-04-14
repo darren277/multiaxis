@@ -179,13 +179,13 @@ def strip_namespace(tag):
             strip_namespace(child)
 
 
-def find_matching_d(soup, d, circle=False):
+def find_matching_d(soup, d, path_id, circle=False):
     for possible_match in soup.find_all("path"):
         if circle:
-            if possible_match.get("id", "").startswith("circle") and possible_match.get("d", "") == d:
+            if possible_match.get("id", "").startswith("circle") and possible_match.get("d", "") == d and possible_match.get('id') != path_id:
                 return possible_match
         else:
-            if possible_match.get("d", "") == d:
+            if possible_match.get("d", "") == d and possible_match.get('id') != path_id:
                 return possible_match
 
 def annotate_svg_paths(svg_str):
@@ -221,13 +221,15 @@ def annotate_svg_paths(svg_str):
                 d = path.get("d", "")
 
                 # relative circle with matching `d` value...
-                possible_circle = find_matching_d(soup, d, circle=True)
+                path_id = path.get("id", "")
+                possible_circle = find_matching_d(soup, d, path_id, circle=True)
                 if not possible_circle.get("data-orig-fill"):
-                    print("SETTING FILL COLOR (circle):", fill_color)
                     possible_circle["data-orig-fill"] = fill_color
+                    print('possible_circle["data-orig-fill"]:', fill_color, possible_circle["data-orig-fill"])
                 possible_circle["data-orig-type"] = "circle"
                 path["data-orig-type"] = "circle"
-                path["data-orig-fill"] = fill_color
+                if fill_color:
+                    path["data-orig-fill"] = fill_color
             else:
                 # Example: If it starts with "path" or group is "path"
                 # then check for M... L... for your "badge" shape
@@ -236,12 +238,14 @@ def annotate_svg_paths(svg_str):
                     path["data-orig-type"] = "badge"
 
                     # look up matching `d` path...
-                    possible_match = find_matching_d(soup, d)
+                    path_id = path.get("id", "")
+                    possible_match = find_matching_d(soup, d, path_id)
+                    print("SETTING FILL COLOR (badge):", fill_color, stroke_color, path, possible_match)
                     if possible_match:
                         # set the fill color
                         #fill_color = path.get("data-orig-fill", "")
                         if not possible_match.get("data-orig-fill"):
-                            print("SETTING FILL COLOR:", stroke_color)
+                            print("---- SETTING FILL COLOR:", stroke_color)
                             possible_match["data-orig-fill"] = stroke_color
                         possible_match["data-orig-type"] = "badge"
                 else:
