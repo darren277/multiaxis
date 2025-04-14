@@ -250,4 +250,10 @@ ANIMATIONS_DICT = {
             'data_sources': ['plot'],
             'custom_meta': dict(),
         },
+    'rubiks':
+        {
+            'name': 'Rubiks',
+            'data_sources': ['rubiks'],
+            'custom_meta': dict(),
+        },
 }
