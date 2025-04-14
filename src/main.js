@@ -15,6 +15,7 @@ import { svgDrawing } from './drawing/drawSvg.js';
 import { libraryDrawing } from './drawing/drawLibrary.js';
 import { plotFunctionDrawing } from './drawing/drawPlotFunction.js';
 import { rubiksCubeDrawing } from './drawing/drawRubiksCube.js';
+import { chessDrawing } from './drawing/drawChess.js';
 
 import uiPanelConfig from './config/uiPanelConfig.js';
 import { presentationKeyDownHandler } from './drawing/drawPresentation.js';
@@ -72,6 +73,7 @@ const THREEJS_DRAWINGS = {
     'library': libraryDrawing,
     'plot': plotFunctionDrawing,
     'rubiks': rubiksCubeDrawing,
+    'chess': chessDrawing,
 };
 
 

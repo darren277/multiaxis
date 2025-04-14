@@ -256,4 +256,10 @@ ANIMATIONS_DICT = {
             'data_sources': ['rubiks'],
             'custom_meta': dict(),
         },
+    'chess':
+        {
+            'name': 'Chess',
+            'data_sources': ['chess'],
+            'custom_meta': dict(),
+        },
 }
