@@ -3,7 +3,7 @@ import Stats from 'stats';
 import { OrbitControls } from 'orbitcontrols';
 import { VRButton } from 'vrbutton';
 
-export function setupScene(containerId = 'c', overlayElements = [], startPosition = { x: 0, y: 2, z: 5 }) {
+export function setupScene(containerId = 'c', overlayElements = [], startPosition = { x: 0, y: 2, z: 5 }, clippingPlane = 1000) {
     // 1) Setup container
     const container = document.getElementById(containerId);
     const width = container.clientWidth;
@@ -14,7 +14,7 @@ export function setupScene(containerId = 'c', overlayElements = [], startPositio
     scene.background = new THREE.Color(0x000000);
 
     // 3) Camera
-    const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, 1000);
+    const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, clippingPlane);
     //camera.position.set(5, 5, 5); // or wherever
     camera.position.set(startPosition.x, startPosition.y, startPosition.z);
 

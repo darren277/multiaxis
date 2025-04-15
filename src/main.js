@@ -21,6 +21,7 @@ import { clusteringDrawing } from './drawing/drawClustering.js';
 import uiPanelConfig from './config/uiPanelConfig.js';
 import { presentationKeyDownHandler } from './drawing/drawPresentation.js';
 import { adventureDrawing } from './drawing/drawAdventure.js';
+import { orbitsDrawing } from './drawing/drawOrbits.js';
 
 import * as THREE from 'three'; // for any references you still need
 // Or import { FileLoader } from 'three'; if you just need the loader
@@ -79,6 +80,7 @@ const THREEJS_DRAWINGS = {
     'rubiks': rubiksCubeDrawing,
     'chess': chessDrawing,
     'clustering': clusteringDrawing,
+    'orbits': orbitsDrawing,
 };
 
 
@@ -94,7 +96,10 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    const { scene, camera, renderer, controls, stats } = setupScene('c', threejsDrawing.sceneElements);
+    const startPosition = threejsDrawing.sceneConfig.startPosition || {x: 0, y: 2, z: 5};
+    const clippingPlane = threejsDrawing.sceneConfig.clippingPlane || 1000;
+
+    const { scene, camera, renderer, controls, stats } = setupScene('c', threejsDrawing.sceneElements, startPosition, clippingPlane);
 
     for (const {func, dataSrc, dataType} of threejsDrawing.drawFuncs) {
         if (dataSrc) {

@@ -267,5 +267,11 @@ ANIMATIONS_DICT = {
             'name': 'Clustering',
             'data_sources': ['clustering'],
             'custom_meta': dict(),
-        }
+        },
+    'orbits':
+        {
+            'name': 'Orbits',
+            'data_sources': [],
+            'custom_meta': dict(),
+        },
 }
