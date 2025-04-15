@@ -262,4 +262,10 @@ ANIMATIONS_DICT = {
             'data_sources': ['chess'],
             'custom_meta': dict(),
         },
+    'clustering':
+        {
+            'name': 'Clustering',
+            'data_sources': ['clustering'],
+            'custom_meta': dict(),
+        }
 }

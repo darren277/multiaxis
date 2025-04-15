@@ -128,4 +128,4 @@ const plotFunctionDrawing = {
 
 
 
-export { plotFunctionDrawing };
+export { plotFunctionDrawing, addAxes };
