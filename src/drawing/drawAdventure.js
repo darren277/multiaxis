@@ -1,8 +1,6 @@
 import * as THREE from 'three'; // for any references you still need
 import {Tween, Easing} from 'tween'
 
-import { SCENE_ITEMS } from './sceneItems.js'; // Import your scene items
-
 let currentViewIndex = 0;
 
 
@@ -239,6 +237,7 @@ function onAdventureKeyDown_BIDIRECTIONAL_ONLY(camera, event, adventureSteps, co
 function onAdventureKeyDown(camera, event, adventureSteps, controls, uiState) {
     // In this case, UpArrow is "next", DownArrow is "previous", and LeftArrow and RightArrow are specifically defined for each step.
     const stepData = adventureSteps[uiState.currentStepId];
+    console.log('uiState', uiState);
     console.log("stepData", uiState.currentStepId, stepData, adventureSteps);
     if (!stepData) return;
 
@@ -301,10 +300,16 @@ const drawAdventureElements = [
     }
 ]
 
-function drawAdventure(scene, threejsDrawing) {
-    const {adventureSteps, allPhotoEntries} = buildSceneItems(scene, SCENE_ITEMS);
+function drawAdventure(scene, data, threejsDrawing) {
+    const {adventureSteps, allPhotoEntries} = buildSceneItems(scene, data.sceneItems);
+
+    // TODO: draw data.otherItems...
+
     threejsDrawing.data.adventureSteps = adventureSteps;
     threejsDrawing.data.allPhotoEntries = allPhotoEntries;
+
+    threejsDrawing.uiState.currentStepId = `view_${data.sceneItems[0].id}`;
+    threejsDrawing.data.currentStepId = `view_${data.sceneItems[0].id}`;
 }
 
 const adventureDrawing = {
@@ -313,22 +318,29 @@ const adventureDrawing = {
         // NOTE: var data_sources = document.getElementsByName('datasrc')
         // This whole thing was WAY overcomplicating it...
         // We will define the data sources right here instead.
-        {'func': drawAdventure, 'dataSrc': null}
+        {'func': drawAdventure, 'dataSrc': 'adventure1'}
     ],
     'uiState': {
-        'currentStepId': `view_${SCENE_ITEMS[0].id}`
+        'currentStepId': null
     },
     'eventListeners': {
         'keydown': (e, other) => {
             // Handle keydown events for the adventure
             //{camera, event, adventureSteps, controls, uiState}
+            console.log('other', other);
             const {camera, data, controls, uiState} = other;
-            const {adventureSteps} = data;
+            console.log('uiState ---', uiState);
+            const {adventureSteps, currentStepId} = data;
+            // `currentStepId`: Kinda messy like this but it works for now.
+            // TODO: `uiState` and `data` should probably be different entities as one is mutable and the other is not.
+            // Not super important, though.
+            uiState.currentStepId = currentStepId;
             onAdventureKeyDown(camera, e, adventureSteps, controls, uiState);
         }
     },
     'animationCallback': (renderer, timestamp, threejsDrawing, uiState, camera) => {
         // Update label positions
+        if (!threejsDrawing.data.allPhotoEntries) return;
         threejsDrawing.data.allPhotoEntries.forEach(({ mesh, labelEl }) => {
             updateLabelPosition(mesh, labelEl, camera, renderer);
         });
