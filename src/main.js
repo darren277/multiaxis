@@ -96,7 +96,10 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    const { scene, camera, renderer, controls, stats } = setupScene('c', threejsDrawing.sceneElements);
+    const startPosition = threejsDrawing.sceneConfig.startPosition || {x: 0, y: 2, z: 5};
+    const clippingPlane = threejsDrawing.sceneConfig.clippingPlane || 1000;
+
+    const { scene, camera, renderer, controls, stats } = setupScene('c', threejsDrawing.sceneElements, startPosition, clippingPlane);
 
     for (const {func, dataSrc, dataType} of threejsDrawing.drawFuncs) {
         if (dataSrc) {
