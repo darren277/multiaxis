@@ -56,7 +56,12 @@ s3-textures:
 	aws s3 cp src/textures/bookcase5.png s3://$(BUCKET_NAME)/textures/bookcase5.png
 	aws s3 cp src/textures/bookcase6.png s3://$(BUCKET_NAME)/textures/bookcase6.png
 
+#SVG_NAME=OpenProject
+SVG_NAME=Knowledge
+
 # $env:PATH += ";C:\Program Files\Inkscape\bin"
 convert-svg:
-	inkscape --actions="file-open:src/imagery/OpenProject.svg; select-all; object-to-path; text-to-path; stroke-to-path; export-plain-svg:src/imagery/OpenProject.paths.svg; export-do; file-close"
+	inkscape --actions="file-open:src/imagery/$(SVG_NAME).svg; select-all; object-to-path; text-to-path; stroke-to-path; export-plain-svg:src/imagery/$(SVG_NAME).paths.svg; export-do; file-close"
 
+py-svg:
+	source .venv/Scripts/activate && python utils.py $(SVG_NAME)

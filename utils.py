@@ -254,11 +254,25 @@ def annotate_svg_paths(svg_str):
     return str(soup)
 
 
-result = annotate_svg_paths(open("src/imagery/OpenProject_out.svg").read())
 
-with open("src/imagery/OpenProject_out_annotated.svg", "w") as f:
-    # strip
-    f.write(result)
+if __name__ == "__main__":
+    import sys
+
+    if len(sys.argv) > 1:
+        name = sys.argv[1]
+
+        try:
+            result = annotate_svg_paths(open(f"src/imagery/{name}_out.svg").read())
+        except FileNotFoundError:
+            print(f"File src/imagery/{name}_out.svg not found.")
+            sys.exit(1)
+
+        try:
+            with open(f"src/imagery/{name}_out_annotated.svg", "w") as f:
+                f.write(result)
+        except Exception as e:
+            print(f"Error writing to file: {e}")
+            sys.exit(1)
 
 
 
