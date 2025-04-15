@@ -76,6 +76,10 @@ function createPlanet(planetData, scene) {
 function castStars(scene, threejsDrawing) {
     const starTexture = textureLoader.load('textures/8k_stars.jpg');
 
+    // reduce mipmap blurring
+    starTexture.minFilter = THREE.LinearFilter;
+    starTexture.magFilter = THREE.LinearFilter;
+
     const cubeSize = 100000; // Large enough to encompass entire solar system
 
     const geometry = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize);
