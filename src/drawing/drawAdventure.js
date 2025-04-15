@@ -196,8 +196,10 @@ function goToStep(camera, stepId, adventureSteps, controls, uiState) {
     camera.lookAt(stepData.camera.lookAt);
 
     // If using OrbitControls
-    controls.target.copy(stepData.camera.lookAt);
-    controls.update();
+    if (controls) {
+        controls.target.copy(stepData.camera.lookAt);
+        controls.update();
+    }
 
     // If using OrbitControls, also update controls.target
     // controls.target.copy(stepData.camera.lookAt);
@@ -348,6 +350,9 @@ const adventureDrawing = {
     'data': {
         'adventureSteps': null,
         'allPhotoEntries': null,
+    },
+    'sceneConfig': {
+        'controller': 'none'
     }
 }
 
