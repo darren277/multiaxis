@@ -21,7 +21,8 @@ const SCALE_FACTOR = 1 / 10000;
 //const SUN_ACTUAL_RADIUS = 1391400;   // km
 const SUN_ACTUAL_RADIUS = 1391400 / 10; // km (scaled down)
 
-const sunRadius = (SCALE_FACTOR * SUN_ACTUAL_RADIUS) * 10; // scaled down for easier visualization
+// Scaled down for easier visualization
+const sunRadius = (SCALE_FACTOR * SUN_ACTUAL_RADIUS);
 
 const PLANET_DISTANCE_SCALE_FACTOR = 0.01; // Scale factor for planet distances
 const PLANET_SIZE_SCALE_FACTOR = 10;
@@ -72,6 +73,25 @@ function createPlanet(planetData, scene) {
 }
 
 
+function castStars(scene, threejsDrawing) {
+    const starTexture = textureLoader.load('textures/8k_stars.jpg');
+
+    const cubeSize = 100000; // Large enough to encompass entire solar system
+
+    const geometry = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize);
+
+    // Material with your star texture on all sides
+    const material = new THREE.MeshBasicMaterial({
+        map: starTexture,
+        side: THREE.BackSide // Invert the faces so the texture is visible from inside
+    });
+
+    const skybox = new THREE.Mesh(geometry, material);
+    scene.add(skybox);
+
+    threejsDrawing.data.skybox = skybox; // Store reference to the skybox in data
+}
+
 function drawFloor(scene, orbitRadius) {
     const size = orbitRadius * 2.5;
 
@@ -85,6 +105,8 @@ function drawFloor(scene, orbitRadius) {
     floor.receiveShadow = true;
     scene.add(floor);
 }
+
+// TODO: The Moon...
 
 function drawOrbits(scene, threejsDrawing) {
     const sunGeometry = new THREE.SphereGeometry(sunRadius, 32, 32);
@@ -108,7 +130,7 @@ function drawOrbits(scene, threejsDrawing) {
     threejsDrawing.data.planetObjects = planetObjects; // Store reference to all planet meshes in data
 
     //drawFloor(scene, earthOrbitRadius);
-    drawFloor(scene, threejsDrawing.data.planetObjects[7].orbitRadius);
+    //drawFloor(scene, threejsDrawing.data.planetObjects[7].orbitRadius);
 
     const light = new THREE.PointLight(0xffffff, 1, 0); // last arg = infinite distance
     light.position.set(0, 0, 0); // Place the light at the Sun's position
@@ -116,6 +138,8 @@ function drawOrbits(scene, threejsDrawing) {
 
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
     scene.add(ambientLight);
+
+    castStars(scene, threejsDrawing);
 }
 
 let clock = new THREE.Clock(); // Three.js clock to track deltaTime
@@ -156,6 +180,9 @@ const orbitsDrawing = {
         for (const planet of threejsDrawing.data.planetObjects) {
             animatePlanet(planet, daysPassed);
         }
+
+        // Keep skybox centered on camera
+        threejsDrawing.data.skybox.position.copy(camera.position);
     },
     'data': {
     },
