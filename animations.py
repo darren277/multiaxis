@@ -169,7 +169,7 @@ header {
 }
 """
 
-
+# TODO: This is likely redundant when we have `THREEJS_DRAWINGS` in the JS library.
 ANIMATIONS_DICT = {
     'multiaxis':
         {
