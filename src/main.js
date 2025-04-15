@@ -23,12 +23,15 @@ import { adventureDrawing } from './drawing/drawAdventure.js';
 
 import * as THREE from 'three'; // for any references you still need
 // Or import { FileLoader } from 'three'; if you just need the loader
+import { SVGLoader } from 'svgloader';
 
 import {update as tweenUpdate} from 'tween'
 
 
 const textureLoader = new THREE.TextureLoader();
 const fileLoader = new THREE.FileLoader();
+const svgLoader = new SVGLoader();
+
 
 const loadDataSource = (scene, dataSrc, drawFunc, state) => {
     const jsonPath = `./data/${dataSrc}.json`;
@@ -54,7 +57,7 @@ const THREEJS_DRAWINGS = {
         {
             'sceneElements': [],
             'drawFuncs': [
-                {'func': drawChart, 'dataSrc': 'data'}
+                {'func': drawChart, 'dataSrc': 'data', 'dataType': 'json'}
             ],
             'uiState': null,
             'eventListeners': null,
@@ -91,11 +94,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const { scene, camera, renderer, controls, stats } = setupScene('c', threejsDrawing.sceneElements);
 
-    for (const {func, dataSrc} of threejsDrawing.drawFuncs) {
+    for (const {func, dataSrc, dataType} of threejsDrawing.drawFuncs) {
         if (dataSrc) {
             const data_src = dataSelected ? dataSelected : dataSrc;
             console.log(`Loading data source: ${data_src}`);
-            loadDataSource(scene, data_src, func, threejsDrawing);
+            if (dataType === 'svg') {
+                svgLoader.load(`./imagery/${data_src}_out_annotated.svg`, (data) => {
+                    func(scene, data, threejsDrawing);
+                });
+            } else if (dataType === 'json') {
+                loadDataSource(scene, data_src, func, threejsDrawing);
+            } else {
+                console.error(`Unknown data type: ${dataType}`);
+            }
         } else {
             func(scene, threejsDrawing);
         }
