@@ -44,7 +44,7 @@ def serve_threejs(animation):
 
     viz = ANIMATIONS_DICT.get(animation, ANIMATIONS_DICT['multiaxis'])
     data_selected_query_param = request.args.get('data_selected')
-    data_selected = data_selected_query_param if data_selected_query_param else viz.get('data_sources', [None])[0]
+    data_selected = data_selected_query_param if data_selected_query_param else viz.get('data_sources', [None])[0] if len(viz.get('data_sources', [])) > 0 else None
     print('data_selected:', data_selected)
 
     return render_template(
