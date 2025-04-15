@@ -318,7 +318,7 @@ const adventureDrawing = {
         // NOTE: var data_sources = document.getElementsByName('datasrc')
         // This whole thing was WAY overcomplicating it...
         // We will define the data sources right here instead.
-        {'func': drawAdventure, 'dataSrc': 'adventure1'}
+        {'func': drawAdventure, 'dataSrc': 'adventure1', 'dataType': 'json'}
     ],
     'uiState': {
         'currentStepId': null

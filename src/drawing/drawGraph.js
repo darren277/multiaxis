@@ -219,7 +219,7 @@ function drawForceGraph(scene, threejsDrawing, state) {
 const cayleyDrawing = {
     'sceneElements': [],
     'drawFuncs': [
-        {'func': drawGraph, 'dataSrc': 'cayley'}
+        {'func': drawGraph, 'dataSrc': 'cayley', 'dataType': 'json'},
     ],
     'uiState': null,
     'eventListeners': null,
