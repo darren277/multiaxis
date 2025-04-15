@@ -127,7 +127,7 @@ function drawMusic(scene, data, state) {
 const musicDrawing = {
     'sceneElements': [],
     'drawFuncs': [
-        {'func': drawMusic, 'dataSrc': 'music'}
+        {'func': drawMusic, 'dataSrc': 'music', 'dataType': 'json'},
     ],
     'uiState': {tempoScale: 1.0},
     'eventListeners': null,

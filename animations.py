@@ -169,12 +169,12 @@ header {
 }
 """
 
-
+# TODO: This is likely redundant when we have `THREEJS_DRAWINGS` in the JS library.
 ANIMATIONS_DICT = {
     'multiaxis':
         {
             'name': 'Multiaxis',
-            'data_sources': ['data'],
+            'data_sources': ['data', 'experimental', 'experimental_1'],
             'custom_meta': dict(),
         },
     'music':
@@ -192,7 +192,7 @@ ANIMATIONS_DICT = {
     'adventure':
         {
             'name': 'Adventure',
-            'data_sources': ['adventure'],
+            'data_sources': ['adventure1', 'adventure2'],
             'custom_overlays': [ADVENTURE_NAVIGATION_OVERLAY],
             'custom_meta': dict(),
         },
@@ -211,7 +211,7 @@ ANIMATIONS_DICT = {
     'force':
         {
             'name': 'Force',
-            'data_sources': ['force'],
+            'data_sources': [],
             'custom_meta': dict(),
         },
     'geo':
@@ -229,13 +229,13 @@ ANIMATIONS_DICT = {
     'quantum':
         {
             'name': 'Quantum',
-            'data_sources': ['quantum'],
+            'data_sources': [],
             'custom_meta': dict(),
         },
     'svg':
         {
             'name': 'SVG',
-            'data_sources': ['svg'],
+            'data_sources': ['OpenProject', 'Knowledge'],
             'custom_meta': dict(),
         },
     'library':

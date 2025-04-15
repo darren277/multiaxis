@@ -2,7 +2,6 @@ import * as THREE from 'three';
 import { SVGLoader } from 'svgloader';
 import { drawBasicLights } from './drawLights.js';
 
-const loader = new SVGLoader();
 
 function isGiantWhiteBox(path) {
     const isGiantWhiteBox = path.color === 0xffffff && path.toShapes(true).length === 1;
@@ -191,11 +190,9 @@ function determineColor(path) {
     return threeColor;
 }
 
-function drawSvg(scene) {
-    loader.load('imagery/OpenProject_out_annotated.svg', (data) => {
-        data.paths.forEach((path, i) => {
-            processPath(scene, path);
-        });
+function drawSvg(scene, data, threejsDrawing) {
+    data.paths.forEach((path, i) => {
+        processPath(scene, path);
     });
 
     const floorGeometry = new THREE.PlaneGeometry(200, 200);
@@ -218,7 +215,7 @@ function drawSvg(scene) {
 const svgDrawing = {
     'sceneElements': [],
     'drawFuncs': [
-        {'func': drawSvg, 'dataSrc': null}
+        {'func': drawSvg, 'dataSrc': 'OpenProject', 'dataType': 'svg'}
     ],
     'uiState': null,
     'eventListeners': null,
