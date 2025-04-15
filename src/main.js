@@ -96,8 +96,8 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    const startPosition = threejsDrawing.sceneConfig.startPosition || {x: 0, y: 2, z: 5};
-    const clippingPlane = threejsDrawing.sceneConfig.clippingPlane || 1000;
+    const startPosition = threejsDrawing.sceneConfig && threejsDrawing.sceneConfig.startPosition || {x: 0, y: 2, z: 5};
+    const clippingPlane = threejsDrawing.sceneConfig && threejsDrawing.sceneConfig.clippingPlane || 1000;
 
     const { scene, camera, renderer, controls, stats } = setupScene('c', threejsDrawing.sceneElements, startPosition, clippingPlane);
 
