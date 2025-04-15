@@ -79,6 +79,8 @@ const THREEJS_DRAWINGS = {
 
 document.addEventListener('DOMContentLoaded', () => {
     const drawingName = document.querySelector('meta[name="threejs_drawing_name"]').content;
+    const dataSelected = document.querySelector('meta[name="data_selected"]').content;
+    console.log(`Drawing name: ${drawingName}. Data selected: ${dataSelected}`);
     const threejsDrawing = THREEJS_DRAWINGS[drawingName];
 
     // 1) Setup the scene
@@ -91,7 +93,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     for (const {func, dataSrc} of threejsDrawing.drawFuncs) {
         if (dataSrc) {
-            loadDataSource(scene, dataSrc, func, threejsDrawing);
+            const data_src = dataSelected ? dataSelected : dataSrc;
+            console.log(`Loading data source: ${data_src}`);
+            loadDataSource(scene, data_src, func, threejsDrawing);
         } else {
             func(scene, threejsDrawing);
         }

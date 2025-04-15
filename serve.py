@@ -6,7 +6,7 @@ PORT = 8000
 
 THREEJS_VERSION = '0.169.0'
 
-from flask import Flask, Response, send_file, abort, render_template
+from flask import Flask, Response, send_file, abort, render_template, request
 import os
 
 
@@ -41,6 +41,12 @@ def serve_threejs(animation):
     print('animation nav:', animation)
     css = FULLSCREEN_CSS
     fullscreen = True
+
+    viz = ANIMATIONS_DICT.get(animation, ANIMATIONS_DICT['multiaxis'])
+    data_selected_query_param = request.args.get('data_selected')
+    data_selected = data_selected_query_param if data_selected_query_param else viz.get('data_sources', [None])[0]
+    print('data_selected:', data_selected)
+
     return render_template(
         'index.html',
         fullscreen=fullscreen,
@@ -48,10 +54,11 @@ def serve_threejs(animation):
         #threejs_css=css,
         threejs_css=SMALL_HEADER_CSS,
         threejs_version=THREEJS_VERSION,
-        threejs_drawings=ANIMATIONS_DICT.get(animation, ANIMATIONS_DICT['multiaxis']),
+        threejs_drawings=viz,
         nav_items=ANIMATIONS_DICT.keys(),
         #main_js_path='./src/main.js',
-        main_js_path = '/src/main.js'
+        main_js_path = '/src/main.js',
+        data_selected=data_selected,
     )
 
 @app.route('/style.css')
