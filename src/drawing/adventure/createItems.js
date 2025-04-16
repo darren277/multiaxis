@@ -1,14 +1,15 @@
-import * as THREE from 'three'; // for any references you still need
+import { TextureLoader, PlaneGeometry, Mesh, MeshBasicMaterial, DoubleSide, VideoTexture, LinearFilter } from 'three'; // for any references you still need
+
 
 function createPhotoMesh(item) {
     // Use TextureLoader to load the image
-    const textureLoader = new THREE.TextureLoader();
+    const textureLoader = new TextureLoader();
     const texture = textureLoader.load(item.image);
 
     // Adjust geometry size as you like (width, height)
-    const geometry = new THREE.PlaneGeometry(4, 3);
-    const material = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide });
-    const mesh = new THREE.Mesh(geometry, material);
+    const geometry = new PlaneGeometry(4, 3);
+    const material = new MeshBasicMaterial({ map: texture, side: DoubleSide });
+    const mesh = new Mesh(geometry, material);
 
     // Position in 3D from item data
     mesh.position.set(item.position.x, item.position.y, item.position.z);
@@ -32,14 +33,14 @@ function createVideoMesh(item, worldWidth, worldHeight) {
     video.play();
 
     // 2) Create a texture from the video
-    const videoTexture = new THREE.VideoTexture(video);
-    videoTexture.minFilter = THREE.LinearFilter;
-    videoTexture.magFilter = THREE.LinearFilter;
+    const videoTexture = new VideoTexture(video);
+    videoTexture.minFilter = LinearFilter;
+    videoTexture.magFilter = LinearFilter;
 
     // 3) Use that texture in a MeshBasicMaterial
-    const geometry = new THREE.PlaneGeometry(4, 3);
-    const material = new THREE.MeshBasicMaterial({ map: videoTexture, side: THREE.DoubleSide });
-    const mesh = new THREE.Mesh(geometry, material);
+    const geometry = new PlaneGeometry(4, 3);
+    const material = new MeshBasicMaterial({ map: videoTexture, side: THREE.DoubleSide });
+    const mesh = new Mesh(geometry, material);
 
     const x = item.position.x;
     const y = item.position.y;
