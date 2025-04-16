@@ -20,9 +20,6 @@ console.log('Three.js version (main):', REVISION);
 const DEBUG = false;
 
 
-const textureLoader = new THREE.TextureLoader();
-const fileLoader = new THREE.FileLoader();
-const svgLoader = new SVGLoader();
 const textureLoader = new TextureLoader();
 const fileLoader = new FileLoader();
 
