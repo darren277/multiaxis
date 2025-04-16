@@ -75,7 +75,8 @@ def serve_threejs(animation):
     force3d_importmap = {
         "three": "https://esm.sh/three@0.175.0",
         "3d-force-graph": "https://esm.sh/3d-force-graph@1.77.0?bundle&deps=three@0.175.0",
-        "three-spritetext": "https://esm.sh/three-spritetext@1.9.6?bundle&deps=three@0.175.0"
+        "three-spritetext": "https://esm.sh/three-spritetext@1.9.6?bundle&deps=three@0.175.0",
+        "tween": "https://unpkg.com/@tweenjs/tween.js@23.1.3/dist/tween.esm.js",
     }
 
     importmap = force3d_importmap if animation == 'force3d' else default_importmap
