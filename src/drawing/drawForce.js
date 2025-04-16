@@ -69,7 +69,7 @@ function drawForce3dGraph(scene, data, threejsDrawing) {
 const force3dDrawing = {
     'sceneElements': [],
     'drawFuncs': [
-        {'func': drawForce3dGraph, 'dataSrc': 'philpapers', 'dataType': 'json'},
+        {'func': drawForce3dGraph, 'dataSrc': 'force3d', 'dataType': 'json'},
     ],
     'uiState': null,
     'eventListeners': null,
