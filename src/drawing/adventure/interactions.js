@@ -1,4 +1,4 @@
-import { Raycaster, Vector2 } as THREE from 'three';
+import { Raycaster, Vector2 } from 'three';
 
 const raycaster = new Raycaster();
 const mouse = new Vector2();
