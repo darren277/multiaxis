@@ -114,8 +114,21 @@
             }
         }
 
+        @keyframes bounceY3d {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
         .caption-label.bounce {
             animation: bounceY 4s ease-in-out infinite;
+        }
+
+        .caption-label-3d.bounce {
+            animation: bounceY3d 4s ease-in-out infinite;
         }
 
         @keyframes pulseScale {
@@ -127,7 +140,20 @@
             }
         }
 
+        @keyframes pulseScale3d {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+               transform: scale(1.15);
+            }
+        }
+
         .caption-label.pulse {
+            animation: pulseScale 3.0s ease-in-out infinite;
+        }
+
+        .caption-label-3d.pulse {
             animation: pulseScale 3.0s ease-in-out infinite;
         }
 
@@ -145,7 +171,25 @@
             }
         }
 
+        @keyframes pop3d {
+            0% {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.15);
+                opacity: 1;
+            }
+            100% {
+               transform: scale(1);
+            }
+        }
+
         .caption-label.pop {
+            animation: pop 0.5s ease-out;
+        }
+
+        .caption-label-3d.pop {
             animation: pop 0.5s ease-out;
         }
 
@@ -164,11 +208,35 @@
             }
         }
 
+        @keyframes bouncePulseCombo3d {
+            0%, 100% {
+                transform: translateY(0) scale(1);
+            }
+            25% {
+                transform: translateY(-5px) scale(1.1);
+            }
+            50% {
+                transform: translateY(-10px) scale(1);
+            }
+            75% {
+               transform: translateY(-5px) scale(1.1);
+            }
+        }
+
         .caption-label.bounce-pulse {
             animation: bouncePulseCombo 4s ease-in-out infinite;
         }
 
         .caption-label:hover {
+            animation-play-state: paused;
+            transform: translateY(-20px) scale(1.3) translateX(-50%);
+        }
+
+        .caption-label-3d.bounce-pulse {
+            animation: bouncePulseCombo3d 4s ease-in-out infinite;
+        }
+
+        .caption-label-3d:hover {
             animation-play-state: paused;
             transform: translateY(-20px) scale(1.3) translateX(-50%);
         }
