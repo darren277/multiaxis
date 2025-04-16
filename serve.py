@@ -1,10 +1,13 @@
 """"""
+import json
+
 from animations import ANIMATIONS_DICT, FULLSCREEN_CSS, EMBEDDED_CSS, SMALL_HEADER_CSS
 
 HOST = 'localhost'
 PORT = 8000
 
 THREEJS_VERSION = '0.169.0'
+# "0.175.0"
 
 from flask import Flask, Response, send_file, abort, render_template, request
 import os
@@ -47,6 +50,38 @@ def serve_threejs(animation):
     data_selected = data_selected_query_param if data_selected_query_param else viz.get('data_sources', [None])[0] if len(viz.get('data_sources', [])) > 0 else None
     print('data_selected:', data_selected)
 
+    threejs_version = viz.get('threejs_version', THREEJS_VERSION)
+
+    default_importmap = {
+        "three": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/build/three.module.js",
+        "textgeometry": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/geometries/TextGeometry.js",
+        "fontloader": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/loaders/FontLoader.js",
+        "orbitcontrols": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/controls/OrbitControls.js",
+        "svgloader": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/loaders/SVGLoader.js",
+        "svgrenderer": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/renderers/SVGRenderer.js",
+        "css3drenderer": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/renderers/CSS3DRenderer.js",
+
+        "tween": "https://unpkg.com/@tweenjs/tween.js@23.1.3/dist/tween.esm.js",
+
+        "stats": "https://cdnjs.cloudflare.com/ajax/libs/stats.js/r17/Stats.min.js",
+        "lil-gui": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/libs/lil-gui.module.min.js",
+
+        "d3-force-3d": "https://cdn.skypack.dev/d3-force-3d",
+        "three-spritetext": "//unpkg.com/three-spritetext/dist/three-spritetext.mjs",
+        "3d-force-graph": "https://cdn.jsdelivr.net/npm/3d-force-graph@1.77.0/+esm",
+        "vrbutton": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/webxr/VRButton.js",
+    }
+
+    # Force3d importmap:
+    force3d_importmap = {
+        "three": "https://esm.sh/three@0.175.0",
+        "3d-force-graph": "https://esm.sh/3d-force-graph@1.77.0?bundle&deps=three@0.175.0",
+        "three-spritetext": "https://esm.sh/three-spritetext@1.9.6?bundle&deps=three@0.175.0",
+        "tween": "https://unpkg.com/@tweenjs/tween.js@23.1.3/dist/tween.esm.js",
+    }
+
+    importmap = force3d_importmap if animation == 'force3d' else default_importmap
+
     return render_template(
         'index.html',
         fullscreen=fullscreen,
@@ -59,6 +94,7 @@ def serve_threejs(animation):
         #main_js_path='./src/main.js',
         main_js_path = '/src/main.js',
         data_selected=data_selected,
+        importmap=json.dumps(importmap, indent=4),
     )
 
 @app.route('/style.css')

@@ -1,60 +1,102 @@
-import * as THREE from 'three';
-import Stats from 'stats';
-import { OrbitControls } from 'orbitcontrols';
-import { VRButton } from 'vrbutton';
-import { CSS3DRenderer } from 'css3drenderer';
+import { Scene, Color, PerspectiveCamera, WebGLRenderer } from 'three';
 
-export function setupScene(containerId = 'c', overlayElements = [], startPosition = { x: 0, y: 2, z: 5 }, clippingPlane = 1000, controller = 'orbital', cssRendererEnabled = false) {
+function importOrbitControls() {
+    return import('orbitcontrols').then(module => {
+        return module.OrbitControls;
+    });
+}
+
+function importCSS3DRenderer() {
+    return import('css3drenderer').then(module => {
+        return module.CSS3DRenderer;
+    });
+}
+
+function importVRButton() {
+    return import('vrbutton').then(module => {
+        return module.VRButton;
+    });
+}
+
+function importStats() {
+    return import('stats').then(module => {
+        return module.Stats;
+    });
+}
+
+
+export function setupScene(
+    containerId = 'c',
+    overlayElements = [],
+    startPosition = { x: 0, y: 2, z: 5 },
+    clippingPlane = 1000,
+    controller = 'orbital',
+    cssRendererEnabled = false,
+    statsEnabled = false,
+    vrEnabled = false
+    ) {
+    let controls;
+    let stats;
+    let cssRenderer;
+
     // 1) Setup container
     const container = document.getElementById(containerId);
     const width = container.clientWidth;
     const height = container.clientHeight;
 
     // 2) Scene
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x000000);
+    const scene = new Scene();
+    scene.background = new Color(0x000000);
 
     // 3) Camera
-    const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, clippingPlane);
+    const camera = new PerspectiveCamera(75, width / height, 0.1, clippingPlane);
     //camera.position.set(5, 5, 5); // or wherever
     camera.position.set(startPosition.x, startPosition.y, startPosition.z);
 
     // 4) Renderer
-    const renderer = new THREE.WebGLRenderer({
+    const renderer = new WebGLRenderer({
         canvas: container.querySelector('canvas'),
         antialias: true
     });
 
-    renderer.xr.enabled = true;
-    document.body.appendChild(VRButton.createButton(renderer));
+    if (vrEnabled) {
+        importVRButton().then(VRButton => {
+            renderer.xr.enabled = true;
+            document.body.appendChild(VRButton.createButton(renderer));
+        });
+    };
 
     renderer.setSize(width, height);
     renderer.setPixelRatio(window.devicePixelRatio);
     container.appendChild(renderer.domElement);
 
-
-    let cssRenderer = null;
-
     if (cssRendererEnabled) {
-        cssRenderer = new CSS3DRenderer();
-        //cssRenderer.setSize(window.innerWidth, window.innerHeight);
-        cssRenderer.setSize(container.clientWidth, container.clientHeight);
-        cssRenderer.domElement.style.position = 'absolute';
-        cssRenderer.domElement.style.top = container.offsetTop + 'px';
-        cssRenderer.domElement.style.left = container.offsetLeft + 'px';
+        importCSS3DRenderer().then(CSS3DRenderer => {
+            cssRenderer = new CSS3DRenderer();
+            //cssRenderer.setSize(window.innerWidth, window.innerHeight);
+            cssRenderer.setSize(container.clientWidth, container.clientHeight);
+            cssRenderer.domElement.style.position = 'absolute';
+            cssRenderer.domElement.style.top = container.offsetTop + 'px';
+            cssRenderer.domElement.style.left = container.offsetLeft + 'px';
 
-        cssRenderer.domElement.style.pointerEvents = 'none';
+            cssRenderer.domElement.style.pointerEvents = 'none';
 
-        // place it *on top of* the existing WebGL canvas
-        //document.body.appendChild(cssRenderer.domElement);
-        container.appendChild(cssRenderer.domElement);
-        //cssRenderer.domElement.style.zIndex = 1;
+            // place it *on top of* the existing WebGL canvas
+            //document.body.appendChild(cssRenderer.domElement);
+            container.appendChild(cssRenderer.domElement);
+            //cssRenderer.domElement.style.zIndex = 1;
+        });
     }
 
 
     // Stats (optional)
-    const stats = new Stats();
-    //container.appendChild( stats.dom );
+    if (statsEnabled) {
+        importStats().then(Stats => {
+            const stats = new Stats();
+            stats.showPanel(0); // 0: fps, 1: ms, 2: memory
+            container.appendChild(stats.dom);
+        });
+    }
 
 
     // Add any optional overlay elements
@@ -69,16 +111,17 @@ export function setupScene(containerId = 'c', overlayElements = [], startPositio
     }
 
     // 5) Controls
-    let controls;
     if (controller === 'none') {
         // Controls are explicitly set to none (ex: Adventure)
         controls = null;
     } else if (controller === 'orbital') {
-        controls = new OrbitControls(camera, renderer.domElement);
-        controls.enabled = true; // we can toggle later
+        importOrbitControls().then(OrbitControls => {
+            controls = new OrbitControls(camera, renderer.domElement);
+            controls.enabled = true; // we can toggle later
 
-        controls.target.set(0, 0, 0); // set the target to the origin
-        controls.update();
+            controls.target.set(0, 0, 0); // set the target to the origin
+            controls.update();
+        });
     } else if (controller === 'walking') {
         // TODO...
         controls = null;
