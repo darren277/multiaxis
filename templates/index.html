@@ -73,6 +73,36 @@
             text-align: center;
         }
 
+        .caption-label-3d {
+            /* No absolute positioning in 3D space */
+            /* position: static; */
+            position: relative;
+
+            /* Set a known pixel size to control world-space scaling */
+            width: auto;
+            max-width: 300px;
+            /* font-size: 16px; */
+
+            /* Keep the same readable styles */
+            color: white;
+            font-family: sans-serif;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 4px 8px;
+            border-radius: 12px;
+
+            white-space: nowrap;
+            text-align: center;
+
+            /* Optional 3D-friendly touchups */
+            box-shadow: none;      /* Less useful in 3D */
+            text-shadow: 0.5px 0.5px 1px black;
+
+            pointer-events: none;  /* So it doesn't block camera controls */
+            user-select: none;
+
+            /* Helpful for debugging label bounds */
+            /* border: 1px solid red; */
+        }
 
 
         @keyframes bounceY {
