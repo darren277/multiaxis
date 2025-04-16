@@ -42,7 +42,7 @@ const loadDataSource = (scene, dataSrc, drawFunc, state) => {
 
 const THREEJS_DRAWINGS = {
     'room': () => import('./drawing/drawRoom.js').then(m => m.roomDrawing),
-    'adventure': () => import('./drawing/drawAdventure.js').then(m => m.adventureDrawing),
+    'adventure': () => import('./drawing/adventure/drawAdventure.js').then(m => m.adventureDrawing),
     'music': () => import('./drawing/drawSheetMusic.js').then(m => m.musicDrawing),
     'multiaxis': () => import('./drawing/drawChart.js').then(m => m.multiAxisDrawing),
     'cayley': () => import('./drawing/drawGraph.js').then(m => m.cayleyDrawing),
