@@ -202,7 +202,9 @@ function contentLoadedCallback(threejsDrawing) {
         tweenUpdate();
 
         // Update debug stats
-        stats.update();
+        if (stats) {
+            stats.update();
+        }
 
         // Final render
         renderer.render(scene, camera);
