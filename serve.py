@@ -7,6 +7,7 @@ HOST = 'localhost'
 PORT = 8000
 
 THREEJS_VERSION = '0.169.0'
+# "0.175.0"
 
 from flask import Flask, Response, send_file, abort, render_template, request
 import os
