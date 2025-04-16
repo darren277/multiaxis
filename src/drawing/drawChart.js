@@ -127,4 +127,18 @@ function drawChart( scene, data, state, config = chartConfig ) {
     });
 }
 
-export { drawChart };
+const multiAxisDrawing = {
+    'sceneElements': [],
+    'drawFuncs': [
+        {'func': drawChart, 'dataSrc': 'data', 'dataType': 'json'}
+    ],
+    'uiState': null,
+    'eventListeners': null,
+    'animationCallback': (renderer, timestamp, threejsDrawing, uiState, camera) => {
+    },
+    'data': {
+        'sheetMusic': null,
+    }
+}
+
+export { multiAxisDrawing };
