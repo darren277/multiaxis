@@ -1,5 +1,6 @@
 import * as THREE from 'three'; // for any references you still need
 import {Tween, Easing} from 'tween'
+import { CSS3DObject } from 'css3drenderer';
 
 let currentViewIndex = 0;
 
@@ -30,31 +31,155 @@ function createPhotoMesh(item) {
     return mesh;
 }
 
+function createVideoMesh(item, worldWidth, worldHeight) {
+    // 1) Create an HTML video element
+    const video = document.createElement('video');
+    //video.src = 'path-to-video-file.mp4';
+    video.src = 'textures/CleanSocialVideoSalesLetter.mp4';
+    video.crossOrigin = 'anonymous';
+    video.loop = true;
+    video.muted = true;
+    video.play();
 
-function createCaptionedPhoto(scene, item) {
-    const mesh = createPhotoMesh(item); // your mesh creation function
-    scene.add(mesh);
+    // 2) Create a texture from the video
+    const videoTexture = new THREE.VideoTexture(video);
+    videoTexture.minFilter = THREE.LinearFilter;
+    videoTexture.magFilter = THREE.LinearFilter;
 
+    // 3) Use that texture in a MeshBasicMaterial
+    const geometry = new THREE.PlaneGeometry(4, 3);
+    const material = new THREE.MeshBasicMaterial({ map: videoTexture, side: THREE.DoubleSide });
+    const mesh = new THREE.Mesh(geometry, material);
+
+    const x = item.position.x;
+    const y = item.position.y;
+    const z = item.position.z;
+
+    mesh.position.set(x, y, z);
+
+    // 🔑 Store the video element for later
+    mesh.userData.videoElement = video;
+
+    return mesh;
+}
+
+function createVideoMeshOLD(item, worldWidth, worldHeight) {
+    var div = document.createElement( 'div' );
+    div.style.width = `${worldWidth}px`;
+    div.style.height = `${worldHeight}px`;
+    //div.style.backgroundColor = '#000';
+    div.style.backgroundColor = 'lime';
+    var iframe = document.createElement( 'iframe' );
+    iframe.style.width = `${worldWidth}px`;
+    iframe.style.height = `${worldHeight}px`;
+    iframe.style.border = '0px';
+    iframe.src = item.video;
+    //iframe.src = 'https://www.darrenmackenzie.com'
+
+    iframe.allow = 'autoplay; encrypted-media';
+    iframe.allowFullscreen = true;
+
+    iframe.style.pointerEvents = 'auto';
+
+    div.appendChild( iframe );
+    var object = new CSS3DObject( div );
+
+    object.position.set( item.position.x, item.position.y, item.position.z );
+    //object.rotation.set( 0, Math.PI, 0 );
+
+    object.name = item.id; // store ID
+
+    window.debugObject = object;
+
+    return object;
+}
+
+function create3DLabelWithAnimation(captionText, className) {
+    // Outer DIV that CSS3DRenderer will transform in 3D space
+    const outerDiv = document.createElement('div');
+    // No special styles here; let Three.js apply its inline transform
+
+    // Inner DIV that we animate with our bounce/pulse classes
     const labelEl = document.createElement('div');
-    labelEl.className = 'caption-label' + item.customClasses;
-    labelEl.innerHTML = item.caption; // HTML content allowed
-    labelEl.style.position = 'absolute';
-    labelEl.style.transform = 'translate(-50%, 0)';
+    //labelEl.className = 'caption-label-3d bounce'; // for example
+    labelEl.className = 'caption-label-3d ' + className; // for example
+    //labelEl.textContent = captionText;
+    labelEl.innerHTML = captionText;
 
+    // Put the animated label inside the outer container
+    outerDiv.appendChild(labelEl);
+
+    // Now create the CSS3DObject from the outer container
+    const labelObject = new CSS3DObject(outerDiv);
+
+    // Optionally scale the entire label if it’s too big
+    labelObject.scale.set(0.01, 0.01, 0.01);
+
+    return labelObject;
+}
+
+
+function createCaptionedItem(scene, item, isVideo, worldWidth = null, worldHeight = null, use3dRenderer = false) {
+    console.log('item', item);
+
+    let mesh = null;
+
+    // 1. Create Mesh
+    if (!item.image || item.image !== 'NO_IMAGE') {
+        if (isVideo) {
+            mesh = createVideoMesh(item, worldWidth, worldHeight);
+        } else {
+            mesh = createPhotoMesh(item);
+        }
+        scene.add(mesh);
+    }
+
+    // 2) Build the caption
+    const captionText = item.caption;
+    const customClasses = item.customClasses || ''; // e.g. "bounce" or "pulse"
+
+    // 2. Create label element
+    const labelEl = document.createElement('div');
+
+    labelEl.innerHTML = item.caption;
     labelEl.style.color = 'black';
-
     labelEl.style.padding = '4px 8px';
-
-    //labelEl.style.background = 'rgba(0,0,0,0.7)';
-    // white background...
     labelEl.style.background = 'white';
-
     labelEl.style.fontFamily = 'sans-serif';
-    labelEl.style.pointerEvents = 'none'; // allow clicks to pass through
 
-    document.getElementById('labelContainer').appendChild(labelEl);
+     if (use3dRenderer) {
+        // -- 3D Caption with CSS3DRenderer --
 
-    return { mesh, labelEl, item };
+        // Use the nested approach so animations don't conflict
+        const labelObject = create3DLabelWithAnimation(captionText, customClasses);
+
+        // Position the label slightly below the mesh (optional)
+        const offsetY = -0.5;
+        const position = item.position || { x: 0, y: 0, z: 0 };
+        labelObject.position.set(position.x, position.y + offsetY, position.z);
+
+        // Alternatively, if you want it to follow the mesh exactly:
+        // labelObject.position.copy(mesh.position).add(new THREE.Vector3(0, offsetY, 0));
+
+        scene.add(labelObject);
+
+        return { mesh, labelObject, item }; // return the CSS3DObject
+    } else {
+        // -- 2D DOM Overlay --
+
+        const labelEl = document.createElement('div');
+        labelEl.className = 'caption-label ' + customClasses;
+        labelEl.innerHTML = captionText;
+
+        labelEl.style.position = 'absolute';
+        labelEl.style.transform = 'translate(-50%, 0)';
+        labelEl.style.pointerEvents = 'none';
+
+        // You probably have a container for 2D overlays
+        document.getElementById('labelContainer2d').appendChild(labelEl);
+
+        return { mesh, labelEl, item }; // return the DOM element
+    }
 }
 
 const vector = new THREE.Vector3(); // reuse this
@@ -102,16 +227,18 @@ function vantagePointForItem(item) {
 
 
 
-function buildSceneItems(scene, sceneItems) {
+function buildSceneItems(scene, sceneItems, worldWidth = 4, worldHeight = 3) {
     // Where allPhotoEntries is your array of { mesh, labelEl, item } returned from createCaptionedPhoto.
 
     const allPhotoEntries = [];
 
     // Build photo meshes
     sceneItems.forEach((item) => {
-        const photoEntry = createCaptionedPhoto(scene, item);
-        scene.add(photoEntry.mesh);
-        allPhotoEntries.push(photoEntry);
+        let entry;
+        const isVideo = item.video && item.video !== "";
+        entry = createCaptionedItem(scene, item, isVideo, worldWidth, worldHeight);
+        scene.add(entry.mesh);
+        allPhotoEntries.push(entry);
     });
 
     // Generate steps
@@ -275,6 +402,20 @@ function constructElement(document, tagName, id, attrs) {
 const drawAdventureElements = [
     {
         tagName: 'div',
+        id: 'labelContainer2d',
+        className: '',
+        attrs: {
+            position: 'absolute',
+            top: '0',
+            left: '0',
+            width: '100%',
+            height: '100%',
+            pointerEvents: 'none',
+            zIndex: '1'
+        }
+    },
+    {
+        tagName: 'div',
         id: 'labelContainer',
         className: '',
         attrs: {
@@ -283,6 +424,15 @@ const drawAdventureElements = [
             left: '0',
             width: '100%',
             height: '100%',
+            pointerEvents: 'none',
+            zIndex: '1'
+        }
+    },
+    {
+        tagName: 'div',
+        id: 'overlayContainer3d',
+        className: '',
+        attrs: {
             pointerEvents: 'none',
             zIndex: '1'
         }
@@ -303,7 +453,17 @@ const drawAdventureElements = [
 ]
 
 function drawAdventure(scene, data, threejsDrawing) {
-    const {adventureSteps, allPhotoEntries} = buildSceneItems(scene, data.sceneItems);
+    const {adventureSteps, allPhotoEntries} = buildSceneItems(scene, data.sceneItems, threejsDrawing.data.worldWidth, threejsDrawing.data.worldHeight);
+
+    // build data.otherItems...
+    const otherItems = data.otherItems.map((item) => {
+        console.log('creating other item', item);
+        const isVideo = item.video && item.video !== "";
+        const use3dRenderer = true;
+        const { mesh, labelEl } = createCaptionedItem(scene, item, isVideo, threejsDrawing.data.worldWidth, threejsDrawing.data.worldHeight, use3dRenderer);
+        scene.add(mesh);
+        return { mesh, labelEl, item };
+    });
 
     // TODO: draw data.otherItems...
 
@@ -312,6 +472,42 @@ function drawAdventure(scene, data, threejsDrawing) {
 
     threejsDrawing.uiState.currentStepId = `view_${data.sceneItems[0].id}`;
     threejsDrawing.data.currentStepId = `view_${data.sceneItems[0].id}`;
+
+    // Draw ambient light...
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    scene.add(ambientLight);
+    // Draw directional light...
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+    directionalLight.position.set(0, 1, 0);
+    scene.add(directionalLight);
+}
+
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+function onClick(scene, renderer, camera, event) {
+    const rect = renderer.domElement.getBoundingClientRect();
+
+    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+    raycaster.setFromCamera(mouse, camera);
+
+    const intersects = raycaster.intersectObjects(scene.children, true);
+
+    if (intersects.length > 0) {
+        const clicked = intersects[0].object;
+
+        if (clicked.userData.videoElement) {
+            const vid = clicked.userData.videoElement;
+
+            if (vid.paused) {
+                vid.play();
+            } else {
+                vid.pause();
+            }
+        }
+    }
 }
 
 const adventureDrawing = {
@@ -340,7 +536,11 @@ const adventureDrawing = {
             // COMMENT OUT FOLLOWING TWO LINES FOR DEBUG VIA CLICK CONTROL HELPER...
             uiState.currentStepId = currentStepId;
             onAdventureKeyDown(camera, e, adventureSteps, controls, uiState);
-        }
+        },
+        'click': (e, other) => {
+            const {renderer, camera, scene} = other;
+            onClick(scene, renderer, camera, e);
+        },
     },
     'animationCallback': (renderer, timestamp, threejsDrawing, uiState, camera) => {
         // Update label positions
@@ -354,7 +554,10 @@ const adventureDrawing = {
         'allPhotoEntries': null,
     },
     'sceneConfig': {
-        'controller': 'none'
+        //'controller': 'none'
+        // when debugging...
+        'controller': 'orbital',
+        'cssRenderer': true,
     }
 }
 

@@ -2,8 +2,9 @@ import * as THREE from 'three';
 import Stats from 'stats';
 import { OrbitControls } from 'orbitcontrols';
 import { VRButton } from 'vrbutton';
+import { CSS3DRenderer } from 'css3drenderer';
 
-export function setupScene(containerId = 'c', overlayElements = [], startPosition = { x: 0, y: 2, z: 5 }, clippingPlane = 1000, controller = 'orbital') {
+export function setupScene(containerId = 'c', overlayElements = [], startPosition = { x: 0, y: 2, z: 5 }, clippingPlane = 1000, controller = 'orbital', cssRendererEnabled = false) {
     // 1) Setup container
     const container = document.getElementById(containerId);
     const width = container.clientWidth;
@@ -30,6 +31,25 @@ export function setupScene(containerId = 'c', overlayElements = [], startPositio
     renderer.setSize(width, height);
     renderer.setPixelRatio(window.devicePixelRatio);
     container.appendChild(renderer.domElement);
+
+
+    let cssRenderer = null;
+
+    if (cssRendererEnabled) {
+        cssRenderer = new CSS3DRenderer();
+        //cssRenderer.setSize(window.innerWidth, window.innerHeight);
+        cssRenderer.setSize(container.clientWidth, container.clientHeight);
+        cssRenderer.domElement.style.position = 'absolute';
+        cssRenderer.domElement.style.top = container.offsetTop + 'px';
+        cssRenderer.domElement.style.left = container.offsetLeft + 'px';
+
+        cssRenderer.domElement.style.pointerEvents = 'none';
+
+        // place it *on top of* the existing WebGL canvas
+        //document.body.appendChild(cssRenderer.domElement);
+        container.appendChild(cssRenderer.domElement);
+        //cssRenderer.domElement.style.zIndex = 1;
+    }
 
 
     // Stats (optional)
@@ -78,5 +98,5 @@ export function setupScene(containerId = 'c', overlayElements = [], startPositio
 
     window.addEventListener('resize', onWindowResize, false);
 
-    return { scene, camera, renderer, controls, stats };
+    return { scene, camera, renderer, controls, stats, cssRenderer };
 }

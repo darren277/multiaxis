@@ -108,6 +108,12 @@ function drawHelpers(scene, threejsDrawing) {
 //    });
 }
 
+function pixelToWorldUnits(pixelSize, distance, camera) {
+    const fovInRad = camera.fov * (Math.PI / 180);
+    const screenHeight = 2 * Math.tan(fovInRad / 2) * distance;
+    const pixelHeightInWorld = screenHeight / window.innerHeight;
+    return pixelSize * pixelHeightInWorld;
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     const drawingName = document.querySelector('meta[name="threejs_drawing_name"]').content;
@@ -124,8 +130,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const startPosition = threejsDrawing.sceneConfig && threejsDrawing.sceneConfig.startPosition || {x: 0, y: 2, z: 5};
     const clippingPlane = threejsDrawing.sceneConfig && threejsDrawing.sceneConfig.clippingPlane || 1000;
     const controller = threejsDrawing.sceneConfig && threejsDrawing.sceneConfig.controller || 'orbital';
+    const cssRendererEnabled = threejsDrawing.sceneConfig && threejsDrawing.sceneConfig.cssRenderer || false;
 
-    const { scene, camera, renderer, controls, stats } = setupScene('c', threejsDrawing.sceneElements, startPosition, clippingPlane, controller);
+    const { scene, camera, renderer, controls, stats, cssRenderer } = setupScene('c', threejsDrawing.sceneElements, startPosition, clippingPlane, controller, cssRendererEnabled);
 
     for (const {func, dataSrc, dataType} of threejsDrawing.drawFuncs) {
         if (dataSrc) {
@@ -136,6 +143,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     func(scene, data, threejsDrawing);
                 });
             } else if (dataType === 'json') {
+                const worldWidth = pixelToWorldUnits(480, 5, camera); // 480px at 5 units away
+                const worldHeight = pixelToWorldUnits(360, 5, camera);
+                threejsDrawing.data.worldWidth = worldWidth;
+                threejsDrawing.data.worldHeight = worldHeight;
                 loadDataSource(scene, data_src, func, threejsDrawing);
             } else {
                 console.error(`Unknown data type: ${dataType}`);
@@ -178,7 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (threejsDrawing.eventListeners) {
         for (const [eventName, eventFunc] of Object.entries(threejsDrawing.eventListeners)) {
             window.addEventListener(eventName, (e) => {
-                eventFunc(e, {camera, data: threejsDrawing.data, controls, uiState});
+                eventFunc(e, {camera, data: threejsDrawing.data, controls, uiState, renderer, scene});
             });
         }
     }
@@ -186,7 +197,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // 5) Animate loop
     renderer.setAnimationLoop((timestamp, frame) => {
         // Update controls (if using OrbitControls or similar)
-        controls.update();
+        if (controls) {
+            controls.update();
+        }
 
         // Update UI state and call your animation callback
         uiState.rect = renderer.domElement.getBoundingClientRect();
@@ -205,6 +218,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Final render
         renderer.render(scene, camera);
+
+        // CSS Renderer
+        if (cssRenderer) {
+            cssRenderer.render(scene, camera);
+        }
     });
 
 })
