@@ -1,8 +1,8 @@
-import * as THREE from 'three';
-import Stats from 'stats';
-import { OrbitControls } from 'orbitcontrols';
-import { VRButton } from 'vrbutton';
-import { CSS3DRenderer } from 'css3drenderer';
+import { Scene, Color, PerspectiveCamera, WebGLRenderer } from 'three';
+//import Stats from 'stats';
+//import { OrbitControls } from 'orbitcontrols';
+//import { VRButton } from 'vrbutton';
+//import { CSS3DRenderer } from 'css3drenderer';
 
 export function setupScene(containerId = 'c', overlayElements = [], startPosition = { x: 0, y: 2, z: 5 }, clippingPlane = 1000, controller = 'orbital', cssRendererEnabled = false) {
     // 1) Setup container
@@ -11,16 +11,16 @@ export function setupScene(containerId = 'c', overlayElements = [], startPositio
     const height = container.clientHeight;
 
     // 2) Scene
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x000000);
+    const scene = new Scene();
+    scene.background = new Color(0x000000);
 
     // 3) Camera
-    const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, clippingPlane);
+    const camera = new PerspectiveCamera(75, width / height, 0.1, clippingPlane);
     //camera.position.set(5, 5, 5); // or wherever
     camera.position.set(startPosition.x, startPosition.y, startPosition.z);
 
     // 4) Renderer
-    const renderer = new THREE.WebGLRenderer({
+    const renderer = new WebGLRenderer({
         canvas: container.querySelector('canvas'),
         antialias: true
     });

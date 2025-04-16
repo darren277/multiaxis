@@ -8,12 +8,14 @@ import { usePanoramicCubeBackground, useProceduralBackground } from './drawing/d
 
 import uiPanelConfig from './config/uiPanelConfig.js';
 
-import * as THREE from 'three'; // for any references you still need
+//import * as THREE from 'three'; // for any references you still need
+import { TextureLoader, FileLoader } from 'three'; // for texture loading
 // Or import { FileLoader } from 'three'; if you just need the loader
-import { SVGLoader } from 'svgloader';
 
 import {update as tweenUpdate} from 'tween'
 
+import { REVISION } from 'three';
+console.log('Three.js version (main):', REVISION);
 
 const DEBUG = false;
 
@@ -21,6 +23,8 @@ const DEBUG = false;
 const textureLoader = new THREE.TextureLoader();
 const fileLoader = new THREE.FileLoader();
 const svgLoader = new SVGLoader();
+const textureLoader = new TextureLoader();
+const fileLoader = new FileLoader();
 
 
 const loadDataSource = (scene, dataSrc, drawFunc, state) => {
@@ -118,8 +122,11 @@ function contentLoadedCallback(threejsDrawing) {
             const data_src = dataSelected ? dataSelected : dataSrc;
             console.log(`Loading data source: ${data_src}`);
             if (dataType === 'svg') {
-                svgLoader.load(`./imagery/${data_src}_out_annotated.svg`, (data) => {
-                    func(scene, data, threejsDrawing);
+                import('svgloader').then(m => {
+                    const SVGLoader = m.SVGLoader;
+                    svgLoader.load(`./imagery/${data_src}_out_annotated.svg`, (data) => {
+                        func(scene, data, threejsDrawing);
+                    });
                 });
             } else if (dataType === 'json') {
                 const worldWidth = pixelToWorldUnits(480, 5, camera); // 480px at 5 units away

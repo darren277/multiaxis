@@ -1,4 +1,4 @@
-import * as THREE from "three";
+import { Mesh, MeshBasicMaterial, BoxGeometry, ImageLoader, Texture, BackSide, LinearFilter, LinearMipmapLinearFilter, DataTexture } from "three";
 
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -11,11 +11,11 @@ function usePanoramicCubeBackground( scene ) {
 
     const materials = [];
     for ( let i = 0; i < 6; i ++ ) {
-        materials.push( new THREE.MeshBasicMaterial( { map: textures[ i ] } ) );
+        materials.push( new MeshBasicMaterial( { map: textures[ i ] } ) );
     }
 
-    const skyBox = new THREE.Mesh(
-    new THREE.BoxGeometry( 1, 1, 1 ),
+    const skyBox = new Mesh(
+    new BoxGeometry( 1, 1, 1 ),
         materials
     );
 
@@ -31,10 +31,10 @@ function usePanoramicCubeBackground( scene ) {
 function getTexturesFromAtlasFile( atlasImgUrl, tilesNum ) {
     const textures = [];
     for ( let i = 0; i < tilesNum; i ++ ) {
-        textures[ i ] = new THREE.Texture();
+        textures[ i ] = new Texture();
     }
 
-    new THREE.ImageLoader().load( atlasImgUrl, ( image ) => {
+    new ImageLoader().load( atlasImgUrl, ( image ) => {
         const tileWidth = image.height;
         let canvas, context;
 
@@ -73,17 +73,17 @@ function useProceduralBackground( scene ) {
     // TODO: Does not work yet. Needs some troubleshooting.
 
     // Create a large inward-facing cube (or sphere) for the background
-    const geometry = new THREE.BoxGeometry( 500, 500, 500 );
+    const geometry = new BoxGeometry( 500, 500, 500 );
     // If you want a sphere, use: new THREE.SphereGeometry( 250, 32, 32 ) and then material.side=THREE.BackSide.
 
     const texture = createNoiseTexture(128);
 
-    const material = new THREE.MeshBasicMaterial( {
+    const material = new MeshBasicMaterial( {
         map: texture,
-        side: THREE.BackSide
+        side: BackSide
     });
 
-    const skyBox = new THREE.Mesh( geometry, material );
+    const skyBox = new Mesh( geometry, material );
     scene.add( skyBox );
 }
 
@@ -101,12 +101,12 @@ function createNoiseTexture( size = 128 ) {
         data[stride + 3] = 255;   // A (fully opaque)
     }
 
-    const texture = new THREE.DataTexture( data, size, size, THREE.RGBFormat, THREE.UnsignedByteType );
+    const texture = new DataTexture( data, size, size, THREE.RGBFormat, THREE.UnsignedByteType );
 
     // Optionally specify some filtering
     texture.generateMipmaps = true;
-    texture.minFilter = THREE.LinearMipmapLinearFilter;
-    texture.magFilter = THREE.LinearFilter;
+    texture.minFilter = LinearMipmapLinearFilter;
+    texture.magFilter = LinearFilter;
 
     texture.needsUpdate = true;
 
