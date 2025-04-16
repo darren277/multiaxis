@@ -1,0 +1,27 @@
+{
+  "nodes":
+    [
+      {"id": 1, "name": "ROOT"},
+      {"id": 2, "name": "Testing"},
+      {"id": 3, "name": "3rd Node"},
+      {"id": 4, "name": "4th Node"},
+      {"id": 5, "name": "5th Node"},
+      {"id": 6, "name": "6th Node"},
+      {"id": 7, "name": "7th Node"},
+      {"id": 8, "name": "8th Node"},
+      {"id": 9, "name": "9th Node"},
+      {"id": 10, "name": "10th Node"}
+    ],
+  "links":
+    [
+      {"source": 1, "target": 2},
+      {"source": 1, "target": 3},
+      {"source": 1, "target": 4},
+      {"source": 1, "target": 5},
+      {"source": 1, "target": 6},
+      {"source": 1, "target": 7},
+      {"source": 1, "target": 8},
+      {"source": 1, "target": 9},
+      {"source": 1, "target": 10}
+    ]
+}

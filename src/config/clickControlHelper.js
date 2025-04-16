@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import { Raycaster, Vector2 } from 'three';
 
 function degToRad(degrees) {
     return degrees * (Math.PI / 180);
@@ -21,8 +21,8 @@ class ClickAndKeyControls {
         this.selectedObject = null;            // track currently clicked object
 
         // For raycasting on clicks
-        this.raycaster = new THREE.Raycaster();
-        this.mouse = new THREE.Vector2();
+        this.raycaster = new Raycaster();
+        this.mouse = new Vector2();
 
         // Bind event handlers
         this.handleClick = this.handleClick.bind(this);

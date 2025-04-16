@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import { CanvasTexture, SRGBColorSpace, RepeatWrapping, PlaneGeometry, Mesh, MeshBasicMaterial, TextureLoader, UVMapping, LinearFilter } from 'three';
 
 const SCREEN_WIDTH = window.innerWidth;
 const SCREEN_HEIGHT = window.innerHeight;
@@ -25,13 +25,13 @@ function drawImage(scene, imgPath) {
     context.fillRect( 0, 0, 64, 64 );
     context.fillRect( 64, 64, 64, 64 );
 
-    const textureCanvas = new THREE.CanvasTexture( imageCanvas );
-    textureCanvas.colorSpace = THREE.SRGBColorSpace;
+    const textureCanvas = new CanvasTexture( imageCanvas );
+    textureCanvas.colorSpace = SRGBColorSpace;
     textureCanvas.repeat.set( 1000, 1000 );
-    textureCanvas.wrapS = THREE.RepeatWrapping;
-    textureCanvas.wrapT = THREE.RepeatWrapping;
+    textureCanvas.wrapS = RepeatWrapping;
+    textureCanvas.wrapT = RepeatWrapping;
 
-    const materialCanvas = new THREE.MeshBasicMaterial( { map: textureCanvas } );
+    const materialCanvas = new MeshBasicMaterial( { map: textureCanvas } );
 
     const geometry = new THREE.PlaneGeometry( 100, 100 );
 
@@ -48,8 +48,8 @@ function drawImage(scene, imgPath) {
 
         scene.add( meshCanvas );
 
-        const geometry = new THREE.PlaneGeometry( 100, 100 );
-        const mesh = new THREE.Mesh( geometry, materialPainting );
+        const geometry = new PlaneGeometry( 100, 100 );
+        const mesh = new Mesh( geometry, materialPainting );
 
         addPainting( scene, mesh );
 
@@ -60,13 +60,13 @@ function drawImage(scene, imgPath) {
 
             zscene.add( zmesh );
 
-            const meshFrame = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( { color: 0x000000 } ) );
+            const meshFrame = new Mesh( geometry, new MeshBasicMaterial( { color: 0x000000 } ) );
             meshFrame.position.z = - 10.0;
             meshFrame.scale.x = 1.1 * image.width / 100;
             meshFrame.scale.y = 1.1 * image.height / 100;
             zscene.add( meshFrame );
 
-            const meshShadow = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( { color: 0x000000, opacity: 0.75, transparent: true } ) );
+            const meshShadow = new Mesh( geometry, new MeshBasicMaterial( { color: 0x000000, opacity: 0.75, transparent: true } ) );
             meshShadow.position.y = - 1.1 * image.height / 2;
             meshShadow.position.z = - 1.1 * image.height / 2;
             meshShadow.rotation.x = - Math.PI / 2;
@@ -82,13 +82,13 @@ function drawImage(scene, imgPath) {
 
     };
 
-    const texturePainting = new THREE.TextureLoader().load( imgPath, callbackPainting );
+    const texturePainting = new TextureLoader().load( imgPath, callbackPainting );
 
-    const materialPainting = new THREE.MeshBasicMaterial( { color: 0xffffff, map: texturePainting } );
+    const materialPainting = new MeshBasicMaterial( { color: 0xffffff, map: texturePainting } );
 
-    texturePainting.colorSpace = THREE.SRGBColorSpace;
-    texturePainting.minFilter = texturePainting.magFilter = THREE.LinearFilter;
-    texturePainting.mapping = THREE.UVMapping;
+    texturePainting.colorSpace = SRGBColorSpace;
+    texturePainting.minFilter = texturePainting.magFilter = LinearFilter;
+    texturePainting.mapping = UVMapping;
 }
 
 
