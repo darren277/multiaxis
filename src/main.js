@@ -18,6 +18,7 @@ import { plotFunctionDrawing } from './drawing/drawPlotFunction.js';
 import { rubiksCubeDrawing } from './drawing/drawRubiksCube.js';
 import { chessDrawing } from './drawing/drawChess.js';
 import { clusteringDrawing } from './drawing/drawClustering.js';
+import { force3dDrawing } from './drawing/drawForce.js';
 
 import uiPanelConfig from './config/uiPanelConfig.js';
 import { presentationKeyDownHandler } from './drawing/drawPresentation.js';
@@ -85,6 +86,7 @@ const THREEJS_DRAWINGS = {
     'chess': chessDrawing,
     'clustering': clusteringDrawing,
     'orbits': orbitsDrawing,
+    'force3d': force3dDrawing,
 };
 
 
