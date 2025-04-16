@@ -250,7 +250,9 @@
 <a href="#below">Scroll down</a>
 <h3 id="above">ABOVE</h3>
 {% endif %}
-<div id="3d-graph"></div>
+{% if threejs_drawings.name.lower() == 'force3d' %}
+    <div id="3d-graph"></div>
+{% endif %}
 <main class="threejs">
     <div class="threejs-container" style="position: relative;">
         <!-- The Three.js canvas will be appended into this DIV -->
