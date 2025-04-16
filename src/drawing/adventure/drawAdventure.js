@@ -1,5 +1,4 @@
-import * as THREE from 'three'; // for any references you still need
-import {Tween, Easing} from 'tween'
+import { Vector3, AmbientLight, DirectionalLight } from 'three'; // for any references you still need
 import { CSS3DObject } from 'css3drenderer';
 
 import {onAdventureKeyDown, onClick} from './interactions.js';
@@ -9,7 +8,7 @@ import {drawAdventureElements} from './styleDefs.js';
 let currentViewIndex = 0;
 
 
-const vector = new THREE.Vector3(); // reuse this
+const vector = new Vector3(); // reuse this
 
 function updateLabelPosition(mesh, labelEl, camera, renderer, yOffset = -1.8) {
     const pos = mesh.position.clone();
@@ -38,11 +37,11 @@ function updateLabelPosition(mesh, labelEl, camera, renderer, yOffset = -1.8) {
 
 function vantagePointForItem(item) {
     // Where the item is
-    const itemPos = new THREE.Vector3(item.position.x, item.position.y, item.position.z);
+    const itemPos = new Vector3(item.position.x, item.position.y, item.position.z);
 
     // Define a small offset so the camera is in front of the plane
     // For example, 6 units “in front” along the negative Z axis
-    const offset = new THREE.Vector3(0, 0, 6);
+    const offset = new Vector3(0, 0, 6);
 
     // We'll assume the plane faces the camera’s negative Z by default
     // So the camera is itemPos + offset
@@ -115,62 +114,6 @@ Summary & Extensions
 
 
 
-function tweenCameraToView(camera, view, duration = 2000) {
-    new Tween(camera.position)
-        .to({ x: view.position.x, y: view.position.y, z: view.position.z }, duration)
-        .easing(Easing.Quadratic.Out)
-        .start();
-
-    // For lookAt, you could keep a separate vector and tween that,
-    // then in your render loop do camera.lookAt( thatVector ).
-}
-
-let autoNextTimeoutId = null;
-
-// Function to set camera to a particular view
-function goToStep(camera, stepId, adventureSteps, controls, uiState) {
-    const stepData = adventureSteps[stepId];
-
-    if (!stepData) {
-        console.error("Invalid step:", stepId);
-        return;
-    }
-
-    // Clear previous timeout
-    if (autoNextTimeoutId) {
-        clearTimeout(autoNextTimeoutId);
-        autoNextTimeoutId = null;
-    }
-
-    uiState.currentStepId = stepId;
-    console.log("Current step:", stepId);
-
-    // Move camera
-    tweenCameraToView(camera, stepData.camera);
-    camera.lookAt(stepData.camera.lookAt);
-
-    // If using OrbitControls
-    if (controls) {
-        controls.target.copy(stepData.camera.lookAt);
-        controls.update();
-    }
-
-    // If using OrbitControls, also update controls.target
-    // controls.target.copy(stepData.camera.lookAt);
-    // controls.update();
-
-    // Update overlay text
-    const overlayText = document.getElementById("overlayText");
-    overlayText.innerHTML = stepData.text;
-
-    // If the step has an autoNext property, schedule it
-    if (stepData.autoNext) {
-        autoNextTimeoutId = setTimeout(() => {
-           goToStep(camera, stepData.autoNext.step, adventureSteps, controls, uiState);
-        }, stepData.autoNext.delay);
-    }
-}
-
 // labelContainerAttrs = {position: 'absolute', top: '0', left: '0', width: '100%', height: '100%', pointerEvents: 'none', zIndex: '1'};
 // labelContainerId = 'labelContainer'
 // labelContainerTagName = 'div'
@@ -207,10 +150,10 @@ function drawAdventure(scene, data, threejsDrawing) {
     threejsDrawing.data.currentStepId = `view_${data.sceneItems[0].id}`;
 
     // Draw ambient light...
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    const ambientLight = new AmbientLight(0xffffff, 0.5);
     scene.add(ambientLight);
     // Draw directional light...
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+    const directionalLight = new DirectionalLight(0xffffff, 0.5);
     directionalLight.position.set(0, 1, 0);
     scene.add(directionalLight);
 }

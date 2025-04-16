@@ -1,4 +1,5 @@
 import { TextureLoader, PlaneGeometry, Mesh, MeshBasicMaterial, DoubleSide, VideoTexture, LinearFilter } from 'three'; // for any references you still need
+import { CSS3DObject } from 'css3drenderer';
 
 
 function createPhotoMesh(item) {
@@ -39,7 +40,7 @@ function createVideoMesh(item, worldWidth, worldHeight) {
 
     // 3) Use that texture in a MeshBasicMaterial
     const geometry = new PlaneGeometry(4, 3);
-    const material = new MeshBasicMaterial({ map: videoTexture, side: THREE.DoubleSide });
+    const material = new MeshBasicMaterial({ map: videoTexture, side: DoubleSide });
     const mesh = new Mesh(geometry, material);
 
     const x = item.position.x;
