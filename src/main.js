@@ -6,24 +6,7 @@ import { drawImage } from './drawing/drawImage.js';
 
 import { usePanoramicCubeBackground, useProceduralBackground } from './drawing/drawBackground.js';
 
-import { drawChart } from './drawing/drawChart.js';
-import { musicDrawing } from './drawing/drawSheetMusic.js';
-import { roomDrawing } from './drawing/drawRoom.js';
-import { cayleyDrawing, forceDrawing } from './drawing/drawGraph.js';
-import { geoDrawing, geoDrawing3d } from './drawing/drawGeo.js';
-import { quantumDrawing } from './drawing/drawQuantum.js';
-import { svgDrawing } from './drawing/drawSvg.js';
-import { libraryDrawing } from './drawing/drawLibrary.js';
-import { plotFunctionDrawing } from './drawing/drawPlotFunction.js';
-import { rubiksCubeDrawing } from './drawing/drawRubiksCube.js';
-import { chessDrawing } from './drawing/drawChess.js';
-import { clusteringDrawing } from './drawing/drawClustering.js';
-import { force3dDrawing } from './drawing/drawForce.js';
-
 import uiPanelConfig from './config/uiPanelConfig.js';
-import { presentationKeyDownHandler } from './drawing/drawPresentation.js';
-import { adventureDrawing } from './drawing/drawAdventure.js';
-import { orbitsDrawing } from './drawing/drawOrbits.js';
 
 import * as THREE from 'three'; // for any references you still need
 // Or import { FileLoader } from 'three'; if you just need the loader
@@ -57,36 +40,23 @@ const loadDataSource = (scene, dataSrc, drawFunc, state) => {
 }
 
 const THREEJS_DRAWINGS = {
-    'room': roomDrawing,
-    'adventure': adventureDrawing,
-    'music': musicDrawing,
-    'multiaxis':
-        {
-            'sceneElements': [],
-            'drawFuncs': [
-                {'func': drawChart, 'dataSrc': 'data', 'dataType': 'json'}
-            ],
-            'uiState': null,
-            'eventListeners': null,
-            'animationCallback': (renderer, timestamp, threejsDrawing, uiState, camera) => {
-            },
-            'data': {
-                'sheetMusic': null,
-            }
-        },
-    'cayley': cayleyDrawing,
-    'force': forceDrawing,
-    'geo': geoDrawing,
-    'geo3d': geoDrawing3d,
-    'quantum': quantumDrawing,
-    'svg': svgDrawing,
-    'library': libraryDrawing,
-    'plot': plotFunctionDrawing,
-    'rubiks': rubiksCubeDrawing,
-    'chess': chessDrawing,
-    'clustering': clusteringDrawing,
-    'orbits': orbitsDrawing,
-    'force3d': force3dDrawing,
+    'room': () => import('./drawing/drawRoom.js').then(m => m.roomDrawing),
+    'adventure': () => import('./drawing/drawAdventure.js').then(m => m.adventureDrawing),
+    'music': () => import('./drawing/drawSheetMusic.js').then(m => m.musicDrawing),
+    'multiaxis': () => import('./drawing/drawChart.js').then(m => m.multiAxisDrawing),
+    'cayley': () => import('./drawing/drawGraph.js').then(m => m.cayleyDrawing),
+    'force': () => import('./drawing/drawGraph.js').then(m => m.forceDrawing),
+    'geo': () => import('./drawing/drawGeo.js').then(m => m.geoDrawing),
+    'geo3d': () => import('./drawing/drawGeo.js').then(m => m.geoDrawing3d),
+    'quantum': () => import('./drawing/drawQuantum.js').then(m => m.quantumDrawing),
+    'svg': () => import('./drawing/drawSvg.js').then(m => m.svgDrawing),
+    'library': () => import('./drawing/drawLibrary.js').then(m => m.libraryDrawing),
+    'plot': () => import('./drawing/drawPlotFunction.js').then(m => m.plotFunctionDrawing),
+    'rubiks': () => import('./drawing/drawRubiksCube.js').then(m => m.rubiksCubeDrawing),
+    'chess': () => import('./drawing/drawChess.js').then(m => m.chessDrawing),
+    'clustering': () => import('./drawing/drawClustering.js').then(m => m.clusteringDrawing),
+    'orbits': () => import('./drawing/drawOrbits.js').then(m => m.orbitsDrawing),
+    'force3d': () => import('./drawing/drawForce.js').then(m => m.force3dDrawing),
 };
 
 
@@ -119,9 +89,16 @@ function pixelToWorldUnits(pixelSize, distance, camera) {
 
 document.addEventListener('DOMContentLoaded', () => {
     const drawingName = document.querySelector('meta[name="threejs_drawing_name"]').content;
+
+    THREEJS_DRAWINGS[drawingName]().then(threejsDrawing => {
+        contentLoadedCallback(threejsDrawing);
+    })
+})
+
+function contentLoadedCallback(threejsDrawing) {
     const dataSelected = document.querySelector('meta[name="data_selected"]').content;
-    console.log(`Drawing name: ${drawingName}. Data selected: ${dataSelected}`);
-    const threejsDrawing = THREEJS_DRAWINGS[drawingName];
+
+    console.log(`Drawing name: ${threejsDrawing.name}. Data selected: ${dataSelected}`);
 
     // 1) Setup the scene
     if (!threejsDrawing) {
@@ -226,6 +203,4 @@ document.addEventListener('DOMContentLoaded', () => {
             cssRenderer.render(scene, camera);
         }
     });
-
-})
-
+}
