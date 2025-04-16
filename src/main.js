@@ -1,5 +1,6 @@
 import { setupScene } from './config/sceneSetup.js';
 import { attachUIListeners } from './config/attachUIListeners.js';
+import { ClickAndKeyControls } from './config/clickControlHelper.js';
 
 import { drawImage } from './drawing/drawImage.js';
 
@@ -28,6 +29,9 @@ import * as THREE from 'three'; // for any references you still need
 import { SVGLoader } from 'svgloader';
 
 import {update as tweenUpdate} from 'tween'
+
+
+const DEBUG = false;
 
 
 const textureLoader = new THREE.TextureLoader();
@@ -84,6 +88,27 @@ const THREEJS_DRAWINGS = {
 };
 
 
+function drawHelpers(scene, threejsDrawing) {
+    const refGeometry = new THREE.BoxGeometry(1, 1, 1); // 1x1x1 cube
+    const refMaterial = new THREE.MeshNormalMaterial({ wireframe: true });
+    const refCube = new THREE.Mesh(refGeometry, refMaterial);
+    refCube.position.set(0, 0.5, 0); // sit on ground
+    scene.add(refCube);
+
+    const gridHelper = new THREE.GridHelper(10, 10); // 10x10 units
+    scene.add(gridHelper);
+
+    //window.debugObject = object; // now accessible from console
+
+//    document.addEventListener('keydown', (e) => {
+//        if (e.key === 'ArrowUp') window.debugObject.position.z -= 0.1;
+//        if (e.key === 'ArrowDown') window.debugObject.position.z += 0.1;
+//        if (e.key === 'ArrowLeft') window.debugObject.position.x -= 0.1;
+//        if (e.key === 'ArrowRight') window.debugObject.position.x += 0.1;
+//    });
+}
+
+
 document.addEventListener('DOMContentLoaded', () => {
     const drawingName = document.querySelector('meta[name="threejs_drawing_name"]').content;
     const dataSelected = document.querySelector('meta[name="data_selected"]').content;
@@ -118,6 +143,11 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             func(scene, threejsDrawing);
         }
+    }
+
+    if (DEBUG === true) {
+        drawHelpers(scene, threejsDrawing);
+        const clickKeyControls = new ClickAndKeyControls(scene, camera, renderer);
     }
 
     // 2) Create a shared state for the UI

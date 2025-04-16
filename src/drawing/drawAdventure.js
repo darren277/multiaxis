@@ -336,6 +336,8 @@ const adventureDrawing = {
             // `currentStepId`: Kinda messy like this but it works for now.
             // TODO: `uiState` and `data` should probably be different entities as one is mutable and the other is not.
             // Not super important, though.
+
+            // COMMENT OUT FOLLOWING TWO LINES FOR DEBUG VIA CLICK CONTROL HELPER...
             uiState.currentStepId = currentStepId;
             onAdventureKeyDown(camera, e, adventureSteps, controls, uiState);
         }
