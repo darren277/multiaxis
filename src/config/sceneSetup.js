@@ -2,8 +2,9 @@ import * as THREE from 'three';
 import Stats from 'stats';
 import { OrbitControls } from 'orbitcontrols';
 import { VRButton } from 'vrbutton';
+import { CSS3DRenderer } from 'css3drenderer';
 
-export function setupScene(containerId = 'c', overlayElements = [], startPosition = { x: 0, y: 2, z: 5 }, clippingPlane = 1000) {
+export function setupScene(containerId = 'c', overlayElements = [], startPosition = { x: 0, y: 2, z: 5 }, clippingPlane = 1000, controller = 'orbital', cssRendererEnabled = false) {
     // 1) Setup container
     const container = document.getElementById(containerId);
     const width = container.clientWidth;
@@ -32,6 +33,25 @@ export function setupScene(containerId = 'c', overlayElements = [], startPositio
     container.appendChild(renderer.domElement);
 
 
+    let cssRenderer = null;
+
+    if (cssRendererEnabled) {
+        cssRenderer = new CSS3DRenderer();
+        //cssRenderer.setSize(window.innerWidth, window.innerHeight);
+        cssRenderer.setSize(container.clientWidth, container.clientHeight);
+        cssRenderer.domElement.style.position = 'absolute';
+        cssRenderer.domElement.style.top = container.offsetTop + 'px';
+        cssRenderer.domElement.style.left = container.offsetLeft + 'px';
+
+        cssRenderer.domElement.style.pointerEvents = 'none';
+
+        // place it *on top of* the existing WebGL canvas
+        //document.body.appendChild(cssRenderer.domElement);
+        container.appendChild(cssRenderer.domElement);
+        //cssRenderer.domElement.style.zIndex = 1;
+    }
+
+
     // Stats (optional)
     const stats = new Stats();
     //container.appendChild( stats.dom );
@@ -48,13 +68,26 @@ export function setupScene(containerId = 'c', overlayElements = [], startPositio
         container.appendChild(el);
     }
 
-    // 5) Orbit Controls
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enabled = true; // we can toggle later
+    // 5) Controls
+    let controls;
+    if (controller === 'none') {
+        // Controls are explicitly set to none (ex: Adventure)
+        controls = null;
+    } else if (controller === 'orbital') {
+        controls = new OrbitControls(camera, renderer.domElement);
+        controls.enabled = true; // we can toggle later
+
+        controls.target.set(0, 0, 0); // set the target to the origin
+        controls.update();
+    } else if (controller === 'walking') {
+        // TODO...
+        controls = null;
+    } else {
+        controls = null;
+    }
+
 
     camera.lookAt(0, 0, 0); // look at the origin
-    controls.target.set(0, 0, 0); // set the target to the origin
-    controls.update();
 
     // 6) Resize handling
     function onWindowResize() {
@@ -65,5 +98,5 @@ export function setupScene(containerId = 'c', overlayElements = [], startPositio
 
     window.addEventListener('resize', onWindowResize, false);
 
-    return { scene, camera, renderer, controls, stats };
+    return { scene, camera, renderer, controls, stats, cssRenderer };
 }
