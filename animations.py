@@ -322,4 +322,10 @@ ANIMATIONS_DICT = {
             'data_sources': ['force3d', 'philpapers'],
             'custom_meta': dict(),
         },
+    'cards':
+        {
+            'name': 'Cards',
+            'data_sources': ['cards'],
+            'custom_meta': dict(),
+        },
 }

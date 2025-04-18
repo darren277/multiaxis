@@ -58,6 +58,7 @@ const THREEJS_DRAWINGS = {
     'clustering': () => import('./drawing/drawClustering.js').then(m => m.clusteringDrawing),
     'orbits': () => import('./drawing/drawOrbits.js').then(m => m.orbitsDrawing),
     'force3d': () => import('./drawing/drawForce.js').then(m => m.force3dDrawing),
+    'cards': () => import('./drawing/drawCards.js').then(m => m.cardsDrawing),
 };
 
 
