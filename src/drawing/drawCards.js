@@ -5,6 +5,9 @@ const cardWidth = 2.5;
 const cardHeight = 3.5;
 const cardThickness = 0.02; // small enough but noticeable edge
 
+let isDPressed = false;
+const dealtCards = new Set(); // track already-dealt cards
+
 const textureLoader = new TextureLoader();
 
 
@@ -182,7 +185,32 @@ function swapCards(cards, i, j, onComplete) {
     return true;
 }
 
+const gapBetweenCards = 0.5;
 
+function dealOneCard(cards) {
+    const nthCard = dealtCards.size;
+
+    const available = cards.filter((_, i) => !dealtCards.has(i));
+    if (available.length === 0) return;
+
+    // Pick a random undealt card
+    const index = Math.floor(Math.random() * available.length);
+    const card = available[index];
+    const originalIndex = cards.indexOf(card);
+    dealtCards.add(originalIndex);
+
+    // Target position and rotation
+    //const newPos = card.position.clone().add(new Vector3(0, -2, 4));
+
+    const newZPos = 5 + nthCard * (cardWidth + gapBetweenCards);
+    const newRot = { y: card.rotation.y + Math.PI / 2 }; // 90° Y axis
+
+    // Animate position
+    new Tween(card.position).to({ x: 0, y: 0, z: newZPos}, 1000).easing(Easing.Quadratic.InOut).start();
+
+    // Animate rotation (Y only)
+    new Tween(card.rotation).to({ y: newRot.y }, 1000).easing(Easing.Quadratic.InOut).start();
+}
 
 
 function animationCallback(cards) {
@@ -227,10 +255,12 @@ let isSpacePressed = false;
 
 window.addEventListener('keydown', (e) => {
     if (e.code === 'Space' && !isSpacePressed) {isSpacePressed = true;}
+    if (e.code === 'KeyD'   && !isDPressed)    isDPressed    = true;
 });
 
 window.addEventListener('keyup', (e) => {
     if (e.code === 'Space') {isSpacePressed = false;}
+    if (e.code === 'KeyD')   isDPressed    = false;
 });
 
 const cardsDrawing = {
@@ -249,6 +279,11 @@ const cardsDrawing = {
         if (isSpacePressed) {
             animationCallback(threejsDrawing.data.cards);
             isSpacePressed = false; // remove this line if you want it to shuffle continuously while space is held
+        }
+
+        if (isDPressed) {
+            dealOneCard(threejsDrawing.data.cards);             // deal one card
+            isDPressed = false;
         }
     },
     'data': {
