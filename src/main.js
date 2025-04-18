@@ -115,6 +115,14 @@ async function contentLoadedCallback(threejsDrawing) {
 
     const { scene, camera, renderer, controls, stats, cssRenderer } = await setupScene('c', threejsDrawing.sceneElements, startPosition, clippingPlane, controller, cssRendererEnabled);
 
+    // TODO: Are these all necessary?
+    // And if any of them are, only conditionally?
+    // Also, possibly redundant with `uiState`.
+    threejsDrawing.data.camera = camera;
+    threejsDrawing.data.renderer = renderer;
+    threejsDrawing.data.scene = scene;
+    threejsDrawing.data.controls = controls;
+
     for (const {func, dataSrc, dataType} of threejsDrawing.drawFuncs) {
         if (dataSrc) {
             const data_src = dataSelected ? dataSelected : dataSrc;
