@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import { ExtrudeGeometry, Color, Mesh, MeshBasicMaterial, PlaneGeometry } from 'three';
 import { SVGLoader } from 'svgloader';
 import { drawBasicLights } from './drawLights.js';
 
@@ -14,16 +14,16 @@ function isGiantWhiteBox(path) {
 }
 
 function processShape(shape, depth, fillColor, isText = false) {
-    const geometry = new THREE.ExtrudeGeometry(shape, {
+    const geometry = new ExtrudeGeometry(shape, {
         depth,
         bevelEnabled: false
     });
 
     // Convert fillColor to a Three.Color
-    const threeColor = new THREE.Color(fillColor);
+    const threeColor = new Color(fillColor);
 
-    const material = new THREE.MeshBasicMaterial({ color: threeColor });
-    const mesh = new THREE.Mesh(geometry, material);
+    const material = new MeshBasicMaterial({ color: threeColor });
+    const mesh = new Mesh(geometry, material);
 
     // Example transform to ensure correct orientation
     if (isText) {
@@ -95,8 +95,8 @@ function processPath(scene, path) {
         //fillColor = '#00ccff'; // make them blue
 
 //        const points = shapes[0].getPoints(64);
-//        const geometry2d = new THREE.BufferGeometry().setFromPoints(points);
-//        const outline = new THREE.LineLoop(geometry2d, new THREE.LineBasicMaterial({ color: 0xff0000 }));
+//        const geometry2d = new BufferGeometry().setFromPoints(points);
+//        const outline = new LineLoop(geometry2d, new LineBasicMaterial({ color: 0xff0000 }));
 //        scene.add(outline);
     }
 
@@ -138,14 +138,14 @@ function determineColor(path) {
         console.log('rgb', fillColor);
         const rgb = fillColor.match(/\d+/g);
         fillColor = `#${rgb.map(num => parseInt(num).toString(16).padStart(2, '0')).join('')}`;
-        //const threeColor = new THREE.Color(fillColor);
+        //const threeColor = new Color(fillColor);
         // yellow
-        const threeColor = new THREE.Color(0xffff00);
+        const threeColor = new Color(0xffff00);
         return threeColor;
     }
     if (fillColor.startsWith('#')) {
         console.log('hex', fillColor);
-        const threeColor = new THREE.Color(fillColor);
+        const threeColor = new Color(fillColor);
         return threeColor;
     }
     if (fillColor.startsWith('none')) {
@@ -155,7 +155,7 @@ function determineColor(path) {
 
     console.log('unknown', fillColor);
     // default to black...
-    const threeColor = new THREE.Color(0x888888);
+    const threeColor = new Color(0x888888);
     return threeColor;
 }
 
@@ -164,12 +164,12 @@ function drawSvg(scene, data, threejsDrawing) {
         processPath(scene, path);
     });
 
-    const floorGeometry = new THREE.PlaneGeometry(200, 200);
-    const floorMaterial = new THREE.MeshStandardMaterial({
+    const floorGeometry = new PlaneGeometry(200, 200);
+    const floorMaterial = new MeshStandardMaterial({
         color: 0x888888,
     });
 
-    const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+    const floor = new Mesh(floorGeometry, floorMaterial);
     floor.rotation.x = -Math.PI / 2; // make it horizontal
     floor.position.y = 0;
     floor.receiveShadow = true;

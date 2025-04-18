@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import { SphereGeometry, Mesh, MeshStandardMaterial, Vector2, Vector3, BufferGeometry, Line, LineBasicMaterial, Raycaster, Plane } from 'three';
 import { forceSimulation, forceManyBody, forceLink, forceCenter } from 'd3-force-3d';
 import { drawBasicLights } from './drawLights.js';
 
@@ -16,14 +16,14 @@ function drawGraph(scene, data, state) {
         const y = 0;
         const z = radius * Math.sin(angle);
 
-        const geometry = new THREE.SphereGeometry(0.2, 16, 16);
-        const material = new THREE.MeshStandardMaterial({ color: 0x00ffcc });
-        const sphere = new THREE.Mesh(geometry, material);
+        const geometry = new SphereGeometry(0.2, 16, 16);
+        const material = new MeshStandardMaterial({ color: 0x00ffcc });
+        const sphere = new Mesh(geometry, material);
 
         sphere.position.set(x, y, z);
         scene.add(sphere);
 
-        nodeMap[node] = new THREE.Vector3(x, y, z);
+        nodeMap[node] = new Vector3(x, y, z);
     });
 
     // Add edges
@@ -32,10 +32,10 @@ function drawGraph(scene, data, state) {
         const end = nodeMap[edge.target];
 
         const points = [start, end];
-        const geometry = new THREE.BufferGeometry().setFromPoints(points);
-        const material = new THREE.LineBasicMaterial({ color: edge.color || 0xffffff });
+        const geometry = new BufferGeometry().setFromPoints(points);
+        const material = new LineBasicMaterial({ color: edge.color || 0xffffff });
 
-        const line = new THREE.Line(geometry, material);
+        const line = new Line(geometry, material);
         scene.add(line);
     });
 }
@@ -51,9 +51,9 @@ function drawForceDirectedGraph(scene, data) {
 
     const nodeSpheres = {};
     graphData.nodes.forEach(node => {
-        const geometry = new THREE.SphereGeometry(1, 16, 16);
-        const material = new THREE.MeshStandardMaterial({ color: 0xffff00 });
-        const sphere = new THREE.Mesh(geometry, material);
+        const geometry = new SphereGeometry(1, 16, 16);
+        const material = new MeshStandardMaterial({ color: 0xffff00 });
+        const sphere = new Mesh(geometry, material);
         scene.add(sphere);
         nodeSpheres[node.id] = sphere;
 
@@ -67,12 +67,12 @@ function drawForceDirectedGraph(scene, data) {
 
     const linkLines = [];
     graphData.links.forEach(link => {
-        const material = new THREE.LineBasicMaterial({ color: 0xcccccc });
-        const geometry = new THREE.BufferGeometry().setFromPoints([
-            new THREE.Vector3(), // placeholder
-            new THREE.Vector3()
+        const material = new LineBasicMaterial({ color: 0xcccccc });
+        const geometry = new BufferGeometry().setFromPoints([
+            new Vector3(), // placeholder
+            new Vector3()
         ]);
-        const line = new THREE.Line(geometry, material);
+        const line = new Line(geometry, material);
         scene.add(line);
         linkLines.push({ line, link });
     });
@@ -110,8 +110,8 @@ function updateForceGraph(graphData, nodeSpheres, linkLines) {
     }
 }
 
-const raycaster = new THREE.Raycaster();
-const mouse = new THREE.Vector2();
+const raycaster = new Raycaster();
+const mouse = new Vector2();
 
 function onMouseMove(camera, data, event) {
     if (!data.dragging) return;
@@ -125,8 +125,8 @@ function onMouseMove(camera, data, event) {
     raycaster.setFromCamera(mouse, camera);
 
     // project onto an invisible plane near the dragged node
-    const planeZ = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
-    const intersection = new THREE.Vector3();
+    const planeZ = new Plane(new Vector3(0, 0, 1), 0);
+    const intersection = new Vector3();
     raycaster.ray.intersectPlane(planeZ, intersection);
 
     const node = data.draggedNode;

@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import { Group, Mesh, MeshStandardMaterial, BoxGeometry, CylinderGeometry, ConeGeometry, AmbientLight, DirectionalLight } from 'three';
 import { FontLoader } from 'fontloader';
 import { TextGeometry } from 'textgeometry';
 
@@ -10,18 +10,18 @@ export function drawChessBoard(scene, options = {}) {
         lightColor = 0xffffff
     } = options;
 
-    const boardGroup = new THREE.Group();
+    const boardGroup = new Group();
 
-    const whiteMaterial = new THREE.MeshStandardMaterial({ color: lightColor });
-    const blackMaterial = new THREE.MeshStandardMaterial({ color: darkColor });
+    const whiteMaterial = new MeshStandardMaterial({ color: lightColor });
+    const blackMaterial = new MeshStandardMaterial({ color: darkColor });
 
     for (let row = 0; row < 8; row++) {
         for (let col = 0; col < 8; col++) {
             const isDark = (row + col) % 2 === 1;
             const material = isDark ? blackMaterial : whiteMaterial;
 
-            const squareGeo = new THREE.BoxGeometry(squareSize, boardHeight, squareSize);
-            const square = new THREE.Mesh(squareGeo, material);
+            const squareGeo = new BoxGeometry(squareSize, boardHeight, squareSize);
+            const square = new Mesh(squareGeo, material);
 
             square.position.x = col * squareSize - (4 * squareSize) + squareSize / 2;
             square.position.z = row * squareSize - (4 * squareSize) + squareSize / 2;
@@ -38,76 +38,76 @@ export function drawChessBoard(scene, options = {}) {
 const fontLoader = new FontLoader();
 
 function createPlaceholderPiece(scene, type, color = 0xeeeeee, font = null) {
-    const group = new THREE.Group();
+    const group = new Group();
     let mesh;
 
     switch (type) {
         case 'pawn':
-            mesh = new THREE.Mesh(
-                new THREE.CylinderGeometry(0.3, 0.3, 0.6, 32),
-                new THREE.MeshStandardMaterial({ color })
+            mesh = new Mesh(
+                new CylinderGeometry(0.3, 0.3, 0.6, 32),
+                new MeshStandardMaterial({ color })
             );
             break;
         case 'rook':
-            mesh = new THREE.Mesh(
-                new THREE.BoxGeometry(0.5, 0.7, 0.5),
-                new THREE.MeshStandardMaterial({ color })
+            mesh = new Mesh(
+                new BoxGeometry(0.5, 0.7, 0.5),
+                new MeshStandardMaterial({ color })
             );
             break;
         case 'knight':
-            mesh = new THREE.Mesh(
-                new THREE.ConeGeometry(0.4, 0.8, 16),
-                new THREE.MeshStandardMaterial({ color })
+            mesh = new Mesh(
+                new ConeGeometry(0.4, 0.8, 16),
+                new MeshStandardMaterial({ color })
             );
             break;
         case 'bishop':
-            mesh = new THREE.Mesh(
-                new THREE.SphereGeometry(0.3, 32, 32),
-                new THREE.MeshStandardMaterial({ color })
+            mesh = new Mesh(
+                new SphereGeometry(0.3, 32, 32),
+                new MeshStandardMaterial({ color })
             );
             mesh.position.y = 0.3;
-            const baseBishop = new THREE.Mesh(
-                new THREE.CylinderGeometry(0.2, 0.2, 0.3, 32),
-                new THREE.MeshStandardMaterial({ color })
+            const baseBishop = new Mesh(
+                new CylinderGeometry(0.2, 0.2, 0.3, 32),
+                new MeshStandardMaterial({ color })
             );
             baseBishop.position.y = 0.15;
             group.add(baseBishop);
             break;
         case 'queen':
-            mesh = new THREE.Mesh(
-                new THREE.SphereGeometry(0.4, 32, 32),
-                new THREE.MeshStandardMaterial({ color })
+            mesh = new Mesh(
+                new SphereGeometry(0.4, 32, 32),
+                new MeshStandardMaterial({ color })
             );
             mesh.position.y = 0.4;
-            const baseQueen = new THREE.Mesh(
-                new THREE.CylinderGeometry(0.3, 0.3, 0.4, 32),
-                new THREE.MeshStandardMaterial({ color })
+            const baseQueen = new Mesh(
+                new CylinderGeometry(0.3, 0.3, 0.4, 32),
+                new MeshStandardMaterial({ color })
             );
             baseQueen.position.y = 0.2;
             group.add(baseQueen);
             break;
         case 'king':
-            mesh = new THREE.Mesh(
-                new THREE.SphereGeometry(0.4, 32, 32),
-                new THREE.MeshStandardMaterial({ color })
+            mesh = new Mesh(
+                new SphereGeometry(0.4, 32, 32),
+                new MeshStandardMaterial({ color })
             );
             mesh.position.y = 0.4;
-            const baseKing = new THREE.Mesh(
-                new THREE.CylinderGeometry(0.3, 0.3, 0.4, 32),
-                new THREE.MeshStandardMaterial({ color })
+            const baseKing = new Mesh(
+                new CylinderGeometry(0.3, 0.3, 0.4, 32),
+                new MeshStandardMaterial({ color })
             );
             baseKing.position.y = 0.2;
-            const cross = new THREE.Mesh(
-                new THREE.BoxGeometry(0.1, 0.1, 0.1),
-                new THREE.MeshStandardMaterial({ color })
+            const cross = new Mesh(
+                new BoxGeometry(0.1, 0.1, 0.1),
+                new MeshStandardMaterial({ color })
             );
             cross.position.y = 0.9;
             group.add(baseKing, cross);
             break;
         default:
-            mesh = new THREE.Mesh(
-                new THREE.BoxGeometry(0.5, 0.5, 0.5),
-                new THREE.MeshStandardMaterial({ color: 0xff0000 })
+            mesh = new Mesh(
+                new BoxGeometry(0.5, 0.5, 0.5),
+                new MeshStandardMaterial({ color: 0xff0000 })
             );
     }
 
@@ -120,9 +120,9 @@ function createPlaceholderPiece(scene, type, color = 0xeeeeee, font = null) {
             size: 0.15,
             height: 0.05,
         });
-        const textMesh = new THREE.Mesh(
+        const textMesh = new Mesh(
             textGeo,
-            new THREE.MeshStandardMaterial({ color: 0x000000 })
+            new MeshStandardMaterial({ color: 0x000000 })
         );
         textMesh.position.set(-0.1, 0.7, -0.1);
         group.add(textMesh);
@@ -143,8 +143,8 @@ const pieceMap = {
 
 function drawChessCallback(scene, threejsDrawing, font) {
     // Lights
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
-    const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    const ambientLight = new AmbientLight(0xffffff, 0.4);
+    const dirLight = new DirectionalLight(0xffffff, 0.8);
     dirLight.position.set(3, 5, 2);
     scene.add(ambientLight, dirLight);
 
