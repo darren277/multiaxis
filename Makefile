@@ -28,6 +28,7 @@ s3-drawing:
 	aws s3 cp src/drawing/drawClustering.js s3://$(BUCKET_NAME)/scripts/threejs/drawing/drawClustering.js
 	aws s3 cp src/drawing/drawFloor.js s3://$(BUCKET_NAME)/scripts/threejs/drawing/drawFloor.js
 	aws s3 cp src/drawing/drawGeo.js s3://$(BUCKET_NAME)/scripts/threejs/drawing/drawGeo.js
+	aws s3 cp src/drawing/drawGLTF.js s3://$(BUCKET_NAME)/scripts/threejs/drawing/drawGLTF.js
 	aws s3 cp src/drawing/drawGraph.js s3://$(BUCKET_NAME)/scripts/threejs/drawing/drawGraph.js
 	aws s3 cp src/drawing/drawImage.js s3://$(BUCKET_NAME)/scripts/threejs/drawing/drawImage.js
 	aws s3 cp src/drawing/drawLights.js s3://$(BUCKET_NAME)/scripts/threejs/drawing/drawLights.js
@@ -81,6 +82,8 @@ s3-cards:
 	aws s3 cp src/textures/cards/back_texture.png s3://$(BUCKET_NAME)/textures/cards/back_texture.png
 	aws s3 cp src/textures/cards/standard/ s3://$(BUCKET_NAME)/textures/cards/standard/ --recursive
 
+s3-glb:
+	aws s3 cp src/imagery/humanoid.glb s3://$(BUCKET_NAME)/imagery/humanoid.glb
 
 
 #SVG_NAME=OpenProject

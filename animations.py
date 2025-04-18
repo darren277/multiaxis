@@ -328,4 +328,10 @@ ANIMATIONS_DICT = {
             'data_sources': ['cards', 'thinkpak'],
             'custom_meta': dict(),
         },
+    'gltf':
+        {
+            'name': 'GLTF',
+            'data_sources': ['humanoid'],
+            'custom_meta': dict(),
+        },
 }

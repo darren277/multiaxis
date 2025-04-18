@@ -59,6 +59,7 @@ const THREEJS_DRAWINGS = {
     'orbits': () => import('./drawing/drawOrbits.js').then(m => m.orbitsDrawing),
     'force3d': () => import('./drawing/drawForce.js').then(m => m.force3dDrawing),
     'cards': () => import('./drawing/drawCards.js').then(m => m.cardsDrawing),
+    'gltf': () => import('./drawing/drawGLTF.js').then(m => m.gltfDrawing),
 };
 
 
@@ -146,6 +147,15 @@ async function contentLoadedCallback(threejsDrawing) {
                     threejsDrawing.data.controls = controls;
                 }
                 loadDataSource(scene, data_src, func, threejsDrawing);
+            } else if (dataType === 'gltf') {
+                import('gltfloader').then(m => {
+                    const GLTFLoader = m.GLTFLoader;
+                    const gltfLoader = new GLTFLoader();
+                    gltfLoader.load(`./imagery/${data_src}.glb`, (gltf) => {
+                        console.log(`Loaded GLTF model: ${data_src}`, gltf);
+                        func(scene, gltf, threejsDrawing);
+                    });
+                });
             } else {
                 console.error(`Unknown data type: ${dataType}`);
             }
