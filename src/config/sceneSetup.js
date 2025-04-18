@@ -12,6 +12,12 @@ function importCSS3DRenderer() {
     });
 }
 
+function importCSS2DRenderer() {
+    return import('css2drenderer').then(module => {
+        return module.CSS2DRenderer;
+    });
+}
+
 function importVRButton() {
     return import('vrbutton').then(module => {
         return module.VRButton;
@@ -38,6 +44,9 @@ export async function setupScene(
     let controls;
     let stats;
     let cssRenderer;
+
+    const css3DRendererEnabled = cssRendererEnabled && cssRendererEnabled === '3D';
+    const css2DRendererEnabled = cssRendererEnabled && cssRendererEnabled === '2D';
 
     // 1) Setup container
     const container = document.getElementById(containerId);
@@ -70,7 +79,24 @@ export async function setupScene(
     renderer.setPixelRatio(window.devicePixelRatio);
     container.appendChild(renderer.domElement);
 
-    if (cssRendererEnabled) {
+    if (css2DRendererEnabled) {
+        console.log('CSS2DRenderer enabled');
+        importCSS2DRenderer().then(CSS2DRenderer => {
+            cssRenderer = new CSS2DRenderer();
+            cssRenderer.setSize(container.clientWidth, container.clientHeight);
+            cssRenderer.domElement.style.position = 'absolute';
+            cssRenderer.domElement.style.top = container.offsetTop + 'px';
+            cssRenderer.domElement.style.left = container.offsetLeft + 'px';
+            cssRenderer.domElement.style.pointerEvents = 'none';
+            cssRenderer.domElement.style.zIndex        = '10';   // ⟵ new
+
+            // place it *on top of* the existing WebGL canvas
+            container.appendChild(cssRenderer.domElement);
+        });
+    }
+
+    if (css3DRendererEnabled) {
+        console.log('CSS3DRenderer enabled');
         importCSS3DRenderer().then(CSS3DRenderer => {
             cssRenderer = new CSS3DRenderer();
             //cssRenderer.setSize(window.innerWidth, window.innerHeight);

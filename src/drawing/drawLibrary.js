@@ -159,6 +159,9 @@ const libraryDrawing = {
     'animationCallback': (renderer, timestamp, threejsDrawing, uiState, camera) => {
     },
     'data': {
+    },
+    'sceneConfig': {
+        'cssRenderer': '2D',
     }
 }
 
