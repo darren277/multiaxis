@@ -325,7 +325,7 @@ ANIMATIONS_DICT = {
     'cards':
         {
             'name': 'Cards',
-            'data_sources': ['cards'],
+            'data_sources': ['cards', 'thinkpak'],
             'custom_meta': dict(),
         },
 }

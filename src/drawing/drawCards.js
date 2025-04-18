@@ -4,6 +4,22 @@ import { Tween, Easing } from 'tween';
 const cardWidth = 2.5;
 const cardHeight = 3.5;
 const cardThickness = 0.02; // small enough but noticeable edge
+const DeckConfig = {
+    portrait: {         // classic poker cards
+        width: 2.5,
+        height: 3.5,
+        thickness: 0.02,
+        faceRotationZ: 0,           // no extra rotation
+        orientation: 'portrait'
+    },
+    landscape: {       // your new “wide” cards
+        width: 3.5,       // swapped
+        height: 2.5,
+        thickness: 0.02,
+        faceRotationZ: Math.PI / 2, // rotate 90° around Z so text reads left‑to‑right
+        orientation: 'landscape'
+    }
+};
 
 const raycaster = new Raycaster();
 const mouse = new Vector2();
@@ -63,8 +79,8 @@ function htmlToTexture(htmlString, width = 256, height = 384) {
 
 
 
-async function renderCard(card) {
-    const cardGeometry = new BoxGeometry(cardWidth, cardHeight, cardThickness);
+async function renderCard(card, cfg) {
+    const cardGeometry = new BoxGeometry(cfg.width, cfg.height, cfg.thickness);
 
     let cardFrontTexture;
 
@@ -93,13 +109,16 @@ async function renderCard(card) {
 
     const cardMesh = new Mesh(cardGeometry, cardMaterials);
 
+    // apply extra rotation for landscape cards
+    if (cfg.faceRotationZ !== 0) cardMesh.rotation.z = cfg.faceRotationZ;
+
     return cardMesh;
 }
 
 
-async function renderCards(scene, cardDataArr) {
+async function renderCards(scene, cardDataArr, cfg) {
     const cardMeshPromises = cardDataArr.map(async cardData => {
-        const cardMesh = await renderCard(cardData);
+        const cardMesh = await renderCard(cardData, cfg);
         cardMesh.position.copy(cardData.position);
         scene.add(cardMesh);
         return cardMesh;
@@ -242,7 +261,7 @@ function swapCards(cards, i, j, onComplete) {
 
 const gapBetweenCards = 0.5;
 
-function dealOneCard(cards) {
+function dealOneCard(cards, cfg) {
     const nthCard = dealtCards.size;
 
     const available = cards.filter((_, i) => !dealtCards.has(i));
@@ -257,14 +276,27 @@ function dealOneCard(cards) {
     // Target position and rotation
     //const newPos = card.position.clone().add(new Vector3(0, -2, 4));
 
-    const newZPos = 5 + nthCard * (cardWidth + gapBetweenCards);
-    const newRot = { y: card.rotation.y + Math.PI / 2 }; // 90° Y axis
+    //const newZPos = 5 + nthCard * (cfg.width + gapBetweenCards);
+    const cardSpacing = cfg.width + gapBetweenCards;
+    const tableOriginZ = 5; // or whatever your table origin is
+    const newZPos     = tableOriginZ + nthCard * cardSpacing;
+
+    //let newRot = { y: card.rotation.y + cfg.faceRotationZ };
+    //let newRot = { y: card.rotation.y + Math.PI / 2 };
+    let newRot;
+
+    if (cfg.orientation === 'landscape') {
+        newRot = { x: card.rotation.x + Math.PI / 2, z: card.rotation.z + Math.PI / 2 + Math.PI / 2, y: card.rotation.y + Math.PI / 2 };
+    } else {
+        newRot = { x: card.rotation.x, y: card.rotation.y + Math.PI / 2, z: card.rotation.z };
+    }
+    // rotate another 90 degrees around Y
 
     // Animate position
     new Tween(card.position).to({ x: 0, y: 0, z: newZPos}, 1000).easing(Easing.Quadratic.InOut).start();
 
     // Animate rotation (Y only)
-    new Tween(card.rotation).to({ y: newRot.y }, 1000).easing(Easing.Quadratic.InOut).start();
+    new Tween(card.rotation).to({ x: newRot.x, y: newRot.y, z: newRot.z }, 1000).easing(Easing.Quadratic.InOut).start();
 }
 
 
@@ -339,6 +371,7 @@ function animationCallback(cards) {
 
 function drawCards(scene, data, threejsDrawing) {
     const cards = data.cards || [];
+    const metadata = data.metadata || {};
     // cards format: `"ace_of_spaces": { "name": "Ace of Spades", "texture": "ace_of_spades.png", "backTexture": "cards/back_texture.png" }`
     const cardsArray = Object.entries(cards).map(([key, value]) => {
         return {
@@ -348,13 +381,18 @@ function drawCards(scene, data, threejsDrawing) {
         };
     });
 
-    renderCards(scene, cardsArray).then(async cardMeshes => {
+    const deckType = metadata.orientation || 'portrait'; // default to portrait
+
+    const cfg = DeckConfig[deckType];
+
+    renderCards(scene, cardsArray, cfg).then(async cardMeshes => {
         const cardPositions = await generateCardPositions(cardsArray.length, 3, 4); // spacing of 3 units
         shuffleAndAnimate(cardMeshes, cardPositions);
         threejsDrawing.data.cards = cardMeshes;
         threejsDrawing.data.cardPositions = cardPositions;
         window.cardPositions = cardPositions;
         threejsDrawing.data.cardsArray = cardsArray;
+        threejsDrawing.data.cfg = cfg;
 
         threejsDrawing.data.ready = true;
 
@@ -491,7 +529,7 @@ const cardsDrawing = {
         }
 
         if (isDPressed) {
-            dealOneCard(threejsDrawing.data.cards);             // deal one card
+            dealOneCard(threejsDrawing.data.cards, threejsDrawing.data.cfg);             // deal one card
             isDPressed = false;
 
             const handValue = calculateHandValue(dealtCards, threejsDrawing.data.cardsArray);
