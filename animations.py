@@ -243,6 +243,48 @@ ANIMATIONS_DICT = {
             'name': 'Library',
             'data_sources': ['library'],
             'custom_meta': dict(),
+            'custom_css': """
+    #resourceOverlay {
+        position: fixed;
+        bottom:  20px;
+        right:   20px;
+        max-width: 300px;
+        max-height: 60vh;
+        overflow: auto;
+        padding: 16px;
+        border-radius: 8px;
+        background: #222;
+        color: #fff;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        display: none;                /* hidden by default */
+    }
+    
+    #resourceOverlay h2 { margin-top: 0; font-size: 1.1rem; }
+    
+    #resourceOverlay .close {
+        float: right; cursor: pointer; font-weight: bold; margin-left: 8px;
+    }
+    
+    .label {
+        background: rgba(255,0,0,0.7);   /* bright red for debugging */
+        padding: 2px 4px;
+        border-radius: 3px;
+        color: #fff;
+        font-size: 12px;
+        white-space: nowrap;             /* prevent wrap‑around */
+        pointer-events: none;
+    }
+""",
+            'custom_overlays': ["""
+<div id="resourceOverlay">
+    <span class="close" onclick="() => {document.getElementById('resourceOverlay').style.display = 'none';}">✕</span>
+    <h2 id="overlayTitle"></h2>
+    <p id="overlayAuthorYear"></p>
+    <div id="overlayBody"></div>
+</div>
+            """],
+            'custom_js': """
+"""
         },
     'plot':
         {
