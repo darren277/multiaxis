@@ -131,7 +131,7 @@ async function contentLoadedCallback(threejsDrawing) {
             threejsDrawing.data.dataSrc = data_src;
             if (dataType === 'svg') {
                 import('svgloader').then(m => {
-                    const SVGLoader = m.SVGLoader;
+                    const svgLoader = new m.SVGLoader();
                     svgLoader.load(`./imagery/${data_src}_out_annotated.svg`, (data) => {
                         func(scene, data, threejsDrawing);
                     });

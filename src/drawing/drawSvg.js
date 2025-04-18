@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { SVGLoader } from 'svgloader';
 import { drawBasicLights } from './drawLights.js';
 
+const svgLoader = new SVGLoader();
 
 function isGiantWhiteBox(path) {
     const isGiantWhiteBox = path.color === 0xffffff && path.toShapes(true).length === 1;
