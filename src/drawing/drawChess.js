@@ -1,4 +1,4 @@
-import { Group, Mesh, MeshStandardMaterial, BoxGeometry, CylinderGeometry, ConeGeometry, AmbientLight, DirectionalLight } from 'three';
+import { Group, Mesh, MeshStandardMaterial, BoxGeometry, CylinderGeometry, SphereGeometry, ConeGeometry, AmbientLight, DirectionalLight } from 'three';
 import { FontLoader } from 'fontloader';
 import { TextGeometry } from 'textgeometry';
 

@@ -1,4 +1,4 @@
-import { ExtrudeGeometry, Color, Mesh, MeshBasicMaterial, PlaneGeometry } from 'three';
+import { ExtrudeGeometry, Color, Mesh, MeshBasicMaterial, MeshStandardMaterial, PlaneGeometry } from 'three';
 import { SVGLoader } from 'svgloader';
 import { drawBasicLights } from './drawLights.js';
 
