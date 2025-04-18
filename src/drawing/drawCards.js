@@ -1,4 +1,4 @@
-import { BoxGeometry, TextureLoader, Mesh, MeshBasicMaterial, Vector2, Vector3, AmbientLight, Raycaster, Plane, CanvasTexture } from 'three';
+import { BoxGeometry, TextureLoader, Mesh, MeshBasicMaterial, Vector2, Vector3, AmbientLight, Raycaster, Plane, CanvasTexture, LinearMipMapLinearFilter, LinearFilter } from 'three';
 import { Tween, Easing } from 'tween';
 
 const cardWidth = 2.5;
@@ -21,6 +21,13 @@ const DeckConfig = {
     }
 };
 
+function getCanvasSizeForCard(cardWidth, cardHeight, scale = 400) {
+    return {
+        width:  Math.round(cardWidth  * scale),
+        height: Math.round(cardHeight * scale)
+    };
+}
+
 const raycaster = new Raycaster();
 const mouse = new Vector2();
 
@@ -37,20 +44,93 @@ const dealtCards = new Set(); // track already-dealt cards
 const textureLoader = new TextureLoader();
 
 function htmlToTexture(htmlString, width = 256, height = 384) {
+    const styles = `
+<style>
+h1.card_name {
+    text-align: left;
+    font-size: 2.0em;
+    padding-bottom: 0.3em;
+    margin-bottom: 0.3em;
+    border-bottom: 3px dotted #76777a;
+    margin-top: 0.7em;
+    line-height: 1em;
+}
+
+span.card_number {
+    font-size: 1.5em;
+}
+
+div.card_info {
+    font-size: 1.0em;
+    text-align: left;
+}
+
+div.card_info_space {
+    font-size: 1.0em;
+    text-align: left;
+    margin-top: 1em;
+}
+
+h2.card_headA {
+    font-weight: bold;
+    font-size: 1.0em;
+    text-align: left;
+    margin-top: 0.5em;
+    margin-top: 0.6em;
+}
+
+span.bold {
+    font-weight: bold;
+}
+
+span.italic {
+    font-style: italic;
+}
+
+/*NEW COLORS*/
+span.red
+{color: #b4282e;}
+span.dark_blue
+{color: #32438c;}
+span.gold
+{color: #f3c000;}
+span.green
+{color: #6ead52;}
+span.pink
+{color: #b7007d;}
+span.blue
+{color: #0090c5;}
+span.lime_green
+{color: #9fc54d;}
+span.orange
+{color: #bf5228;}
+span.purple
+{color: #52318d;}
+span.yellow
+/*{color: #ffec00;}*/
+{color: #efdd01;}
+span.teal
+{color: #0aa4b0;}
+</style>`;
+
     return new Promise((resolve, reject) => {
         const svgString = `
 <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
     <foreignObject width="100%" height="100%">
         <div xmlns="http://www.w3.org/1999/xhtml" style="width:100%;height:100%;background:white;color:black;font-family:sans-serif;display:flex;align-items:center;justify-content:center;padding:1em;">
+            ${styles}
             ${htmlString}
         </div>
     </foreignObject>
 </svg>`;
 
+        console.log('svgString', svgString);
+
         const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
         const url = URL.createObjectURL(svgBlob);
 
         const img = new Image();
+
         img.onload = () => {
             const canvas = document.createElement('canvas');
             canvas.width = width;
@@ -85,7 +165,11 @@ async function renderCard(card, cfg) {
     let cardFrontTexture;
 
     if (card.html === true) {
-        cardFrontTexture = await htmlToTexture("<p>Hello <b>World</b></p><p>Hello <b>World</b></p><p>Hello <b>World</b></p><p>Hello <b>World</b></p>");
+        const { width, height } = getCanvasSizeForCard(cfg.width, cfg.height);
+        cardFrontTexture = await htmlToTexture(card.htmlContent, width, height);
+        cardFrontTexture.anisotropy = cfg.anisotropy;
+        cardFrontTexture.minFilter = LinearMipMapLinearFilter;
+        cardFrontTexture.magFilter = LinearFilter;
     } else {
         cardFrontTexture = textureLoader.load(`textures/${card.texture}`);
     }
@@ -384,6 +468,8 @@ function drawCards(scene, data, threejsDrawing) {
     const deckType = metadata.orientation || 'portrait'; // default to portrait
 
     const cfg = DeckConfig[deckType];
+
+    cfg.anisotropy = threejsDrawing.data.renderer.capabilities.getMaxAnisotropy();
 
     renderCards(scene, cardsArray, cfg).then(async cardMeshes => {
         const cardPositions = await generateCardPositions(cardsArray.length, 3, 4); // spacing of 3 units
