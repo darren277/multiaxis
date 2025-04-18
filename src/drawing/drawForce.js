@@ -56,7 +56,8 @@ function drawForce3dGraph(scene, data, threejsDrawing) {
         .linkThreeObjectExtend(true)
         .linkThreeObject(link => {
             // If you want custom link labels as well
-            const sprite = new SpriteText(`${link.source.id} > ${link.target.id}`);
+            //const sprite = new SpriteText(`${link.source.id} > ${link.target.id}`);
+            const sprite = new SpriteText(`${link.source} --${link.relation}--> ${link.target}`);
             sprite.color = 'lightgrey';
             sprite.textHeight = 1.5;
             return sprite;
