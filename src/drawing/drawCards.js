@@ -8,6 +8,8 @@ const cardThickness = 0.02; // small enough but noticeable edge
 const raycaster = new Raycaster();
 const mouse = new Vector2();
 
+const gridSize = 1; // 1 unit grid spacing
+
 let draggingCard = null;
 let dragOffset = new Vector3();
 
@@ -363,6 +365,13 @@ function createLockedPlane(axis = 'y', value = 0) {
 const tablePlane = createLockedPlane('y', 0);
 const wallPlane = createLockedPlane('x', 0);
 
+function snapToGrid(pos, allowedAxes = ['x', 'z']) {
+    const snapped = pos.clone();
+    if (allowedAxes.includes('x')) snapped.x = Math.round(snapped.x / gridSize) * gridSize;
+    if (allowedAxes.includes('y')) snapped.y = Math.round(snapped.y / gridSize) * gridSize;
+    if (allowedAxes.includes('z')) snapped.z = Math.round(snapped.z / gridSize) * gridSize;
+    return snapped;
+}
 
 function onMouseMove(e, threejsDrawing) {
     if (!draggingCard) return;
@@ -382,8 +391,10 @@ function onMouseMove(e, threejsDrawing) {
     raycaster.ray.intersectPlane(wallPlane, intersectionPoint);
 
     if (intersectionPoint) {
-        draggingCard.position.copy(intersectionPoint.sub(dragOffset));
-        draggingCard.position.x = 0; // lock to table
+        const originalPos = intersectionPoint.sub(dragOffset);
+        const snappedPos = snapToGrid(originalPos, ['x', 'y', 'z']);
+        snappedPos.x = 0; // lock to table
+        draggingCard.position.copy(snappedPos);
     }
 }
 
