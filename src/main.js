@@ -96,7 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
     })
 })
 
-function contentLoadedCallback(threejsDrawing) {
+async function contentLoadedCallback(threejsDrawing) {
     const dataSelected = document.querySelector('meta[name="data_selected"]').content;
 
     console.log(`Drawing name: ${threejsDrawing.name}. Data selected: ${dataSelected}`);
@@ -192,6 +192,7 @@ function contentLoadedCallback(threejsDrawing) {
         // Update UI state and call your animation callback
         uiState.rect = renderer.domElement.getBoundingClientRect();
         if (threejsDrawing.animationCallback) {
+            threejsDrawing.data.controls = controls;
             threejsDrawing.animationCallback(renderer, timestamp, threejsDrawing, uiState, camera);
         }
 
