@@ -5,6 +5,10 @@ import ForceGraph3D from '3d-force-graph';
 function drawForce3dGraph(scene, data, threejsDrawing) {
     const { renderer, camera, controls } = threejsDrawing.data;
 
+    const dataSrc = threejsDrawing.data.dataSrc;
+    const dagMode = threejsDrawing.dataSources[dataSrc] && threejsDrawing.dataSources[dataSrc].specialOptions.dagMode;
+    console.log('dagMode', dagMode);
+
     if (threejsDrawing.data._forceGraphInstance) {
         console.warn('ForceGraph already initialized');
         return;
@@ -27,6 +31,15 @@ function drawForce3dGraph(scene, data, threejsDrawing) {
 //    })(canvas);
 
     const Graph = new ForceGraph3D(canvas);
+
+    if (dagMode === true) {
+        // --- enable tree layout ---------------
+        Graph
+            .dagMode('td')          // 'td' = top → down
+            .dagLevelDistance(40)   // pixels between layers (tweak to taste)
+            .onDagError(() => false)  // ignore cycles instead of throwing
+        // --------------------------------------
+    }
 
     Graph
         .graphData(data)
@@ -71,6 +84,11 @@ const force3dDrawing = {
     'drawFuncs': [
         {'func': drawForce3dGraph, 'dataSrc': 'force3d', 'dataType': 'json'},
     ],
+    'dataSources': {
+        'math': {
+            'specialOptions': {'dagMode': true},
+        }
+    },
     'uiState': null,
     'eventListeners': null,
     'animationCallback': (renderer, timestamp, threejsDrawing, uiState, camera) => {

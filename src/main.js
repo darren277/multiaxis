@@ -119,6 +119,7 @@ async function contentLoadedCallback(threejsDrawing) {
         if (dataSrc) {
             const data_src = dataSelected ? dataSelected : dataSrc;
             console.log(`Loading data source: ${data_src}`);
+            threejsDrawing.data.dataSrc = data_src;
             if (dataType === 'svg') {
                 import('svgloader').then(m => {
                     const SVGLoader = m.SVGLoader;
