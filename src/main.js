@@ -113,7 +113,7 @@ async function contentLoadedCallback(threejsDrawing) {
     const controller = threejsDrawing.sceneConfig && threejsDrawing.sceneConfig.controller || 'orbital';
     const cssRendererEnabled = threejsDrawing.sceneConfig && threejsDrawing.sceneConfig.cssRenderer || false;
 
-    const { scene, camera, renderer, controls, stats, cssRenderer } = setupScene('c', threejsDrawing.sceneElements, startPosition, clippingPlane, controller, cssRendererEnabled);
+    const { scene, camera, renderer, controls, stats, cssRenderer } = await setupScene('c', threejsDrawing.sceneElements, startPosition, clippingPlane, controller, cssRendererEnabled);
 
     for (const {func, dataSrc, dataType} of threejsDrawing.drawFuncs) {
         if (dataSrc) {
