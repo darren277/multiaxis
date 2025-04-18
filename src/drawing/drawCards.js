@@ -1,9 +1,17 @@
-import { BoxGeometry, TextureLoader, Mesh, MeshBasicMaterial, Vector3, AmbientLight } from 'three';
+import { BoxGeometry, TextureLoader, Mesh, MeshBasicMaterial, Vector2, Vector3, AmbientLight, Raycaster, Plane } from 'three';
 import { Tween, Easing } from 'tween';
 
 const cardWidth = 2.5;
 const cardHeight = 3.5;
 const cardThickness = 0.02; // small enough but noticeable edge
+
+const raycaster = new Raycaster();
+const mouse = new Vector2();
+
+let draggingCard = null;
+let dragOffset = new Vector3();
+
+let wasOrbitDisabled = false;
 
 let isDPressed = false;
 const dealtCards = new Set(); // track already-dealt cards
@@ -304,6 +312,10 @@ function drawCards(scene, data, threejsDrawing) {
 
     const ambientLight = new AmbientLight(0x404040, 1);
     scene.add(ambientLight);
+
+    window.addEventListener('mousedown', (e) => onMouseDown(e, threejsDrawing));
+    window.addEventListener('mousemove', (e) => onMouseMove(e, threejsDrawing));
+    window.addEventListener('mouseup', (e => onMouseUp(e, threejsDrawing)));
 }
 
 let isSpacePressed = false;
@@ -317,6 +329,81 @@ window.addEventListener('keyup', (e) => {
     if (e.code === 'Space') {isSpacePressed = false;}
     if (e.code === 'KeyD')   isDPressed    = false;
 });
+
+function onMouseDown(e, threejsDrawing) {
+    if (!threejsDrawing.data?.cards) return;
+
+    const camera = threejsDrawing.data.camera;
+    if (!camera) return;
+    const renderer = threejsDrawing.data.renderer;
+    if (!renderer) return;
+    const controls = threejsDrawing.data.controls;
+    if (!controls) {console.log('no controls'); return;}
+
+    const intersects = getIntersections(e, camera, renderer.domElement, threejsDrawing.data.cards);
+    if (intersects.length > 0) {
+        controls.enabled = false;
+        wasOrbitDisabled = true;
+
+        draggingCard = intersects[0].object;
+
+        // Find projected point on the table
+        const intersectionPoint = new Vector3();
+        raycaster.ray.intersectPlane(tablePlane, intersectionPoint);
+
+        dragOffset.copy(intersectionPoint).sub(draggingCard.position);
+    }
+}
+
+function createLockedPlane(axis = 'y', value = 0) {
+    const normals = {x: new Vector3(1, 0, 0), y: new Vector3(0, 1, 0), z: new Vector3(0, 0, 1)};
+    return new Plane(normals[axis], value);
+}
+
+const tablePlane = createLockedPlane('y', 0);
+const wallPlane = createLockedPlane('x', 0);
+
+
+function onMouseMove(e, threejsDrawing) {
+    if (!draggingCard) return;
+
+    const camera = threejsDrawing.data.camera;
+    if (!camera) return;
+    const renderer = threejsDrawing.data.renderer;
+    if (!renderer) return;
+
+    // Update mouse coords
+    const rect = renderer.domElement.getBoundingClientRect();
+    mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+    const intersectionPoint = new Vector3();
+    raycaster.setFromCamera(mouse, camera);
+    raycaster.ray.intersectPlane(wallPlane, intersectionPoint);
+
+    if (intersectionPoint) {
+        draggingCard.position.copy(intersectionPoint.sub(dragOffset));
+        draggingCard.position.x = 0; // lock to table
+    }
+}
+
+function onMouseUp(e, threejsDrawing) {
+    draggingCard = null;
+
+    if (wasOrbitDisabled) {
+        threejsDrawing.data.controls.enabled = true;
+        wasOrbitDisabled = false;
+    }
+}
+
+function getIntersections(event, camera, canvas, objects) {
+    const rect = canvas.getBoundingClientRect();
+    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+    raycaster.setFromCamera(mouse, camera);
+    return raycaster.intersectObjects(objects);
+}
 
 const cardsDrawing = {
     'sceneElements': [],
