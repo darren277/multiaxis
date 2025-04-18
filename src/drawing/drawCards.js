@@ -21,6 +21,18 @@ const DeckConfig = {
     }
 };
 
+const textureCache = new Map();
+
+function hashHtml(htmlString) {
+    let hash = 0;
+    for (let i = 0; i < htmlString.length; i++) {
+        hash = (hash << 5) - hash + htmlString.charCodeAt(i);
+        hash |= 0;
+    }
+    return hash;
+}
+
+
 function getCanvasSizeForCard(cardWidth, cardHeight, scale = 400) {
     return {
         width:  Math.round(cardWidth  * scale),
@@ -44,11 +56,26 @@ const dealtCards = new Set(); // track already-dealt cards
 const textureLoader = new TextureLoader();
 
 function htmlToTexture(htmlString, width = 256, height = 384) {
+    // TODO: textureCache.set(card.id, texture);
+
+    const key = `${hashHtml(htmlString)}-${width}x${height}`;
+
+    if (textureCache.has(key)) {
+        return textureCache.get(key);
+    }
+    //const h1FontSize = 2.0;
+    //const cardNumberFontSize = 1.5;
+    //const regularFontSize = 1.0;
+
+    const h1FontSize = 3.5;
+    const cardNumberFontSize = 2.5;
+    const regularFontSize = 2.0;
+
     const styles = `
 <style>
 h1.card_name {
     text-align: left;
-    font-size: 2.0em;
+    font-size: ${h1FontSize}em;
     padding-bottom: 0.3em;
     margin-bottom: 0.3em;
     border-bottom: 3px dotted #76777a;
@@ -57,23 +84,23 @@ h1.card_name {
 }
 
 span.card_number {
-    font-size: 1.5em;
+    font-size: ${cardNumberFontSize}em;
 }
 
 div.card_info {
-    font-size: 1.0em;
+    font-size: ${regularFontSize}em;
     text-align: left;
 }
 
 div.card_info_space {
-    font-size: 1.0em;
+    font-size: ${regularFontSize}em;
     text-align: left;
     margin-top: 1em;
 }
 
 h2.card_headA {
     font-weight: bold;
-    font-size: 1.0em;
+    font-size: ${regularFontSize}em;
     text-align: left;
     margin-top: 0.5em;
     margin-top: 0.6em;
@@ -145,6 +172,9 @@ span.teal
 
             const texture = new CanvasTexture(canvas);
             texture.needsUpdate = true;
+
+            // Cache and return
+            textureCache.set(key, texture);
             resolve(texture);
         };
 
