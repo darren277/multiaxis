@@ -213,6 +213,60 @@ function dealOneCard(cards) {
 }
 
 
+function getCardValue(cardName) {
+    switch (cardName) {
+        case 'ace':
+            return 11; // or 1, depending on the game rules
+        case 'jack':
+        case 'queen':
+        case 'king':
+            return 10;
+        case 'two':
+            return 2;
+        case 'three':
+            return 3;
+        case 'four':
+            return 4;
+        case 'five':
+            return 5;
+        case 'six':
+            return 6;
+        case 'seven':
+            return 7;
+        case 'eight':
+            return 8;
+        case 'nine':
+            return 9;
+        case 'ten':
+            return 10;
+        default:
+            return parseInt(cardName) || 0; // for numbered cards
+    }
+}
+
+function calculateHandValue(dealtCards, cardsArray) {
+    let totalValue = 0;
+    let aceCount = 0;
+
+    dealtCards.forEach(card => {
+        console.log('card', card);
+        ///const cardName = card.name.split('_')[0]; // e.g., "ace_of_spaces" -> "ace"
+        const cardRank = cardsArray[card].rank;
+        const cardSuit = cardsArray[card].suit;
+        const value = getCardValue(cardRank);
+        totalValue += value;
+        if (value === 11) aceCount++;
+    });
+
+    // Adjust for Aces
+    while (totalValue > 21 && aceCount > 0) {
+        totalValue -= 10; // Ace can be 1 instead of 11
+        aceCount--;
+    }
+
+    return totalValue;
+}
+
 function animationCallback(cards) {
     const SWAPS_PER_PRESS = 10;
     let launched = 0;
@@ -246,6 +300,7 @@ function drawCards(scene, data, threejsDrawing) {
     shuffleAndAnimate(cardMeshes, cardPositions);
     threejsDrawing.data.cards = cardMeshes;
     threejsDrawing.data.cardPositions = cardPositions;
+    threejsDrawing.data.cardsArray = cardsArray;
 
     const ambientLight = new AmbientLight(0x404040, 1);
     scene.add(ambientLight);
@@ -284,6 +339,9 @@ const cardsDrawing = {
         if (isDPressed) {
             dealOneCard(threejsDrawing.data.cards);             // deal one card
             isDPressed = false;
+
+            const handValue = calculateHandValue(dealtCards, threejsDrawing.data.cardsArray);
+            console.log(`Hand value: ${handValue}`);
         }
     },
     'data': {
