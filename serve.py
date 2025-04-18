@@ -61,6 +61,7 @@ def serve_threejs(animation):
         "svgrenderer": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/renderers/SVGRenderer.js",
         "css2drenderer": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/renderers/CSS2DRenderer.js",
         "css3drenderer": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/renderers/CSS3DRenderer.js",
+        "gltfloader": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/loaders/GLTFLoader.js",
 
         "tween": "https://unpkg.com/@tweenjs/tween.js@23.1.3/dist/tween.esm.js",
 
@@ -154,7 +155,7 @@ def serve_image(filename, ext):
     """
     path = os.path.join('src', 'imagery', f'{filename}.{ext}')
     print(f"Serving image: {path}")
-    if ext not in ['jpg', 'jpeg', 'png', 'svg']:
+    if ext not in ['jpg', 'jpeg', 'png', 'svg', 'glb']:
         abort(404)
     if ext == 'jpg' or ext == 'jpeg':
         mimetype = 'image/jpeg'
@@ -162,6 +163,8 @@ def serve_image(filename, ext):
         mimetype = 'image/png'
     elif ext == 'svg':
         mimetype = 'image/svg+xml'
+    elif ext == 'glb':
+        mimetype = 'model/gltf-binary'
     else:
         abort(404)
     if os.path.exists(path):
