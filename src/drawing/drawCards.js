@@ -310,6 +310,7 @@ function drawCards(scene, data, threejsDrawing) {
     shuffleAndAnimate(cardMeshes, cardPositions);
     threejsDrawing.data.cards = cardMeshes;
     threejsDrawing.data.cardPositions = cardPositions;
+    window.cardPositions = cardPositions;
     threejsDrawing.data.cardsArray = cardsArray;
 
     const ambientLight = new AmbientLight(0x404040, 1);
@@ -320,11 +321,18 @@ function drawCards(scene, data, threejsDrawing) {
     window.addEventListener('mouseup', (e => onMouseUp(e, threejsDrawing)));
 }
 
+function logDealtCards() {
+    const dealtCardsArray = Array.from(dealtCards);
+    const dealtCardPositions = window.cardPositions.filter((_, i) => dealtCardsArray.includes(i));
+    console.log('Dealt cards:', dealtCardsArray, 'Positions:', dealtCardPositions);
+}
+
 let isSpacePressed = false;
 
 window.addEventListener('keydown', (e) => {
     if (e.code === 'Space' && !isSpacePressed) {isSpacePressed = true;}
     if (e.code === 'KeyD'   && !isDPressed)    isDPressed    = true;
+    if (e.code === 'KeyL') logDealtCards();
 });
 
 window.addEventListener('keyup', (e) => {
