@@ -113,38 +113,6 @@ function processPath(scene, path) {
     });
 }
 
-function processPathOld(scene, path) {
-    const shapes = SVGLoader.createShapes(path);
-
-    if (path.color === '#ffffff' || !path.userData?.style?.fill || path.toShapes().length === 0) {
-        return;
-    }
-    console.log('Path #', i, 'color:', path.color, 'shapes:', shapes);
-
-    const color = determineColor(path);
-
-    // if g.id.startswith 'text'...
-    console.log('path', path);
-
-    shapes.forEach(shape => {
-        console.log('shape', shape);
-        // if color == yellow, exude farther forward...
-        let geometry;
-        if (color && color.getHex() === 0xffff00) {
-            geometry = new THREE.ExtrudeGeometry(shape, { depth: 4, bevelEnabled: false });
-        } else {
-            geometry = new THREE.ExtrudeGeometry(shape, { depth: 2, bevelEnabled: false });
-        }
-        let material;
-        if (color) {
-            material = new THREE.MeshBasicMaterial({ color });
-        } else {
-            material = new THREE.MeshBasicMaterial({ color: 0xffffff, opacity: 0.5 });
-        }
-        const mesh = new THREE.Mesh(geometry, material);
-        scene.add(mesh);
-    });
-}
 
 function determineColor(path) {
     const style = path.userData?.style || {};
