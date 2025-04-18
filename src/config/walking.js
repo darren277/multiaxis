@@ -1,13 +1,15 @@
+import { Vector3 } from 'three';
+
 // For pointer lock movement
 let moveForward = false;
 let moveBackward = false;
 let moveLeft = false;
 let moveRight = false;
 
-const velocity = new THREE.Vector3();
-const direction = new THREE.Vector3();
+const velocity = new Vector3();
+const direction = new Vector3();
 
-function onKeyDown(event) {
+function onKeyDownWalking(event) {
   switch (event.code) {
     case 'KeyW': moveForward = true; break;
     case 'KeyA': moveLeft = true; break;
@@ -17,7 +19,7 @@ function onKeyDown(event) {
   }
 }
 
-function onKeyUp(event) {
+function onKeyUpWalking(event) {
   switch (event.code) {
     case 'KeyW': moveForward = false; break;
     case 'KeyA': moveLeft = false; break;
@@ -27,15 +29,11 @@ function onKeyUp(event) {
   }
 }
 
-document.addEventListener('keydown', onKeyDown);
-document.addEventListener('keyup', onKeyUp);
 
 // Then in your animation loop, apply movement
 const speed = 5.0; // units per second
 
-function animate() {
-    requestAnimationFrame(animate);
-
+function walkingAnimationCallback(scene, controls) {
     if (controls.isLocked === true) {
         // handle movement
         direction.z = Number(moveForward) - Number(moveBackward);
@@ -49,7 +47,11 @@ function animate() {
         controls.moveRight(velocity.x);
         controls.moveForward(velocity.z);
     }
+};
 
-    renderer.render(scene, camera);
-}
-animate();
+
+export {
+    onKeyDownWalking,
+    onKeyUpWalking,
+    walkingAnimationCallback
+};

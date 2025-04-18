@@ -25,7 +25,7 @@ function importStats() {
 }
 
 
-export function setupScene(
+export async function setupScene(
     containerId = 'c',
     overlayElements = [],
     startPosition = { x: 0, y: 2, z: 5 },
@@ -110,26 +110,6 @@ export function setupScene(
         container.appendChild(el);
     }
 
-    // 5) Controls
-    if (controller === 'none') {
-        // Controls are explicitly set to none (ex: Adventure)
-        controls = null;
-    } else if (controller === 'orbital') {
-        importOrbitControls().then(OrbitControls => {
-            controls = new OrbitControls(camera, renderer.domElement);
-            controls.enabled = true; // we can toggle later
-
-            controls.target.set(0, 0, 0); // set the target to the origin
-            controls.update();
-        });
-    } else if (controller === 'walking') {
-        // TODO...
-        controls = null;
-    } else {
-        controls = null;
-    }
-
-
     camera.lookAt(0, 0, 0); // look at the origin
 
     // 6) Resize handling
@@ -140,6 +120,24 @@ export function setupScene(
     }
 
     window.addEventListener('resize', onWindowResize, false);
+
+    // 5) Controls
+    if (controller === 'none') {
+        // Controls are explicitly set to none (ex: Adventure)
+        controls = null;
+    } else if (controller === 'orbital') {
+        const OrbitControls = await importOrbitControls();
+        controls = new OrbitControls(camera, renderer.domElement);
+        controls.enabled = true; // we can toggle later
+
+        controls.target.set(0, 0, 0); // set the target to the origin
+        controls.update();
+    } else if (controller === 'walking') {
+        // TODO...
+        controls = null;
+    } else {
+        controls = null;
+    }
 
     return { scene, camera, renderer, controls, stats, cssRenderer };
 }

@@ -305,8 +305,15 @@
 <div style="height: 1000px;"></div>
 {% endif %}
 
+{% if threejs_drawings.custom_js %}
+<script type="module">
+    {{ threejs_drawings.custom_js|safe }}
+</script>
+{% endif %}
+
 {% if threejs_drawings %}
 <script type="module" src="{{ main_js_path }}"></script>
 {% endif %}
+
 </body>
 </html>
