@@ -1,4 +1,4 @@
-import { BoxGeometry, TextureLoader, Mesh, MeshBasicMaterial, Vector2, Vector3, AmbientLight, Raycaster, Plane } from 'three';
+import { BoxGeometry, TextureLoader, Mesh, MeshBasicMaterial, Vector2, Vector3, AmbientLight, Raycaster, Plane, CanvasTexture } from 'three';
 import { Tween, Easing } from 'tween';
 
 const cardWidth = 2.5;
@@ -20,11 +20,59 @@ const dealtCards = new Set(); // track already-dealt cards
 
 const textureLoader = new TextureLoader();
 
+function htmlToTexture(htmlString, width = 256, height = 384) {
+    return new Promise((resolve, reject) => {
+        const svgString = `
+<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
+    <foreignObject width="100%" height="100%">
+        <div xmlns="http://www.w3.org/1999/xhtml" style="width:100%;height:100%;background:white;color:black;font-family:sans-serif;display:flex;align-items:center;justify-content:center;padding:1em;">
+            ${htmlString}
+        </div>
+    </foreignObject>
+</svg>`;
 
-function renderCard(card) {
+        const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+        const url = URL.createObjectURL(svgBlob);
+
+        const img = new Image();
+        img.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, width, height); // fill with white background
+
+            ctx.drawImage(img, 0, 0);
+            URL.revokeObjectURL(url);
+
+            const texture = new CanvasTexture(canvas);
+            texture.needsUpdate = true;
+            resolve(texture);
+        };
+
+        img.onerror = (err) => {
+            console.error('Failed to load SVG image:', err);
+            reject(err);
+        };
+
+        img.src = url;
+    });
+}
+
+
+
+async function renderCard(card) {
     const cardGeometry = new BoxGeometry(cardWidth, cardHeight, cardThickness);
 
-    const cardFrontTexture = textureLoader.load(`textures/${card.texture}`);
+    let cardFrontTexture;
+
+    if (card.html === true) {
+        cardFrontTexture = await htmlToTexture("<p>Hello <b>World</b></p><p>Hello <b>World</b></p><p>Hello <b>World</b></p><p>Hello <b>World</b></p>");
+    } else {
+        cardFrontTexture = textureLoader.load(`textures/${card.texture}`);
+    }
     const cardBackTexture = textureLoader.load(`textures/${card.backTexture || 'cards/back_texture.png'}`);
 
     // Material for the front face
@@ -49,13 +97,16 @@ function renderCard(card) {
 }
 
 
-function renderCards(scene, cardDataArr) {
-    return cardDataArr.map(cardData => {
-        const cardMesh = renderCard(cardData);
-        cardMesh.position.copy(cardData.position);   // or set() if you prefer
+async function renderCards(scene, cardDataArr) {
+    const cardMeshPromises = cardDataArr.map(async cardData => {
+        const cardMesh = await renderCard(cardData);
+        cardMesh.position.copy(cardData.position);
         scene.add(cardMesh);
         return cardMesh;
     });
+
+    const cardMeshes = await Promise.all(cardMeshPromises);
+    return cardMeshes;
 }
 
 
@@ -70,7 +121,7 @@ function generateCardPositionsOld(numCards, horizontalSpacing = 3) {
 }
 
 // with verticalSpacing
-function generateCardPositions(numCards, horizontalSpacing = 3, verticalSpacing = 3) {
+async function generateCardPositions(numCards, horizontalSpacing = 3, verticalSpacing = 3) {
     const positions = [];
     for (let i = 0; i < numCards; i++) {
         const x = (i % 10) * horizontalSpacing; // 10 cards per row
@@ -87,12 +138,6 @@ function shuffleArray(array) {
         [array[i], array[j]] = [array[j], array[i]];
     }
 }
-
-// Suppose we have an array of indices [0..51]. Shuffle it:
-const indices = Array.from({ length: 52 }, (_, i) => i);
-shuffleArray(indices);
-
-// Now `indices` is a random permutation, e.g. [10, 33, 1, 7, 20, ...]
 
 
 function animateCardSwap(card, targetPos, onComplete) {
@@ -303,22 +348,25 @@ function drawCards(scene, data, threejsDrawing) {
         };
     });
 
-    console.log('cardsArray', cardsArray);
+    renderCards(scene, cardsArray).then(async cardMeshes => {
+        const cardPositions = await generateCardPositions(cardsArray.length, 3, 4); // spacing of 3 units
+        shuffleAndAnimate(cardMeshes, cardPositions);
+        threejsDrawing.data.cards = cardMeshes;
+        threejsDrawing.data.cardPositions = cardPositions;
+        window.cardPositions = cardPositions;
+        threejsDrawing.data.cardsArray = cardsArray;
 
-    const cardMeshes = renderCards(scene, cardsArray);
-    const cardPositions = generateCardPositions(cardsArray.length, 3, 4); // spacing of 3 units
-    shuffleAndAnimate(cardMeshes, cardPositions);
-    threejsDrawing.data.cards = cardMeshes;
-    threejsDrawing.data.cardPositions = cardPositions;
-    window.cardPositions = cardPositions;
-    threejsDrawing.data.cardsArray = cardsArray;
+        threejsDrawing.data.ready = true;
 
-    const ambientLight = new AmbientLight(0x404040, 1);
-    scene.add(ambientLight);
+        const ambientLight = new AmbientLight(0x404040, 1);
+        scene.add(ambientLight);
 
-    window.addEventListener('mousedown', (e) => onMouseDown(e, threejsDrawing));
-    window.addEventListener('mousemove', (e) => onMouseMove(e, threejsDrawing));
-    window.addEventListener('mouseup', (e => onMouseUp(e, threejsDrawing)));
+        window.addEventListener('mousedown', (e) => onMouseDown(e, threejsDrawing));
+        window.addEventListener('mousemove', (e) => onMouseMove(e, threejsDrawing));
+        window.addEventListener('mouseup', (e => onMouseUp(e, threejsDrawing)));
+    }).catch(err => {
+        console.error("Failed to render cards:", err);
+    });
 }
 
 function logDealtCards() {
@@ -432,7 +480,7 @@ const cardsDrawing = {
     'uiState': null,
     'eventListeners': null,
     'animationCallback': (renderer, timestamp, threejsDrawing, uiState, camera) => {
-        if (!threejsDrawing.data.cards) {
+        if (!threejsDrawing.data.ready || !threejsDrawing.data.cards) {
             console.warn('No cards found.');
             return;
         }
