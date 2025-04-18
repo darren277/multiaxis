@@ -59,6 +59,7 @@ def serve_threejs(animation):
         "orbitcontrols": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/controls/OrbitControls.js",
         "svgloader": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/loaders/SVGLoader.js",
         "svgrenderer": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/renderers/SVGRenderer.js",
+        "css2drenderer": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/renderers/CSS2DRenderer.js",
         "css3drenderer": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/renderers/CSS3DRenderer.js",
 
         "tween": "https://unpkg.com/@tweenjs/tween.js@23.1.3/dist/tween.esm.js",

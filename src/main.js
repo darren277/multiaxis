@@ -210,7 +210,7 @@ async function contentLoadedCallback(threejsDrawing) {
         // Final render
         renderer.render(scene, camera);
 
-        // CSS Renderer
+        // CSS Renderer (2d or 3d)
         if (cssRenderer) {
             cssRenderer.render(scene, camera);
         }
