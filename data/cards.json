@@ -2,7 +2,8 @@
   "metadata": {
     "name": "playing_cards",
     "description": "A collection of standard playing cards.",
-    "version": "1.0"
+    "version": "1.0",
+    "orientation": "portrait"
   },
   "cards": {
     "ace_of_spades": {

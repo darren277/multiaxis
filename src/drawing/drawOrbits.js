@@ -19,16 +19,16 @@ const textureLoader = new THREE.TextureLoader();
 const SCALE_FACTOR = 1 / 10000;
 
 //const SUN_ACTUAL_RADIUS = 1391400;   // km
-const SUN_ACTUAL_RADIUS = 1391400 / 10; // km (scaled down)
+const SUN_ACTUAL_RADIUS = 1391400; // km (scaled down)
 
 // Scaled down for easier visualization
 const sunRadius = (SCALE_FACTOR * SUN_ACTUAL_RADIUS);
 
-const PLANET_DISTANCE_SCALE_FACTOR = 0.01; // Scale factor for planet distances
+const PLANET_DISTANCE_SCALE_FACTOR = 0.05; // Scale factor for planet distances
 const PLANET_SIZE_SCALE_FACTOR = 10;
 
 // multiplying by 10 for easier visualization...
-const dayToRealSeconds = 1.0 / 1;
+const dayToRealSeconds = 1.0;
 // Then each second, Earth covers (360° / 365.26) = ~0.9856° of its orbit.
 
 function createPlanet(planetData, scene) {

@@ -1,0 +1,515 @@
+{
+  "nodes": [
+    {
+      "id": "arithmetic",
+      "name": "arithmetic"
+    },
+    {
+      "id": "fractions",
+      "name": "fractions"
+    },
+    {
+      "id": "decimals_and_percentages",
+      "name": "decimals_and_percentages"
+    },
+    {
+      "id": "algebra",
+      "name": "algebra"
+    },
+    {
+      "id": "inequalities",
+      "name": "inequalities"
+    },
+    {
+      "id": "polynomials",
+      "name": "polynomials"
+    },
+    {
+      "id": "factoring",
+      "name": "factoring"
+    },
+    {
+      "id": "linear_equations",
+      "name": "linear_equations"
+    },
+    {
+      "id": "quadratic_equations",
+      "name": "quadratic_equations"
+    },
+    {
+      "id": "systems_of_equations",
+      "name": "systems_of_equations"
+    },
+    {
+      "id": "matrices_and_determinants",
+      "name": "matrices_and_determinants"
+    },
+    {
+      "id": "geometry",
+      "name": "geometry"
+    },
+    {
+      "id": "coordinate_geometry",
+      "name": "coordinate_geometry"
+    },
+    {
+      "id": "vectors",
+      "name": "vectors"
+    },
+    {
+      "id": "conic_sections",
+      "name": "conic_sections"
+    },
+    {
+      "id": "trigonometry",
+      "name": "trigonometry"
+    },
+    {
+      "id": "polar_coordinates",
+      "name": "polar_coordinates"
+    },
+    {
+      "id": "complex_numbers",
+      "name": "complex_numbers"
+    },
+    {
+      "id": "functions_and_plotting",
+      "name": "functions_and_plotting"
+    },
+    {
+      "id": "exponents",
+      "name": "exponents"
+    },
+    {
+      "id": "logarithms",
+      "name": "logarithms"
+    },
+    {
+      "id": "exponents_and_logarithms",
+      "name": "exponents_and_logarithms"
+    },
+    {
+      "id": "exponential_and_logarithmic_functions",
+      "name": "exponential_and_logarithmic_functions"
+    },
+    {
+      "id": "radicals",
+      "name": "radicals"
+    },
+    {
+      "id": "radicals_and_rational_exponents",
+      "name": "radicals_and_rational_exponents"
+    },
+    {
+      "id": "limits",
+      "name": "limits"
+    },
+    {
+      "id": "differentiation",
+      "name": "differentiation"
+    },
+    {
+      "id": "integration",
+      "name": "integration"
+    },
+    {
+      "id": "series_and_sequences",
+      "name": "series_and_sequences"
+    },
+    {
+      "id": "differential_equations",
+      "name": "differential_equations"
+    },
+    {
+      "id": "multivariable_calculus",
+      "name": "multivariable_calculus"
+    },
+    {
+      "id": "vector_calculus",
+      "name": "vector_calculus"
+    },
+    {
+      "id": "logic_and_proofs",
+      "name": "logic_and_proofs"
+    },
+    {
+      "id": "set_theory",
+      "name": "set_theory"
+    },
+    {
+      "id": "combinatorics",
+      "name": "combinatorics"
+    },
+    {
+      "id": "graph_theory",
+      "name": "graph_theory"
+    },
+    {
+      "id": "number_theory",
+      "name": "number_theory"
+    },
+    {
+      "id": "linear_algebra",
+      "name": "linear_algebra"
+    },
+    {
+      "id": "abstract_algebra",
+      "name": "abstract_algebra"
+    },
+    {
+      "id": "probability_theory",
+      "name": "probability_theory"
+    },
+    {
+      "id": "statistics",
+      "name": "statistics"
+    },
+    {
+      "id": "distributions_and_random_variables",
+      "name": "distributions_and_random_variables"
+    },
+    {
+      "id": "real_analysis",
+      "name": "real_analysis"
+    },
+    {
+      "id": "complex_analysis",
+      "name": "complex_analysis"
+    },
+    {
+      "id": "topology",
+      "name": "topology"
+    },
+    {
+      "id": "functional_analysis",
+      "name": "functional_analysis"
+    },
+    {
+      "id": "numerical_methods",
+      "name": "numerical_methods"
+    },
+    {
+      "id": "optimization",
+      "name": "optimization"
+    },
+    {
+      "id": "dynamical_systems",
+      "name": "dynamical_systems"
+    },
+    {
+      "id": "chaos_theory",
+      "name": "chaos_theory"
+    },
+    {
+      "id": "fourier_analysis",
+      "name": "fourier_analysis"
+    }
+  ],
+  "links": [
+    {
+      "source": "fractions",
+      "target": "arithmetic",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "radicals",
+      "target": "arithmetic",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "exponents_and_logarithms",
+      "target": "arithmetic",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "algebra",
+      "target": "arithmetic",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "factoring",
+      "target": "algebra",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "linear_equations",
+      "target": "algebra",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "quadratic_equations",
+      "target": "factoring",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "systems_of_equations",
+      "target": "linear_equations",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "polynomials",
+      "target": "algebra",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "matrices_and_determinants",
+      "target": "systems_of_equations",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "inequalities",
+      "target": "algebra",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "geometry",
+      "target": "arithmetic",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "coordinate_geometry",
+      "target": "geometry",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "vectors",
+      "target": "coordinate_geometry",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "conic_sections",
+      "target": "coordinate_geometry",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "trigonometry",
+      "target": "geometry",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "trigonometry",
+      "target": "algebra",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "polar_coordinates",
+      "target": "trigonometry",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "complex_numbers",
+      "target": "algebra",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "complex_numbers",
+      "target": "coordinate_geometry",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "functions_and_plotting",
+      "target": "algebra",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "functions_and_plotting",
+      "target": "coordinate_geometry",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "limits",
+      "target": "functions_and_plotting",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "differentiation",
+      "target": "limits",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "integration",
+      "target": "differentiation",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "exponential_and_logarithmic_functions",
+      "target": "exponents_and_logarithms",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "exponential_and_logarithmic_functions",
+      "target": "functions_and_plotting",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "series_and_sequences",
+      "target": "algebra",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "series_and_sequences",
+      "target": "limits",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "multivariable_calculus",
+      "target": "differentiation",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "multivariable_calculus",
+      "target": "integration",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "vector_calculus",
+      "target": "multivariable_calculus",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "vector_calculus",
+      "target": "vectors",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "differential_equations",
+      "target": "differentiation",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "differential_equations",
+      "target": "integration",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "dynamical_systems",
+      "target": "differential_equations",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "set_theory",
+      "target": "arithmetic",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "logic_and_proofs",
+      "target": "set_theory",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "combinatorics",
+      "target": "arithmetic",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "combinatorics",
+      "target": "set_theory",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "graph_theory",
+      "target": "combinatorics",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "number_theory",
+      "target": "arithmetic",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "linear_algebra",
+      "target": "vectors",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "linear_algebra",
+      "target": "matrices_and_determinants",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "abstract_algebra",
+      "target": "algebra",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "abstract_algebra",
+      "target": "logic_and_proofs",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "probability_theory",
+      "target": "fractions",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "probability_theory",
+      "target": "combinatorics",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "statistics",
+      "target": "probability_theory",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "statistics",
+      "target": "functions_and_plotting",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "numerical_methods",
+      "target": "algebra",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "numerical_methods",
+      "target": "differentiation",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "numerical_methods",
+      "target": "integration",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "real_analysis",
+      "target": "limits",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "real_analysis",
+      "target": "logic_and_proofs",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "complex_analysis",
+      "target": "complex_numbers",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "complex_analysis",
+      "target": "real_analysis",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "fourier_analysis",
+      "target": "integration",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "fourier_analysis",
+      "target": "series_and_sequences",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "optimization",
+      "target": "differentiation",
+      "relation": "BUILDS_UPON"
+    },
+    {
+      "source": "optimization",
+      "target": "linear_algebra",
+      "relation": "BUILDS_UPON"
+    }
+  ]
+}

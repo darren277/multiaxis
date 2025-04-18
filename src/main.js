@@ -51,7 +51,7 @@ const THREEJS_DRAWINGS = {
     'geo3d': () => import('./drawing/drawGeo.js').then(m => m.geoDrawing3d),
     'quantum': () => import('./drawing/drawQuantum.js').then(m => m.quantumDrawing),
     'svg': () => import('./drawing/drawSvg.js').then(m => m.svgDrawing),
-    'library': () => import('./drawing/drawLibrary.js').then(m => m.libraryDrawing),
+    'library': () => import('./drawing/library/drawLibrary.js').then(m => m.libraryDrawing),
     'plot': () => import('./drawing/drawPlotFunction.js').then(m => m.plotFunctionDrawing),
     'rubiks': () => import('./drawing/drawRubiksCube.js').then(m => m.rubiksCubeDrawing),
     'chess': () => import('./drawing/drawChess.js').then(m => m.chessDrawing),
@@ -113,12 +113,21 @@ async function contentLoadedCallback(threejsDrawing) {
     const controller = threejsDrawing.sceneConfig && threejsDrawing.sceneConfig.controller || 'orbital';
     const cssRendererEnabled = threejsDrawing.sceneConfig && threejsDrawing.sceneConfig.cssRenderer || false;
 
-    const { scene, camera, renderer, controls, stats, cssRenderer } = setupScene('c', threejsDrawing.sceneElements, startPosition, clippingPlane, controller, cssRendererEnabled);
+    const { scene, camera, renderer, controls, stats, cssRenderer } = await setupScene('c', threejsDrawing.sceneElements, startPosition, clippingPlane, controller, cssRendererEnabled);
+
+    // TODO: Are these all necessary?
+    // And if any of them are, only conditionally?
+    // Also, possibly redundant with `uiState`.
+    threejsDrawing.data.camera = camera;
+    threejsDrawing.data.renderer = renderer;
+    threejsDrawing.data.scene = scene;
+    threejsDrawing.data.controls = controls;
 
     for (const {func, dataSrc, dataType} of threejsDrawing.drawFuncs) {
         if (dataSrc) {
             const data_src = dataSelected ? dataSelected : dataSrc;
             console.log(`Loading data source: ${data_src}`);
+            threejsDrawing.data.dataSrc = data_src;
             if (dataType === 'svg') {
                 import('svgloader').then(m => {
                     const SVGLoader = m.SVGLoader;

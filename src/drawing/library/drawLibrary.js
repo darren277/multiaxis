@@ -1,8 +1,8 @@
 import * as THREE from 'three'; // for any references you still need
 import { CSS2DObject } from 'css2drenderer';
-import { sortAlphabeticallyByName } from './library/sortResources.js';
-import { calculatePositionOfResource, casePitchX, rowPitchZ, worldX, worldZ } from './library/calculatePosition.js';
-import { onKeyDownWalking, onKeyUpWalking, walkingAnimationCallback } from '../config/walking.js';
+import { sortAlphabeticallyByName } from './sortResources.js';
+import { calculatePositionOfResource, casePitchX, rowPitchZ, worldX, worldZ } from './calculatePosition.js';
+import { onKeyDownWalking, onKeyUpWalking, walkingAnimationCallback } from '../../config/walking.js';
 
 function drawFloor(scene) {
     const floorGeometry = new THREE.PlaneGeometry(200, 200);
