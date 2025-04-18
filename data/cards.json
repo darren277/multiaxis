@@ -1,0 +1,425 @@
+{
+  "metadata": {
+    "name": "playing_cards",
+    "description": "A collection of standard playing cards.",
+    "version": "1.0"
+  },
+  "cards": {
+    "ace_of_spades": {
+      "name": "Ace of Spades",
+      "suit": "spades",
+      "rank": "ace",
+      "value": 1,
+      "color": "0x000000",
+      "texture": "cards/standard/ace_of_spades.png"
+    },
+    "two_of_spades": {
+      "name": "Two of Spades",
+      "suit": "spades",
+      "rank": "two",
+      "value": 2,
+      "color": "0x000000",
+      "texture": "cards/standard/2_of_spades.png"
+    },
+    "three_of_spades": {
+      "name": "Three of Spades",
+      "suit": "spades",
+      "rank": "three",
+      "value": 3,
+      "color": "0x000000",
+      "texture": "cards/standard/3_of_spades.png"
+    },
+    "four_of_spades": {
+      "name": "Four of Spades",
+      "suit": "spades",
+      "rank": "four",
+      "value": 4,
+      "color": "0x000000",
+      "texture": "cards/standard/4_of_spades.png"
+    },
+    "five_of_spades": {
+      "name": "Five of Spades",
+      "suit": "spades",
+      "rank": "five",
+      "value": 5,
+      "color": "0x000000",
+      "texture": "cards/standard/5_of_spades.png"
+    },
+    "six_of_spades": {
+      "name": "Six of Spades",
+      "suit": "spades",
+      "rank": "six",
+      "value": 6,
+      "color": "0x000000",
+      "texture": "cards/standard/6_of_spades.png"
+    },
+    "seven_of_spades": {
+      "name": "Seven of Spades",
+      "suit": "spades",
+      "rank": "seven",
+      "value": 7,
+      "color": "0x000000",
+      "texture": "cards/standard/7_of_spades.png"
+    },
+    "eight_of_spades": {
+      "name": "Eight of Spades",
+      "suit": "spades",
+      "rank": "eight",
+      "value": 8,
+      "color": "0x000000",
+      "texture": "cards/standard/8_of_spades.png"
+    },
+    "nine_of_spades": {
+      "name": "Nine of Spades",
+      "suit": "spades",
+      "rank": "nine",
+      "value": 9,
+      "color": "0x000000",
+      "texture": "cards/standard/9_of_spades.png"
+    },
+    "ten_of_spades": {
+      "name": "Ten of Spades",
+      "suit": "spades",
+      "rank": "ten",
+      "value": 10,
+      "color": "0x000000",
+      "texture": "cards/standard/10_of_spades.png"
+    },
+    "jack_of_spades": {
+      "name": "Jack of Spades",
+      "suit": "spades",
+      "rank": "jack",
+      "value": 11,
+      "color": "0x000000",
+      "texture": "cards/standard/jack_of_spades.png"
+    },
+    "queen_of_spades": {
+      "name": "Queen of Spades",
+      "suit": "spades",
+      "rank": "queen",
+      "value": 12,
+      "color": "0x000000",
+      "texture": "cards/standard/queen_of_spades.png"
+    },
+    "king_of_spades": {
+      "name": "King of Spades",
+      "suit": "spades",
+      "rank": "king",
+      "value": 13,
+      "color": "0x000000",
+      "texture": "cards/standard/king_of_spades.png"
+    },
+    "ace_of_hearts": {
+      "name": "Ace of Hearts",
+      "suit": "hearts",
+      "rank": "ace",
+      "value": 1,
+      "color": "0xff0000",
+      "texture": "cards/standard/ace_of_hearts.png"
+    },
+    "two_of_hearts": {
+      "name": "Two of Hearts",
+      "suit": "hearts",
+      "rank": "two",
+      "value": 2,
+      "color": "0xff0000",
+      "texture": "cards/standard/2_of_hearts.png"
+    },
+    "three_of_hearts": {
+      "name": "Three of Hearts",
+      "suit": "hearts",
+      "rank": "three",
+      "value": 3,
+      "color": "0xff0000",
+      "texture": "cards/standard/3_of_hearts.png"
+    },
+    "four_of_hearts": {
+      "name": "Four of Hearts",
+      "suit": "hearts",
+      "rank": "four",
+      "value": 4,
+      "color": "0xff0000",
+      "texture": "cards/standard/4_of_hearts.png"
+    },
+    "five_of_hearts": {
+      "name": "Five of Hearts",
+      "suit": "hearts",
+      "rank": "five",
+      "value": 5,
+      "color": "0xff0000",
+      "texture": "cards/standard/5_of_hearts.png"
+    },
+    "six_of_hearts": {
+      "name": "Six of Hearts",
+      "suit": "hearts",
+      "rank": "six",
+      "value": 6,
+      "color": "0xff0000",
+      "texture": "cards/standard/6_of_hearts.png"
+    },
+    "seven_of_hearts": {
+      "name": "Seven of Hearts",
+      "suit": "hearts",
+      "rank": "seven",
+      "value": 7,
+      "color": "0xff0000",
+      "texture": "cards/standard/7_of_hearts.png"
+    },
+    "eight_of_hearts": {
+      "name": "Eight of Hearts",
+      "suit": "hearts",
+      "rank": "eight",
+      "value": 8,
+      "color": "0xff0000",
+      "texture": "cards/standard/8_of_hearts.png"
+    },
+    "nine_of_hearts": {
+      "name": "Nine of Hearts",
+      "suit": "hearts",
+      "rank": "nine",
+      "value": 9,
+      "color": "0xff0000",
+      "texture": "cards/standard/9_of_hearts.png"
+    },
+    "ten_of_hearts": {
+      "name": "Ten of Hearts",
+      "suit": "hearts",
+      "rank": "ten",
+      "value": 10,
+      "color": "0xff0000",
+      "texture": "cards/standard/10_of_hearts.png"
+    },
+    "jack_of_hearts": {
+      "name": "Jack of Hearts",
+      "suit": "hearts",
+      "rank": "jack",
+      "value": 11,
+      "color": "0xff0000",
+      "texture": "cards/standard/jack_of_hearts.png"
+    },
+    "queen_of_hearts": {
+      "name": "Queen of Hearts",
+      "suit": "hearts",
+      "rank": "queen",
+      "value": 12,
+      "color": "0xff0000",
+      "texture": "cards/standard/queen_of_hearts.png"
+    },
+    "king_of_hearts": {
+      "name": "King of Hearts",
+      "suit": "hearts",
+      "rank": "king",
+      "value": 13,
+      "color": "0xff0000",
+      "texture": "cards/standard/king_of_hearts.png"
+    },
+    "ace_of_diamonds": {
+      "name": "Ace of Diamonds",
+      "suit": "diamonds",
+      "rank": "ace",
+      "value": 1,
+      "color": "0xff0000",
+      "texture": "cards/standard/ace_of_diamonds.png"
+    },
+    "two_of_diamonds": {
+      "name": "Two of Diamonds",
+      "suit": "diamonds",
+      "rank": "two",
+      "value": 2,
+      "color": "0xff0000",
+      "texture": "cards/standard/2_of_diamonds.png"
+    },
+    "three_of_diamonds": {
+      "name": "Three of Diamonds",
+      "suit": "diamonds",
+      "rank": "three",
+      "value": 3,
+      "color": "0xff0000",
+      "texture": "cards/standard/3_of_diamonds.png"
+    },
+    "four_of_diamonds": {
+      "name": "Four of Diamonds",
+      "suit": "diamonds",
+      "rank": "four",
+      "value": 4,
+      "color": "0xff0000",
+      "texture": "cards/standard/4_of_diamonds.png"
+    },
+    "five_of_diamonds": {
+      "name": "Five of Diamonds",
+      "suit": "diamonds",
+      "rank": "five",
+      "value": 5,
+      "color": "0xff0000",
+      "texture": "cards/standard/5_of_diamonds.png"
+    },
+    "six_of_diamonds": {
+      "name": "Six of Diamonds",
+      "suit": "diamonds",
+      "rank": "six",
+      "value": 6,
+      "color": "0xff0000",
+      "texture": "cards/standard/6_of_diamonds.png"
+    },
+    "seven_of_diamonds": {
+      "name": "Seven of Diamonds",
+      "suit": "diamonds",
+      "rank": "seven",
+      "value": 7,
+      "color": "0xff0000",
+      "texture": "cards/standard/7_of_diamonds.png"
+    },
+    "eight_of_diamonds": {
+      "name": "Eight of Diamonds",
+      "suit": "diamonds",
+      "rank": "eight",
+      "value": 8,
+      "color": "0xff0000",
+      "texture": "cards/standard/8_of_diamonds.png"
+    },
+    "nine_of_diamonds": {
+      "name": "Nine of Diamonds",
+      "suit": "diamonds",
+      "rank": "nine",
+      "value": 9,
+      "color": "0xff0000",
+      "texture": "cards/standard/9_of_diamonds.png"
+    },
+    "ten_of_diamonds": {
+      "name": "Ten of Diamonds",
+      "suit": "diamonds",
+      "rank": "ten",
+      "value": 10,
+      "color": "0xff0000",
+      "texture": "cards/standard/10_of_diamonds.png"
+    },
+    "jack_of_diamonds": {
+      "name": "Jack of Diamonds",
+      "suit": "diamonds",
+      "rank": "jack",
+      "value": 11,
+      "color": "0xff0000",
+      "texture": "cards/standard/jack_of_diamonds.png"
+    },
+    "queen_of_diamonds": {
+      "name": "Queen of Diamonds",
+      "suit": "diamonds",
+      "rank": "queen",
+      "value": 12,
+      "color": "0xff0000",
+      "texture": "cards/standard/queen_of_diamonds.png"
+    },
+    "king_of_diamonds": {
+      "name": "King of Diamonds",
+      "suit": "diamonds",
+      "rank": "king",
+      "value": 13,
+      "color": "0xff0000",
+      "texture": "cards/standard/king_of_diamonds.png"
+    },
+    "ace_of_clubs": {
+      "name": "Ace of Clubs",
+      "suit": "clubs",
+      "rank": "ace",
+      "value": 1,
+      "color": "0x000000",
+      "texture": "cards/standard/ace_of_clubs.png"
+    },
+    "two_of_clubs": {
+      "name": "Two of Clubs",
+      "suit": "clubs",
+      "rank": "two",
+      "value": 2,
+      "color": "0x000000",
+      "texture": "cards/standard/2_of_clubs.png"
+    },
+    "three_of_clubs": {
+      "name": "Three of Clubs",
+      "suit": "clubs",
+      "rank": "three",
+      "value": 3,
+      "color": "0x000000",
+      "texture": "cards/standard/3_of_clubs.png"
+    },
+    "four_of_clubs": {
+      "name": "Four of Clubs",
+      "suit": "clubs",
+      "rank": "four",
+      "value": 4,
+      "color": "0x000000",
+      "texture": "cards/standard/4_of_clubs.png"
+    },
+    "five_of_clubs": {
+      "name": "Five of Clubs",
+      "suit": "clubs",
+      "rank": "five",
+      "value": 5,
+      "color": "0x000000",
+      "texture": "cards/standard/5_of_clubs.png"
+    },
+    "six_of_clubs": {
+      "name": "Six of Clubs",
+      "suit": "clubs",
+      "rank": "six",
+      "value": 6,
+      "color": "0x000000",
+      "texture": "cards/standard/6_of_clubs.png"
+    },
+    "seven_of_clubs": {
+      "name": "Seven of Clubs",
+      "suit": "clubs",
+      "rank": "seven",
+      "value": 7,
+      "color": "0x000000",
+      "texture": "cards/standard/7_of_clubs.png"
+    },
+    "eight_of_clubs": {
+      "name": "Eight of Clubs",
+      "suit": "clubs",
+      "rank": "eight",
+      "value": 8,
+      "color": "0x000000",
+      "texture": "cards/standard/8_of_clubs.png"
+    },
+    "nine_of_clubs": {
+      "name": "Nine of Clubs",
+      "suit": "clubs",
+      "rank": "nine",
+      "value": 9,
+      "color": "0x000000",
+      "texture": "cards/standard/9_of_clubs.png"
+    },
+    "ten_of_clubs": {
+      "name": "Ten of Clubs",
+      "suit": "clubs",
+      "rank": "ten",
+      "value": 10,
+      "color": "0x000000",
+      "texture": "cards/standard/10_of_clubs.png"
+    },
+    "jack_of_clubs": {
+      "name": "Jack of Clubs",
+      "suit": "clubs",
+      "rank": "jack",
+      "value": 11,
+      "color": "0x000000",
+      "texture": "cards/standard/jack_of_clubs.png"
+    },
+    "queen_of_clubs": {
+      "name": "Queen of Clubs",
+      "suit": "clubs",
+      "rank": "queen",
+      "value": 12,
+      "color": "0x000000",
+      "texture": "cards/standard/queen_of_clubs.png"
+    },
+    "king_of_clubs": {
+      "name": "King of Clubs",
+      "suit": "clubs",
+      "rank": "king",
+      "value": 13,
+      "color": "0x000000",
+      "texture": "cards/standard/king_of_clubs.png"
+    }
+  }
+}
