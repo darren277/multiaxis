@@ -197,6 +197,8 @@ function animationCallback(cards) {
     }
 }
 
+// TODO: Is back_texture too high resolution?
+
 
 function drawCards(scene, data, threejsDrawing) {
     const cards = data.cards || [];
