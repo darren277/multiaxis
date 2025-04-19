@@ -2,251 +2,159 @@ import { HemisphereLight, Mesh, MeshBasicMaterial, BoxGeometry, PlaneGeometry, C
 
 /* PointerLock controls adapted from https://github.com/mrdoob/three.js/blob/master/examples/misc_controls_pointerlock.html */
 
-let moveForward = false;
-let moveBackward = false;
-let moveLeft = false;
-let moveRight = false;
-let canJump = false;
+// ---------- Constants ----------
+const TILE    = 10;          // size of one grid square
+const WALL_H  =  4;          // wall height
+const SPEED   = 400;         // player acceleration (units/s²)
+const ENEMY_SPEED = 8;       // chasing speed
+const STATE_IDLE  = 'idle';
+const STATE_CHASE = 'chase';
+
+// Simple square map (1 = wall, 0 = empty)
+const map = [
+    [1,1,1,1,1,1],
+    [1,0,0,0,0,1],
+    [1,0,0,0,0,1],
+    [1,0,0,0,0,1],
+    [1,0,0,0,0,1],
+    [1,1,1,1,1,1]
+];
+
+// ---------- Materials ----------
+const floorMat = new MeshBasicMaterial({ color: 0x222222 });
+const wallMat  = new MeshBasicMaterial({ color: 0x8888ff });
+const enemyMat = new MeshBasicMaterial({ color: 0xff0000, side: DoubleSide });
+
+// ---------- Player movement helpers ----------
+const keyState   = {};
+['keydown', 'keyup'].forEach(evt => {document.addEventListener(evt, e => keyState[e.code] = evt === 'keydown');});
+
+const velocity  = new Vector3();
+const direction = new Vector3();
 
 let prevTime = performance.now();
 
-function drawGame(scene, threejsDrawing) {
-    // === Light ===
-    const light = new HemisphereLight(0xffffff, 0x444444);
-    scene.add(light);
-
-    // === Map Data ===
-    const map = [
-        [1,1,1,1,1],
-        [1,0,0,0,1],
-        [1,0,0,0,1],
-        [1,0,0,0,1],
-        [1,1,1,1,1],
-    ];
-
-    //const tileSize = 1;
-    const tileSize = 10;
-    const wallHeight = 2;
-
-    // === Materials ===
-    const floorMat = new MeshBasicMaterial({ color: 0x222222 });
-    const wallMat = new MeshBasicMaterial({ color: 0x8888ff });
-
-    // === Walls Array for Raycasting ===
-    const walls = [];
-
-    // === Create Floor and Walls ===
-    for (let z = 0; z < map.length; z++) {
-        for (let x = 0; x < map[z].length; x++) {
-            const tile = map[z][x];
-
-            // Floor
-            const floor = new Mesh(new PlaneGeometry(tileSize, tileSize), floorMat);
-            floor.rotation.x = -Math.PI / 2;
-            floor.position.set(x * tileSize, 0, z * tileSize);
-            scene.add(floor);
-
-            if (tile === 1) {
-                const wall = new Mesh(new BoxGeometry(tileSize, wallHeight, tileSize), wallMat);
-                wall.position.set(x * tileSize, wallHeight / 2, z * tileSize);
-                scene.add(wall);
-                walls.push(wall);
-            }
-        }
-    }
-}
-
-
-const onKeyDown = function (event) {
-    switch (event.code) {
-        case 'ArrowUp':
-        case 'KeyW':
-            moveForward = true;
-            break;
-        case 'ArrowLeft':
-        case 'KeyA':
-            moveLeft = true;
-            break;
-        case 'ArrowDown':
-        case 'KeyS':
-            moveBackward = true;
-            break;
-        case 'ArrowRight':
-        case 'KeyD':
-            moveRight = true;
-            break;
-        case 'Space':
-            if (canJump === true) velocity.y += 350;
-            canJump = false;
-            break;
-    }
-};
-
-const onKeyUp = function (event) {
-    switch (event.code) {
-        case 'ArrowUp':
-        case 'KeyW':
-            moveForward = false;
-            break;
-        case 'ArrowLeft':
-        case 'KeyA':
-            moveLeft = false;
-            break;
-        case 'ArrowDown':
-        case 'KeyS':
-            moveBackward = false;
-            break;
-        case 'ArrowRight':
-        case 'KeyD':
-            moveRight = false;
-            break;
-    }
-};
-
-document.addEventListener('keydown', onKeyDown);
-document.addEventListener('keyup', onKeyUp);
-
-function handleMovement(controls) {
-    const time = performance.now();
-
-    if (controls.isLocked === true) {
-        raycaster.ray.origin.copy(controls.object.position);
-        raycaster.ray.origin.y -= 10;
-
-        const intersections = raycaster.intersectObjects(objects, false);
-
-        const onObject = intersections.length > 0;
-
-        const delta = (time - prevTime) / 1000;
-
-        velocity.x -= velocity.x * 10.0 * delta;
-        velocity.z -= velocity.z * 10.0 * delta;
-
-        velocity.y -= 9.8 * 100.0 * delta; // 100.0 = mass
-
-        direction.z = Number(moveForward) - Number(moveBackward);
-        direction.x = Number(moveRight) - Number(moveLeft);
-        direction.normalize(); // this ensures consistent movements in all directions
-
-        if (moveForward || moveBackward) velocity.z -= direction.z * 400.0 * delta;
-        if (moveLeft || moveRight) velocity.x -= direction.x * 400.0 * delta;
-
-        if (onObject === true) {
-            velocity.y = Math.max(0, velocity.y);
-            canJump = true;
-        }
-
-        controls.moveRight(-velocity.x * delta);
-        controls.moveForward(-velocity.z * delta);
-
-        controls.object.position.y += (velocity.y * delta); // new behavior
-
-        if (controls.object.position.y < 10) {
-            velocity.y = 0;
-            controls.object.position.y = 10;
-            canJump = true;
-        }
-    }
-
+function updatePlayer(controls) {
+    const time  = performance.now();
+    const delta = (time - prevTime) / 1000;
     prevTime = time;
+
+    // Damp current velocity (friction)
+    velocity.x -= velocity.x * 10 * delta;
+    velocity.z -= velocity.z * 10 * delta;
+
+    // Build input direction from keys
+    direction.set(
+        Number(keyState['KeyD'] || keyState['ArrowRight']) - Number(keyState['KeyA'] || keyState['ArrowLeft']),
+        0,
+        Number(keyState['KeyS'] || keyState['ArrowDown'])  - Number(keyState['KeyW'] || keyState['ArrowUp'])
+    );
+
+    if (direction.lengthSq() > 0) direction.normalize();
+
+    // Accelerate
+    velocity.x -= direction.x * SPEED * delta;
+    velocity.z -= direction.z * SPEED * delta;
+
+    controls.moveRight (-velocity.x * delta);
+    controls.moveForward(-velocity.z * delta);
 }
 
+// ---------- Enemy helpers ----------
+const raycaster = new Raycaster();
 
-// === Enemy Management ===
-const STATE_IDLE = 'idle';
-const STATE_CHASE = 'chase';
-const enemies = [];
-
-function spawnEnemy(cameraPosition, x, z) {
-    const geometry = new PlaneGeometry(1, 2);
-    const material = new MeshBasicMaterial({ color: 0xff0000, side: DoubleSide });
-    const enemy = new Mesh(geometry, material);
-    enemy.position.set(x, 1, z);
-    enemy.lookAt(cameraPosition);
-    enemy.userData.state = STATE_IDLE;
-    scene.add(enemy);
-    enemies.push(enemy);
+function enemyLOS(enemy, camera, walls) {
+    const dir = new Vector3().subVectors(camera.position, enemy.position).normalize();
+    raycaster.set(enemy.position.clone().setY(3), dir);
+    return raycaster.intersectObjects(walls, false).length === 0;
 }
 
-function playerInRange(enemy, maxDistance = 10) {
-    const distance = enemy.position.distanceTo(camera.position);
-    return distance < maxDistance;
-}
+function playerDist(enemy, camera) { return enemy.position.distanceTo(camera.position); }
 
-function hasLineOfSight(enemy) {
-    const raycaster = new Raycaster();
-    const direction = new Vector3().subVectors(camera.position, enemy.position).normalize();
-    raycaster.set(enemy.position, direction);
-    const intersects = raycaster.intersectObjects(walls);
-    return intersects.length === 0;
-}
-
-function moveTowardPlayer(enemy, delta) {
-    const speed = 1.0;
-    const direction = new Vector3().subVectors(camera.position, enemy.position);
-    direction.y = 0;
-    direction.normalize();
-    enemy.position.addScaledVector(direction, speed * delta);
-}
-
-function updateEnemies(delta) {
-    enemies.forEach(enemy => {
-        switch (enemy.userData.state) {
+function updateEnemies(delta, data, camera) {
+    data.enemies.forEach(e => {
+        switch (e.userData.state) {
             case STATE_IDLE:
-                if (playerInRange(enemy)) {
-                    enemy.userData.state = STATE_CHASE;
-                }
+                if (playerDist(e, camera) < 60 && enemyLOS(e, camera, data.walls)) e.userData.state = STATE_CHASE;
                 break;
             case STATE_CHASE:
-                if (hasLineOfSight(enemy)) {
-                    moveTowardPlayer(enemy, delta);
-                } else {
-                    enemy.userData.state = STATE_IDLE;
-                }
+                if (!enemyLOS(e, camera, data.walls)) { e.userData.state = STATE_IDLE; break; }
+                const dir = new Vector3().subVectors(camera.position, e.position);
+                dir.y = 0; dir.normalize();
+                e.position.addScaledVector(dir, ENEMY_SPEED * delta);
                 break;
         }
-        enemy.lookAt(camera.position);
+        e.lookAt(camera.position);
     });
 }
 
+function spawnEnemy(scene, data, gridX, gridZ) {
+  const enemy = new Mesh(new PlaneGeometry(3, 6), enemyMat);
+  enemy.position.set(gridX * TILE, 3, gridZ * TILE);
+  enemy.userData.state = STATE_IDLE;
+  scene.add(enemy);
+  data.enemies.push(enemy);
+}
 
-// === Game Loop ===
+// ---------- drawGame (called once by loader) ----------
+function drawGame(scene, threejsDrawing) {
+    // Provide a data bucket if not present
+    if (!threejsDrawing.data) threejsDrawing.data = {};
+    const data = threejsDrawing.data;
+    data.walls   = [];
+    data.enemies = [];
+
+    // Build floor & walls
+    for (let z = 0; z < map.length; z++) {
+        for (let x = 0; x < map[z].length; x++) {
+            // Floor
+            const floor = new Mesh(new PlaneGeometry(TILE, TILE), floorMat);
+            floor.rotation.x = -Math.PI / 2;
+            floor.position.set(x * TILE, 0, z * TILE);
+            scene.add(floor);
+
+            if (map[z][x] === 1) {
+                const wall = new Mesh(new BoxGeometry(TILE, WALL_H, TILE), wallMat);
+                wall.position.set(x * TILE, WALL_H / 2, z * TILE);
+                scene.add(wall);
+                data.walls.push(wall);
+            }
+        }
+    }
+
+    // Initial enemy for demo purposes
+    spawnEnemy(scene, data, 4, 4);
+}
+
+// ---------- animationCallback (runs every frame) ----------
 const clock = new Clock();
+function animationCallback(renderer, timestamp, threejsDrawing, uiState, camera) {
+    const data     = threejsDrawing.data;
+    const controls = data.controls;           // PointerLockControls comes from loader
+    if (!controls) return;                    // Loader hasn’t finished yet
 
+    updatePlayer(controls);
+    updateEnemies(clock.getDelta(), data, camera);
+
+    // Spawn a new enemy every 120 s (optional demo)
+    const t = Math.floor(timestamp / 1000);
+    if (!data.lastSpawn) data.lastSpawn = t;
+    if (t - data.lastSpawn >= 120) {
+        spawnEnemy(renderer.scene || camera.parent, data, 2, 2); // simple spawn
+        data.lastSpawn = t;
+    }
+}
 
 const gameDrawing = {
-    'sceneElements': [],
-    'drawFuncs': [
-        {'func': drawGame, 'dataSrc': null}
-    ],
-    'uiState': null,
-    'eventListeners': null,
-    'animationCallback': (renderer, timestamp, threejsDrawing, uiState, camera) => {
-        const canvas = renderer.domElement;
-        const scene = threejsDrawing.data.scene;
-        const controls = threejsDrawing.data.controls;
-
-        if (scene && controls) {
-            // === Handle Movement ===
-            handleMovement(controls);
-
-            // every 2 minutes spawn an enemy
-            const time = Math.floor(timestamp / 1000);
-            if (time % 120 === 0) spawnEnemy(camera.position, 3, 3);
-
-            const delta = clock.getDelta();
-            updateEnemies(delta);
-        }
-    },
-    'data': {
-    },
-    'sceneConfig': {
-        'startPosition': {
-            'x': 1.5,
-            'y': 1.6,
-            'z': 1.5,
-        },
-        'controller': 'pointerlock',
+    sceneElements: [],
+    drawFuncs: [ { func: drawGame, dataSrc: null } ],
+    uiState: null,
+    eventListeners: null,
+    animationCallback,
+    data: {},
+    sceneConfig: {
+        startPosition: { x: 5, y: 2, z: 5 },
+        controller: 'pointerlock'
     }
 }
 
