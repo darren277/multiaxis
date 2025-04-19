@@ -1,8 +1,29 @@
 import { PointLight, SphereGeometry, CylinderGeometry, Mesh, MeshStandardMaterial, MathUtils, Vector3 } from 'three';
+import { modelRegistry } from './neuroGeometries.js';
 
 // Define shared geometries/materials outside
 const particleGeo = new SphereGeometry(0.2, 8, 8);
 const particleMat = new MeshStandardMaterial({ color: 0xffaa00 });
+
+function createNeurotransmitter(type = 'glutamate', position = new Vector3()) {
+    const geo = modelRegistry.neurotransmitters.geometries[type];
+    const mat = modelRegistry.neurotransmitters.materials[type].clone(); // clone so you can animate opacity, etc.
+
+    const particle = new Mesh(geo, mat);
+    particle.position.copy(position);
+    particle.userData.velocity = new Vector3(0, -0.05 - Math.random() * 0.05, (Math.random() - 0.5) * 0.05);
+
+    return particle;
+}
+
+function createReceptor(type = 'AMPA', position = new Vector3()) {
+    const geo = modelRegistry.receptors.geometries[type];
+    const mat = modelRegistry.receptors.materials[type].clone();
+
+    const receptor = new Mesh(geo, mat);
+    receptor.position.copy(position);
+    return receptor;
+}
 
 function drawSynapse(scene, threejsDrawing) {
     // Light
@@ -53,12 +74,22 @@ function drawSynapse(scene, threejsDrawing) {
     threejsDrawing.data.particles = particles;
 }
 
+// Helper: define neurotransmitter-receptor mapping
+function getReceptorTargetsFor(ntype) {
+    const targets = {
+        glutamate: ['AMPA', 'NMDA'],
+        dopamine: ['D1', 'D2'],
+        serotonin: ['5HT2A'],
+        gaba: ['GABA_A']
+    };
+    return targets[ntype] || [];
+}
+
 // Animate neurotransmitter release
-function releaseNeurotransmitters(scene, vesicles, particles) {
+function releaseNeurotransmitters(scene, vesicles, particles, transmitters = ['glutamate']) {
     vesicles.forEach(v => {
-        const particle = new Mesh(particleGeo, particleMat.clone());
-        particle.position.copy(v.position);
-        particle.userData.velocity = new Vector3(0, -0.05 - Math.random() * 0.05, (Math.random() - 0.5) * 0.05);
+        const type = transmitters[Math.floor(Math.random() * transmitters.length)];
+        const particle = createNeurotransmitter(type, v.position);
         particles.push(particle);
         scene.add(particle);
     });
@@ -67,14 +98,18 @@ function releaseNeurotransmitters(scene, vesicles, particles) {
 
 // Animate
 let frame = 0;
-function animateSynapse(scene, vesicles, particles) {
+function animateSynapse(scene, vesicles, particles, transmitters = ['glutamate'], receptors = ['AMPA']) {
     if (frame % 150 === 0) {
-        releaseNeurotransmitters(scene, vesicles, particles);
+        releaseNeurotransmitters(scene, vesicles, particles, transmitters);
     }
 
     for (let i = particles.length - 1; i >= 0; i--) {
         const p = particles[i];
         p.position.add(p.userData.velocity);
+
+        // Optional: receptor detection logic could go here
+        // Example: if (receptors.includes("AMPA") && p.userData.receptorTargets.includes("AMPA")) { ... }
+
         if (p.position.y < -5) {
             scene.remove(p);
             particles.splice(i, 1);
