@@ -6,6 +6,12 @@ function importOrbitControls() {
     });
 }
 
+function importPointerLockControls() {
+    return import('pointerlockcontrols').then(module => {
+        return module.PointerLockControls;
+    });
+}
+
 function importCSS3DRenderer() {
     return import('css3drenderer').then(module => {
         return module.CSS3DRenderer;
@@ -161,6 +167,11 @@ export async function setupScene(
     } else if (controller === 'walking') {
         // TODO...
         controls = null;
+    } else if (controller === 'pointerlock') {
+        const PointerLockControls = await importPointerLockControls();
+        const controls = new PointerLockControls(camera, renderer.domElement);
+        document.body.addEventListener('click', () => controls.lock());
+        scene.add(controls.getObject());
     } else {
         controls = null;
     }
