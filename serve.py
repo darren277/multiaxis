@@ -161,11 +161,12 @@ def serve_image(filename, ext):
     Serve any image file under /imagery/.
     Example: /imagery/Canestra_di_frutta_Caravaggio.jpg
     """
-    remaining_file_name_and_ext = ext.split('.')
-    remaining_file_name = remaining_file_name_and_ext[:-1]
-    ext = remaining_file_name_and_ext[-1]
-    remaining_file_name = ".".join(remaining_file_name)
-    filename = filename + '.' + remaining_file_name
+    if sum(1 for c in ext if c == '.') > 1:
+        remaining_file_name_and_ext = ext.split('.')
+        remaining_file_name = remaining_file_name_and_ext[:-1]
+        ext = remaining_file_name_and_ext[-1]
+        remaining_file_name = ".".join(remaining_file_name)
+        filename = filename + '.' + remaining_file_name
     path = os.path.join('src', 'imagery', f'{filename}.{ext}')
     print(f"Serving image: {path}")
     if ext not in ['jpg', 'jpeg', 'png', 'svg', 'glb', 'ply', 'obj', 'pdb']:
