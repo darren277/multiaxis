@@ -1,9 +1,17 @@
-import { PointLight, SphereGeometry, CylinderGeometry, Mesh, MeshStandardMaterial, MathUtils, Vector3 } from 'three';
+import { PointLight, AmbientLight, SphereGeometry, CylinderGeometry, Mesh, MeshStandardMaterial, MathUtils, Vector3 } from 'three';
 import { modelRegistry } from './neuroGeometries.js';
 
 // Define shared geometries/materials outside
 const particleGeo = new SphereGeometry(0.2, 8, 8);
 const particleMat = new MeshStandardMaterial({ color: 0xffaa00 });
+
+const receptorColorMap = {
+    AMPA: 0x33ff33,
+    NMDA: 0x00cccc,
+    GABA_A: 0xffffff
+};
+
+const highlightColor = 0xffff00; // universal "binding" color
 
 function createNeurotransmitter(type = 'glutamate', position = new Vector3()) {
     const geo = modelRegistry.neurotransmitters.geometries[type];
@@ -104,6 +112,10 @@ function drawSynapse(scene, threejsDrawing) {
     });
 
     threejsDrawing.data.receptors = receptors;
+
+    // draw ambient light...
+    const ambientLight = new AmbientLight(0x404040, 0.5); // soft white light
+    scene.add(ambientLight);
 }
 
 // Helper: define neurotransmitter-receptor mapping
@@ -135,6 +147,24 @@ function resetReceptors(receptorMeshes) {
 }
 
 
+function onBind(nt, receptor) {
+    console.log(`Binding ${nt.userData.type} to ${receptor.userData.type}`);
+
+    // Optional: add feedback on binding
+    receptor.material.color.set(highlightColor);
+    receptor.userData.pulse = Math.PI * 2;
+
+    // EFFECT: Change neurotransmitter color
+    nt.material.color.set(0xff00ff);  // Magenta burst
+    nt.material.transparent = true;
+    nt.material.opacity = 1.0;
+
+    receptor.userData.bound = true;
+
+    // Optional: remove or freeze particle
+    nt.userData.bound = true;
+}
+
 
 // Animate
 let frame = 0;
@@ -160,8 +190,7 @@ function animateSynapse(scene, vesicles, particles, transmitters = ['glutamate']
                 // Bind
                 r.userData.bound = true;
 
-                // Feedback: pulse color
-                r.material.color.set(0xffff00);
+                onBind(p, r);
 
                 // Optional: remove or freeze particle
                 scene.remove(p);
@@ -175,6 +204,16 @@ function animateSynapse(scene, vesicles, particles, transmitters = ['glutamate']
             particles.splice(i, 1);
         }
     }
+
+    receptorMeshes.forEach(r => {
+        if (r.userData.pulse > 0) {
+            const scale = 1 + 0.1 * Math.sin(r.userData.pulse);
+            r.scale.set(scale, scale, scale);
+            r.userData.pulse -= 0.3;
+            if (r.userData.pulse <= 0) r.scale.set(1, 1, 1); // reset scale
+            r.material.color.set(receptorColorMap[r.userData.type]);
+        }
+    });
 
     frame++;
 }
