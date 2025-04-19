@@ -65,6 +65,7 @@ const THREEJS_DRAWINGS = {
     'synapse': () => import('./drawing/drawNeuro.js').then(m => m.synapseDrawing),
     'brain': () => import('./drawing/drawBrain.js').then(m => m.brainDrawing),
     'chemistry': () => import('./drawing/drawChemistry.js').then(m => m.chemistryDrawing),
+    'game': () => import('./drawing/drawGame.js').then(m => m.gameDrawing),
 };
 
 

@@ -352,4 +352,10 @@ ANIMATIONS_DICT = {
             'data_sources': ['chemistry'],
             'custom_meta': dict(),
         },
+    'game':
+        {
+            'name': 'Game',
+            'data_sources': ['game'],
+            'custom_meta': dict(),
+        },
 }
