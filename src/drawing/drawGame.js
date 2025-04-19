@@ -1,5 +1,14 @@
 import { HemisphereLight, Mesh, MeshBasicMaterial, BoxGeometry, PlaneGeometry, Clock, Vector3, Raycaster, DoubleSide } from 'three';
 
+/* PointerLock controls adapted from https://github.com/mrdoob/three.js/blob/master/examples/misc_controls_pointerlock.html */
+
+let moveForward = false;
+let moveBackward = false;
+let moveLeft = false;
+let moveRight = false;
+let canJump = false;
+
+let prevTime = performance.now();
 
 function drawGame(scene, threejsDrawing) {
     // === Light ===
@@ -47,36 +56,99 @@ function drawGame(scene, threejsDrawing) {
     }
 }
 
-// === Movement State ===
-const keys = {};
-document.addEventListener('keydown', (e) => keys[e.code] = true);
-document.addEventListener('keyup', (e) => keys[e.code] = false);
 
-function handleMovement(forward, cameraUp, delta) {
-    const speed = 3;
-    const direction = new Vector3();
-    const right = new Vector3();
-    const move = new Vector3();
-
-    if (keys['KeyW']) direction.z -= 1;
-    if (keys['KeyS']) direction.z += 1;
-    if (keys['KeyA']) direction.x -= 1;
-    if (keys['KeyD']) direction.x += 1;
-
-    forward.y = 0;
-    forward.normalize();
-
-    // Right/left
-    right.crossVectors(forward, cameraUp).normalize();
-
-    move.copy(forward).multiplyScalar(direction.z).add(right.multiplyScalar(direction.x));
-
-    //controls.moveRight(move.x * speed * delta);
-    //controls.moveForward(move.z * speed * delta);
-    return {
-        moveRight: move.x * speed * delta,
-        moveForward: move.z * speed * delta,
+const onKeyDown = function (event) {
+    switch (event.code) {
+        case 'ArrowUp':
+        case 'KeyW':
+            moveForward = true;
+            break;
+        case 'ArrowLeft':
+        case 'KeyA':
+            moveLeft = true;
+            break;
+        case 'ArrowDown':
+        case 'KeyS':
+            moveBackward = true;
+            break;
+        case 'ArrowRight':
+        case 'KeyD':
+            moveRight = true;
+            break;
+        case 'Space':
+            if (canJump === true) velocity.y += 350;
+            canJump = false;
+            break;
     }
+};
+
+const onKeyUp = function (event) {
+    switch (event.code) {
+        case 'ArrowUp':
+        case 'KeyW':
+            moveForward = false;
+            break;
+        case 'ArrowLeft':
+        case 'KeyA':
+            moveLeft = false;
+            break;
+        case 'ArrowDown':
+        case 'KeyS':
+            moveBackward = false;
+            break;
+        case 'ArrowRight':
+        case 'KeyD':
+            moveRight = false;
+            break;
+    }
+};
+
+document.addEventListener('keydown', onKeyDown);
+document.addEventListener('keyup', onKeyUp);
+
+function handleMovement(controls) {
+    const time = performance.now();
+
+    if (controls.isLocked === true) {
+        raycaster.ray.origin.copy(controls.object.position);
+        raycaster.ray.origin.y -= 10;
+
+        const intersections = raycaster.intersectObjects(objects, false);
+
+        const onObject = intersections.length > 0;
+
+        const delta = (time - prevTime) / 1000;
+
+        velocity.x -= velocity.x * 10.0 * delta;
+        velocity.z -= velocity.z * 10.0 * delta;
+
+        velocity.y -= 9.8 * 100.0 * delta; // 100.0 = mass
+
+        direction.z = Number(moveForward) - Number(moveBackward);
+        direction.x = Number(moveRight) - Number(moveLeft);
+        direction.normalize(); // this ensures consistent movements in all directions
+
+        if (moveForward || moveBackward) velocity.z -= direction.z * 400.0 * delta;
+        if (moveLeft || moveRight) velocity.x -= direction.x * 400.0 * delta;
+
+        if (onObject === true) {
+            velocity.y = Math.max(0, velocity.y);
+            canJump = true;
+        }
+
+        controls.moveRight(-velocity.x * delta);
+        controls.moveForward(-velocity.z * delta);
+
+        controls.object.position.y += (velocity.y * delta); // new behavior
+
+        if (controls.object.position.y < 10) {
+            velocity.y = 0;
+            controls.object.position.y = 10;
+            canJump = true;
+        }
+    }
+
+    prevTime = time;
 }
 
 
@@ -140,13 +212,6 @@ function updateEnemies(delta) {
 
 // === Game Loop ===
 const clock = new Clock();
-function animateGame(forward, cameraUp) {
-    const delta = clock.getDelta();
-    const {moveRight, moveForward} = handleMovement(forward, cameraUp, delta);
-    updateEnemies(delta);
-
-    return {moveRight, moveForward}
-}
 
 
 const gameDrawing = {
@@ -161,22 +226,16 @@ const gameDrawing = {
         const scene = threejsDrawing.data.scene;
         const controls = threejsDrawing.data.controls;
 
-        const cameraRotation = camera.rotation;
-
-        // Forward/backward
-        const forward = new Vector3();
-        camera.getWorldDirection(forward);
-
-        const cameraUp = camera.up.clone();
-
         if (scene && controls) {
-            const {moveRight, moveForward} = animateGame(forward, cameraUp);
-            controls.moveRight(moveRight);
-            controls.moveForward(moveForward);
+            // === Handle Movement ===
+            handleMovement(controls);
 
             // every 2 minutes spawn an enemy
             const time = Math.floor(timestamp / 1000);
             if (time % 120 === 0) spawnEnemy(camera.position, 3, 3);
+
+            const delta = clock.getDelta();
+            updateEnemies(delta);
         }
     },
     'data': {
