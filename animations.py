@@ -334,4 +334,10 @@ ANIMATIONS_DICT = {
             'data_sources': ['humanoid'],
             'custom_meta': dict(),
         },
+    'synapse':
+        {
+            'name': 'Synapse',
+            'data_sources': [],
+            'custom_meta': dict(),
+        },
 }
