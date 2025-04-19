@@ -358,4 +358,10 @@ ANIMATIONS_DICT = {
             'data_sources': ['game'],
             'custom_meta': dict(),
         },
+    'ammo':
+        {
+            'name': 'Ammo',
+            'data_sources': ['ammo'],
+            'custom_meta': dict(),
+        },
 }

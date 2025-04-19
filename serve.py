@@ -76,6 +76,9 @@ def serve_threejs(animation):
         "three-spritetext": "//unpkg.com/three-spritetext/dist/three-spritetext.mjs",
         "3d-force-graph": "https://cdn.jsdelivr.net/npm/3d-force-graph@1.77.0/+esm",
         "vrbutton": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/webxr/VRButton.js",
+
+        "convex-object-breaker": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/misc/ConvexObjectBreaker.js",
+        "convex-geometry": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/geometries/ConvexGeometry.js",
     }
 
     # Force3d importmap:
