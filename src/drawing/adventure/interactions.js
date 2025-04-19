@@ -1,4 +1,5 @@
 import { Raycaster, Vector2 } from 'three';
+import { goToStep } from './helpers.js';
 
 const raycaster = new Raycaster();
 const mouse = new Vector2();
