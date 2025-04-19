@@ -345,6 +345,17 @@ ANIMATIONS_DICT = {
             'name': 'Brain',
             'data_sources': ['brain'],
             'custom_meta': dict(),
+            'custom_css': """
+.brain-label {
+    font-family: sans-serif;
+    color: white;
+    padding: 2px 6px;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 4px;
+    font-size: 12px;
+    pointer-events: none;
+}
+            """
         },
     'chemistry':
         {
