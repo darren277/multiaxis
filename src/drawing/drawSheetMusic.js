@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import { Mesh, MeshBasicMaterial, BoxGeometry, SphereGeometry } from 'three';
 
 let startTime = null;
 
@@ -34,10 +34,10 @@ function drawSheetMusic(scene, data) {
     const notesRaw = track.notes || [];
 
     // 3) Draw staff lines (white lines on black background, or vice versa)
-    const lineMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    const lineMaterial = new MeshBasicMaterial({ color: 0xffffff });
     for (let i = 0; i < 5; i++) {
-        const lineGeom = new THREE.BoxGeometry(100, 0.02, 0.01);
-        const lineMesh = new THREE.Mesh(lineGeom, lineMaterial);
+        const lineGeom = new BoxGeometry(100, 0.02, 0.01);
+        const lineMesh = new Mesh(lineGeom, lineMaterial);
         // place lines from x=0..100, spaced in y
         lineMesh.position.set(50, i * 0.5, 0);
         scene.add(lineMesh);
@@ -77,9 +77,9 @@ function drawSheetMusic(scene, data) {
                 const yPos = 2 + (msg.note - 60) * 0.1;
 
                 // Build a sphere for the note
-                const geometry = new THREE.SphereGeometry(0.1, 16, 16);
-                const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
-                const noteMesh = new THREE.Mesh(geometry, material);
+                const geometry = new SphereGeometry(0.1, 16, 16);
+                const material = new MeshBasicMaterial({ color: 0xffffff });
+                const noteMesh = new Mesh(geometry, material);
 
                 // We'll place it off to the right (x=100 or so) and animate left.
                 // Initially place it at x=100 so we can scroll from x=10..-10 over note duration

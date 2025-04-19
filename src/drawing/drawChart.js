@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import { Mesh } from 'three';
 
 import { TextGeometry} from 'textgeometry';
 import { FontLoader } from 'fontloader';
@@ -28,7 +28,7 @@ function drawChart( scene, data, state, config = chartConfig ) {
     boxGeometry.translate(xSize / 2, ySize / 2, zSize / 2);
 
     const boxMaterial = config.surroundingBox.material();
-    const boxMesh = new THREE.Mesh(boxGeometry, boxMaterial);
+    const boxMesh = new Mesh(boxGeometry, boxMaterial);
     scene.add(boxMesh);
 
     // --- 2) Axes, labels, and ticks ---
@@ -40,7 +40,7 @@ function drawChart( scene, data, state, config = chartConfig ) {
             // Axis geometry & material
             const axisGeometry = config.axis.geometry(axis.label, axis.max);
             const axisMaterial = config.axis.material();
-            const axisMesh = new THREE.Mesh(axisGeometry, axisMaterial);
+            const axisMesh = new Mesh(axisGeometry, axisMaterial);
             scene.add(axisMesh);
 
             // Axis label
@@ -58,7 +58,7 @@ function drawChart( scene, data, state, config = chartConfig ) {
                 axisLabelGeo.translate(0, 0, axis.max);
             }
             const axisLabelMat = config.axisLabels.material(axis.label);
-            const axisLabelMesh = new THREE.Mesh(axisLabelGeo, axisLabelMat);
+            const axisLabelMesh = new Mesh(axisLabelGeo, axisLabelMat);
             scene.add(axisLabelMesh);
 
             // Ticks
@@ -72,7 +72,7 @@ function drawChart( scene, data, state, config = chartConfig ) {
                     tickGeometry.translate(0, 0, i);
                 }
                 const tickMaterial = config.axisTicks.material();
-                const tickMesh = new THREE.Mesh(tickGeometry, tickMaterial);
+                const tickMesh = new Mesh(tickGeometry, tickMaterial);
                 scene.add(tickMesh);
             }
         });
@@ -87,7 +87,7 @@ function drawChart( scene, data, state, config = chartConfig ) {
             pointGeometry.translate(point[0], point[1], point[2]);
 
             const pointMaterial = config.points.material(point);
-            const pointMesh = new THREE.Mesh(pointGeometry, pointMaterial);
+            const pointMesh = new Mesh(pointGeometry, pointMaterial);
             scene.add(pointMesh);
 
             // If there is a label for this point, draw it
@@ -110,7 +110,7 @@ function drawChart( scene, data, state, config = chartConfig ) {
                 );
 
                 const labelMat = config.pointLabels.material(point);
-                const labelMesh = new THREE.Mesh(labelGeo, labelMat);
+                const labelMesh = new Mesh(labelGeo, labelMat);
                 scene.add(labelMesh);
             }
         });

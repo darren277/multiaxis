@@ -1,4 +1,5 @@
-import * as THREE from 'three';
+import { Mesh, MeshBasicMaterial, BoxGeometry, Group, Vector3 } from 'three';
+import { Tween, Easing } from 'tween';
 
 function getMaterials(faceColors) {
     const colors = {
@@ -12,12 +13,12 @@ function getMaterials(faceColors) {
     };
 
     return [
-        new THREE.MeshBasicMaterial({ color: colors[faceColors.right] || colors.black }),  // +X
-        new THREE.MeshBasicMaterial({ color: colors[faceColors.left] || colors.black }),   // -X
-        new THREE.MeshBasicMaterial({ color: colors[faceColors.top] || colors.black }),    // +Y
-        new THREE.MeshBasicMaterial({ color: colors[faceColors.bottom] || colors.black }), // -Y
-        new THREE.MeshBasicMaterial({ color: colors[faceColors.front] || colors.black }),  // +Z
-        new THREE.MeshBasicMaterial({ color: colors[faceColors.back] || colors.black })    // -Z
+        new MeshBasicMaterial({ color: colors[faceColors.right] || colors.black }),  // +X
+        new MeshBasicMaterial({ color: colors[faceColors.left] || colors.black }),   // -X
+        new MeshBasicMaterial({ color: colors[faceColors.top] || colors.black }),    // +Y
+        new MeshBasicMaterial({ color: colors[faceColors.bottom] || colors.black }), // -Y
+        new MeshBasicMaterial({ color: colors[faceColors.front] || colors.black }),  // +Z
+        new MeshBasicMaterial({ color: colors[faceColors.back] || colors.black })    // -Z
     ];
 }
 
@@ -40,9 +41,9 @@ function drawRubiksCube(scene, threejsDrawing) {
                     back: z === -1 ? 'green' : null
                 };
 
-                const geometry = new THREE.BoxGeometry(1, 1, 1);
+                const geometry = new BoxGeometry(1, 1, 1);
                 const materials = getMaterials(faceColors);
-                const cubelet = new THREE.Mesh(geometry, materials);
+                const cubelet = new Mesh(geometry, materials);
                 cubelet.position.set(x * spacing, y * spacing, z * spacing);
 
                 scene.add(cubelet);
@@ -59,7 +60,7 @@ function getFaceCubelets(cubelets, axis, value, epsilon = 0.01) {
 
 
 function rotateFace(scene, cubelets, axis, value, direction = 1) {
-    const faceGroup = new THREE.Group();
+    const faceGroup = new Group();
     scene.add(faceGroup);
 
     const faceCubelets = getFaceCubelets(cubelets, axis, value);
@@ -71,18 +72,18 @@ function rotateFace(scene, cubelets, axis, value, direction = 1) {
 
     // Rotate the group (direction: +1 = clockwise)
     const angle = direction * Math.PI / 2; // 90 degrees
-    const rotationAxis = new THREE.Vector3(
+    const rotationAxis = new Vector3(
         axis === 'x' ? 1 : 0,
         axis === 'y' ? 1 : 0,
         axis === 'z' ? 1 : 0
     );
 
     // Animate rotation (optional)
-    new TWEEN.Tween(faceGroup.rotation)
+    new Tween(faceGroup.rotation)
         .to({
             [axis]: faceGroup.rotation[axis] + angle
         }, 300)
-        .easing(TWEEN.Easing.Quadratic.InOut)
+        .easing(Easing.Quadratic.InOut)
         .onComplete(() => {
             // Unparent cubelets
             faceCubelets.forEach(cubelet => {

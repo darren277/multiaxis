@@ -8,8 +8,8 @@ let container;
 
 //imgPath = 'textures/758px-Canestra_di_frutta_(Caravaggio).jpg'
 function drawImage(scene, imgPath) {
-    //scene.background = new THREE.Color( 0x000000 );
-    //scene.fog = new THREE.Fog( 0x000000, 1500, 4000 );
+    //scene.background = new Color( 0x000000 );
+    //scene.fog = new Fog( 0x000000, 1500, 4000 );
 
     // GROUND
 
@@ -33,9 +33,9 @@ function drawImage(scene, imgPath) {
 
     const materialCanvas = new MeshBasicMaterial( { map: textureCanvas } );
 
-    const geometry = new THREE.PlaneGeometry( 100, 100 );
+    const geometry = new PlaneGeometry( 100, 100 );
 
-    const meshCanvas = new THREE.Mesh( geometry, materialCanvas );
+    const meshCanvas = new Mesh( geometry, materialCanvas );
     meshCanvas.rotation.x = - Math.PI / 2;
     meshCanvas.scale.set( 1000, 1000, 1000 );
 

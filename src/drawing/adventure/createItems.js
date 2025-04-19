@@ -151,7 +151,7 @@ function createCaptionedItem(scene, item, isVideo, worldWidth = null, worldHeigh
         labelObject.position.set(position.x, position.y + offsetY, position.z);
 
         // Alternatively, if you want it to follow the mesh exactly:
-        // labelObject.position.copy(mesh.position).add(new THREE.Vector3(0, offsetY, 0));
+        // labelObject.position.copy(mesh.position).add(new Vector3(0, offsetY, 0));
 
         scene.add(labelObject);
 

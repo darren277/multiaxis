@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import { Group, SphereGeometry, Mesh, MeshStandardMaterial, MeshBasicMaterial, Shape, Vector3, BufferGeometry, MathUtils, LineLoop, LineBasicMaterial, TextureLoader, AxesHelper } from 'three';
 
 import { drawBasicLights } from './drawLights.js';
 
@@ -9,7 +9,7 @@ import { drawBasicLights } from './drawLights.js';
  * @returns {THREE.Group} group containing all polygon meshes/lines
  */
 function createGeoJsonMap(scene, geojson, projectionFn, debug = false) {
-    const group = new THREE.Group();
+    const group = new Group();
 
     // Iterate over features
     geojson.features.forEach(feature => {
@@ -37,9 +37,9 @@ function createGeoJsonMap(scene, geojson, projectionFn, debug = false) {
 
 function drawDebugDots(scene, points) {
     points.forEach(p => {
-        const dot = new THREE.Mesh(
-            new THREE.SphereGeometry(0.05),
-            new THREE.MeshBasicMaterial({ color: 0xff0000 })
+        const dot = new Mesh(
+            new SphereGeometry(0.05),
+            new MeshBasicMaterial({ color: 0xff0000 })
         );
         dot.position.copy(p);
         scene.add(dot);
@@ -47,16 +47,16 @@ function drawDebugDots(scene, points) {
 }
 
 /**
- * Convert polygon coordinates to a THREE.Mesh (or line).
+ * Convert polygon coordinates to a Mesh (or line).
  * We’ll do outlines as Lines for simplicity.
- * If you want filled polygons, you’d use THREE.Shape and THREE.ShapeGeometry instead.
+ * If you want filled polygons, you’d use Shape and ShapeGeometry instead.
  */
 function polygonToMesh(scene, polygonCoords, projectionFn, debug = false) {
     // polygonCoords: array of rings (first ring is outer boundary, subsequent rings are holes)
-    const polygonGroup = new THREE.Group();
+    const polygonGroup = new Group();
 
     polygonCoords.forEach(ring => {
-        const shape = new THREE.Shape();
+        const shape = new Shape();
         ring.forEach((coord, index) => {
             const [lng, lat] = coord;
             const [x, y] = projectionFn(lng, lat);
@@ -72,24 +72,24 @@ function polygonToMesh(scene, polygonCoords, projectionFn, debug = false) {
 
         // If you want a filled shape:
         /*
-        const geometry = new THREE.ShapeGeometry(shape);
-        const material = new THREE.MeshBasicMaterial({
+        const geometry = new ShapeGeometry(shape);
+        const material = new MeshBasicMaterial({
             color: 0x00ff00,
-            side: THREE.DoubleSide
+            side: DoubleSide
         });
-        const mesh = new THREE.Mesh(geometry, material);
+        const mesh = new Mesh(geometry, material);
         polygonGroup.add(mesh);
         */
 
         // If you just want a line outline:
         const points = shape.getPoints();
-//        const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
-//        const lineMaterial = new THREE.LineBasicMaterial({ color: 0x000000 });
-//        const line = new THREE.LineLoop(lineGeometry, lineMaterial);
+//        const lineGeometry = new BufferGeometry().setFromPoints(points);
+//        const lineMaterial = new LineBasicMaterial({ color: 0x000000 });
+//        const line = new LineLoop(lineGeometry, lineMaterial);
 //        polygonGroup.add(line);
-        const geometry = new THREE.ShapeGeometry(shape);
-        const material = new THREE.MeshBasicMaterial({ color: 0xff0000, side: THREE.DoubleSide });
-        const mesh = new THREE.Mesh(geometry, material);
+        const geometry = new ShapeGeometry(shape);
+        const material = new MeshBasicMaterial({ color: 0xff0000, side: THREE.DoubleSide });
+        const mesh = new Mesh(geometry, material);
         polygonGroup.add(mesh);
 
         if (debug) {
@@ -102,17 +102,17 @@ function polygonToMesh(scene, polygonCoords, projectionFn, debug = false) {
 
 
 function polygonToMesh3D(scene, polygonCoords, projectionFn, debug = false) {
-    const polygonGroup = new THREE.Group();
+    const polygonGroup = new Group();
 
     polygonCoords.forEach(ring => {
         const points = ring.map(([lng, lat]) => {
             const [x, y, z] = projectionFn(lng, lat);
-            return new THREE.Vector3(x, y, z);
+            return new Vector3(x, y, z);
         });
 
-        const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
-        const lineMaterial = new THREE.LineBasicMaterial({ color: 0xffaa00 });
-        const line = new THREE.LineLoop(lineGeometry, lineMaterial);
+        const lineGeometry = new BufferGeometry().setFromPoints(points);
+        const lineMaterial = new LineBasicMaterial({ color: 0xffaa00 });
+        const line = new LineLoop(lineGeometry, lineMaterial);
         polygonGroup.add(line);
 
         if (debug) {
@@ -143,8 +143,8 @@ function equirectangularProjection(lng, lat) {
 
 function latLngToSphere(lng, lat, radius = 5) {
     // Convert lat, lng (in degrees) to radians
-    const phi = THREE.MathUtils.degToRad(90 - lat);
-    const theta = THREE.MathUtils.degToRad(lng);
+    const phi = MathUtils.degToRad(90 - lat);
+    const theta = MathUtils.degToRad(lng);
 
     const x = radius * Math.sin(phi) * Math.cos(theta);
     const y = radius * Math.cos(phi);
@@ -158,10 +158,10 @@ function latLngToSphere(lng, lat, radius = 5) {
 
 
 // Create lines that wrap around the sphere
-//const lineGeometry = new THREE.BufferGeometry().setFromPoints(
-//    ringCoords.map(([lng, lat]) => new THREE.Vector3(...latLngToSphere(lng, lat)))
+//const lineGeometry = new BufferGeometry().setFromPoints(
+//    ringCoords.map(([lng, lat]) => new Vector3(...latLngToSphere(lng, lat)))
 //);
-//const line = new THREE.LineLoop(lineGeometry, lineMaterial);
+//const line = new LineLoop(lineGeometry, lineMaterial);
 //group.add(line);
 
 
@@ -211,13 +211,13 @@ const exampleGeoJson = {
 
 
 function drawEarth() {
-    const textureLoader = new THREE.TextureLoader();
+    const textureLoader = new TextureLoader();
     const earthTexture = textureLoader.load('textures/8k_earth_daymap.jpg'); // Use your own image path
 
-    const globe = new THREE.Mesh(
-        new THREE.SphereGeometry(5, 64, 64),
-        //new THREE.MeshStandardMaterial({color: 0x2266cc, roughness: 1, metalness: 0})
-        new THREE.MeshStandardMaterial({map: earthTexture, roughness: 1, metalness: 0})
+    const globe = new Mesh(
+        new SphereGeometry(5, 64, 64),
+        //new MeshStandardMaterial({color: 0x2266cc, roughness: 1, metalness: 0})
+        new MeshStandardMaterial({map: earthTexture, roughness: 1, metalness: 0})
     );
 
     globe.rotation.y = Math.PI / 2; // Rotate to face the camera
@@ -233,7 +233,7 @@ function drawGeo(scene, threejsDrawing) {
     const projectionFn = (lng, lat) => {return equirectangularProjection(lng, lat);};
     const mapGroup = createGeoJsonMap(scene, exampleGeoJson, projectionFn);
     scene.add(mapGroup);
-    scene.add(new THREE.AxesHelper(10));
+    scene.add(new AxesHelper(10));
 }
 
 function drawGeo3d(scene, threejsDrawing) {
@@ -249,7 +249,7 @@ function drawGeo3d(scene, threejsDrawing) {
     scene.add(mapGroup);
 
     // 3) Set up any additional rendering logic here
-    scene.add(new THREE.AxesHelper(10));
+    scene.add(new AxesHelper(10));
 
     const globe = drawEarth();
     scene.add(globe);

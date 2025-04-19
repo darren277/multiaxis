@@ -12,6 +12,8 @@ import uiPanelConfig from './config/uiPanelConfig.js';
 import { TextureLoader, FileLoader } from 'three'; // for texture loading
 // Or import { FileLoader } from 'three'; if you just need the loader
 
+import { BoxGeometry, Mesh, MeshNormalMaterial, GridHelper } from 'three';
+
 import {update as tweenUpdate} from 'tween'
 
 import { REVISION } from 'three';
@@ -64,13 +66,13 @@ const THREEJS_DRAWINGS = {
 
 
 function drawHelpers(scene, threejsDrawing) {
-    const refGeometry = new THREE.BoxGeometry(1, 1, 1); // 1x1x1 cube
-    const refMaterial = new THREE.MeshNormalMaterial({ wireframe: true });
-    const refCube = new THREE.Mesh(refGeometry, refMaterial);
+    const refGeometry = new BoxGeometry(1, 1, 1); // 1x1x1 cube
+    const refMaterial = new MeshNormalMaterial({ wireframe: true });
+    const refCube = new Mesh(refGeometry, refMaterial);
     refCube.position.set(0, 0.5, 0); // sit on ground
     scene.add(refCube);
 
-    const gridHelper = new THREE.GridHelper(10, 10); // 10x10 units
+    const gridHelper = new GridHelper(10, 10); // 10x10 units
     scene.add(gridHelper);
 
     //window.debugObject = object; // now accessible from console

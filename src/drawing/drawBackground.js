@@ -1,4 +1,4 @@
-import { Mesh, MeshBasicMaterial, BoxGeometry, ImageLoader, Texture, BackSide, LinearFilter, LinearMipmapLinearFilter, DataTexture } from "three";
+import { Mesh, MeshBasicMaterial, BoxGeometry, ImageLoader, Texture, BackSide, LinearFilter, LinearMipmapLinearFilter, DataTexture, RGBFormat, UnsignedByteType } from "three";
 
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -56,9 +56,9 @@ function getTexturesFromAtlasFile( atlasImgUrl, tilesNum ) {
             textures[ i ].needsUpdate = true;
 
             // If using Three.js r152+, use:
-            // textures[ i ].colorSpace = THREE.SRGBColorSpace;
+            // textures[ i ].colorSpace = SRGBColorSpace;
             // or for older versions, set encoding:
-            // textures[ i ].encoding = THREE.sRGBEncoding;
+            // textures[ i ].encoding = sRGBEncoding;
         }
     });
 
@@ -74,7 +74,7 @@ function useProceduralBackground( scene ) {
 
     // Create a large inward-facing cube (or sphere) for the background
     const geometry = new BoxGeometry( 500, 500, 500 );
-    // If you want a sphere, use: new THREE.SphereGeometry( 250, 32, 32 ) and then material.side=THREE.BackSide.
+    // If you want a sphere, use: new SphereGeometry( 250, 32, 32 ) and then material.side=THREE.BackSide.
 
     const texture = createNoiseTexture(128);
 
@@ -101,7 +101,7 @@ function createNoiseTexture( size = 128 ) {
         data[stride + 3] = 255;   // A (fully opaque)
     }
 
-    const texture = new DataTexture( data, size, size, THREE.RGBFormat, THREE.UnsignedByteType );
+    const texture = new DataTexture( data, size, size, RGBFormat, UnsignedByteType );
 
     // Optionally specify some filtering
     texture.generateMipmaps = true;
