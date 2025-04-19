@@ -68,6 +68,9 @@ def serve_threejs(animation):
         "stats": "https://cdnjs.cloudflare.com/ajax/libs/stats.js/r17/Stats.min.js",
         "lil-gui": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/libs/lil-gui.module.min.js",
 
+        'objloader': f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/loaders/OBJLoader.js",
+        'plyloader': f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/loaders/PLYLoader.js",
+
         "d3-force-3d": "https://cdn.skypack.dev/d3-force-3d",
         "three-spritetext": "//unpkg.com/three-spritetext/dist/three-spritetext.mjs",
         "3d-force-graph": "https://cdn.jsdelivr.net/npm/3d-force-graph@1.77.0/+esm",
@@ -150,12 +153,17 @@ def serve_texture(filename, ext):
 @app.route('/threejs/imagery/<path:filename>.<ext>')
 def serve_image(filename, ext):
     """
-    Serve any image file under /images/.
-    Example: /images/Canestra_di_frutta_Caravaggio.jpg
+    Serve any image file under /imagery/.
+    Example: /imagery/Canestra_di_frutta_Caravaggio.jpg
     """
+    remaining_file_name_and_ext = ext.split('.')
+    remaining_file_name = remaining_file_name_and_ext[:-1]
+    ext = remaining_file_name_and_ext[-1]
+    remaining_file_name = ".".join(remaining_file_name)
+    filename = filename + '.' + remaining_file_name
     path = os.path.join('src', 'imagery', f'{filename}.{ext}')
     print(f"Serving image: {path}")
-    if ext not in ['jpg', 'jpeg', 'png', 'svg', 'glb']:
+    if ext not in ['jpg', 'jpeg', 'png', 'svg', 'glb', 'ply', 'obj']:
         abort(404)
     if ext == 'jpg' or ext == 'jpeg':
         mimetype = 'image/jpeg'
@@ -165,11 +173,16 @@ def serve_image(filename, ext):
         mimetype = 'image/svg+xml'
     elif ext == 'glb':
         mimetype = 'model/gltf-binary'
+    elif ext == 'ply':
+        mimetype = 'model/ply'
+    elif ext == 'obj':
+        mimetype = 'model/obj'
     else:
         abort(404)
     if os.path.exists(path):
         return send_file(path, mimetype=mimetype)
     else:
+        print(f"File not found: {path}")
         abort(404)
 
 @app.route('/scripts/helvetiker_regular.typeface.json')
