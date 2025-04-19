@@ -63,6 +63,7 @@ const THREEJS_DRAWINGS = {
     'cards': () => import('./drawing/drawCards.js').then(m => m.cardsDrawing),
     'gltf': () => import('./drawing/drawGLTF.js').then(m => m.gltfDrawing),
     'synapse': () => import('./drawing/drawNeuro.js').then(m => m.synapseDrawing),
+    'brain': () => import('./drawing/drawBrain.js').then(m => m.brainDrawing),
 };
 
 
