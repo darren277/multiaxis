@@ -340,4 +340,10 @@ ANIMATIONS_DICT = {
             'data_sources': [],
             'custom_meta': dict(),
         },
+    'brain':
+        {
+            'name': 'Brain',
+            'data_sources': ['brain'],
+            'custom_meta': dict(),
+        },
 }
