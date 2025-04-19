@@ -62,6 +62,7 @@ def serve_threejs(animation):
         "css2drenderer": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/renderers/CSS2DRenderer.js",
         "css3drenderer": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/renderers/CSS3DRenderer.js",
         "gltfloader": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/loaders/GLTFLoader.js",
+        "pdbloader": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/loaders/PDBLoader.js",
 
         "tween": "https://unpkg.com/@tweenjs/tween.js@23.1.3/dist/tween.esm.js",
 
