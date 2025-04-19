@@ -62,6 +62,7 @@ const THREEJS_DRAWINGS = {
     'force3d': () => import('./drawing/drawForce.js').then(m => m.force3dDrawing),
     'cards': () => import('./drawing/drawCards.js').then(m => m.cardsDrawing),
     'gltf': () => import('./drawing/drawGLTF.js').then(m => m.gltfDrawing),
+    'synapse': () => import('./drawing/drawNeuro.js').then(m => m.synapseDrawing),
 };
 
 
