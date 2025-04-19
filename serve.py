@@ -58,6 +58,7 @@ def serve_threejs(animation):
         "fontloader": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/loaders/FontLoader.js",
         "orbitcontrols": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/controls/OrbitControls.js",
         "pointerlockcontrols": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/controls/PointerLockControls.js",
+        "trackballcontrols": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/controls/TrackballControls.js",
         "svgloader": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/loaders/SVGLoader.js",
         "svgrenderer": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/renderers/SVGRenderer.js",
         "css2drenderer": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/renderers/CSS2DRenderer.js",

@@ -12,6 +12,12 @@ function importPointerLockControls() {
     });
 }
 
+function importTrackballControls() {
+    return import('trackballcontrols').then(module => {
+        return module.TrackballControls;
+    });
+}
+
 function importCSS3DRenderer() {
     return import('css3drenderer').then(module => {
         return module.CSS3DRenderer;
@@ -172,6 +178,11 @@ export async function setupScene(
         const controls = new PointerLockControls(camera, renderer.domElement);
         document.body.addEventListener('click', () => controls.lock());
         scene.add(controls.getObject());
+    } else if (controller === 'trackball') {
+        const TrackballControls = await importTrackballControls();
+        controls = new TrackballControls( camera, renderer.domElement );
+        controls.minDistance = 500;
+        controls.maxDistance = 6000;
     } else {
         controls = null;
     }
