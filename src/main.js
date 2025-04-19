@@ -220,7 +220,6 @@ async function contentLoadedCallback(threejsDrawing) {
         // Update UI state and call your animation callback
         uiState.rect = renderer.domElement.getBoundingClientRect();
         if (threejsDrawing.animationCallback) {
-            threejsDrawing.data.controls = controls;
             threejsDrawing.animationCallback(renderer, timestamp, threejsDrawing, uiState, camera);
         }
 
