@@ -67,6 +67,7 @@ const THREEJS_DRAWINGS = {
     'chemistry': () => import('./drawing/drawChemistry.js').then(m => m.chemistryDrawing),
     'game': () => import('./drawing/drawGame.js').then(m => m.gameDrawing),
     'ammo': () => import('./drawing/drawAmmo.js').then(m => m.ammoDrawing),
+    'periodic': () => import('./drawing/drawPeriodic.js').then(m => m.periodicDrawing),
 };
 
 
