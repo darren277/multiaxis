@@ -11,7 +11,15 @@ function createNeurotransmitter(type = 'glutamate', position = new Vector3()) {
 
     const particle = new Mesh(geo, mat);
     particle.position.copy(position);
-    particle.userData.velocity = new Vector3(0, -0.05 - Math.random() * 0.05, (Math.random() - 0.5) * 0.05);
+    particle.userData = {
+        type,
+        receptorTargets: getReceptorTargetsFor(type),
+        velocity: new Vector3(
+            0,
+            -0.05 - Math.random() * 0.05,
+            (Math.random() - 0.5) * 0.05
+        )
+    };
 
     return particle;
 }
@@ -22,6 +30,12 @@ function createReceptor(type = 'AMPA', position = new Vector3()) {
 
     const receptor = new Mesh(geo, mat);
     receptor.position.copy(position);
+    receptor.userData = {
+        type,
+        bound: false,
+        radius: 0.5  // detection radius
+    };
+
     return receptor;
 }
 
@@ -72,6 +86,24 @@ function drawSynapse(scene, threejsDrawing) {
 
     threejsDrawing.data.scene = scene;
     threejsDrawing.data.particles = particles;
+
+    const receptors = [];
+    const receptorTypes = ['AMPA']; // Later: NMDA, GABA_A, etc.
+
+    // Place some example receptors on the postsynaptic surface
+    receptorTypes.forEach((type, i) => {
+        for (let j = 0; j < 4; j++) {
+            const receptor = createReceptor(type, new Vector3(
+                -1.5 + j * 1.0,
+                -4,
+                (Math.random() - 0.5) * 2
+            ));
+            scene.add(receptor);
+            receptors.push(receptor);
+        }
+    });
+
+    threejsDrawing.data.receptors = receptors;
 }
 
 // Helper: define neurotransmitter-receptor mapping
@@ -95,10 +127,18 @@ function releaseNeurotransmitters(scene, vesicles, particles, transmitters = ['g
     });
 }
 
+function resetReceptors(receptorMeshes) {
+    receptorMeshes.forEach(r => {
+        r.userData.bound = false;
+        r.material.color.set(modelRegistry.receptors.materials[r.userData.type].color);
+    });
+}
+
+
 
 // Animate
 let frame = 0;
-function animateSynapse(scene, vesicles, particles, transmitters = ['glutamate'], receptors = ['AMPA']) {
+function animateSynapse(scene, vesicles, particles, transmitters = ['glutamate'], receptors = ['AMPA'], receptorMeshes = []) {
     if (frame % 150 === 0) {
         releaseNeurotransmitters(scene, vesicles, particles, transmitters);
     }
@@ -107,8 +147,28 @@ function animateSynapse(scene, vesicles, particles, transmitters = ['glutamate']
         const p = particles[i];
         p.position.add(p.userData.velocity);
 
-        // Optional: receptor detection logic could go here
-        // Example: if (receptors.includes("AMPA") && p.userData.receptorTargets.includes("AMPA")) { ... }
+        // Binding detection
+        for (let j = 0; j < receptorMeshes.length; j++) {
+            const r = receptorMeshes[j];
+            if (r.userData.bound) continue;
+
+            const dist = p.position.distanceTo(r.position);
+            if (
+                dist < r.userData.radius &&
+                p.userData.receptorTargets.includes(r.userData.type)
+            ) {
+                // Bind
+                r.userData.bound = true;
+
+                // Feedback: pulse color
+                r.material.color.set(0xffff00);
+
+                // Optional: remove or freeze particle
+                scene.remove(p);
+                particles.splice(i, 1);
+                break;
+            }
+        }
 
         if (p.position.y < -5) {
             scene.remove(p);
@@ -127,10 +187,10 @@ const synapseDrawing = {
     'uiState': null,
     'eventListeners': null,
     'animationCallback': (renderer, timestamp, threejsDrawing, uiState, camera) => {
-        const { scene, particles = [], vesicles = [] } = threejsDrawing.data;
+        const { scene, particles = [], vesicles = [], receptors = [] } = threejsDrawing.data;
 
         if (scene && vesicles.length > 0) {
-            animateSynapse(scene, vesicles, particles);
+            animateSynapse(scene, vesicles, particles, ['glutamate'], ['AMPA'], receptors);
         } else {
             console.warn('Synapse drawing: no vesicles or scene found.');
         }
