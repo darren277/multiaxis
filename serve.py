@@ -81,6 +81,8 @@ def serve_threejs(animation):
 
         "convex-object-breaker": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/misc/ConvexObjectBreaker.js",
         "convex-geometry": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/geometries/ConvexGeometry.js",
+
+        "perlin-noise": "https://cdn.jsdelivr.net/npm/perlin-noise@0.0.1/+esm",
     }
 
     # Force3d importmap:

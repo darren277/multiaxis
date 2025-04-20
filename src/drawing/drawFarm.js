@@ -1,6 +1,30 @@
 import { MeshStandardMaterial, PlaneGeometry, Mesh, Group, ShaderMaterial, CanvasTexture, RepeatWrapping } from 'three';
 import { drawBasicLights } from './drawLights.js';
 import { GLTFLoader } from 'gltfloader'
+import perlin from 'perlin-noise';
+
+function createPerlinGrassTexture() {
+    const size = 512;
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = size;
+    const ctx = canvas.getContext('2d');
+
+    const noise = perlin.generatePerlinNoise(size, size);
+
+    for (let y = 0; y < size; y++) {
+        for (let x = 0; x < size; x++) {
+            const val = noise[y * size + x];
+            const g = 60 + val * 100;
+            ctx.fillStyle = `rgb(${g * 0.4}, ${g}, ${g * 0.4})`;
+            ctx.fillRect(x, y, 1, 1);
+        }
+    }
+
+    const texture = new CanvasTexture(canvas);
+    texture.wrapS = texture.wrapT = RepeatWrapping;
+    texture.repeat.set(10, 10);
+    return texture;
+}
 
 const gltfLoader = new GLTFLoader();
 
@@ -116,7 +140,8 @@ function drawFarm(scene, threejsDrawing) {
 
     const floorGeometry = new PlaneGeometry(200, 200);
     //const floor = new Mesh(floorGeometry, grassMaterial);
-    const floor = new Mesh(floorGeometry, new MeshStandardMaterial({map: createGrassTexture()}));
+    //const floor = new Mesh(floorGeometry, new MeshStandardMaterial({map: createGrassTexture()}));
+    const floor = new Mesh(floorGeometry, new MeshStandardMaterial({map: createPerlinGrassTexture()}));
 
     floor.rotation.x = -Math.PI / 2;
     floor.receiveShadow = true;
