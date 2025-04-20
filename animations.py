@@ -470,4 +470,10 @@ ANIMATIONS_DICT = {
             'data_sources': ['tv_sony_trinitron'],
             'custom_meta': dict(),
         },
+    'monitor':
+        {
+            'name': 'Monitor',
+            'data_sources': ['monitor'],
+            'custom_meta': dict(),
+        },
 }

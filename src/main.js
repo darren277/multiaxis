@@ -68,6 +68,7 @@ const THREEJS_DRAWINGS = {
     'game': () => import('./drawing/drawGame.js').then(m => m.gameDrawing),
     'ammo': () => import('./drawing/drawAmmo.js').then(m => m.ammoDrawing),
     'periodic': () => import('./drawing/drawPeriodic.js').then(m => m.periodicDrawing),
+    'monitor': () => import('./drawing/drawMonitor.js').then(m => m.monitorDrawing),
     'tv': () => import('./drawing/drawTV.js').then(m => m.tvDrawing),
     'drive': () => import('./drawing/drawDrive.js').then(m => m.driveDrawing),
 };
