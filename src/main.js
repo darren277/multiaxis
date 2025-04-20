@@ -71,6 +71,7 @@ const THREEJS_DRAWINGS = {
     'monitor': () => import('./drawing/drawMonitor.js').then(m => m.monitorDrawing),
     'tv': () => import('./drawing/drawTV.js').then(m => m.tvDrawing),
     'drive': () => import('./drawing/drawDrive.js').then(m => m.driveDrawing),
+    'farm': () => import('./drawing/drawFarm.js').then(m => m.farmDrawing),
 };
 
 

@@ -476,4 +476,10 @@ ANIMATIONS_DICT = {
             'data_sources': ['monitor'],
             'custom_meta': dict(),
         },
+    'farm':
+        {
+            'name': 'Farm',
+            'data_sources': ['farm'],
+            'custom_meta': dict(),
+        },
 }
