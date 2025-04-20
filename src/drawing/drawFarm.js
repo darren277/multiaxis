@@ -1,7 +1,13 @@
-import { MeshStandardMaterial, PlaneGeometry, Mesh, Group, ShaderMaterial, CanvasTexture, RepeatWrapping } from 'three';
+import { MeshStandardMaterial, PlaneGeometry, Mesh, Group, ShaderMaterial, CanvasTexture, RepeatWrapping, Raycaster, Vector2, MathUtils, Clock } from 'three';
 import { drawBasicLights, drawSun } from './drawLights.js';
 import { GLTFLoader } from 'gltfloader'
 import perlin from 'perlin-noise';
+
+const raycaster = new Raycaster();
+const mouse = new Vector2();
+const clock = new Clock();
+const clickableDoors = [];
+const doorAnimations = new Map();
 
 function createPerlinGrassTexture() {
     const size = 512;
@@ -72,10 +78,6 @@ function createGrassTexture() {
 }
 
 
-function animateParts(gltf, time) {
-    const leftArm = gltf.scene.getObjectByName("UpperArm_L");
-}
-
 async function loadGltfModel(data_src) {
     const gltf = await gltfLoader.loadAsync(`./imagery/farm/${data_src}.glb`);
     return gltf;
@@ -106,6 +108,32 @@ const farmModels = [
     'Tower Windmill',
 ]
 
+function reparentToHinge(doorMesh, hingeOffsetX = -0.5) {
+    const parent = new Group();
+    doorMesh.parent.add(parent); // insert into scene
+    parent.position.copy(doorMesh.position);
+    doorMesh.position.set(hingeOffsetX, 0, 0); // move the mesh relative to hinge
+    parent.add(doorMesh);
+
+    return parent;
+}
+
+
+function animateDoors(delta) {
+    doorAnimations.forEach((anim, door) => {
+        if (anim.progress < 1) {
+            anim.progress += delta; // speed modifier here
+            const t = Math.min(anim.progress, 1);
+
+            // Animate a 90-degree (π/2) swing
+            const swingAngle = anim.isOpening ? Math.PI / 2 : 0;
+
+            const parent = reparentToHinge(door);
+
+            parent.rotation.y = MathUtils.lerp(anim.originRotation, swingAngle, t);
+        }
+    });
+}
 
 function drawFarm(scene, threejsDrawing) {
     threejsDrawing.data.farm = {};
@@ -119,6 +147,12 @@ function drawFarm(scene, threejsDrawing) {
                 if (child.isMesh) {
                     child.castShadow = true;
                     child.receiveShadow = true;
+                    console.log(`Mesh name: ${child.name}`);
+                    if (child.name.includes("Door")) {
+                        clickableDoors.push(child);
+                        child.userData.originalRotationY = child.rotation.y;
+                        // Optionally: set pivot for rotation (see advanced tip below)
+                    }
                 }
             });
 
@@ -155,6 +189,22 @@ function drawFarm(scene, threejsDrawing) {
     //drawHouses(scene);
 }
 
+function onDoorClick(event, renderer, camera) {
+    const rect = renderer.domElement.getBoundingClientRect();
+    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+    raycaster.setFromCamera(mouse, camera);
+
+    const intersects = raycaster.intersectObjects(clickableDoors, true);
+    if (intersects.length > 0) {
+        const clickedDoor = intersects[0].object;
+
+        if (!doorAnimations.has(clickedDoor)) {
+            doorAnimations.set(clickedDoor, {progress: 0, isOpening: true, originRotation: clickedDoor.rotation.y});
+        }
+    }
+}
 
 const farmDrawing = {
     'sceneElements': [],
@@ -162,8 +212,17 @@ const farmDrawing = {
         {'func': drawFarm, 'dataSrc': null, 'dataType': 'gltf'}
     ],
     'uiState': null,
-    'eventListeners': null,
+    'eventListeners': {
+        'click': (event, data) => {
+            const renderer = data.renderer;
+            const threejsDrawing = data.threejsDrawing;
+            const camera = data.camera;
+            onDoorClick(event, renderer, camera);
+        },
+    },
     'animationCallback': (renderer, timestamp, threejsDrawing, uiState, camera) => {
+        const delta = clock.getDelta();
+        animateDoors(delta);
     },
     'data': {
     }
