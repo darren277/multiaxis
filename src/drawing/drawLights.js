@@ -1,4 +1,4 @@
-import { SphereGeometry, Mesh, MeshStandardMaterial, PointLight, HemisphereLight, DirectionalLight, AmbientLight } from 'three';
+import { SphereGeometry, Mesh, MeshStandardMaterial, PointLight, HemisphereLight, DirectionalLight, AmbientLight, DirectionalLightHelper } from 'three';
 
 export function drawLights(scene, lightingParams, bulbLuminousPowers, hemiLuminousIrradiances) {
     // Create the bulb light
@@ -73,4 +73,27 @@ export function drawBasicLights(scene, threejsDrawing) {
 
     const ambient = new AmbientLight(0x404040);
     scene.add(ambient);
+}
+
+
+export function drawSun(scene) {
+    const sunLight = new DirectionalLight(0xffffff, 1.2); // color, intensity
+    sunLight.position.set(100, 200, 100); // x, y, z — higher Y for "sun above"
+
+    // Optional: Add helper to visualize the direction
+    const helper = new DirectionalLightHelper(sunLight, 10);
+    scene.add(helper);
+
+    // Optional: Enable shadows
+    sunLight.castShadow = true;
+    sunLight.shadow.mapSize.width = 2048;
+    sunLight.shadow.mapSize.height = 2048;
+    sunLight.shadow.camera.left = -50;
+    sunLight.shadow.camera.right = 50;
+    sunLight.shadow.camera.top = 50;
+    sunLight.shadow.camera.bottom = -50;
+    sunLight.shadow.camera.far = 500;
+
+    // Add to scene
+    scene.add(sunLight);
 }

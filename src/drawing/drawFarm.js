@@ -1,5 +1,5 @@
 import { MeshStandardMaterial, PlaneGeometry, Mesh, Group, ShaderMaterial, CanvasTexture, RepeatWrapping } from 'three';
-import { drawBasicLights } from './drawLights.js';
+import { drawBasicLights, drawSun } from './drawLights.js';
 import { GLTFLoader } from 'gltfloader'
 import perlin from 'perlin-noise';
 
@@ -149,7 +149,10 @@ function drawFarm(scene, threejsDrawing) {
     scene.add(floor);
 
     // Add basic lights
-    drawBasicLights(scene);
+    //drawBasicLights(scene);
+    drawSun(scene);
+
+    //drawHouses(scene);
 }
 
 
