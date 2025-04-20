@@ -1,9 +1,27 @@
-import { MeshStandardMaterial, PlaneGeometry, Mesh, Group } from 'three';
+import { MeshStandardMaterial, PlaneGeometry, Mesh, Group, ShaderMaterial } from 'three';
 import { drawBasicLights } from './drawLights.js';
 import { GLTFLoader } from 'gltfloader'
+
 const gltfLoader = new GLTFLoader();
 
-
+const grassMaterial = new ShaderMaterial({
+    vertexShader: `
+        varying vec2 vUv;
+        void main() {
+            vUv = uv;
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+    `,
+    fragmentShader: `
+        varying vec2 vUv;
+        void main() {
+            float stripes = step(0.5, fract(vUv.x * 40.0)) * 0.2;
+            float noise = fract(sin(dot(vUv.xy ,vec2(12.9898,78.233))) * 43758.5453);
+            float green = 0.3 + 0.3 * noise + stripes;
+            gl_FragColor = vec4(0.1, green, 0.1, 1.0);
+        }
+    `
+});
 
 function animateParts(gltf, time) {
     const leftArm = gltf.scene.getObjectByName("UpperArm_L");
@@ -72,13 +90,9 @@ function drawFarm(scene, threejsDrawing) {
     }
 
     const floorGeometry = new PlaneGeometry(200, 200);
-    const floorMaterial = new MeshStandardMaterial({
-        color: 0x888888,
-    });
+    const floor = new Mesh(floorGeometry, grassMaterial);
 
-    const floor = new Mesh(floorGeometry, floorMaterial);
-    floor.rotation.x = -Math.PI / 2; // make it horizontal
-    floor.position.y = 0;
+    floor.rotation.x = -Math.PI / 2;
     floor.receiveShadow = true;
 
     scene.add(floor);
