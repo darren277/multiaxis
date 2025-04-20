@@ -458,4 +458,10 @@ ANIMATIONS_DICT = {
             'custom_css': CSS3D_PREIODIC_TABLE_CSS,
             'custom_overlays': ["""<div id="menu"><button id="table">TABLE</button><button id="sphere">SPHERE</button><button id="helix">HELIX</button><button id="grid">GRID</button></div>"""]
         },
+    'drive':
+        {
+            'name': 'Drive',
+            'data_sources': ['drive'],
+            'custom_meta': dict(),
+        },
 }
