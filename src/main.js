@@ -4,6 +4,8 @@ import { ClickAndKeyControls } from './config/clickControlHelper.js';
 
 import { drawImage } from './drawing/drawImage.js';
 
+import { OutlineEffect } from 'outline-effect';
+
 import { usePanoramicCubeBackground, useProceduralBackground } from './drawing/drawBackground.js';
 
 import uiPanelConfig from './config/uiPanelConfig.js';
@@ -139,6 +141,7 @@ async function contentLoadedCallback(threejsDrawing) {
     const clippingPlane = threejsDrawing.sceneConfig && threejsDrawing.sceneConfig.clippingPlane || 1000;
     const controller = threejsDrawing.sceneConfig && threejsDrawing.sceneConfig.controller || 'orbital';
     const cssRendererEnabled = threejsDrawing.sceneConfig && threejsDrawing.sceneConfig.cssRenderer || false;
+    const outlineEffectEnabled = threejsDrawing.sceneConfig && threejsDrawing.sceneConfig.outlineEffect || false;
 
     const { scene, camera, renderer, controls, stats, cssRenderer } = await setupScene('c', threejsDrawing.sceneElements, startPosition, clippingPlane, controller, cssRendererEnabled);
 
@@ -236,6 +239,10 @@ async function contentLoadedCallback(threejsDrawing) {
         }
     }
 
+    if (outlineEffectEnabled) {
+        const effect = new OutlineEffect(renderer);
+    }
+
     // 5) Animate loop
     renderer.setAnimationLoop((timestamp, frame) => {
         // Update controls (if using OrbitControls or similar)
@@ -266,6 +273,10 @@ async function contentLoadedCallback(threejsDrawing) {
         // CSS Renderer (2d or 3d)
         if (cssRenderer) {
             cssRenderer.render(scene, camera);
+        }
+
+        if (outlineEffectEnabled) {
+            effect.render(scene, camera);
         }
     });
 }
