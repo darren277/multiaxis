@@ -1,4 +1,4 @@
-import { MeshStandardMaterial, PlaneGeometry, Mesh, Group, ShaderMaterial } from 'three';
+import { MeshStandardMaterial, PlaneGeometry, Mesh, Group, ShaderMaterial, CanvasTexture, RepeatWrapping } from 'three';
 import { drawBasicLights } from './drawLights.js';
 import { GLTFLoader } from 'gltfloader'
 
@@ -22,6 +22,31 @@ const grassMaterial = new ShaderMaterial({
         }
     `
 });
+
+function createGrassTexture() {
+    const size = 512;
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = size;
+
+    const ctx = canvas.getContext('2d');
+
+    for (let y = 0; y < size; y++) {
+        for (let x = 0; x < size; x++) {
+            const noise = Math.random() * 50;
+            const r = 20 + noise;
+            const g = 100 + noise * 2;
+            const b = 20 + noise;
+            ctx.fillStyle = `rgb(${r},${g},${b})`;
+            ctx.fillRect(x, y, 1, 1);
+        }
+    }
+
+    const texture = new CanvasTexture(canvas);
+    texture.wrapS = texture.wrapT = RepeatWrapping;
+    texture.repeat.set(10, 10);
+    return texture;
+}
+
 
 function animateParts(gltf, time) {
     const leftArm = gltf.scene.getObjectByName("UpperArm_L");
@@ -90,7 +115,8 @@ function drawFarm(scene, threejsDrawing) {
     }
 
     const floorGeometry = new PlaneGeometry(200, 200);
-    const floor = new Mesh(floorGeometry, grassMaterial);
+    //const floor = new Mesh(floorGeometry, grassMaterial);
+    const floor = new Mesh(floorGeometry, new MeshStandardMaterial({map: createGrassTexture()}));
 
     floor.rotation.x = -Math.PI / 2;
     floor.receiveShadow = true;
