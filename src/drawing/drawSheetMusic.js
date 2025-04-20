@@ -1,4 +1,8 @@
-import { Mesh, MeshBasicMaterial, BoxGeometry, SphereGeometry } from 'three';
+import { Mesh, MeshBasicMaterial, BoxGeometry, SphereGeometry, Raycaster, Vector2 } from 'three';
+import { GLTFLoader } from 'gltfloader';
+import { drawBasicLights } from './drawLights.js';
+import { Tween, Easing } from 'tween';
+
 
 let startTime = null;
 
@@ -120,8 +124,77 @@ function drawSheetMusic(scene, data) {
     };
 }
 
+async function loadGltfModel(data_src) {
+    const gltfLoader = new GLTFLoader();
+    const gltf = await gltfLoader.loadAsync(`./imagery/${data_src}.gltf`);
+    return gltf;
+}
+
+const raycaster = new Raycaster();
+const mouse = new Vector2();
+const clickableKeys = [];
+
+const keyZdelta = 5.0;
+
+function onKeyClick(keyMesh) {
+    const originalZ = keyMesh.position.z;
+
+    // Animate down
+    new Tween(keyMesh.position)
+        .to({ z: originalZ - keyZdelta }, 100)
+        .easing(Easing.Quadratic.Out)
+        .onComplete(() => {
+            // Animate up
+            new Tween(keyMesh.position)
+                .to({ z: originalZ }, 100)
+                .easing(Easing.Quadratic.In)
+                .start();
+        })
+        .start();
+}
+
+function onMouseClick(event, camera, domElement) {
+    // Normalize mouse coordinates
+    const rect = domElement.getBoundingClientRect();
+    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObjects(clickableKeys);
+
+    if (intersects.length > 0) {
+        onKeyClick(intersects[0].object);
+    }
+}
+
+
+// Object040 = individual key?
 function drawMusic(scene, data, state) {
     state.data.sheetMusic = drawSheetMusic(scene, data);
+
+    loadGltfModel('piano/scene').then((gltf) => {
+        const piano = gltf.scene;
+        piano.position.set(0, 5, 5);
+        piano.scale.set(0.1, 0.1, 0.1);
+        scene.add(piano);
+
+        // iterate over all children of the gltf scene
+        piano.traverse((child) => {
+            if (child.isMesh) {
+                child.castShadow = true;
+                child.receiveShadow = true;
+            }
+            console.log(`Child: ${child.name}`);
+
+            // Detect key names — adjust if different!
+            if (/^Object\d+$/.test(child.name)) {
+                console.log(`Clickable key: ${child.name}`);
+                clickableKeys.push(child);
+            }
+        });
+    });
+
+    drawBasicLights(scene);
 }
 
 const musicDrawing = {
@@ -130,7 +203,13 @@ const musicDrawing = {
         {'func': drawMusic, 'dataSrc': 'music', 'dataType': 'json'},
     ],
     'uiState': {tempoScale: 1.0},
-    'eventListeners': null,
+    // domElement.addEventListener('click', (e) => onMouseClick(e, camera, domElement));
+    'eventListeners': {
+        'click': (event, data) => {
+            const { scene, renderer, camera } = data;
+            onMouseClick(event, camera, renderer.domElement);
+        },
+    },
     'animationCallback': (renderer, timestamp, threejsDrawing, uiState, camera) => {
         if (!startTime) startTime = timestamp;
         const elapsedMs = timestamp - startTime;
