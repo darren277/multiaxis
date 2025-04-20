@@ -3,6 +3,8 @@ import { drawBasicLights, drawSun } from './drawLights.js';
 import { GLTFLoader } from 'gltfloader'
 import perlin from 'perlin-noise';
 
+import { drawHouses } from './drawHouse.js';
+
 const raycaster = new Raycaster();
 const mouse = new Vector2();
 const clock = new Clock();
@@ -186,7 +188,7 @@ function drawFarm(scene, threejsDrawing) {
     //drawBasicLights(scene);
     drawSun(scene);
 
-    //drawHouses(scene);
+    drawHouses(scene);
 }
 
 function onDoorClick(event, renderer, camera) {
