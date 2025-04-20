@@ -1,4 +1,4 @@
-import { Mesh, MeshBasicMaterial, BoxGeometry } from 'three';
+import { Mesh, MeshBasicMaterial, BoxGeometry, AxesHelper } from 'three';
 
 console.debug('Ammo.js loaded', Ammo);
 
@@ -26,7 +26,7 @@ function drawChassis() {
         localInertia: localInertia,
         motionState: motionState,
         rbInfo: rbInfo,
-        body: chassisBody
+        chassisBody
     };
 }
 
@@ -69,8 +69,40 @@ const maxSteering = 0.3;
 
 
 function animateCar(physicsWorld, carMesh, vehicle) {
+    engineForce = 500;
+    steering    = 0;
+
     const deltaTime = 1 / 60; // Assuming 60 FPS
-    physicsWorld.stepSimulation(deltaTime, 10);
+
+    const g = physicsWorld.getGravity();
+    console.log('Gravity', g.x(), g.y(), g.z());
+
+    const chassisBody = vehicle.getRigidBody();
+    const vel = chassisBody.getLinearVelocity();
+    console.log('Chassis linVel', vel.x(), vel.y(), vel.z());
+
+    const comTrans = chassisBody.getCenterOfMassTransform().getOrigin();
+    console.log('Chassis CoM Pos', comTrans.x(), comTrans.y(), comTrans.z());
+
+    const nW = vehicle.getNumWheels();
+    for (let i = 0; i < nW; i++) {
+        const wi = vehicle.getWheelInfo(i);
+        const ray = wi.get_m_raycastInfo();
+        console.log(`Wheel ${i}: inContact=${!!ray.get_m_isInContact()}`);
+        console.log(`  suspensionRest=${wi.get_m_suspensionRestLength1()}`);
+        console.log(`  frictionSlip=${wi.get_m_frictionSlip()}`);
+        console.log(`  suspensionForce=${wi.get_m_wheelsSuspensionForce()}`);
+    }
+
+    const disp = physicsWorld.getDispatcher();
+    const numM = disp.getNumManifolds();
+    console.log('Contact manifolds:', numM);
+    for (let m = 0; m < numM; m++) {
+        const man = disp.getManifoldByIndexInternal(m);
+        console.log('Manifold', man);
+        const b0 = man.getBody0(), b1 = man.getBody1();
+        console.log(`  Manifold ${m}:`, b0.ptr, '↔', b1.ptr, '– pts:', man.getNumContacts());
+    }
 
     vehicle.applyEngineForce(engineForce, 2); // Rear Left
     vehicle.applyEngineForce(engineForce, 3); // Rear Right
@@ -78,15 +110,16 @@ function animateCar(physicsWorld, carMesh, vehicle) {
     vehicle.setSteeringValue(steering, 0); // Front Left
     vehicle.setSteeringValue(steering, 1); // Front Right
 
-    updateVehicleGraphics(vehicle, carMesh);
+    physicsWorld.stepSimulation(deltaTime, 10);
 
-    console.log('force:', engineForce, 'steering:', steering, 'vehicle?', !!vehicle);
+    console.log('Input → engineForce:', engineForce, 'steering:', steering);
 
     // Update wheel transforms to apply physics and suspension forces
     const numWheels = vehicle.getNumWheels();
     for (let i = 0; i < numWheels; i++) {
         vehicle.updateWheelTransform(i, true); // true = interpolated
     }
+    updateVehicleGraphics(vehicle, carMesh);
 }
 
 
@@ -113,6 +146,9 @@ function drawCar(physicsWorld, scene) {
     const chassis = drawChassis();
     const { chassisBody } = chassis;
 
+    console.log('Added chassisBody:', chassisBody);
+    console.log('Is active?', chassisBody.isActive());
+
     physicsWorld.addRigidBody(chassisBody);
 
     const tuning = new Ammo.btVehicleTuning();
@@ -121,12 +157,19 @@ function drawCar(physicsWorld, scene) {
     vehicle.setCoordinateSystem(0, 1, 2); // right, up, forward
 
     physicsWorld.addAction(vehicle);
+    console.log('Vehicle wheels 1:', vehicle.getNumWheels());
 
     drawWheels(vehicle);
+    console.log('Vehicle wheels 2:', vehicle.getNumWheels());
 
     const numWheels = vehicle.getNumWheels();
     for (let i = 0; i < numWheels; i++) {
         vehicle.updateWheelTransform(i, true); // true = interpolated transform
+        const wi = vehicle.getWheelInfo(i);
+        wi.set_m_frictionSlip(1.0);                // tyres “stickier”
+        wi.set_m_suspensionStiffness(20.0);        // stiffer spring
+        wi.set_m_wheelsDampingRelaxation(2.3);     // damping (relaxation)
+        wi.set_m_wheelsDampingCompression(4.4);    // compression
     }
 
     return vehicle;
@@ -144,6 +187,11 @@ function drawDrive(scene, threejsDrawing) {
         threejsDrawing.data.broadphase = new Ammo.btDbvtBroadphase();
         threejsDrawing.data.solver = new Ammo.btSequentialImpulseConstraintSolver();
         threejsDrawing.data.physicsWorld = new Ammo.btDiscreteDynamicsWorld(threejsDrawing.data.dispatcher, threejsDrawing.data.broadphase, threejsDrawing.data.solver, threejsDrawing.data.collisionConfiguration);
+
+        /* add this line before you drop any rigid bodies/wheels in */
+        threejsDrawing.data.physicsWorld.setGravity(
+            new Ammo.btVector3( 0, -9.81, 0 )      // Bullet units = metres‑per‑second²
+        );
 
         // Draw ground...
         drawGround(scene, threejsDrawing.data.physicsWorld);
@@ -165,7 +213,7 @@ function drawDrive(scene, threejsDrawing) {
 
         threejsDrawing.data.carMesh = carMesh;
 
-        scene.add(new THREE.AxesHelper(5));
+        scene.add(new AxesHelper(5));
     });
 }
 
@@ -202,8 +250,9 @@ const driveDrawing = {
         },
         'keyup': (e, data) => {
             console.log('keyup', e.key);
-            engineForce = 0;
-            steering = 0;
+            if (e.key === 'w' || e.key === 's' || e.key === 'ArrowUp' || e.key === 'ArrowDown') engineForce = 0;
+            if (e.key === 'a' || e.key === 'd' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') steering    = 0;
+            console.log(`key ${e.type} ${e.key} → engine=${engineForce} steer=${steering}`);
         }
     },
     animationCallback: (renderer, timestamp, threejsDrawing, uiState, camera) => {
