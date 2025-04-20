@@ -464,4 +464,10 @@ ANIMATIONS_DICT = {
             'data_sources': ['drive'],
             'custom_meta': dict(),
         },
+    'tv':
+        {
+            'name': 'TV',
+            'data_sources': ['tv_sony_trinitron'],
+            'custom_meta': dict(),
+        },
 }
