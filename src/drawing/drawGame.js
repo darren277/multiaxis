@@ -1,4 +1,4 @@
-import { HemisphereLight, Mesh, MeshBasicMaterial, BoxGeometry, PlaneGeometry, Clock, Vector3, Raycaster, DoubleSide } from 'three';
+import { HemisphereLight, Mesh, MeshBasicMaterial, BoxGeometry, PlaneGeometry, Clock, Vector3, Raycaster, Sphere, Box3, DoubleSide } from 'three';
 
 /* PointerLock controls adapted from https://github.com/mrdoob/three.js/blob/master/examples/misc_controls_pointerlock.html */
 
@@ -29,7 +29,7 @@ const enemyMat = new MeshBasicMaterial({ color: 0xff0000, side: DoubleSide });
 
 // ---------- Input handling ----------
 const keyState = Object.create(null);
-function onKey(evt) {
+function onKey(evt, data) {
     console.log(evt.code, evt.type);
     if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyW','KeyA','KeyS','KeyD'].includes(evt.code)) {
         keyState[evt.code] = evt.type === 'keydown';
@@ -48,7 +48,17 @@ const direction = new Vector3();
 
 let prevTime = performance.now();
 
-function updatePlayer(controls, camera) {
+function collidesWithWalls(pos, walls) {
+    const radius = 2; // player collision radius
+    const playerBox = new Sphere(pos, radius);
+    return walls.some(wall => {
+        const wallBox = new Box3().setFromObject(wall);
+        return wallBox.intersectsSphere(playerBox);
+    });
+}
+
+
+function updatePlayer(controls, data) {
     const time  = performance.now();
     const delta = (time - prevTime) / 1000;
     prevTime = time;
@@ -71,28 +81,48 @@ function updatePlayer(controls, camera) {
     velocity.x -= direction.x * ACCEL * delta;
     velocity.z -= direction.z * ACCEL * delta;
 
+    console.log('controls.lock 2:', typeof controls.lock);
+    console.log('Received controls 2:', controls.constructor.name);
+
     // Translate camera via controls helper
-    if (controls && controls.isObject3D) {
-        const playerObj = controls;
-        moveTemp.setFromMatrixColumn(playerObj.matrix, 0); // X axis
-        playerObj.position.addScaledVector(moveTemp, velocity.x * delta);
+    // Use the actual camera held by PointerLockControls decide once per frame which object we actually move
+    const playerObj =
+            (typeof controls.getObject === 'function' && controls.getObject()) // classic
+         || controls.camera                                                    // modern
+         || (controls.isObject3D ? controls : null);                           // already the camera
 
-        moveTemp.setFromMatrixColumn(playerObj.matrix, 0);
-        moveTemp.crossVectors(playerObj.up, moveTemp); // Z axis
-        playerObj.position.addScaledVector(moveTemp, velocity.z * delta);
+    if (!playerObj) {
+        console.warn('Cannot find movable object on controls:', controls);
+        return;
+    }
 
-        // Apply vertical movement (jumping / falling)
-        playerObj.position.y += velocity.y * delta;
-        velocity.y -= 600 * delta; // gravity
+    const oldPos = playerObj.position.clone();
 
-        if (playerObj.position.y < 2) {
-            velocity.y = 0;
-            playerObj.position.y = 2;
-            canJump = true;
-        }
-    } else {
-        console.log('No controls helper found', controls.object);
-        //console.warn('No controls helper found');
+    // Attempt X movement
+    moveTemp.setFromMatrixColumn(playerObj.matrix, 0); // X axis
+    const moveX = moveTemp.clone().multiplyScalar(velocity.x * delta);
+    playerObj.position.add(moveX);
+    if (collidesWithWalls(playerObj.position, data.walls)) {
+        playerObj.position.copy(oldPos); // Revert X
+    }
+
+    // Attempt Z movement
+    moveTemp.setFromMatrixColumn(playerObj.matrix, 0);
+    moveTemp.crossVectors(playerObj.up, moveTemp); // Z axis
+    const moveZ = moveTemp.clone().multiplyScalar(velocity.z * delta);
+    playerObj.position.add(moveZ);
+    if (collidesWithWalls(playerObj.position, data.walls)) {
+        playerObj.position.copy(oldPos); // Revert Z
+    }
+
+    // Apply vertical movement (jumping / falling) (jumping / falling)
+    playerObj.position.y += velocity.y * delta;
+    velocity.y -= 600 * delta; // gravity
+
+    if (playerObj.position.y < 2) {
+        velocity.y = 0;
+        playerObj.position.y = 2;
+        canJump = true;
     }
 }
 
@@ -146,12 +176,12 @@ function drawGame(scene, threejsDrawing) {
             // Floor
             const floor = new Mesh(new PlaneGeometry(TILE, TILE), floorMat);
             floor.rotation.x = -Math.PI / 2;
-            floor.position.set(x * TILE, 0, z * TILE);
+            floor.position.set(x * TILE + TILE/2, 0, z * TILE + TILE/2);
             scene.add(floor);
 
             if (map[z][x] === 1) {
                 const wall = new Mesh(new BoxGeometry(TILE, WALL_H, TILE), wallMat);
-                wall.position.set(x * TILE, WALL_H / 2, z * TILE);
+                wall.position.set(x * TILE + TILE/2, WALL_H / 2, z * TILE + TILE/2);
                 scene.add(wall);
                 data.walls.push(wall);
             }
@@ -172,7 +202,7 @@ function animationCallback(renderer, timestamp, threejsDrawing, uiState, camera)
         return;
     }
 
-    updatePlayer(camera, controls);
+    updatePlayer(controls, data);
     updateEnemies(clock.getDelta(), data, camera);
 
     // Spawn a new enemy every 120 s (optional demo)
@@ -195,7 +225,7 @@ const gameDrawing = {
     animationCallback,
     data: {},
     sceneConfig: {
-        startPosition: { x: 5, y: 2, z: 5 },
+        startPosition: { x: TILE*1.5, y: 2, z: TILE*1.5 },
         controller: 'pointerlock'
     }
 }
