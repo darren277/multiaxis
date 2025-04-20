@@ -8,6 +8,8 @@ import { usePanoramicCubeBackground, useProceduralBackground } from './drawing/d
 
 import uiPanelConfig from './config/uiPanelConfig.js';
 
+import { drawNavCubes, onClickNav } from './config/navigation.js';
+
 //import * as THREE from 'three'; // for any references you still need
 import { TextureLoader, FileLoader } from 'three'; // for texture loading
 // Or import { FileLoader } from 'three'; if you just need the loader
@@ -110,6 +112,18 @@ document.addEventListener('DOMContentLoaded', () => {
     })
 })
 
+
+
+const CUBE_DEFS = [
+    { targetScene: 'library', position: [1, 0.25, -2], color: 0x00ff00 },
+    { targetScene: 'farm', position: [2, 0.25, -2], color: 0x0000ff },
+    { targetScene: 'room', position: [3, 0.25, -2], color: 0xff0000 },
+    { targetScene: 'kitchen', position: [4, 0.25, -2], color: 0xffff00 },
+    { targetScene: 'bathroom', position: [5, 0.25, -2], color: 0xff00ff },
+    { targetScene: 'livingroom', position: [6, 0.25, -2], color: 0x00ffff }
+]
+
+
 async function contentLoadedCallback(threejsDrawing) {
     const dataSelected = document.querySelector('meta[name="data_selected"]').content;
 
@@ -199,6 +213,14 @@ async function contentLoadedCallback(threejsDrawing) {
 
     // --- OPTION 2: Simple procedural background ---
     /////useProceduralBackground(scene);
+
+    // NAV CUBE //
+    drawNavCubes(scene, threejsDrawing, CUBE_DEFS);
+
+    // Add event listener for navigation
+    window.addEventListener('click', (event) => {
+        onClickNav(event, scene, renderer, camera);
+    });
 
     //drawImage(scene, 'textures/Canestra_di_frutta_Caravaggio.jpg');
 
