@@ -134,14 +134,6 @@ function drawLinks(scene, graph) {
         const thickness = link.thickness ?? 0.1;
         const color = link.color ?? 0x8888ff;
 
-        // Optional debug marker
-        const marker = new Mesh(
-            new SphereGeometry(0.05),
-            new MeshStandardMaterial({ color: 'red' })
-        );
-        marker.position.set(source.x, source.y ?? 0.5, source.z);
-        scene.add(marker);
-
         // Create a curved mesh link between the nodes
         const mesh = createCurvedLink(source, target, color, thickness);
         scene.add(mesh);
