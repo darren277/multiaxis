@@ -49,7 +49,7 @@
         "id": "slide1_center",
         "position": { "x": 0, "y": 2, "z": -10 },
         "image": "textures/slide1_main.jpg",
-        "caption": "<h2>Welcome - Adventure 2</h2><p>This is the central vantage point.</p>",
+        "caption": "<h2>Welcome - Adventure 2</h2><p>This is the central vantage point.</p><p>OTHER ITEMS</p>",
         "customClasses": " bounce pulse",
         "visibleOn": ["allSlides"]
     },

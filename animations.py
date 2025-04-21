@@ -406,7 +406,7 @@ ANIMATIONS_DICT = {
     'gltf':
         {
             'name': 'GLTF',
-            'data_sources': ['humanoid'],
+            'data_sources': ['humanoid', 'dynamic_fighters'],
             'custom_meta': dict(),
         },
     'synapse':
