@@ -174,7 +174,7 @@ def serve_image(filename, ext):
         filename = filename + '.' + remaining_file_name
     path = os.path.join('src', 'imagery', f'{filename}.{ext}')
     print(f"Serving image: {path}")
-    if ext not in ['jpg', 'jpeg', 'png', 'svg', 'glb', 'ply', 'obj', 'pdb', 'gltf', 'bin']:
+    if ext not in ['jpg', 'jpeg', 'png', 'svg', 'glb', 'ply', 'obj', 'pdb', 'gltf', 'bin', 'mp3']:
         abort(404)
     if ext == 'jpg' or ext == 'jpeg':
         mimetype = 'image/jpeg'
@@ -194,6 +194,8 @@ def serve_image(filename, ext):
         mimetype = 'model/gltf+json'
     elif ext == 'bin':
         mimetype = 'application/octet-stream'
+    elif ext == 'mp3':
+        mimetype = 'audio/mpeg'
     else:
         abort(404)
     if os.path.exists(path):
