@@ -506,4 +506,10 @@ ANIMATIONS_DICT = {
             'data_sources': ['audioviz'],
             'custom_meta': dict(),
         },
+    'network':
+        {
+            'name': 'Network',
+            'data_sources': ['network'],
+            'custom_meta': dict(),
+        },
 }
