@@ -2,7 +2,7 @@ import {
     SphereGeometry, CylinderGeometry, Mesh, MeshStandardMaterial, Vector3, HemisphereLight,
     Quaternion, TubeGeometry, QuadraticBezierCurve3, AxesHelper, PlaneGeometry
 } from 'three';
-import { forceSimulation, forceManyBody, forceLink, forceCenter } from 'd3-force-3d';
+import { forceSimulation, forceManyBody, forceLink, forceCenter, forceX, forceY, forceZ } from 'd3-force-3d';
 
 
 // ground plane = XY plane
@@ -12,6 +12,39 @@ import { forceSimulation, forceManyBody, forceLink, forceCenter } from 'd3-force
  * @typedef {{ nodes: GraphNode[] }} Graph
  */
 
+
+
+/**
+ * Assign a depth to each node by breadth‑first traversal starting from the rootId.
+ *
+ * @param {Graph} graph
+ * @param {number|string} rootId
+ */
+function computeDepths(graph, rootId) {
+    const depthMap = Object.create(null);
+    depthMap[rootId] = 0;
+    const queue = [rootId];
+
+    // Treat links as directed from source → target
+    const outgoing = graph.links.reduce((m, l) => {
+        if (!m[l.source]) m[l.source] = [];
+        m[l.source].push(l.target);
+        return m;
+    }, {});
+
+    while (queue.length) {
+        const id = queue.shift();
+        const d  = depthMap[id];
+        (outgoing[id] || []).forEach(childId => {
+            if (depthMap[childId] == null) {
+                depthMap[childId] = d + 1;
+                queue.push(childId);
+            }
+        });
+    }
+
+    graph.nodes.forEach(n => {n.depth = depthMap[n.id] ?? Infinity;});
+}
 
 /**
  * Positions nodes in a circle on the XZ plane with fixed Y (height).
@@ -205,28 +238,53 @@ function updateThreeJSPositions(nodeMeshes, linkMeshes, graph) {
 }
 
 /**
- * Applies a force-directed layout using d3-force-3d and keeps Three.js in sync.
+ * Applies a force‑directed tree layout where:
+ *  - the root (first node) is fixed at x=0
+ *  - all other nodes are pushed to x > 0 in proportion to their depth
+ *  - everyone is constrained to the XZ plane (y = 0.5)
  *
  * @param {THREE.Mesh[]} nodeMeshes - Array of Three.js node meshes
  * @param {THREE.Mesh[]} linkMeshes - Array of Three.js link meshes
  * @param {Graph} graph - The graph object with mutable simulation data
  */
 function applyForce(nodeMeshes, linkMeshes, graph) {
+    const ROOT_ID = graph.nodes[0].id;
+    const SPACING = 10;    // horizontal gap per tree level
+    const Y_LEVEL  = 0.5;  // flat plane height
+
+    // 1) Seed each node.x/y/z from your initial position
+    graph.nodes.forEach(n => {
+        if (n.position) {
+            n.x = n.position.x;
+            n.y = n.position.y;
+            n.z = n.position.z;
+        }
+    });
+
+    // 2) Compute each node’s depth (0 for root, 1 for its children, etc)
+    computeDepths(graph, ROOT_ID);
+
+    // 3) Fix the root in place
+    graph.nodes.forEach(n => {
+        if (n.id === ROOT_ID) {
+            n.fx = 0;       // fix x = 0
+            n.fy = Y_LEVEL; // fix y = 0.5
+            n.fz = 0;       // fix z = 0
+        }
+    });
+
     const simulation = forceSimulation(graph.nodes)
         .force('charge', forceManyBody().strength(-50))
-        .force('link', forceLink(graph.links).id(d => d.id).distance(5))
-        .force('center', forceCenter(0, 0, 0))
+        .force('link',   forceLink(graph.links).id(d => d.id).distance(5))
+        // push nodes horizontally by depth
+        .force('x', forceX(d => d.id === ROOT_ID ? 0 : d.depth * SPACING).strength(1))
+        // clamp everyone to y = 0.5
+        .force('y', forceY(Y_LEVEL).strength(1))
+        // clamp everyone to z = 0
+        .force('z', forceZ(0).strength(1))
         .on('tick', () => {
-            graph.nodes.forEach(node => {
-                node.y = 0.5; // Constrain to XZ plane
-            });
-
-            const nodePositions = graph.nodes.map(node => ({
-                x: node.x,
-                y: node.y,
-                z: node.z
-            }));
-            console.log('tick', nodePositions);
+            // keep y pinned (just in case) and update Three.js meshes
+            graph.nodes.forEach(n => { n.y = Y_LEVEL; });
 
             updateThreeJSPositions(nodeMeshes, linkMeshes, graph); // e.g., update spheres in scene
         });
