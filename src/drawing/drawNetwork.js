@@ -48,12 +48,21 @@ function buildTreeData(nodes, links) {
 function computeTreeLayout(rootData, dx = 50, dy = 100) {
     const root = hierarchy(rootData);
 
+    // total depth (Z)  = maxDepth * tightDx
+    // total width (X)  = maxBreadth * tightDy
+    //const depthLevels  = /* your treeHeight */;
+    //const siblingCount = /* maximum siblings at any level */;
+    const depthLevels  = root.height;
+    const siblingCount = root.children ? root.children.length : 0;
+
+    tree().size([depthLevels * dx, siblingCount * dy])(root);
+
     // tree layout: root at (0,0), children laid out along +x
-    const layout = tree().nodeSize([dx, dy]);effects
-    layout(root);
+    console.log('tree layout', dx, dy);
+    //tree().nodeSize([dx, dy])(root);
 
     // root.descendants() now each has { x, y } in 2D
-    return root.descendants();
+    return root;
 }
 
 // also get the links easily:
@@ -77,16 +86,16 @@ function renderD3Tree(scene, nodes2D, links2D) {
         const geo = new SphereGeometry(2, 16, 16);
         const mesh = new Mesh(geo, mat);
 
-        // map D3:  y→X  and x→Z
-        mesh.position.set(n2.y, FLOOR_Y, n2.x);
+        // map D3:  x→Z, y→Y
+        mesh.position.set(n2.x, FLOOR_Y, n2.y);
         scene.add(mesh);
     });
 
     // draw links as straight lines (or TubeGeometry if you want thickness)
     links2D.forEach(link => {
         const { source, target } = link;
-        const p1 = new Vector3(source.y, FLOOR_Y, source.x);
-        const p2 = new Vector3(target.y, FLOOR_Y, target.x);
+        const p1 = new Vector3(source.x, FLOOR_Y, source.y);
+        const p2 = new Vector3(target.x, FLOOR_Y, target.y);
         const pts = [p1, p2];
 
         const lineGeo = new BufferGeometry().setFromPoints(pts);
@@ -377,18 +386,21 @@ function applyForce(nodeMeshes, linkMeshes, graph) {
  * @param {any} threejsDrawing - Optional reference used by calling framework
  */
 function drawNetwork(scene, data, threejsDrawing) {
+    const FLOOR_SIZE = 200;
+    // or, define it in `data.metadata`...
+
     // Lighting
     const light = new HemisphereLight(0xffffff, 0x444444, 1);
     light.position.set(0, 20, 0);
     scene.add(light);
 
     // Floor plane (XZ)
-    const planeGeometry = new PlaneGeometry(100, 100);
+    const planeGeometry = new PlaneGeometry(FLOOR_SIZE, FLOOR_SIZE);
     const planeMaterial = new MeshStandardMaterial({ color: 0x888888 });
     const plane = new Mesh(planeGeometry, planeMaterial);
     plane.rotation.x = -Math.PI / 2; // Rotate to lie flat
     plane.position.y = 0; // Position it at y=0
-    plane.position.z += 50; // Center it
+    plane.position.z += FLOOR_SIZE / 2; // Center it
     scene.add(plane);
 
     // Axes helper: red (X), green (Y), blue (Z)
@@ -407,7 +419,8 @@ function drawNetwork(scene, data, threejsDrawing) {
     // 2) build a nested tree
     const treeData = buildTreeData(nodes, links);
     // 3) compute layout
-    const rootNode = hierarchy(treeData);
+    //const rootNode = hierarchy(treeData);
+    const rootNode = computeTreeLayout(treeData, /*dx=*/30, /*dy=*/60);
     const treeLayout = tree().nodeSize([50, 100]);
     treeLayout(rootNode);
     const laidOutNodes = rootNode.descendants();
