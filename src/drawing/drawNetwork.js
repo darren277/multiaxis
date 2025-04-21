@@ -39,6 +39,47 @@ function buildTreeData(nodes, links) {
 }
 
 /**
+ * Extracts a minimal tree from the full graph by selecting
+ * only the first incoming link for each target node.
+ * @param {Array} nodes - Flat array of node objects
+ * @param {Array} links - Flat array of links (source & target by ID)
+ * @returns {{ root: *, treeLinks: *, extraLinks: * }}
+ */
+function extractMinimalTree(nodes, links) {
+    const nodeMap = new Map(nodes.map(n => [n.id, { ...n, children: [] }]));
+    const hasParent = new Set();
+    const treeLinks = [];
+    const extraLinks = [];
+
+    // Track first parent only
+    const childToParent = new Map();
+
+    links.forEach(link => {
+        const { source, target } = link;
+        if (!childToParent.has(target)) {
+            childToParent.set(target, source);
+            treeLinks.push(link);
+        } else {
+            extraLinks.push(link); // redundant/multi-parent link
+        }
+    });
+
+    // Connect children
+    treeLinks.forEach(({ source, target }) => {
+        const parent = nodeMap.get(source);
+        const child  = nodeMap.get(target);
+        if (parent && child) {
+            parent.children.push(child);
+            hasParent.add(target);
+        }
+    });
+
+    // Find root (no incoming edges)
+    const root = nodes.find(n => !hasParent.has(n.id));
+    return {root: nodeMap.get(root.id), treeLinks, extraLinks};
+}
+
+/**
  * Given a nested tree object, computes x/y positions.
  * @param {*} rootData  The result of buildTreeData()
  * @param {number} dx   Vertical spacing between levels
@@ -379,6 +420,100 @@ function applyForce(nodeMeshes, linkMeshes, graph) {
 }
 
 /**
+ * Draws a straight line between two points in Three.js.
+ *
+ * @param {THREE.Vector3} start - Starting point
+ * @param {THREE.Vector3} end - Ending point
+ * @param {string|number} color - Line color (e.g. 'orange' or 0xff0000)
+ * @param {number} [thickness=1] - Line width (note: ignored in most WebGL renderers)
+ * @returns {THREE.Line} - The created line object (in case you want to store/remove it later)
+ */
+function drawLine(scene, start, end, color = 0x000000, thickness = 1) {
+    const material = new LineBasicMaterial({
+        color,
+        linewidth: thickness  // NOTE: only works in WebGL with special support
+    });
+
+    const geometry = new BufferGeometry().setFromPoints([start, end]);
+
+    const line = new Line(geometry, material);
+    scene.add(line); // assumes you’re in a global scope or pass the scene if needed
+
+    return line;
+}
+
+/**
+ * Draw non-tree links (extra relationships) between D3-rendered nodes.
+ *
+ * @param {THREE.Scene} scene
+ * @param {*} laidOutNodes - D3 nodes with x/y and .data.id
+ * @param {GraphLink[]} rawLinks - All extra links not in the tree
+ * @param {*} treeLinks - Links already included in the layout
+ * @param {number} floorY
+ */
+function connectTreeNodes(scene, laidOutNodes, rawLinks, treeLinks, floorY = 0.5) {
+    const idToNode = new Map(laidOutNodes.map(n => [n.data.id, n]));
+
+    for (const { source, target, color = 'orange' } of rawLinks) {
+        const from = idToNode.get(source);
+        const to = idToNode.get(target);
+
+        const isInTree = treeLinks.some(l => l.source.data.id === source && l.target.data.id === target);
+
+        if (from && to && !isInTree) {
+            const p1 = new Vector3(from.x, floorY, from.y);
+            const p2 = new Vector3(to.x,   floorY, to.y);
+            drawLine(scene, p1, p2, color);
+        }
+    }
+}
+
+
+/**
+ * @typedef {{ id: number|string, name?: string, color?: string, children?: any[] }} GraphNode
+ * @typedef {{ source: number|string, target: number|string, color?: string, label?: string, thickness?: number }} GraphLink
+ * @typedef {{ nodes: GraphNode[], links: GraphLink[] }} GraphData
+ * @typedef {Object} TreeLayoutOptions
+ * @property {number} dx - Vertical spacing between levels (mapped to Z)
+ * @property {number} dy - Horizontal spacing between siblings (mapped to X)
+ * @property {number} floorY - The Y position at which to place the tree (default 0.5)
+ */
+
+/**
+ * Renders a tree-based layout with D3.hierarchy, but also supports rendering
+ * extra cross-links that don't fit in a strict hierarchy (e.g. multiple parents).
+ *
+ * @param {THREE.Scene} scene - The Three.js scene to render into
+ * @param {GraphData} data - Graph structure with flat nodes and links
+ * @param {TreeLayoutOptions} [options] - Layout spacing and floor height
+ */
+function drawTreeWithExtras(scene, data, options = {}) {
+    const {
+        dx = 30,
+        dy = 60,
+        floorY = 0.5
+    } = options;
+
+    const { nodes, links } = data;
+
+    // Step 1: Build a minimal tree and extract cross-links
+    const { root, treeLinks, extraLinks } = extractMinimalTree(nodes, links);
+
+    // Step 2: Compute D3 hierarchical layout
+    const rootNode = hierarchy(root);
+    tree().nodeSize([dx, dy])(rootNode);
+
+    const laidOutNodes = rootNode.descendants();
+    const laidOutTreeLinks = rootNode.links();
+
+    // Step 3: Render nodes and tree links
+    renderD3Tree(scene, laidOutNodes, laidOutTreeLinks, floorY);
+
+    // Step 4: Render extra cross-links that weren’t in the tree
+    connectTreeNodes(scene, laidOutNodes, extraLinks, laidOutTreeLinks, floorY);
+}
+
+/**
  * Draws the full graph network into the Three.js scene: floor, axes, nodes, links, and force layout.
  *
  * @param {THREE.Scene} scene - The Three.js scene to render into
@@ -414,19 +549,12 @@ function drawNetwork(scene, data, threejsDrawing) {
     ///applyForce(nodeMeshes, linkMeshes, data);
 
     // TREE LAYOUT: Layout + render
-    // 1) parse your JSON
-    const { nodes, links } = data;
-    // 2) build a nested tree
-    const treeData = buildTreeData(nodes, links);
-    // 3) compute layout
-    //const rootNode = hierarchy(treeData);
-    const rootNode = computeTreeLayout(treeData, /*dx=*/30, /*dy=*/60);
-    const treeLayout = tree().nodeSize([50, 100]);
-    treeLayout(rootNode);
-    const laidOutNodes = rootNode.descendants();
-    const laidOutLinks = rootNode.links();
-    // 4) render into Three.js
-    renderD3Tree(scene, laidOutNodes, laidOutLinks);
+    const treeOptions = {
+        dx: 30, // vertical spacing
+        dy: 60, // horizontal spacing
+        floorY: 0.5,
+    };
+    drawTreeWithExtras(scene, data, treeOptions);
 }
 
 const networkDrawing = {
