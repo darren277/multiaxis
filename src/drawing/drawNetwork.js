@@ -1,8 +1,9 @@
 import {
     SphereGeometry, CylinderGeometry, Mesh, MeshStandardMaterial, Vector3, HemisphereLight,
-    Quaternion, TubeGeometry, QuadraticBezierCurve3, AxesHelper, PlaneGeometry
+    Quaternion, TubeGeometry, QuadraticBezierCurve3, AxesHelper, PlaneGeometry, BufferGeometry, Line, LineBasicMaterial
 } from 'three';
 import { forceSimulation, forceManyBody, forceLink, forceCenter, forceX, forceY, forceZ } from 'd3-force-3d';
+import { hierarchy, tree } from 'd3-hierarchy';
 
 
 // ground plane = XY plane
@@ -12,7 +13,87 @@ import { forceSimulation, forceManyBody, forceLink, forceCenter, forceX, forceY,
  * @typedef {{ nodes: GraphNode[] }} Graph
  */
 
+/**
+ * Turn your nodes + directed links into a nested tree structure.
+ * Assumes there’s exactly one root (no incoming links).
+ *
+ * @param {Array<{id: *, color?:string}>} nodes
+ * @param {Array<{source: *, target: *}>} links
+ * @returns {*} A nested object with `children` arrays
+ */
+function buildTreeData(nodes, links) {
+    const map = new Map(nodes.map(n => [n.id, { ...n, children: [] }]));
+    const hasParent = new Set();
 
+    links.forEach(({ source, target }) => {
+        const parent = map.get(source);
+        const child  = map.get(target);
+        if (parent && child) {
+            parent.children.push(child);
+            hasParent.add(target);
+        }
+    });
+
+    // root = the one node that never appears as a link target
+    return map.get(nodes.find(n => !hasParent.has(n.id)).id);
+}
+
+/**
+ * Given a nested tree object, computes x/y positions.
+ * @param {*} rootData  The result of buildTreeData()
+ * @param {number} dx   Vertical spacing between levels
+ * @param {number} dy   Horizontal spacing between siblings
+ * @returns {d3.HierarchyPointNode[]}  Array of laid‑out nodes
+ */
+function computeTreeLayout(rootData, dx = 50, dy = 100) {
+    const root = hierarchy(rootData);
+
+    // tree layout: root at (0,0), children laid out along +x
+    const layout = tree().nodeSize([dx, dy]);effects
+    layout(root);
+
+    // root.descendants() now each has { x, y } in 2D
+    return root.descendants();
+}
+
+// also get the links easily:
+function computeTreeLinks(root) {
+    // root.links() gives array of { source: node, target: node }
+    return root.links();
+}
+
+/**
+ * @param {THREE.Scene} scene
+ * @param {d3.HierarchyPointNode[]} nodes2D   // with .data, .x, .y
+ * @param {{source,target}[]} links2D         // with .source, .target each a node2D
+ */
+function renderD3Tree(scene, nodes2D, links2D) {
+    const FLOOR_Y = 0.5;
+
+    // draw nodes
+    nodes2D.forEach(n2 => {
+        const { id, color } = n2.data;
+        const mat = new MeshStandardMaterial({ color: color || 'steelblue' });
+        const geo = new SphereGeometry(2, 16, 16);
+        const mesh = new Mesh(geo, mat);
+
+        // map D3:  y→X  and x→Z
+        mesh.position.set(n2.y, FLOOR_Y, n2.x);
+        scene.add(mesh);
+    });
+
+    // draw links as straight lines (or TubeGeometry if you want thickness)
+    links2D.forEach(link => {
+        const { source, target } = link;
+        const p1 = new Vector3(source.y, FLOOR_Y, source.x);
+        const p2 = new Vector3(target.y, FLOOR_Y, target.x);
+        const pts = [p1, p2];
+
+        const lineGeo = new BufferGeometry().setFromPoints(pts);
+        const mat = new LineBasicMaterial({ color: 'gray' });
+        scene.add(new Line(lineGeo, mat));
+    });
+}
 
 /**
  * Assign a depth to each node by breadth‑first traversal starting from the rootId.
@@ -314,11 +395,25 @@ function drawNetwork(scene, data, threejsDrawing) {
     const axesHelper = new AxesHelper(5);
     scene.add(axesHelper);
 
-    // Layout + render
-    layoutNodes(data.nodes);
-    const nodeMeshes = drawNodes(scene, data);
-    const linkMeshes = drawLinks(scene, data);
-    applyForce(nodeMeshes, linkMeshes, data);
+    // GRAPH LAYOUT: Layout + render
+    ///layoutNodes(data.nodes);
+    ///const nodeMeshes = drawNodes(scene, data);
+    ///const linkMeshes = drawLinks(scene, data);
+    ///applyForce(nodeMeshes, linkMeshes, data);
+
+    // TREE LAYOUT: Layout + render
+    // 1) parse your JSON
+    const { nodes, links } = data;
+    // 2) build a nested tree
+    const treeData = buildTreeData(nodes, links);
+    // 3) compute layout
+    const rootNode = hierarchy(treeData);
+    const treeLayout = tree().nodeSize([50, 100]);
+    treeLayout(rootNode);
+    const laidOutNodes = rootNode.descendants();
+    const laidOutLinks = rootNode.links();
+    // 4) render into Three.js
+    renderD3Tree(scene, laidOutNodes, laidOutLinks);
 }
 
 const networkDrawing = {
@@ -355,3 +450,13 @@ export { networkDrawing };
 // Color by direction or magnitude.
 // Add subtle glow shaders or MeshToonMaterial.
 // Animate dash or pulse effects using custom shaders (ask if you'd like this too).
+
+
+
+/*
+Swapping in other D3 layouts
+    Cluster (dendrogram): import { cluster } from 'd3-hierarchy'; const layout = cluster().nodeSize([dx, dy]);
+    Pack (circle‑packing): import { pack } from 'd3-hierarchy'; const layout = pack().size([width, height]).padding(5);
+    Partition / Treemap: import { partition, treemap } from 'd3-hierarchy';
+All of them compute x, y (and for pack: r), which you can map to Three.js coordinates (e.g. x→Z, y→X, etc.).
+*/
