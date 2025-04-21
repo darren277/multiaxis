@@ -5,3 +5,27 @@ data/experimental*.json
 EXPERIMENTS.md
 
 .env
+
+# Experimental game assets way too big for git.
+NeonCityCompletePack/
+
+# This file is ubiquitously available online so no need to commit it.
+BigBuckBunny.mp4
+
+
+# Assorted.
+CleanSocialVideoSalesLetter.mp4
+dynamic_fighters.glb
+Knowledge.svg
+Knowledge_out.svg
+Knowledge_out_annotated.svg
+
+
+# Copyright protected content.
+src/textures/cards/thinkpak/
+thinkpak_cards.json
+thinkpak.json
+
+# Copyright protected content.
+src/imagery/Crystal Method - Vapor Trail.mp4
+
