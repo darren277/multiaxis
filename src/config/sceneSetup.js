@@ -47,6 +47,7 @@ export async function setupScene(
     containerId = 'c',
     overlayElements = [],
     startPosition = { x: 0, y: 2, z: 5 },
+    lookAt = { x: 0, y: 0, z: 0 },
     clippingPlane = 1000,
     controller = 'orbital',
     cssRendererEnabled = false,
@@ -148,7 +149,7 @@ export async function setupScene(
         container.appendChild(el);
     }
 
-    camera.lookAt(0, 0, 0); // look at the origin
+    camera.lookAt(lookAt.x, lookAt.y, lookAt.z);
 
     // 6) Resize handling
     function onWindowResize() {
@@ -168,7 +169,8 @@ export async function setupScene(
         controls = new OrbitControls(camera, renderer.domElement);
         controls.enabled = true; // we can toggle later
 
-        controls.target.set(0, 0, 0); // set the target to the origin
+        //controls.target.set(0, 0, 0); // set the target to the origin
+        controls.target.set(lookAt.x, lookAt.y, lookAt.z); // set the target to the origin
         controls.update();
     } else if (controller === 'walking') {
         // TODO...

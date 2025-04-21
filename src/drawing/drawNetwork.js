@@ -301,6 +301,7 @@ function drawNetwork(scene, data, threejsDrawing) {
     const plane = new Mesh(planeGeometry, planeMaterial);
     plane.rotation.x = -Math.PI / 2; // Rotate to lie flat
     plane.position.y = 0; // Position it at y=0
+    plane.position.z += 50; // Center it
     scene.add(plane);
 
     // Axes helper: red (X), green (Y), blue (Z)
@@ -326,6 +327,10 @@ const networkDrawing = {
         // Animation logic can go here
     },
     'data': {
+    },
+    'sceneConfig': {
+        'startPosition': { 'x': 0, 'y': 100, 'z': -1 },
+        'lookAt': { 'x': 0, 'y': 0, 'z': 50 },
     }
 }
 
