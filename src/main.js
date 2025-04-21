@@ -116,6 +116,16 @@ document.addEventListener('DOMContentLoaded', () => {
     })
 })
 
+async function prepareDrawingContext(threejsDrawing, scene, camera, renderer, controls, cssRenderer) {
+    Object.assign(threejsDrawing.data, {
+        scene,
+        camera,
+        renderer,
+        controls,
+        cssRenderer,
+    });
+    return threejsDrawing;
+}
 
 
 const CUBE_DEFS = [
@@ -150,10 +160,7 @@ async function contentLoadedCallback(threejsDrawing) {
     // TODO: Are these all necessary?
     // And if any of them are, only conditionally?
     // Also, possibly redundant with `uiState`.
-    threejsDrawing.data.camera = camera;
-    threejsDrawing.data.renderer = renderer;
-    threejsDrawing.data.scene = scene;
-    threejsDrawing.data.controls = controls;
+    await prepareDrawingContext(threejsDrawing, scene, camera, renderer, controls, cssRenderer);
 
     for (const {func, dataSrc, dataType} of threejsDrawing.drawFuncs) {
         if (dataSrc) {
