@@ -482,4 +482,10 @@ ANIMATIONS_DICT = {
             'data_sources': ['farm'],
             'custom_meta': dict(),
         },
+    'exr':
+        {
+            'name': 'EXR',
+            'data_sources': ['golden_gate_hills_1k', 'OTHER_abandoned_workshop_02_4k'],
+            'custom_meta': dict(),
+        },
 }
