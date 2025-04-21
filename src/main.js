@@ -6,7 +6,7 @@ import { drawImage } from './drawing/drawImage.js';
 
 import { OutlineEffect } from 'outline-effect';
 
-import { usePanoramicCubeBackground, useProceduralBackground } from './drawing/drawBackground.js';
+import { usePanoramicCubeBackground, useProceduralBackground, usePanoramicCubeBackgroundSixFaces } from './drawing/drawBackground.js';
 
 import uiPanelConfig from './config/uiPanelConfig.js';
 
