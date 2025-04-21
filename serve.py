@@ -140,7 +140,7 @@ def serve_texture(filename, ext):
     Example: /textures/Canestra_di_frutta_Caravaggio.jpg
     """
     path = os.path.join('src', 'textures', f'{filename}.{ext}')
-    if ext not in ['jpg', 'jpeg', 'png', 'mp4']:
+    if ext not in ['jpg', 'jpeg', 'png', 'mp4', 'exr']:
         abort(404)
     if ext == 'jpg' or ext == 'jpeg':
         mimetype = 'image/jpeg'
@@ -148,6 +148,14 @@ def serve_texture(filename, ext):
         mimetype = 'image/png'
     elif ext == 'mp4':
         mimetype = 'video/mp4'
+    elif ext == 'exr':
+        mimetype = 'image/vnd.radiance'
+        if filename.startswith('OTHER_'):
+            # D:\OTHER\Blender\HDRI
+            filename = filename[6:]
+            path = os.path.join('D:', 'OTHER', 'Blender', 'HDRI', f'{filename}.{ext}')
+        else:
+            path = os.path.join('src', 'textures', 'exr', f'{filename}.{ext}')
     else:
         abort(404)
     if os.path.exists(path):
