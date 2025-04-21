@@ -4,7 +4,25 @@ import {
 } from 'three';
 import { forceSimulation, forceManyBody, forceLink, forceCenter, forceX, forceY, forceZ } from 'd3-force-3d';
 import { hierarchy, tree } from 'd3-hierarchy';
+import { Tween, Easing } from 'tween';
 
+
+function tweenCamera(camera, controls, toPos, lookAt, duration = 1000) {
+    const from = {x: camera.position.x, y: camera.position.y, z: camera.position.z};
+
+    new Tween(from).to(toPos, duration).easing(Easing.Quadratic.InOut)
+        .onUpdate(() => {
+            camera.position.set(from.x, from.y, from.z);
+            controls?.update();
+        })
+        .onComplete(() => {
+            if (lookAt) {
+                controls?.target.set(lookAt.x, lookAt.y, lookAt.z);
+                controls?.update();
+            }
+        })
+        .start();
+}
 
 // ground plane = XY plane
 
@@ -511,7 +529,92 @@ function drawTreeWithExtras(scene, data, options = {}) {
 
     // Step 4: Render extra cross-links that weren’t in the tree
     connectTreeNodes(scene, laidOutNodes, extraLinks, laidOutTreeLinks, floorY);
+
+    return laidOutNodes;
 }
+
+const navState = {
+    current: null,             // currently selected node
+    path: [],                  // previously visited nodes
+    selectionIndex: 0          // which neighbor is selected
+};
+
+function buildAdjacencyMap(links) {
+    const map = new Map();
+    links.forEach(({ source, target }) => {
+        if (!map.has(source)) map.set(source, []);
+        map.get(source).push(target);
+    });
+    return map;
+}
+
+function handleUp(camera, controls, nodeMap, adjacencyMap) {
+    if (!navState.current) {
+        // First move → go to root (lowest ID)
+        const root = [...nodeMap.values()].reduce((a, b) => a.data.id < b.data.id ? a : b);
+        navState.current = root;
+        tweenCamera(camera, controls, { ...rootPosition(root) }, null);
+        return;
+    }
+
+    const nextIds = adjacencyMap.get(navState.current.data.id) || [];
+    if (nextIds.length === 0) return;
+
+    const nextId = nextIds[navState.selectionIndex % nextIds.length];
+    const next = nodeMap.get(nextId);
+    if (!next) return;
+
+    navState.path.push(navState.current);
+    navState.current = next;
+    navState.selectionIndex = 0;
+
+    tweenCamera(camera, controls, { ...rootPosition(next) }, null);
+}
+
+function handleLeft(adjacencyMap) {
+    const neighbors = adjacencyMap.get(navState.current?.data.id) || [];
+    if (neighbors.length > 1) {
+        navState.selectionIndex = (navState.selectionIndex - 1 + neighbors.length) % neighbors.length;
+    }
+}
+
+function handleRight(adjacencyMap) {
+    const neighbors = adjacencyMap.get(navState.current?.data.id) || [];
+    if (neighbors.length > 1) {
+        navState.selectionIndex = (navState.selectionIndex + 1) % neighbors.length;
+    }
+}
+
+function handleDown(camera, controls, nodeMap) {
+    if (navState.path.length === 0) return;
+    const prev = navState.path.pop();
+    navState.current = prev;
+    navState.selectionIndex = 0;
+
+    tweenCamera(camera, controls, { ...rootPosition(prev) }, null);
+}
+
+function rootPosition(node) {
+    return { x: node.x, y: 5, z: node.y }; // 90° clockwise layout
+}
+
+
+function setupKeyboardNavigation(camera, controls, nodeMap, adjacencyMap) {
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowUp') {
+            handleUp(camera, controls, nodeMap, adjacencyMap);
+        } else if (e.key === 'ArrowLeft') {
+            console.log('left', navState.selectionIndex, adjacencyMap);
+            handleLeft(adjacencyMap);
+        } else if (e.key === 'ArrowRight') {
+            console.log('right', navState.selectionIndex, adjacencyMap);
+            handleRight(adjacencyMap);
+        } else if (e.key === 'ArrowDown') {
+            handleDown(camera, controls, nodeMap);
+        }
+    });
+}
+
 
 /**
  * Draws the full graph network into the Three.js scene: floor, axes, nodes, links, and force layout.
@@ -554,7 +657,17 @@ function drawNetwork(scene, data, threejsDrawing) {
         dy: 60, // horizontal spacing
         floorY: 0.5,
     };
-    drawTreeWithExtras(scene, data, treeOptions);
+
+    const laidOutNodes = drawTreeWithExtras(scene, data, treeOptions);
+
+    // After rendering laidOutNodes
+    const nodeMap = new Map(laidOutNodes.map(n => [n.data.id, n]));
+    const adjacencyMap = buildAdjacencyMap(data.links);
+
+    const camera = threejsDrawing.data.camera;
+    const controls = threejsDrawing.data.controls;
+
+    setupKeyboardNavigation(camera, controls, nodeMap, adjacencyMap);
 }
 
 const networkDrawing = {
