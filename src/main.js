@@ -77,6 +77,7 @@ const THREEJS_DRAWINGS = {
     'drive': () => import('./drawing/drawDrive.js').then(m => m.driveDrawing),
     'farm': () => import('./drawing/drawFarm.js').then(m => m.farmDrawing),
     'exr': () => import('./drawing/drawEXR.js').then(m => m.exrDrawing),
+    'skibidi': () => import('./drawing/drawSkibidi.js').then(m => m.skibidiDrawing),
 };
 
 

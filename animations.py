@@ -488,4 +488,10 @@ ANIMATIONS_DICT = {
             'data_sources': ['golden_gate_hills_1k', 'OTHER_abandoned_workshop_02_4k'],
             'custom_meta': dict(),
         },
+    'skibidi':
+        {
+            'name': 'Skibidi',
+            'data_sources': ['skibidi'],
+            'custom_meta': dict(),
+        },
 }
