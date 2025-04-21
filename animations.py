@@ -494,4 +494,10 @@ ANIMATIONS_DICT = {
             'data_sources': ['skibidi'],
             'custom_meta': dict(),
         },
+    'physics':
+        {
+            'name': 'Physics',
+            'data_sources': ['physics'],
+            'custom_meta': dict(),
+        },
 }

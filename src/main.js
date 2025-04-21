@@ -78,6 +78,7 @@ const THREEJS_DRAWINGS = {
     'farm': () => import('./drawing/drawFarm.js').then(m => m.farmDrawing),
     'exr': () => import('./drawing/drawEXR.js').then(m => m.exrDrawing),
     'skibidi': () => import('./drawing/drawSkibidi.js').then(m => m.skibidiDrawing),
+    'physics': () => import('./drawing/drawPhysics.js').then(m => m.physicsDrawing),
 };
 
 
