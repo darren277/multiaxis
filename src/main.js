@@ -79,6 +79,7 @@ const THREEJS_DRAWINGS = {
     'exr': () => import('./drawing/drawEXR.js').then(m => m.exrDrawing),
     'skibidi': () => import('./drawing/drawSkibidi.js').then(m => m.skibidiDrawing),
     'physics': () => import('./drawing/drawPhysics.js').then(m => m.physicsDrawing),
+    'audioviz': () => import('./drawing/drawAudioViz.js').then(m => m.audioVizDrawing),
 };
 
 

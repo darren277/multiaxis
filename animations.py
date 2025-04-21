@@ -500,4 +500,10 @@ ANIMATIONS_DICT = {
             'data_sources': ['physics'],
             'custom_meta': dict(),
         },
+    'audioviz':
+        {
+            'name': 'AudioViz',
+            'data_sources': ['audioviz'],
+            'custom_meta': dict(),
+        },
 }
