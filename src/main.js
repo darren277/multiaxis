@@ -16,7 +16,7 @@ import { drawNavCubes, onClickNav } from './config/navigation.js';
 import { TextureLoader, FileLoader } from 'three'; // for texture loading
 // Or import { FileLoader } from 'three'; if you just need the loader
 
-import { BoxGeometry, Mesh, MeshNormalMaterial, GridHelper } from 'three';
+import { BoxGeometry, Mesh, MeshNormalMaterial, GridHelper, FloatType } from 'three';
 
 import {update as tweenUpdate} from 'tween'
 
@@ -183,6 +183,15 @@ async function contentLoadedCallback(threejsDrawing) {
                     gltfLoader.load(`./imagery/${data_src}.glb`, (gltf) => {
                         console.log(`Loaded GLTF model: ${data_src}`, gltf);
                         func(scene, gltf, threejsDrawing);
+                    });
+                });
+            } else if (dataType === 'exr') {
+                import('exrloader').then(m => {
+                    const EXRLoader = m.EXRLoader;
+                    const exrLoader = new EXRLoader();
+                    exrLoader.setDataType(FloatType).load(`./textures/${data_src}.exr`, (texture) => {
+                        console.log(`Loaded EXR texture: ${data_src}`, texture);
+                        func(scene, texture, threejsDrawing);
                     });
                 });
             } else {
