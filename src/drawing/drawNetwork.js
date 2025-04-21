@@ -230,26 +230,27 @@ function updateThreeJSPositions(nodeMeshes, linkMeshes, graph) {
 }
 
 /**
- * Applies a force‑directed tree layout where:
- *  - the root (first node) is fixed at x=0
- *  - all other nodes are pushed to x > 0 in proportion to their depth
- *  - everyone is constrained to the XZ plane (y = 0.5)
+ * Applies a custom “tree‐like” force layout:
+ *   • root is fixed at x=0, z=0
+ *   • every other node is pushed to x = depth * SPACING
+ *   • everyone is clamped to the XZ plane at y = FLOOR_Y
  *
  * @param {THREE.Mesh[]} nodeMeshes - Array of Three.js node meshes
  * @param {THREE.Mesh[]} linkMeshes - Array of Three.js link meshes
  * @param {Graph} graph - The graph object with mutable simulation data
  */
 function applyForce(nodeMeshes, linkMeshes, graph) {
-    const ROOT_ID = graph.nodes[0].id;
-    const SPACING = 10;    // horizontal gap per tree level
-    const Y_LEVEL  = 0.5;  // flat plane height
+    const ROOT_ID  = graph.nodes[0].id;   // assume first node is your root
+    const SPACING  = 15;                   // horizontal gap per generation
+    const FLOOR_Y  = 0.5;                  // vertical height of the plane
+    const FIXED_Z  = 50;                   // if you’ve shifted floor +50 in Z
 
-    // 1) Seed each node.x/y/z from your initial position
+    // 1) Seed the sim with your initial positions
     graph.nodes.forEach(n => {
         if (n.position) {
             n.x = n.position.x;
             n.y = n.position.y;
-            n.z = n.position.z;
+            n.z = n.position.z + FIXED_Z;
         }
     });
 
@@ -261,22 +262,27 @@ function applyForce(nodeMeshes, linkMeshes, graph) {
         if (n.id === ROOT_ID) {
             n.fx = 0;       // fix x = 0
             n.fy = Y_LEVEL; // fix y = 0.5
-            n.fz = 0;       // fix z = 0
+            n.fz = FIXED_Z;
         }
     });
 
     const simulation = forceSimulation(graph.nodes)
-        .force('charge', forceManyBody().strength(-50))
-        .force('link',   forceLink(graph.links).id(d => d.id).distance(5))
-        // push nodes horizontally by depth
-        .force('x', forceX(d => d.id === ROOT_ID ? 0 : d.depth * SPACING).strength(1))
-        // clamp everyone to y = 0.5
-        .force('y', forceY(Y_LEVEL).strength(1))
-        // clamp everyone to z = 0
-        .force('z', forceZ(0).strength(1))
+        .force('charge', forceManyBody().strength(-30))
+        .force('link',   forceLink(graph.links)
+                          .id(d => d.id)
+                          .distance(5))
+        // push nodes out along +X based on depth
+        .force('treeX', forceX(d => d.id === ROOT_ID
+                                   ? 0
+                                   : d.depth * SPACING)
+                          .strength(1))
+        // clamp everyone to Y = FLOOR_Y
+        .force('clampY', forceY(FLOOR_Y).strength(1))
+        // clamp everyone to Z = FIXED_Z
+        .force('clampZ', forceZ(FIXED_Z).strength(1))
         .on('tick', () => {
             // keep y pinned (just in case) and update Three.js meshes
-            graph.nodes.forEach(n => { n.y = Y_LEVEL; });
+            graph.nodes.forEach(n => { n.y = FLOOR_Y; });
 
             updateThreeJSPositions(nodeMeshes, linkMeshes, graph); // e.g., update spheres in scene
         });
