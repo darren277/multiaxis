@@ -73,6 +73,7 @@ def serve_threejs(animation):
 
         'objloader': f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/loaders/OBJLoader.js",
         'plyloader': f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/loaders/PLYLoader.js",
+        'exrloader': f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/loaders/EXRLoader.js",
 
         "d3-force-3d": "https://cdn.skypack.dev/d3-force-3d",
         "three-spritetext": "//unpkg.com/three-spritetext/dist/three-spritetext.mjs",
