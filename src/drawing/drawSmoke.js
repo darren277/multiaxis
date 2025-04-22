@@ -93,6 +93,8 @@ void main() {
 
     float b = smoothstep(0.1 + sin(iTime * 5.0) / 100.0, 0.0, length(m - p));
 
+    float fade = smoothstep(0.0, 1.0, p.y / 2.0); // fade at top
+
     vec2 off = vec2(0.0);
     vec2 noff = vec2(sin(iTime / 2.0), cos(iTime / 3.0));
     float freq = 15.0;
@@ -117,10 +119,30 @@ void main() {
         base = length(perlin(p * 3.0));
     } else if (mode == 2) {
         base = fbm(p);
+    } else if (mode == 3) {
+        base = fbm(p);
     }
 
+    //vec2 uv = gl_FragCoord.xy / iResolution.xy;
+    //float dist = distance(uv, vec2(0.5));
+    //float edgeFade = 1.0 - smoothstep(0.3, 0.5, dist); // play with radius!
+
+    //vec3 smokeColor = mix(vec3(0.3, 0.2, 0.1), vec3(0.0), fade);
+    // yellowish color...
+    //vec3 smokeColor = vec3(0.8, 0.7, 0.5); // light yellowish color
+    // bright greenish yellowish
+    vec3 smokeColor = vec3(0.8, 0.9, 0.5); // light greenish color
+
+    //float opacity = base * (1.0 - fade) * edgeFade;
+
     b = min(base * 0.997 + b * 0.1, 1.0);
-    gl_FragColor = vec4(vec3(b), 1.0);
+    //gl_FragColor = vec4(vec3(b), 1.0);
+    //gl_FragColor = vec4(vec3(b), (1.0 - fade));
+    gl_FragColor = vec4(smokeColor * b, (1.0 - fade));
+    //gl_FragColor = vec4(smokeColor * base, opacity);
+
+    p.y -= iTime * 0.1; // drift upwards slowly
+    p.x += perlin(p * 2.0).x * 0.2; // wiggle horizontally
 }
 `;
 
@@ -179,9 +201,41 @@ const smokeMaterial = new ShaderMaterial({
     fragmentShader: smokeFragmentShader,
     vertexShader: `
         varying vec2 vUv;
+        uniform float iTime;
+        uniform int mode;
+
+        vec3 applyVerticalTaper(vec3 pos, float strength) {
+            float taper = 1.0 - abs(pos.y / strength); // max at center, tapers to 0 at edges
+            pos.x *= taper;
+            return pos;
+        }
+
+        vec3 applyTwist(vec3 pos, float time) {
+            float twist = pos.y * 2.0;
+            float angle = twist + time;
+
+            float s = sin(angle);
+            float c = cos(angle);
+
+            float x = pos.x * c - pos.z * s;
+            float z = pos.x * s + pos.z * c;
+
+            pos.x = x;
+            pos.z = z;
+
+            return pos;
+        }
+
         void main() {
             vUv = uv;
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+            vec3 pos = position;
+
+            if (mode == 3) {
+                //pos = applyVerticalTaper(pos, 8.0); // adjust taper strength as needed
+                pos = applyTwist(pos, iTime);
+            }
+
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
         }
     `
 });
@@ -200,6 +254,17 @@ noiseTexture.needsUpdate = true;
 
 function drawSmoke(scene) {
     const geometry = new PlaneGeometry(10, 10);
+    const pos = geometry.attributes.position;
+
+    for (let i = 0; i < pos.count; i++) {
+        const y = pos.getY(i);
+        const taper = 1.0 - Math.abs(y / 5); // height = 10 → range from -5 to 5
+        const x = pos.getX(i);
+        pos.setX(i, x * taper);
+    }
+
+    pos.needsUpdate = true;
+
     const smokePlane = new Mesh(geometry, smokeMaterial);
     scene.add(smokePlane);
 
@@ -208,7 +273,9 @@ function drawSmoke(scene) {
     // Perlin distortion
     //uniforms.mode.value = 1;
     // FBM
-    uniforms.mode.value = 2;
+    //uniforms.mode.value = 2;
+    // Twisted FBM
+    uniforms.mode.value = 3;
 }
 
 const smokeDrawing = {
