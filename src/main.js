@@ -81,6 +81,7 @@ const THREEJS_DRAWINGS = {
     'physics': () => import('./drawing/drawPhysics.js').then(m => m.physicsDrawing),
     'audioviz': () => import('./drawing/drawAudioViz.js').then(m => m.audioVizDrawing),
     'network': () => import('./drawing/drawNetwork.js').then(m => m.networkDrawing),
+    'smoke': () => import('./drawing/drawSmoke.js').then(m => m.smokeDrawing),
 };
 
 

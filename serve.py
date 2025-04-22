@@ -84,6 +84,7 @@ def serve_threejs(animation):
         "convex-geometry": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/geometries/ConvexGeometry.js",
 
         "perlin-noise": "https://cdn.jsdelivr.net/npm/perlin-noise@0.0.1/+esm",
+        "noisejs": "https://cdn.jsdelivr.net/npm/noisejs@2.1.0/+esm",
 
         "outline-effect": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/effects/OutlineEffect.js",
     }
