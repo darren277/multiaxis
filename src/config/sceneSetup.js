@@ -49,6 +49,7 @@ export async function setupScene(
     startPosition = { x: 0, y: 2, z: 5 },
     lookAt = { x: 0, y: 0, z: 0 },
     clippingPlane = 1000,
+    background = 0x000000,
     controller = 'orbital',
     cssRendererEnabled = false,
     statsEnabled = false,
@@ -68,7 +69,7 @@ export async function setupScene(
 
     // 2) Scene
     const scene = new Scene();
-    scene.background = new Color(0x000000);
+    scene.background = new Color(background);
 
     // 3) Camera
     const camera = new PerspectiveCamera(75, width / height, 0.1, clippingPlane);
