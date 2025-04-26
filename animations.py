@@ -518,4 +518,10 @@ ANIMATIONS_DICT = {
             'data_sources': ['smoke'],
             'custom_meta': dict(),
         },
+    'buildings':
+        {
+            'name': 'Buildings',
+            'data_sources': ['buildings'],
+            'custom_meta': dict(),
+        },
 }
