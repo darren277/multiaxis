@@ -1,8 +1,8 @@
 /* Adapted from https://github.com/henryjeff/portfolio-website/blob/master/src/Application/World/MonitorScreen.ts */
 
 import {
-    Vector2, Vector3, Euler, MathUtils, Mesh, MeshBasicMaterial, MeshLambertMaterial, PlaneGeometry, DoubleSide, RGBFormat, DirectionalLight,
-    Texture, VideoTexture, NoBlending, NormalBlending, AdditiveBlending, Scene, TextureLoader, CubeTextureLoader, AudioLoader,
+    Vector2, Vector3, Euler, MathUtils, Mesh, MeshBasicMaterial, MeshLambertMaterial, PlaneGeometry, DoubleSide, SRGBColorSpace, DirectionalLight,
+    Texture, VideoTexture, NoBlending, NormalBlending, AdditiveBlending, Scene, TextureLoader, CubeTextureLoader, AudioLoader, Box3, Sphere,
 } from 'three';
 import { GLTFLoader } from 'gltfloader';
 import { CSS3DObject } from 'css3drenderer';
@@ -391,7 +391,7 @@ export default class MonitorScreen extends EventEmitter {
                 case 'texture':
                     return textureLoader.loadAsync(src.path)
                         .then(file => {
-                            file.encoding = THREE.sRGBEncoding;   // or RGBFormat
+                            file.colorSpace = SRGBColorSpace;
                             this.items.texture[src.name] = file;
                         });
 
@@ -798,6 +798,60 @@ export default class MonitorScreen extends EventEmitter {
     }
 }
 
+class BakedModel {
+    constructor(model, texture, scale) {
+        this.model = model;
+        this.texture = texture;
+
+        this.texture.flipY = false;
+        this.texture.colorSpace = SRGBColorSpace;
+
+        this.material = new MeshBasicMaterial({
+            map: this.texture,
+        });
+
+        this.model.scene.traverse((child) => {
+            if (child instanceof Mesh) {
+                if (scale) child.scale.set(scale, scale, scale);
+                child.material.map = this.texture;
+                child.material = this.material;
+            }
+        });
+
+        return this;
+    }
+
+    getModel() {
+        // Group
+        return this.model.scene;
+    }
+}
+
+class Computer {
+    constructor(scene, gltfModel, texture) {
+        this.scene = scene;
+        this.gltfModel = gltfModel;
+        this.texture = texture;
+        this.bakeModel();
+        this.setModel();
+    }
+
+    bakeModel() {
+        this.bakedModel = new BakedModel(
+            this.gltfModel.computerSetupModel,
+            this.texture.computerSetupTexture,
+            900
+        );
+    }
+
+    setModel() {
+        const root = this.bakedModel.getModel();
+        root.position.set(0, 0, 0);        // tweak as needed
+        root.scale.set(1, 1, 1);           // global scale instead of per-mesh 900?
+        //root.scale.setScalar(9);   // maybe 9 instead of 900
+        this.scene.add(root);
+    }
+}
 
 async function attachSceneComponentsToMonitor(monitor, threejsDrawing, cssScene) {
     Object.assign(monitor, {
@@ -822,6 +876,27 @@ async function drawMonitor(scene, threejsDrawing) {
     await attachSceneComponentsToMonitor(data.monitorScreen, threejsDrawing, cssScene);
 
     await data.monitorScreen.loadItems(sources);
+
+    console.log('Loaded GLTF models:', data.monitorScreen.items.gltfModel);
+
+    const computer = new Computer(scene, data.monitorScreen.items.gltfModel, data.monitorScreen.items.texture);
+
+    // after you add the computer to the scene
+    const root      = computer.bakedModel.getModel();      // the Group you added
+    const box       = new Box3().setFromObject(root);
+    const center    = new Vector3();
+    const sphere = new Sphere();
+    const radius    = box.getBoundingSphere(sphere).radius;
+
+    // put target in the logical centre of the computer setup
+    threejsDrawing.data.controls.target.copy(sphere.center);
+    threejsDrawing.data.controls.update();
+
+    threejsDrawing.data.controls.minDistance = sphere.radius * 0.5;
+    threejsDrawing.data.controls.maxDistance = sphere.radius * 5;
+
+    threejsDrawing.data.camera.near = 0.1;
+    threejsDrawing.data.camera.far  = 100;
 
     // Create the screen
     data.monitorScreen.mouse = new Mouse();
