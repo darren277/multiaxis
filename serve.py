@@ -226,19 +226,31 @@ def serve_helvetiker():
     else:
         abort(404)
 
-@app.route('/data/<path:filename>.json')
-@app.route('/threejs/<path:filename>.json')
-def serve_json(filename):
+@app.route('/data/<path:filename>.<ext>')
+@app.route('/threejs/<path:filename>.<ext>')
+def serve_json(filename, ext):
     """
     Serve any .json file from the current directory or subdirs,
     capturing anything that ends with .json.
     """
-    if not filename.startswith('data/'):
-        path = f'data/{filename}.json'
-    else:
-        path = f'{filename}.json'
-    if os.path.exists(path):
-        return send_file(path, mimetype='application/json')
+    print(f"Serving JSON: {filename}, ext: {ext}")
+    if ext == 'geojson':
+        mimetype = 'application/geo+json'
+        path = os.path.join(f'{filename}.geojson')
+        print(path)
+        if os.path.exists(path):
+            return send_file(path, mimetype=mimetype)
+        else:
+            abort(404)
+    elif ext == 'json':
+        if not filename.startswith('data/'):
+            path = f'data/{filename}.json'
+        else:
+            path = f'{filename}.json'
+        if os.path.exists(path):
+            return send_file(path, mimetype='application/json')
+        else:
+            abort(404)
     else:
         abort(404)
 
