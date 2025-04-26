@@ -214,7 +214,7 @@ async function contentLoadedCallback(threejsDrawing) {
                 console.error(`Unknown data type: ${dataType}`);
             }
         } else {
-            func(scene, threejsDrawing);
+            await func(scene, threejsDrawing);
         }
     }
 
