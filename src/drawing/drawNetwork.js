@@ -1,5 +1,5 @@
 import {
-    SphereGeometry, CylinderGeometry, Mesh, MeshStandardMaterial, Vector3, HemisphereLight,
+    SphereGeometry, CylinderGeometry, Mesh, MeshStandardMaterial, Vector3, HemisphereLight, TorusGeometry,
     Quaternion, TubeGeometry, QuadraticBezierCurve3, AxesHelper, PlaneGeometry, BufferGeometry, Line, LineBasicMaterial
 } from 'three';
 import { forceSimulation, forceManyBody, forceLink, forceCenter, forceX, forceY, forceZ } from 'd3-force-3d';
@@ -7,7 +7,9 @@ import { hierarchy, tree } from 'd3-hierarchy';
 import { Tween, Easing } from 'tween';
 
 
-function tweenCamera(camera, controls, toPos, lookAt, duration = 1000) {
+const FLOOR_Y = 0.5; // height of the ground plane
+
+function tweenCamera(camera, controls, toPos, lookAt, duration = 3000) {
     const from = {x: camera.position.x, y: camera.position.y, z: camera.position.z};
 
     new Tween(from).to(toPos, duration).easing(Easing.Quadratic.InOut)
@@ -571,17 +573,40 @@ function handleUp(camera, controls, nodeMap, adjacencyMap) {
     tweenCamera(camera, controls, { ...rootPosition(next) }, null);
 }
 
-function handleLeft(adjacencyMap) {
+function handleLeft(camera, controls, adjacencyMap, nodeMap, selector) {
+    const currentId = navState.current?.data.id;
     const neighbors = adjacencyMap.get(navState.current?.data.id) || [];
     if (neighbors.length > 1) {
         navState.selectionIndex = (navState.selectionIndex - 1 + neighbors.length) % neighbors.length;
+
+        const nextId = neighbors[navState.selectionIndex];
+        const nextNode = nodeMap.get(nextId);
+
+        handleSideways(nextId, nextNode, nextId, nextNode, selector);
     }
 }
 
-function handleRight(adjacencyMap) {
+function handleRight(camera, controls, adjacencyMap, nodeMap, selector) {
+    const currentId = navState.current?.data.id;
     const neighbors = adjacencyMap.get(navState.current?.data.id) || [];
     if (neighbors.length > 1) {
-        navState.selectionIndex = (navState.selectionIndex + 1) % neighbors.length;
+        navState.selectionIndex = (navState.selectionIndex + 1 + neighbors.length) % neighbors.length;
+
+        const nextId = neighbors[navState.selectionIndex];
+        const nextNode = nodeMap.get(nextId);
+
+        handleSideways(camera, controls, nextId, nextNode, selector);
+    }
+}
+
+function handleSideways(camera, controls, nextId, nextNode, selector) {
+    const previewHeight = 5;
+
+    if (nextNode) {
+        selector.position.set(nextNode.x, FLOOR_Y + 0.05, nextNode.y);
+        const xyz1 = {x: nextNode.x, y: previewHeight, z: nextNode.y};
+        const xyz2 = {x: navState.current.x, y: navState.current.y, z: navState.current.y};
+        tweenCamera(camera, controls, xyz1, xyz2, 500); // shorter duration for preview
     }
 }
 
@@ -599,16 +624,16 @@ function rootPosition(node) {
 }
 
 
-function setupKeyboardNavigation(camera, controls, nodeMap, adjacencyMap) {
+function setupKeyboardNavigation(camera, controls, nodeMap, adjacencyMap, selector) {
     document.addEventListener('keydown', (e) => {
         if (e.key === 'ArrowUp') {
             handleUp(camera, controls, nodeMap, adjacencyMap);
         } else if (e.key === 'ArrowLeft') {
             console.log('left', navState.selectionIndex, adjacencyMap);
-            handleLeft(adjacencyMap);
+            handleLeft(camera, controls, adjacencyMap, nodeMap, selector);
         } else if (e.key === 'ArrowRight') {
             console.log('right', navState.selectionIndex, adjacencyMap);
-            handleRight(adjacencyMap);
+            handleRight(camera, controls, adjacencyMap, nodeMap, selector);
         } else if (e.key === 'ArrowDown') {
             handleDown(camera, controls, nodeMap);
         }
@@ -667,7 +692,11 @@ function drawNetwork(scene, data, threejsDrawing) {
     const camera = threejsDrawing.data.camera;
     const controls = threejsDrawing.data.controls;
 
-    setupKeyboardNavigation(camera, controls, nodeMap, adjacencyMap);
+    const selector = new Mesh(new TorusGeometry(0.7, 0.1, 8, 16), new MeshStandardMaterial({ color: 'orange' }));
+    selector.rotation.x = Math.PI / 2;
+    scene.add(selector);
+
+    setupKeyboardNavigation(camera, controls, nodeMap, adjacencyMap, selector);
 }
 
 const networkDrawing = {
@@ -708,6 +737,7 @@ export { networkDrawing };
 
 
 /*
+TODO:
 Swapping in other D3 layouts
     Cluster (dendrogram): import { cluster } from 'd3-hierarchy'; const layout = cluster().nodeSize([dx, dy]);
     Pack (circle‑packing): import { pack } from 'd3-hierarchy'; const layout = pack().size([width, height]).padding(5);
