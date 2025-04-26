@@ -1,6 +1,6 @@
 /* Adapted from https://github.com/mrdoob/three.js/blob/master/examples/css3d_periodictable.html */
 
-import { Vector3, Object3D } from 'three';
+import { Vector3, Object3D, BoxGeometry, Mesh, MeshStandardMaterial } from 'three';
 import { Tween, Easing, removeAll } from 'tween';
 import { CSS3DRenderer, CSS3DObject } from 'css3drenderer';
 
@@ -88,6 +88,54 @@ function drawGrid(scene, objects, targets) {
     }
 }
 
+function drawCube(scene, objects, targets) {
+    const boxSize = 2000;
+    // Draws an invisible cube and then aligns the objects to it, all facing the center...
+    const cubeGeometry = new BoxGeometry(boxSize, boxSize, boxSize);
+    const cubeMaterial = new MeshStandardMaterial({ color: 0x00ffff, transparent: true, opacity: 0.5 });
+    const cubeMesh = new Mesh(cubeGeometry, cubeMaterial);
+    cubeMesh.position.set(0, 0, 0);
+
+    scene.add(cubeMesh);
+
+    const totalObjects = objects.length;
+
+    // divided by four faces...
+    const objectsPerFace = totalObjects / 4;
+    const rowsPerFace = Math.sqrt(objectsPerFace);
+    const colsPerFace = Math.sqrt(objectsPerFace);
+    const faceWidth = boxSize / colsPerFace;
+    const faceHeight = boxSize / rowsPerFace;
+    const faceOffset = 200 - (faceWidth / 2);
+    const faceOffsetY = 200 - (faceHeight / 2);
+    const faceOffsetZ = 200 - (faceWidth / 2);
+
+    for (let i = 0; i < objects.length; i++) {
+        const object = new Object3D();
+
+        const face = Math.floor(i / objectsPerFace);
+        const index = i % objectsPerFace;
+        const row = Math.floor(index / colsPerFace);
+        const col = index % colsPerFace;
+
+        if (face === 0) {
+            object.position.set(col * faceWidth - faceOffset, row * faceHeight - faceOffsetY, -faceOffsetZ);
+        } else if (face === 1) {
+            object.position.set(col * faceWidth - faceOffset, row * faceHeight - faceOffsetY, faceOffsetZ);
+        } else if (face === 2) {
+            object.position.set(faceOffsetZ, col * faceWidth - faceOffset, row * faceHeight - faceOffsetY);
+        } else if (face === 3) {
+            object.position.set(-faceOffsetZ, col * faceWidth - faceOffset, row * faceHeight - faceOffsetY);
+        }
+
+        object.lookAt(0, 0, 0);
+        object.rotateY(Math.PI / 2);
+        object.rotateX(Math.PI / 2);
+
+        targets.cube.push(object);
+    }
+}
+
 function drawButtons(scene, objects, targets) {
     const buttonTable = document.getElementById('table');
     buttonTable.addEventListener('click', function () {
@@ -107,6 +155,11 @@ function drawButtons(scene, objects, targets) {
     const buttonGrid = document.getElementById('grid');
     buttonGrid.addEventListener('click', function () {
         transform(targets.grid, objects, 2000);
+    });
+
+    const buttonCube = document.getElementById('cube');
+    buttonCube.addEventListener('click', function () {
+        transform(targets.cube, objects, 2000);
     });
 
     transform(targets.table, objects, 2000);
@@ -131,11 +184,12 @@ function transform(targets, objects, duration) {
 
 function drawPeriodic(scene, data, threejsDrawing) {
     const objects = [];
-    const targets = { table: [], sphere: [], helix: [], grid: [] };
+    const targets = { table: [], sphere: [], helix: [], grid: [], cube: [] };
     drawTable(scene, objects, targets, data);
     drawSphere(scene, objects, targets);
     drawHelix(scene, objects, targets);
     drawGrid(scene, objects, targets);
+    drawCube(scene, objects, targets);
     drawButtons(scene, objects, targets);
 }
 
