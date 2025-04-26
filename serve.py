@@ -87,6 +87,8 @@ def serve_threejs(animation):
         "noisejs": "https://cdn.jsdelivr.net/npm/noisejs@2.1.0/+esm",
 
         "outline-effect": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/effects/OutlineEffect.js",
+
+        "d3-hierarchy": "https://cdn.jsdelivr.net/npm/d3-hierarchy@3/+esm",
     }
 
     # Force3d importmap:
