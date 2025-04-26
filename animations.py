@@ -532,4 +532,10 @@ ANIMATIONS_DICT = {
             'data_sources': ['buildings'],
             'custom_meta': dict(),
         },
+    'town':
+        {
+            'name': 'Town',
+            'data_sources': ['town'],
+            'custom_meta': dict(),
+        },
 }
