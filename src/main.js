@@ -1,76 +1,23 @@
 import { setupScene } from './config/sceneSetup.js';
 import { attachUIListeners } from './config/attachUIListeners.js';
 import { ClickAndKeyControls } from './config/clickControlHelper.js';
-
 import { drawImage } from './drawing/drawImage.js';
-
 import { loadDataSource, pixelToWorldUnits, prepareDrawingContext, drawHelpers } from './config/utils.js';
-
 import { loadThenDraw } from './config/loadThenDraw.js';
-
 import { OutlineEffect } from 'outline-effect';
-
 import { usePanoramicCubeBackground, useProceduralBackground, usePanoramicCubeBackgroundSixFaces } from './drawing/drawBackground.js';
-
 import uiPanelConfig from './config/uiPanelConfig.js';
-
-import { drawNavCubes, onClickNav } from './config/navigation.js';
-
-//import * as THREE from 'three'; // for any references you still need
-import { TextureLoader, FileLoader } from 'three'; // for texture loading
-// Or import { FileLoader } from 'three'; if you just need the loader
-
+import { drawNavCubes, onClickNav, CUBE_DEFS } from './config/navigation.js';
+import { TextureLoader, FileLoader } from 'three';
 import { BoxGeometry, Mesh, MeshNormalMaterial, GridHelper, FloatType } from 'three';
-
 import {update as tweenUpdate} from 'tween'
 
 import { REVISION } from 'three';
 console.log('Three.js version (main):', REVISION);
+import { THREEJS_DRAWINGS } from './drawings.js';
 
 const DEBUG = false;
-
-
 const textureLoader = new TextureLoader();
-
-const THREEJS_DRAWINGS = {
-    'room': () => import('./drawing/drawRoom.js').then(m => m.roomDrawing),
-    'adventure': () => import('./drawing/adventure/drawAdventure.js').then(m => m.adventureDrawing),
-    'music': () => import('./drawing/drawSheetMusic.js').then(m => m.musicDrawing),
-    'multiaxis': () => import('./drawing/drawChart.js').then(m => m.multiAxisDrawing),
-    'cayley': () => import('./drawing/drawGraph.js').then(m => m.cayleyDrawing),
-    'force': () => import('./drawing/drawGraph.js').then(m => m.forceDrawing),
-    'geo': () => import('./drawing/drawGeo.js').then(m => m.geoDrawing),
-    'geo3d': () => import('./drawing/drawGeo.js').then(m => m.geoDrawing3d),
-    'quantum': () => import('./drawing/drawQuantum.js').then(m => m.quantumDrawing),
-    'svg': () => import('./drawing/drawSvg.js').then(m => m.svgDrawing),
-    'library': () => import('./drawing/library/drawLibrary.js').then(m => m.libraryDrawing),
-    'plot': () => import('./drawing/drawPlotFunction.js').then(m => m.plotFunctionDrawing),
-    'rubiks': () => import('./drawing/drawRubiksCube.js').then(m => m.rubiksCubeDrawing),
-    'chess': () => import('./drawing/drawChess.js').then(m => m.chessDrawing),
-    'clustering': () => import('./drawing/drawClustering.js').then(m => m.clusteringDrawing),
-    'orbits': () => import('./drawing/drawOrbits.js').then(m => m.orbitsDrawing),
-    'force3d': () => import('./drawing/drawForce.js').then(m => m.force3dDrawing),
-    'cards': () => import('./drawing/drawCards.js').then(m => m.cardsDrawing),
-    'gltf': () => import('./drawing/drawGLTF.js').then(m => m.gltfDrawing),
-    'synapse': () => import('./drawing/drawNeuro.js').then(m => m.synapseDrawing),
-    'brain': () => import('./drawing/drawBrain.js').then(m => m.brainDrawing),
-    'chemistry': () => import('./drawing/drawChemistry.js').then(m => m.chemistryDrawing),
-    'game': () => import('./drawing/drawGame.js').then(m => m.gameDrawing),
-    'ammo': () => import('./drawing/drawAmmo.js').then(m => m.ammoDrawing),
-    'periodic': () => import('./drawing/drawPeriodic.js').then(m => m.periodicDrawing),
-    'monitor': () => import('./drawing/drawMonitor.js').then(m => m.monitorDrawing),
-    'tv': () => import('./drawing/drawTV.js').then(m => m.tvDrawing),
-    'drive': () => import('./drawing/drawDrive.js').then(m => m.driveDrawing),
-    'farm': () => import('./drawing/drawFarm.js').then(m => m.farmDrawing),
-    'exr': () => import('./drawing/drawEXR.js').then(m => m.exrDrawing),
-    'skibidi': () => import('./drawing/drawSkibidi.js').then(m => m.skibidiDrawing),
-    'physics': () => import('./drawing/drawPhysics.js').then(m => m.physicsDrawing),
-    'audioviz': () => import('./drawing/drawAudioViz.js').then(m => m.audioVizDrawing),
-    'network': () => import('./drawing/drawNetwork.js').then(m => m.networkDrawing),
-    'smoke': () => import('./drawing/drawSmoke.js').then(m => m.smokeDrawing),
-    'buildings': () => import('./drawing/drawGeo.js').then(m => m.buildingsDrawing),
-};
-
 
 document.addEventListener('DOMContentLoaded', () => {
     const drawingName = document.querySelector('meta[name="threejs_drawing_name"]').content;
@@ -80,15 +27,6 @@ document.addEventListener('DOMContentLoaded', () => {
     })
 })
 
-
-const CUBE_DEFS = [
-    { targetScene: 'library', position: [1, 0.25, -2], color: 0x00ff00 },
-    { targetScene: 'farm', position: [2, 0.25, -2], color: 0x0000ff },
-    { targetScene: 'room', position: [3, 0.25, -2], color: 0xff0000 },
-    { targetScene: 'kitchen', position: [4, 0.25, -2], color: 0xffff00 },
-    { targetScene: 'bathroom', position: [5, 0.25, -2], color: 0xff00ff },
-    { targetScene: 'livingroom', position: [6, 0.25, -2], color: 0x00ffff }
-]
 
 
 async function contentLoadedCallback(threejsDrawing) {

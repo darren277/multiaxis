@@ -45,5 +45,14 @@ function onClickNav(event, scene, renderer, camera) {
     }
 }
 
+const CUBE_DEFS = [
+    { targetScene: 'library', position: [1, 0.25, -2], color: 0x00ff00 },
+    { targetScene: 'farm', position: [2, 0.25, -2], color: 0x0000ff },
+    { targetScene: 'room', position: [3, 0.25, -2], color: 0xff0000 },
+    { targetScene: 'kitchen', position: [4, 0.25, -2], color: 0xffff00 },
+    { targetScene: 'bathroom', position: [5, 0.25, -2], color: 0xff00ff },
+    { targetScene: 'livingroom', position: [6, 0.25, -2], color: 0x00ffff }
+]
 
-export { drawNavCubes, onClickNav };
+
+export { drawNavCubes, onClickNav, CUBE_DEFS };

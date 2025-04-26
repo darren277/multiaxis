@@ -11,6 +11,9 @@ s3-config:
 	aws s3 cp src/config/uiPanelConfig.js s3://$(BUCKET_NAME)/scripts/threejs/config/uiPanelConfig.js
 	aws s3 cp src/config/attachUIListeners.js s3://$(BUCKET_NAME)/scripts/threejs/config/attachUIListeners.js
 	aws s3 cp src/config/dynamicImports.js s3://$(BUCKET_NAME)/scripts/threejs/config/dynamicImports.js
+	aws s3 co src/config/loadThenDraw.js s3://$(BUCKET_NAME)/scripts/threejs/config/loadThenDraw.js
+	aws s3 cp src/config/clickControlHelper.js s3://$(BUCKET_NAME)/scripts/threejs/config/clickControlHelper.js
+	aws s3 cp src/config/navigation.js s3://$(BUCKET_NAME)/scripts/threejs/config/navigation.js
 
 s3-drawing:
 	aws s3 cp src/drawing/chartConfig.js s3://$(BUCKET_NAME)/scripts/threejs/drawing/chartConfig.js
