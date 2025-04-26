@@ -113,11 +113,10 @@ function updateForceGraph(graphData, nodeSpheres, linkLines) {
 const raycaster = new Raycaster();
 const mouse = new Vector2();
 
-function onMouseMove(camera, data, event) {
+function onMouseMove(camera, data, event, rect) {
     if (!data.dragging) return;
 
     // convert screen coords to normalized device coords
-    const rect = data.rect;
     mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
     mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
@@ -137,9 +136,7 @@ function onMouseMove(camera, data, event) {
     }
 }
 
-function onMouseDown(camera, data, event) {
-    const rect = data.rect;
-
+function onMouseDown(camera, data, event, rect) {
     mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
     mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
@@ -237,17 +234,18 @@ const forceDrawing = {
     ],
     'eventListeners': {
         'mousedown': (e, other) => {
-            const {camera, data, controls, uiState} = other;
-            onMouseDown(camera, data, e);
+            const {camera, data, controls, renderer} = other;
+            const rect = renderer.domElement.getBoundingClientRect();
+            onMouseDown(camera, data, e, rect);
         },
         'mouseup': (e, other) => {
-            const {camera, data, controls, uiState} = other;
+            const {camera, data, controls} = other;
             onMouseUp(data);
         },
         'mousemove': (e, other) => {
-            const {camera, data, controls, uiState} = other;
-            data.rect = uiState.rect;
-            onMouseMove(camera, data, e);
+            const {camera, data, controls, renderer} = other;
+            const rect = renderer.domElement.getBoundingClientRect();
+            onMouseMove(camera, data, e, rect);
         }
     },
     'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {

@@ -132,7 +132,6 @@ const multiAxisDrawing = {
     'drawFuncs': [
         {'func': drawChart, 'dataSrc': 'data', 'dataType': 'json'}
     ],
-    'uiState': null,
     'eventListeners': null,
     'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
     },

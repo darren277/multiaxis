@@ -49,7 +49,7 @@ function goToStep(camera, stepId, adventureSteps, controls) {
     // If the step has an autoNext property, schedule it
     if (stepData.autoNext) {
         autoNextTimeoutId = setTimeout(() => {
-           goToStep(camera, stepData.autoNext.step, adventureSteps, controls, uiState);
+           goToStep(camera, stepData.autoNext.step, adventureSteps, controls);
         }, stepData.autoNext.delay);
     }
 
