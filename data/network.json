@@ -2,17 +2,12 @@
   "nodes":
     [
       {"id": 1, "name": "ROOT", "color": "black"},
-      {"id": 2, "name": "Testing"},
-      {"id": 3, "name": "3rd Node"},
-      {"id": 4, "name": "4th Node"},
-      {"id": 5, "name": "5th Node"},
-      {"id": 6, "name": "6th Node"},
-      {"id": 7, "name": "7th Node"},
-      {"id": 8, "name": "8th Node"},
-      {"id": 9, "name": "9th Node"},
-      {"id": 10, "name": "10th Node"},
-      {"id": 11, "name": "11th Node (Layer 2)"},
-      {"id": 12, "name": "12th Node (Layer 2)"}
+      {"id": 2, "name": "Testing", "color": "yellow"},
+      {"id": 3, "name": "3rd Node", "color": "green"},
+      {"id": 4, "name": "4th Node", "color":  "red"},
+      {"id": 5, "name": "5th Node", "color": "purple"},
+      {"id": 6, "name": "6th Node (Layer 2)"},
+      {"id": 7, "name": "7th Node (Layer 2)"}
     ],
   "links":
     [
@@ -20,12 +15,8 @@
       {"source": 1, "target": 3, "label": "Link2", "color": "orange", "direction": "forward", "thickness": 0.1},
       {"source": 1, "target": 4},
       {"source": 1, "target": 5},
-      {"source": 1, "target": 6},
-      {"source": 1, "target": 7},
-      {"source": 1, "target": 8},
-      {"source": 1, "target": 9},
-      {"source": 1, "target": 10},
-      {"source": 2, "target": 11},
-      {"source": 2, "target": 12}
+      {"source": 2, "target": 6},
+      {"source": 2, "target": 7},
+      {"source": 5, "target": 6}
     ]
 }
