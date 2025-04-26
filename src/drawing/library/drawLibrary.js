@@ -318,7 +318,6 @@ const libraryDrawing = {
     'drawFuncs': [
         {'func': drawLibrary, 'dataSrc': null}
     ],
-    'uiState': null,
     'eventListeners': {
         //'click': (event) => {},
         //'mousemove': (event) => {},
@@ -333,7 +332,7 @@ const libraryDrawing = {
             onKeyUpWalking(event);
         },
     },
-    'animationCallback': (renderer, timestamp, threejsDrawing, uiState, camera) => {
+    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
         const scene = threejsDrawing.data.scene;
         const controls = threejsDrawing.data.controls;
         if (!controls) {

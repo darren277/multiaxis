@@ -332,10 +332,9 @@ const physicsDrawing = {
     'drawFuncs': [
         {'func': drawPhysics, 'dataSrc': null}
     ],
-    'uiState': null,
     'eventListeners': {
     },
-    'animationCallback': (renderer, timestamp, threejsDrawing, uiState, camera) => {
+    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
         const deltaTime = clock.getDelta();
         const physicsWorld = threejsDrawing.data.physicsWorld;
         const dispatcher = threejsDrawing.data.dispatcher;

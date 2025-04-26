@@ -1,86 +1,46 @@
 import { Scene, Color, PerspectiveCamera, WebGLRenderer } from 'three';
+import {
+    importOrbitControls, importPointerLockControls, importTrackballControls, importCSS3DRenderer, importCSS2DRenderer,
+    importVRButton, importStats
+} from './dynamicImports.js';
 
-function importOrbitControls() {
-    return import('orbitcontrols').then(module => {
-        return module.OrbitControls;
-    });
+const defaultSceneConfig = {
+    startPosition: { x: 0, y: 2, z: 5 },
+    lookAt: { x: 0, y: 0, z: 0 },
+    clippingPlane: 1000,
+    background: 0x000000,
+    controller: 'orbital',
+    cssRendererEnabled: false,
+    statsEnabled: false,
+    vrEnabled: false
 }
-
-function importPointerLockControls() {
-    return import('pointerlockcontrols').then(module => {
-        return module.PointerLockControls;
-    });
-}
-
-function importTrackballControls() {
-    return import('trackballcontrols').then(module => {
-        return module.TrackballControls;
-    });
-}
-
-function importCSS3DRenderer() {
-    return import('css3drenderer').then(module => {
-        return module.CSS3DRenderer;
-    });
-}
-
-function importCSS2DRenderer() {
-    return import('css2drenderer').then(module => {
-        return module.CSS2DRenderer;
-    });
-}
-
-function importVRButton() {
-    return import('vrbutton').then(module => {
-        return module.VRButton;
-    });
-}
-
-function importStats() {
-    return import('stats').then(module => {
-        return module.Stats;
-    });
-}
-
 
 export async function setupScene(
     containerId = 'c',
     overlayElements = [],
-    startPosition = { x: 0, y: 2, z: 5 },
-    lookAt = { x: 0, y: 0, z: 0 },
-    clippingPlane = 1000,
-    background = 0x000000,
-    controller = 'orbital',
-    cssRendererEnabled = false,
-    statsEnabled = false,
-    vrEnabled = false
+    sceneConfig = defaultSceneConfig
     ) {
     let controls;
     let stats;
     let cssRenderer;
 
+    // fill in any missing sceneConfig values with defaults
+    const {startPosition, lookAt, clippingPlane, background, controller, cssRendererEnabled, statsEnabled, vrEnabled} = {...defaultSceneConfig, ...sceneConfig};
+
     const css3DRendererEnabled = cssRendererEnabled && cssRendererEnabled === '3D';
     const css2DRendererEnabled = cssRendererEnabled && cssRendererEnabled === '2D';
 
-    // 1) Setup container
     const container = document.getElementById(containerId);
     const width = container.clientWidth;
     const height = container.clientHeight;
 
-    // 2) Scene
     const scene = new Scene();
     scene.background = new Color(background);
 
-    // 3) Camera
     const camera = new PerspectiveCamera(75, width / height, 0.1, clippingPlane);
-    //camera.position.set(5, 5, 5); // or wherever
     camera.position.set(startPosition.x, startPosition.y, startPosition.z);
 
-    // 4) Renderer
-    const renderer = new WebGLRenderer({
-        canvas: container.querySelector('canvas'),
-        antialias: true
-    });
+    const renderer = new WebGLRenderer({canvas: container.querySelector('canvas'), antialias: true});
 
     if (vrEnabled) {
         importVRButton().then(VRButton => {
@@ -152,7 +112,6 @@ export async function setupScene(
 
     camera.lookAt(lookAt.x, lookAt.y, lookAt.z);
 
-    // 6) Resize handling
     function onWindowResize() {
         camera.aspect = container.clientWidth / container.clientHeight;
         camera.updateProjectionMatrix();
@@ -161,7 +120,7 @@ export async function setupScene(
 
     window.addEventListener('resize', onWindowResize, false);
 
-    // 5) Controls
+    // Controls
     if (controller === 'none') {
         // Controls are explicitly set to none (ex: Adventure)
         controls = null;

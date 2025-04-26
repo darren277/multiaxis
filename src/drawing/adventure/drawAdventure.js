@@ -146,7 +146,6 @@ function drawAdventure(scene, data, threejsDrawing) {
     threejsDrawing.data.adventureSteps = adventureSteps;
     threejsDrawing.data.allPhotoEntries = allPhotoEntries;
 
-    threejsDrawing.uiState.currentStepId = `view_${data.sceneItems[0].id}`;
     threejsDrawing.data.currentStepId = `view_${data.sceneItems[0].id}`;
 
     // Draw ambient light...
@@ -166,31 +165,27 @@ const adventureDrawing = {
         // We will define the data sources right here instead.
         {'func': drawAdventure, 'dataSrc': 'adventure1', 'dataType': 'json'}
     ],
-    'uiState': {
-        'currentStepId': null
-    },
     'eventListeners': {
         'keydown': (e, other) => {
             // Handle keydown events for the adventure
-            //{camera, event, adventureSteps, controls, uiState}
-            console.log('other', other);
-            const {camera, data, controls, uiState} = other;
-            console.log('uiState ---', uiState);
+            //{camera, event, adventureSteps, controls}
+            const {camera, data, controls} = other;
             const {adventureSteps, currentStepId} = data;
             // `currentStepId`: Kinda messy like this but it works for now.
             // TODO: `uiState` and `data` should probably be different entities as one is mutable and the other is not.
             // Not super important, though.
+            // NOTE ON THE ABOVE: I've started using `data` as both so for the sake of decluttering, we are now getting rid of `uiState` altogether.
 
-            // COMMENT OUT FOLLOWING TWO LINES FOR DEBUG VIA CLICK CONTROL HELPER...
-            uiState.currentStepId = currentStepId;
-            onAdventureKeyDown(camera, e, adventureSteps, controls, uiState);
+            // COMMENT OUT FOLLOWING LINE FOR DEBUG VIA CLICK CONTROL HELPER...
+            const nextStepId = onAdventureKeyDown(camera, e, adventureSteps, controls, currentStepId);
+            data.currentStepId = nextStepId;
         },
         'click': (e, other) => {
             const {renderer, camera, scene} = other;
             onClick(scene, renderer, camera, e);
         },
     },
-    'animationCallback': (renderer, timestamp, threejsDrawing, uiState, camera) => {
+    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
         // Update label positions
         if (!threejsDrawing.data.allPhotoEntries) return;
         threejsDrawing.data.allPhotoEntries.forEach(({ mesh, labelEl }) => {
@@ -200,6 +195,7 @@ const adventureDrawing = {
     'data': {
         'adventureSteps': null,
         'allPhotoEntries': null,
+        'currentStepId': null,
     },
     'sceneConfig': {
         //'controller': 'none'

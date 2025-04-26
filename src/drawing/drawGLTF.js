@@ -57,9 +57,8 @@ const gltfDrawing = {
     'drawFuncs': [
         {'func': drawGLTF, 'dataSrc': 'humanoid', 'dataType': 'gltf'}
     ],
-    'uiState': null,
     'eventListeners': null,
-    'animationCallback': (renderer, timestamp, threejsDrawing, uiState, camera) => {
+    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
         const gltf = threejsDrawing.data.gltf;
         const scene = threejsDrawing.data.scene;
         if (!gltf) {

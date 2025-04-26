@@ -222,7 +222,6 @@ function drawDrive(scene, threejsDrawing) {
 const driveDrawing = {
     sceneElements: [],
     drawFuncs: [ { func: drawDrive, 'dataSrc': null } ],
-    uiState: null,
     eventListeners: {
 //        click: (e, data) => {
 //            onClick(e, data.scene, data.camera, data.renderer, data.data);
@@ -255,7 +254,7 @@ const driveDrawing = {
             console.log(`key ${e.type} ${e.key} → engine=${engineForce} steer=${steering}`);
         }
     },
-    animationCallback: (renderer, timestamp, threejsDrawing, uiState, camera) => {
+    animationCallback: (renderer, timestamp, threejsDrawing, camera) => {
         const data = threejsDrawing.data;
         if (data) {
             const physicsWorld = data.physicsWorld;

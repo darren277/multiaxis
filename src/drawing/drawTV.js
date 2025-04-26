@@ -339,7 +339,6 @@ function onClick(event, scene, camera, renderer, data) {
 const tvDrawing = {
     sceneElements: [],
     drawFuncs: [ { func: drawTV, 'dataSrc': 'tv_sony_trinitron', 'dataType': 'gltf' } ],
-    uiState: null,
 //    eventListeners: {
 //        keydown: (e, data) => onKey(e, data),
 //        keyup:   (e, data) => onKey(e, data)
@@ -349,7 +348,7 @@ const tvDrawing = {
             onClick(e, data.scene, data.camera, data.renderer, data.data);
         }
     },
-    animationCallback: (renderer, timestamp, threejsDrawing, uiState, camera) => {
+    animationCallback: (renderer, timestamp, threejsDrawing, camera) => {
         const data = threejsDrawing.data;
         if (data) {
             animationCallback(data);

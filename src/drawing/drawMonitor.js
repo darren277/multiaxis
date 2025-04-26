@@ -922,7 +922,7 @@ async function drawMonitor(scene, threejsDrawing) {
     light.shadow.mapSize.width = 1024;
 }
 
-function animationCallback(renderer, timestamp, threejsDrawing, uiState, camera) {
+function animationCallback(renderer, timestamp, threejsDrawing, camera) {
     const cssScene = threejsDrawing.data.cssScene;
     const cssRenderer = threejsDrawing.data.cssRenderer;
 
@@ -940,7 +940,6 @@ function animationCallback(renderer, timestamp, threejsDrawing, uiState, camera)
 const monitorDrawing = {
     sceneElements: [],
     drawFuncs: [ { func: drawMonitor, dataSrc: null } ],
-    uiState: null,
     eventListeners: null,
     animationCallback,
     data: {

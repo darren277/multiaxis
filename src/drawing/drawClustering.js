@@ -38,9 +38,8 @@ const clusteringDrawing = {
     'drawFuncs': [
         {'func': drawClustering, 'dataSrc': 'clustering', 'dataType': 'json'}
     ],
-    'uiState': null,
     'eventListeners': null,
-    'animationCallback': (renderer, timestamp, threejsDrawing, uiState, camera) => {
+    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
     },
     'data': {
     }

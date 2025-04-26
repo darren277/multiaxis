@@ -178,9 +178,8 @@ const chessDrawing = {
     'drawFuncs': [
         {'func': drawChess, 'dataSrc': null}
     ],
-    'uiState': null,
     'eventListeners': null,
-    'animationCallback': (renderer, timestamp, threejsDrawing, uiState, camera) => {
+    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
     },
     'data': {
     }

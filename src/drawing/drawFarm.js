@@ -213,7 +213,6 @@ const farmDrawing = {
     'drawFuncs': [
         {'func': drawFarm, 'dataSrc': null, 'dataType': 'gltf'}
     ],
-    'uiState': null,
     'eventListeners': {
         'click': (event, data) => {
             const renderer = data.renderer;
@@ -222,7 +221,7 @@ const farmDrawing = {
             onDoorClick(event, renderer, camera);
         },
     },
-    'animationCallback': (renderer, timestamp, threejsDrawing, uiState, camera) => {
+    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
         const delta = clock.getDelta();
         animateDoors(delta);
     },

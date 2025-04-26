@@ -159,9 +159,8 @@ const quantumDrawing = {
     'drawFuncs': [
         {'func': drawQuantum, 'dataSrc': null}
     ],
-    'uiState': null,
     'eventListeners': null,
-    'animationCallback': (renderer, timestamp, threejsDrawing, uiState, camera) => {
+    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
         if (!threejsDrawing.data.group) {
             return;
         }

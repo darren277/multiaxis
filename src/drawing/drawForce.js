@@ -90,9 +90,8 @@ const force3dDrawing = {
             'specialOptions': {'dagMode': true},
         }
     },
-    'uiState': null,
     'eventListeners': null,
-    'animationCallback': (renderer, timestamp, threejsDrawing, uiState, camera) => {
+    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
         if (!threejsDrawing.data._forceGraphInstance) {
             console.warn('No ForceGraph3D instance found.');
             return;

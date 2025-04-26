@@ -186,9 +186,8 @@ const svgDrawing = {
     'drawFuncs': [
         {'func': drawSvg, 'dataSrc': 'OpenProject', 'dataType': 'svg'}
     ],
-    'uiState': null,
     'eventListeners': null,
-    'animationCallback': (renderer, timestamp, threejsDrawing, uiState, camera) => {
+    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
     },
     'data': {
     }

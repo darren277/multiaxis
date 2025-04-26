@@ -199,9 +199,8 @@ const periodicDrawing = {
     'drawFuncs': [
         {'func': drawPeriodic, 'dataSrc': 'periodic', 'dataType': 'json'}
     ],
-    'uiState': null,
     'eventListeners': null,
-    'animationCallback': (renderer, timestamp, threejsDrawing, uiState, camera) => {
+    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
     },
     'data': {
     },

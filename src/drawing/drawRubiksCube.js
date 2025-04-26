@@ -111,12 +111,13 @@ const faceMap = {
 
 
 const eventListeners = {
-    'keydown': (event, { camera, data, controls, uiState }) => {
+    'keydown': (event, { camera, data, controls }) => {
+        // TODO: Test threejsDrawing.data.scene...
         const key = event.key.toUpperCase();
         console.log('Key pressed:', key);
         if (faceMap[key]) {
             const { axis, value } = faceMap[key];
-            rotateFace(uiState.scene, data.cubelets, axis, value);
+            rotateFace(threejsDrawing.data.scene, data.cubelets, axis, value);
         }
     }
 };
@@ -128,9 +129,8 @@ const rubiksCubeDrawing = {
     'drawFuncs': [
         {'func': drawRubiksCube, 'dataSrc': null}
     ],
-    'uiState': null,
     'eventListeners': eventListeners,
-    'animationCallback': (renderer, timestamp, threejsDrawing, uiState, camera) => {
+    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
     },
     'data': {
     }

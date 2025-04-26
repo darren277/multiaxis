@@ -704,10 +704,9 @@ const networkDrawing = {
     'drawFuncs': [
         {'func': drawNetwork, 'dataSrc': 'force', 'dataType': 'json'},
     ],
-    'uiState': null,
     //'eventListeners': eventListeners,
     'eventListeners': {},
-    'animationCallback': (renderer, timestamp, threejsDrawing, uiState, camera) => {
+    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
         // Animation logic can go here
     },
     'data': {
