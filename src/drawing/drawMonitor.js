@@ -374,29 +374,32 @@ class Application {
     }
 
     destroy() {
-        this.sizes.off('resize');
-        this.time.off('tick');
+    }
+}
 
-        // Traverse the whole scene
-        this.scene.traverse((child) => {
-            // Test if it's a mesh
-            if (child instanceof Mesh) {
-                child.geometry.dispose();
+function destroy(scene, renderer) {
+    //this.sizes.off('resize');
+    //this.time.off('tick');
 
-                // Loop through the material properties
-                for (const key in child.material) {
-                    const value = child.material[key];
+    // Traverse the whole scene
+    scene.traverse((child) => {
+        // Test if it's a mesh
+        if (child instanceof Mesh) {
+            child.geometry.dispose();
 
-                    // Test if there is a dispose function
-                    if (value && typeof value.dispose === 'function') {
-                        value.dispose();
-                    }
+            // Loop through the material properties
+            for (const key in child.material) {
+                const value = child.material[key];
+
+                // Test if there is a dispose function
+                if (value && typeof value.dispose === 'function') {
+                    value.dispose();
                 }
             }
-        });
+        }
+    });
 
-        this.renderer.instance.dispose();
-    }
+    renderer.instance.dispose();
 }
 
 export class Mouse extends EventEmitter {
