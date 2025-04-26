@@ -1,7 +1,24 @@
-import { TextureLoader, Clock, Group, Object3D } from 'three';
+import { TextureLoader, Clock, Group, Object3D, ShaderMaterial, PlaneGeometry, Mesh, MeshBasicMaterial, CanvasTexture } from 'three';
 import { GLTFLoader } from 'gltfloader';
 import { drawBasicLights, drawSun } from './drawLights.js';
 import { Tween, Easing } from 'tween';
+
+
+const loader = new TextureLoader();
+
+//const angryMouth = new Mesh(new PlaneGeometry(0.4, 0.2), new MeshBasicMaterial({map: loader.load('textures/mouth_open.png'), transparent: true}));
+
+// angryMouth.position.set(0, 0.1, 0.25); // front of face
+// yourHeadMesh.add(angryMouth); // stick it to the head
+// new Tween(angryMouth.scale).to({ y: 1.5 }, 300).yoyo(true).repeat(1).start();
+
+
+// Alternatively:
+// Option B: Swap facial texture maps
+// If your head model uses a texture, you can hot‑swap parts of it:
+// headMesh.material.map = loader.load('textures/head_angry.png');
+// If the mouth/eyes are on a separate UV region, you can animate the offset of a sprite sheet using material.map.offset.x.
+
 
 async function loadGltfModel(data_src) {
     const gltfLoader = new GLTFLoader();
@@ -9,6 +26,31 @@ async function loadGltfModel(data_src) {
     return gltf;
 }
 
+const stretchUniform = { value: 3.0 };
+
+const stretchyMaterial = new ShaderMaterial({
+    uniforms: {
+        stretch: stretchUniform
+    },
+    vertexShader: `
+        uniform float stretch;
+        void main() {
+            vec3 p = position;
+            if (p.z < 0.3) {
+                p.z *= stretch;
+            }
+            gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
+        }
+    `,
+    fragmentShader: `
+        void main() {
+            gl_FragColor = vec4(1.0); // white for now
+        }
+    `
+});
+
+
+const BODY = 'Object_2';
 
 const LEFT_EYE = 'Object_4';
 const HEAD = 'Object_5';
@@ -19,6 +61,59 @@ const ANIMATABLE_NAMES = [LEFT_EYE, HEAD];
 const originalTraverse = Object3D.prototype.traverse;
 
 
+function drawMouth() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 256;
+    canvas.height = 256;
+    const ctx = canvas.getContext('2d');
+
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Optional: skin-tone background
+    ctx.fillStyle = '#fce0bd';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Draw triangle mouth
+    ctx.fillStyle = '#000';
+    ctx.beginPath();
+    ctx.moveTo(128, 160);     // bottom center
+    ctx.lineTo(96, 192);      // left
+    ctx.lineTo(160, 192);     // right
+    ctx.closePath();
+    ctx.fill();
+
+    const mouthTexture = new CanvasTexture(canvas);
+    mouthTexture.needsUpdate = true;
+
+    return mouthTexture;
+}
+
+
+// Optional: Dynamic drawing updates
+// You can redraw the canvas anytime and the texture will update live:
+function drawAngryMouth(mouthTexture) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#f00';
+    ctx.beginPath();
+    ctx.moveTo(128, 160);
+    ctx.lineTo(96, 192);
+    ctx.lineTo(160, 192);
+    ctx.closePath();
+    ctx.fill();
+
+    mouthTexture.needsUpdate = true;
+}
+
+/*
+Bonus: Combine Mouth and Eyes on Same Canvas
+
+You could also use one canvas for the whole face and update eyes, brows, mouth, etc., in one go — kind of like an MS Paint Skibidi face generator.
+
+Let me know if you want a mini face expression system built on this — with toggles like setExpression('angry'), setExpression('scream'), etc.
+*/
+
+
 
 async function drawMale07(scene, threejsDrawing) {
     const { scene: gltfScene } = await loadGltfModel('imagery/skibidi/male-07_v1.glb');
@@ -26,7 +121,43 @@ async function drawMale07(scene, threejsDrawing) {
     // 1) Find the meshes you want to animate
     const animMeshes = [];
     gltfScene.traverse(node => {
+        // exclude body from scene...
+        if (node.name === BODY) {
+            node.visible = false;
+        }
         if (node.isMesh && ANIMATABLE_NAMES.includes(node.name)) {
+            if (node.name === HEAD) {
+                //node.material = stretchyMaterial; // replace with custom shader
+                const originalMaterial = node.material;
+
+                originalMaterial.onBeforeCompile = (shader) => {
+                    // Inject your uniform
+                    shader.uniforms.stretch = stretchUniform;
+
+                    shader.vertexShader = `
+                        uniform float stretch;
+                        uniform float time;
+                    ` + shader.vertexShader;
+
+                    // Inject stretch logic into vertex shader
+                    shader.vertexShader = shader.vertexShader.replace(
+                        '#include <begin_vertex>',
+                        `
+                            vec3 transformed = vec3(position);
+                            if (position.z < 0.3) {
+                                transformed.z *= stretch;
+                            }
+                            // WIP:
+//                            if (position.y > 0.05 && position.y < 0.1 && position.z > 0.2) {
+//                                transformed.z += sin(time * 10.0) * 0.05; // jiggle mouth
+//                            }
+                        `
+                    );
+                };
+
+                // Make sure the material re-compiles
+                originalMaterial.needsUpdate = true;
+            }
             animMeshes.push(node);
         }
     });
@@ -36,6 +167,9 @@ async function drawMale07(scene, threejsDrawing) {
 
     // 3) Add the GLTF into the scene normally
     scene.add(gltfScene);
+
+    // 4) Set the position
+    gltfScene.position.set(0, -1, 0);
 
     return gltfScene;
 }
@@ -88,7 +222,7 @@ function animateMeshes(meshes) {
     }).onComplete(() => forward.start());
 }
 
-function animateStretchingMeshes(meshes) {
+function animateStretchingMeshes(camera, meshes) {
     const mesh = meshes[1]; // Assuming you want to animate the first mesh
     const geometry = mesh.geometry;
     const position = geometry.attributes.position;
@@ -108,8 +242,11 @@ function animateStretchingMeshes(meshes) {
             if (z < 0.3) {
                 position.setZ(i, z * proxy.stretch);
             }
+            stretchUniform.value = proxy.stretch;
         }
         position.needsUpdate = true;
+        //yourModel.userData.shader.uniforms.stretch.value = proxy.stretch
+        //mesh.userData.shader.uniforms.stretch.value = proxy.stretch;
       }).start();
 
     // also increase vertical scale...
@@ -122,6 +259,22 @@ function animateStretchingMeshes(meshes) {
     new Tween(mesh.position).to({ z: -1.0 }, 3000).easing(Easing.Quadratic.InOut).start();
     // ...and return to normal
     new Tween(mesh.position).to({ z: 0 }, 3000).delay(3000).easing(Easing.Quadratic.InOut).start();
+
+    // Head wobble...
+    const proxy1 = { ry: 0 };
+    new Tween(proxy1).to({ ry: Math.PI / 64 }, 400).yoyo(true).repeat(2).onUpdate(() => mesh.rotation.y = proxy1.ry).start();
+
+    // Sudden camera zoom...
+    //new Tween(camera.position).to({ z: 2 }, 300).easing(Easing.Back.Out).yoyo(true).repeat(1).start();
+}
+
+function animateMouth(mouthPlane) {
+    // Animate the expression
+    //new Tween(mouthPlane.scale).to({ y: 1.5 }, 300).yoyo(true).repeat(2).start();
+
+    // Or animate it mouth-opening-style:
+    // squash
+    new Tween(mouthPlane.scale).to({ y: 0.01 }, 200).yoyo(true).repeat(1).start();
 }
 
 const clock = new Clock();
@@ -131,10 +284,13 @@ function animate(renderer, timestamp, threejsDrawing, uiState, camera) {
     // timestamp is already in ms
     if (prevTime === 0) prevTime = timestamp;
 
-    if (timestamp - prevTime > 10000) {
+    if (timestamp - prevTime > 3000) {
         prevTime = timestamp;
         const meshes = threejsDrawing.data.animatableMeshes || [];
-        animateStretchingMeshes(meshes);
+        animateStretchingMeshes(camera, meshes);
+
+        const mouthPlane = threejsDrawing.data.mouthPlane;
+        animateMouth(mouthPlane);
     }
 }
 
@@ -147,6 +303,19 @@ function drawSkibidi(scene, threejsDrawing) {
     drawToilet(scene, threejsDrawing);
 
     drawSun(scene, threejsDrawing);
+
+    const mouthTexture = drawMouth();
+    // 0.4, 0.4
+    //const mouthPlaneSize = 0.4;
+    const mouthPlaneSize = 5.0;
+    const mouthPlane = new Mesh(new PlaneGeometry(mouthPlaneSize, mouthPlaneSize), new MeshBasicMaterial({map: mouthTexture, transparent: true}));
+
+    // Position it in front of the face
+    //mouthPlane.position.set(0, 0.1, 0.25); // adjust as needed
+    mouthPlane.position.set(10, 5, 5);
+    // TODO: headMesh.add(mouthPlane);
+
+    threejsDrawing.data.mouthPlane = mouthPlane;
 }
 
 const skibidiDrawing = {
