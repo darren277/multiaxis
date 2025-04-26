@@ -14,7 +14,7 @@ function tweenCameraToView(camera, view, duration = 2000) {
 let autoNextTimeoutId = null;
 
 // Function to set camera to a particular view
-function goToStep(camera, stepId, adventureSteps, controls, uiState) {
+function goToStep(camera, stepId, adventureSteps, controls) {
     const stepData = adventureSteps[stepId];
 
     if (!stepData) {
@@ -27,9 +27,6 @@ function goToStep(camera, stepId, adventureSteps, controls, uiState) {
         clearTimeout(autoNextTimeoutId);
         autoNextTimeoutId = null;
     }
-
-    uiState.currentStepId = stepId;
-    console.log("Current step:", stepId);
 
     // Move camera
     tweenCameraToView(camera, stepData.camera);
@@ -55,6 +52,8 @@ function goToStep(camera, stepId, adventureSteps, controls, uiState) {
            goToStep(camera, stepData.autoNext.step, adventureSteps, controls, uiState);
         }, stepData.autoNext.delay);
     }
+
+    return stepId;
 }
 
 export { goToStep };

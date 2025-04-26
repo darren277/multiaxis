@@ -177,7 +177,8 @@ const adventureDrawing = {
             // NOTE ON THE ABOVE: I've started using `data` as both so for the sake of decluttering, we are now getting rid of `uiState` altogether.
 
             // COMMENT OUT FOLLOWING LINE FOR DEBUG VIA CLICK CONTROL HELPER...
-            onAdventureKeyDown(camera, e, adventureSteps, controls);
+            const nextStepId = onAdventureKeyDown(camera, e, adventureSteps, controls, currentStepId);
+            data.currentStepId = nextStepId;
         },
         'click': (e, other) => {
             const {renderer, camera, scene} = other;
