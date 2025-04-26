@@ -19,19 +19,6 @@ const params = {
     }
 };
 
-const gui = new GUI();
-
-gui.add(params, 'mass', 0.1, 10).onChange(updateMass);
-gui.add(params, 'friction', 0, 1).onChange(updateFriction);
-gui.add(params, 'forceX', -50, 50);
-gui.add(params, 'forceY', -50, 50);
-gui.add(params, 'forceZ', -50, 50);
-gui.add(params, 'applyForce');
-gui.add(params, 'restitution', 0, 1).onChange((val) => {box.body.setRestitution(val);});
-
-
-
-
 
 
 // Inside your animation loop
@@ -84,7 +71,7 @@ function updateTrail(scene, obj) {
     }
 }
 
-function createRigidBody(physicsWorld, shape, mass, position) {
+function createRigidBody(name, physicsWorld, shape, mass, position) {
     const transform = new Ammo.btTransform();
     transform.setIdentity();
     transform.setOrigin(new Ammo.btVector3(position.x, position.y, position.z));
@@ -101,7 +88,7 @@ function createRigidBody(physicsWorld, shape, mass, position) {
     );
     mesh.position.copy(position);
 
-    return { body, mesh };
+    return { name, body, mesh };
 }
 
 
@@ -125,14 +112,14 @@ function drawBasicNewtonianForces(scene, physicsWorld) {
 
     // Create ground
     const groundShape = new Ammo.btBoxShape(new Ammo.btVector3(50, 1, 50));
-    const ground = createRigidBody(physicsWorld, groundShape, 0, new Vector3(0, -1, 0));
+    const ground = createRigidBody('Newtonian Ground', physicsWorld, groundShape, 0, new Vector3(0, -1, 0));
     const mesh = ground.mesh;
     scene.add(mesh);
 
     // Create a box
     const boxShape = new Ammo.btBoxShape(new Ammo.btVector3(1, 1, 1));
     const mass = 2;
-    const box = createRigidBody(physicsWorld, boxShape, mass, new Vector3(0, 5, 0));
+    const box = createRigidBody('Newtonian Box', physicsWorld, boxShape, mass, new Vector3(0, 5, 0));
     const boxMesh = box.mesh;
     scene.add(boxMesh);
 
@@ -149,7 +136,7 @@ function drawBasicNewtonianForces(scene, physicsWorld) {
 function drawTorqueAndAngularMotion(scene, physicsWorld) {
     // Create a tall cylinder
     const shape = new Ammo.btCylinderShape(new Ammo.btVector3(0.5, 2, 0.5));
-    const cylinder = createRigidBody(physicsWorld, shape, 3, new Vector3(0, 5, 0));
+    const cylinder = createRigidBody('Cylinder', physicsWorld, shape, 3, new Vector3(0, 5, 0));
     const mesh = cylinder.mesh;
     scene.add(mesh);
 
@@ -164,14 +151,14 @@ function drawTorqueAndAngularMotion(scene, physicsWorld) {
 function drawFriction(scene, physicsWorld) {
     // Ground with default friction
     const groundShape = new Ammo.btBoxShape(new Ammo.btVector3(10, 1, 10));
-    const groundBody = createRigidBody(physicsWorld, groundShape, 0, new Vector3(0, -1, 0));
+    const groundBody = createRigidBody('Friction Ground', physicsWorld, groundShape, 0, new Vector3(0, -1, 0));
     groundBody.body.setFriction(1.0); // high friction surface
     const groundMesh = groundBody.mesh;
     scene.add(groundMesh);
 
     // A sliding box
     const boxShape = new Ammo.btBoxShape(new Ammo.btVector3(1, 1, 1));
-    const slidingBox = createRigidBody(physicsWorld, boxShape, 2, new Vector3(-5, 1, 0));
+    const slidingBox = createRigidBody('Sliding Box', physicsWorld, boxShape, 2, new Vector3(-5, 1, 0));
     slidingBox.body.setFriction(0.5); // medium friction box
     const slidingBoxMesh = slidingBox.mesh;
     scene.add(slidingBoxMesh);
@@ -190,8 +177,8 @@ function drawElasticForce(scene, physicsWorld) {
     // Two bodies connected by a virtual spring
     const mass = 1;
     const shape = new Ammo.btSphereShape(0.5);
-    const pointA = createRigidBody(physicsWorld, shape, mass, new Vector3(-2, 5, 0));
-    const pointB = createRigidBody(physicsWorld, shape, mass, new Vector3(2, 5, 0));
+    const pointA = createRigidBody('Elastic Point A', physicsWorld, shape, mass, new Vector3(-2, 5, 0));
+    const pointB = createRigidBody('Elastic Point B', physicsWorld, shape, mass, new Vector3(2, 5, 0));
 
     const pointAMesh = pointA.mesh;
     const pointBMesh = pointB.mesh;
@@ -233,6 +220,24 @@ function drawLights(scene) {
     const dir = new DirectionalLight(0xffffff, 0.8);
     dir.position.set(5, 10, 7.5);
     scene.add(dir);
+}
+
+const gui = new GUI();
+
+function drawGUI(box) {
+    // Create a folder
+    const physicsFolder = gui.addFolder(box.name);
+
+    // Add controls inside that folder
+    physicsFolder.add(params, 'mass', 0.1, 10).onChange((newMass) => updateMass(box, newMass));
+    physicsFolder.add(params, 'friction', 0, 1).onChange((val) => updateFriction(box, val));
+    physicsFolder.add(params, 'restitution', 0, 1).onChange((val) => box.body.setRestitution(val));
+
+    // Apply force button separately if you like:
+    physicsFolder.add(params, 'forceX', -50, 50);
+    physicsFolder.add(params, 'forceY', -50, 50);
+    physicsFolder.add(params, 'forceZ', -50, 50);
+    physicsFolder.add(params, 'applyForce').name('Apply Force');
 }
 
 function drawPhysics(scene, threejsDrawing) {
@@ -293,6 +298,10 @@ function drawPhysics(scene, threejsDrawing) {
 
             // Draw lights
             drawLights(scene);
+
+            for (const obj of threejsDrawing.data.rigidBodies) {
+                drawGUI(obj);
+            }
         });
     });
 }
