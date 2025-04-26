@@ -154,15 +154,9 @@ async function contentLoadedCallback(threejsDrawing) {
         return;
     }
 
-    const startPosition = threejsDrawing.sceneConfig && threejsDrawing.sceneConfig.startPosition || {x: 0, y: 2, z: 5};
-    const lookAt = threejsDrawing.sceneConfig && threejsDrawing.sceneConfig.lookAt || {x: 0, y: 0, z: 0};
-    const clippingPlane = threejsDrawing.sceneConfig && threejsDrawing.sceneConfig.clippingPlane || 1000;
-    const controller = threejsDrawing.sceneConfig && threejsDrawing.sceneConfig.controller || 'orbital';
-    const cssRendererEnabled = threejsDrawing.sceneConfig && threejsDrawing.sceneConfig.cssRenderer || false;
     const outlineEffectEnabled = threejsDrawing.sceneConfig && threejsDrawing.sceneConfig.outlineEffect || false;
-    const background = threejsDrawing.sceneConfig && threejsDrawing.sceneConfig.background || 0x000000;
 
-    const { scene, camera, renderer, controls, stats, cssRenderer } = await setupScene('c', threejsDrawing.sceneElements, startPosition, lookAt, clippingPlane, background, controller, cssRendererEnabled);
+    const { scene, camera, renderer, controls, stats, cssRenderer } = await setupScene('c', threejsDrawing.sceneElements, threejsDrawing.sceneConfig);
 
     // TODO: Are these all necessary?
     // And if any of them are, only conditionally?
