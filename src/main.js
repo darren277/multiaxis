@@ -145,10 +145,8 @@ const CUBE_DEFS = [
 
 async function contentLoadedCallback(threejsDrawing) {
     const dataSelected = document.querySelector('meta[name="data_selected"]').content;
-
     console.log(`Drawing name: ${threejsDrawing.name}. Data selected: ${dataSelected}`);
 
-    // 1) Setup the scene
     if (!threejsDrawing) {
         console.error(`No drawing found for ${drawingName}`);
         return;
@@ -226,7 +224,7 @@ async function contentLoadedCallback(threejsDrawing) {
 
     //drawImage(scene, 'textures/Canestra_di_frutta_Caravaggio.jpg');
 
-    // 4) Setup UI listeners
+    // Setup UI listeners
     //attachUIListeners(uiPanelConfig, uiState);
 
     // Add any event listeners from the threejsDrawing
@@ -242,7 +240,6 @@ async function contentLoadedCallback(threejsDrawing) {
         const effect = new OutlineEffect(renderer);
     }
 
-    // 5) Animate loop
     renderer.setAnimationLoop((timestamp, frame) => {
         // Update controls (if using OrbitControls or similar)
         if (controls) {
@@ -256,15 +253,12 @@ async function contentLoadedCallback(threejsDrawing) {
         // Update camera projection if needed
         camera.updateProjectionMatrix();
 
-        // Run any tweens or animations
         tweenUpdate();
 
-        // Update debug stats
         if (stats) {
             stats.update();
         }
 
-        // Final render
         renderer.render(scene, camera);
 
         // CSS Renderer (2d or 3d)
