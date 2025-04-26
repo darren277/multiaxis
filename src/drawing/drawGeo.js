@@ -433,9 +433,8 @@ const geoDrawing = {
         //{'func': drawGeo, 'dataSrc': 'geojson'}
         {'func': drawGeo, 'dataSrc': null}
     ],
-    'uiState': null,
     'eventListeners': null,
-    'animationCallback': (renderer, timestamp, threejsDrawing, uiState, camera) => {
+    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
     },
     'data': {
         'geojson': exampleGeoJson,
@@ -451,9 +450,8 @@ const geoDrawing3d = {
         //{'func': drawGeo, 'dataSrc': 'geojson'}
         {'func': drawGeo3d, 'dataSrc': null}
     ],
-    'uiState': null,
     'eventListeners': null,
-    'animationCallback': (renderer, timestamp, threejsDrawing, uiState, camera) => {
+    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
         // Update the globe rotation
         const globe = threejsDrawing.data.globe;
         if (globe) {
@@ -479,9 +477,8 @@ const buildingsDrawing = {
     'drawFuncs': [
         {'func': drawBuildings, 'dataSrc': null}
     ],
-    'uiState': null,
     'eventListeners': null,
-    'animationCallback': (renderer, timestamp, threejsDrawing, uiState, camera) => {
+    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
     },
     'data': {
         'geojson': exampleGeoJson,

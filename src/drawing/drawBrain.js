@@ -152,9 +152,8 @@ const brainDrawing = {
     'drawFuncs': [
         {'func': drawBrain, 'dataSrc': null, 'dataType': 'ply'}
     ],
-    'uiState': null,
     'eventListeners': null,
-    'animationCallback': (renderer, timestamp, threejsDrawing, uiState, camera) => {
+    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
         const canvas = renderer.domElement;
         const scene = threejsDrawing.data.scene;
         for (const mesh of scene.children) {

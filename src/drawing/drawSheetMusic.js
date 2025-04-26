@@ -355,7 +355,6 @@ const musicDrawing = {
     'drawFuncs': [
         {'func': drawMusic, 'dataSrc': 'music', 'dataType': 'json'},
     ],
-    'uiState': {tempoScale: 1.0},
     // domElement.addEventListener('click', (e) => onMouseClick(e, camera, domElement));
     'eventListeners': {
         'click': (event, data) => {
@@ -363,12 +362,14 @@ const musicDrawing = {
             onMouseClick(event, camera, renderer.domElement);
         },
     },
-    'animationCallback': (renderer, timestamp, threejsDrawing, uiState, camera) => {
+    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
         if (!startTime) startTime = timestamp;
         const elapsedMs = timestamp - startTime;
         const elapsedSec = elapsedMs / 1000;
 
-        const scaledElapsedSec = elapsedSec * uiState.tempoScale;
+        const tempoScale = threejsDrawing.data.tempoScale;
+
+        const scaledElapsedSec = elapsedSec * tempoScale;
 
         if (!threejsDrawing.data.sheetMusic) {
             // it takes a few seconds to load the sheet music
@@ -379,6 +380,7 @@ const musicDrawing = {
     },
     'data': {
         'sheetMusic': null,
+        'tempoScale': 1.0
     }
 }
 

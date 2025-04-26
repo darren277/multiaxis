@@ -23,7 +23,7 @@ function onAdventureKeyDown_BIDIRECTIONAL_ONLY(camera, event, adventureSteps, co
 }
 
 
-function onAdventureKeyDown(camera, event, adventureSteps, controls, uiState) {
+function onAdventureKeyDown(camera, event, adventureSteps, controls) {
     // In this case, UpArrow is "next", DownArrow is "previous", and LeftArrow and RightArrow are specifically defined for each step.
     const stepData = adventureSteps[uiState.currentStepId];
     console.log('uiState', uiState);
@@ -32,11 +32,11 @@ function onAdventureKeyDown(camera, event, adventureSteps, controls, uiState) {
 
     if (event.key === "ArrowLeft") {
         const nextStep = stepData.choices.left;
-        if (nextStep) goToStep(camera, nextStep, adventureSteps, controls, uiState);
+        if (nextStep) goToStep(camera, nextStep, adventureSteps, controls);
     }
     else if (event.key === "ArrowRight") {
         const nextStep = stepData.choices.right;
-        if (nextStep) goToStep(camera, nextStep, adventureSteps, controls, uiState);
+        if (nextStep) goToStep(camera, nextStep, adventureSteps, controls);
     } else if (event.key === "DownArrow") {
         console.log("Go back (not yet implemented).");
     }

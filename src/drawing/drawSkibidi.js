@@ -280,7 +280,7 @@ function animateMouth(mouthPlane) {
 const clock = new Clock();
 let prevTime = 0;
 
-function animate(renderer, timestamp, threejsDrawing, uiState, camera) {
+function animate(renderer, timestamp, threejsDrawing, camera) {
     // timestamp is already in ms
     if (prevTime === 0) prevTime = timestamp;
 
@@ -323,7 +323,6 @@ const skibidiDrawing = {
     'drawFuncs': [
         {'func': drawSkibidi, 'dataSrc': null}
     ],
-    'uiState': null,
     //'eventListeners': eventListeners,
     'eventListeners': {},
     'animationCallback': animate,

@@ -50,11 +50,10 @@ const exrDrawing = {
     'drawFuncs': [
         {'func': drawExr, 'dataSrc': 'golden_gate_hills_1k', 'dataType': 'exr'},
     ],
-    'uiState': {tempoScale: 1.0},
     // domElement.addEventListener('click', (e) => onMouseClick(e, camera, domElement));
     'eventListeners': {
     },
-    'animationCallback': (renderer, timestamp, threejsDrawing, uiState, camera) => {
+    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
     },
     'data': {
         //'drawingMode': 'PMREM',

@@ -81,7 +81,6 @@ const audioVizDrawing = {
     'drawFuncs': [
         {'func': drawAudioViz, 'dataSrc': null, 'dataType': 'json'},
     ],
-    'uiState': {},
     // domElement.addEventListener('click', (e) => onMouseClick(e, camera, domElement));
     'eventListeners': {
 //        'click': (event, data) => {
@@ -89,7 +88,7 @@ const audioVizDrawing = {
 //            onMouseClick(event, camera, renderer.domElement);
 //        },
     },
-    'animationCallback': (renderer, timestamp, threejsDrawing, uiState, camera) => {
+    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
         const { analyser, bars } = threejsDrawing.data;
         animateVisualizer(analyser, bars);
     },

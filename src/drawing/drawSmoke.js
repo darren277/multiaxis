@@ -283,9 +283,8 @@ const smokeDrawing = {
     'drawFuncs': [
         {'func': drawSmoke, 'dataSrc': null}
     ],
-    'uiState': null,
     'eventListeners': null,
-    'animationCallback': (renderer, timestamp, threejsDrawing, uiState, camera) => {
+    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
         const uniforms = threejsDrawing.data.uniforms;
         uniforms.iTime.value += 0.01;
 

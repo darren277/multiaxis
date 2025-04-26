@@ -631,9 +631,8 @@ const cardsDrawing = {
     'drawFuncs': [
         {'func': drawCards, 'dataSrc': 'cards', 'dataType': 'json'},
     ],
-    'uiState': null,
     'eventListeners': null,
-    'animationCallback': (renderer, timestamp, threejsDrawing, uiState, camera) => {
+    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
         if (!threejsDrawing.data.ready || !threejsDrawing.data.cards) {
             console.warn('No cards found.');
             return;

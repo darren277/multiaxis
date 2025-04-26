@@ -172,9 +172,8 @@ const orbitsDrawing = {
     'drawFuncs': [
         {'func': drawOrbits, 'dataSrc': null}
     ],
-    'uiState': null,
     'eventListeners': null,
-    'animationCallback': (renderer, timestamp, threejsDrawing, uiState, camera) => {
+    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
         // Time since last frame in seconds:
         const delta = clock.getDelta();
 

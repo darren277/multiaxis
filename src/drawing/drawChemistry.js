@@ -201,9 +201,8 @@ const chemistryDrawing = {
     'drawFuncs': [
         {'func': drawChemistry, 'dataSrc': null, 'dataType': 'pdb'}
     ],
-    'uiState': null,
     'eventListeners': null,
-    'animationCallback': (renderer, timestamp, threejsDrawing, uiState, camera) => {
+    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
         const t = timestamp * 0.001;
         chemistry.nodeGroups.forEach(root => {
             root.rotation.y = t * 0.0004;

@@ -44,9 +44,8 @@ const roomDrawing = {
     'drawFuncs': [
         {'func': drawRoom, 'dataSrc': null},
     ],
-    'uiState': {},
     'eventListeners': null,
-    'animationCallback': (renderer, timestamp, threejsDrawing, uiState, camera) => {
+    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
         // LIGHT STUFF //
         // Tone Mapping
         renderer.toneMappingExposure = Math.pow(lightingParams.exposure, 5.0);

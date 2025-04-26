@@ -221,9 +221,8 @@ const cayleyDrawing = {
     'drawFuncs': [
         {'func': drawGraph, 'dataSrc': 'cayley', 'dataType': 'json'},
     ],
-    'uiState': null,
     'eventListeners': null,
-    'animationCallback': (renderer, timestamp, threejsDrawing, uiState, camera) => {
+    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
     },
     'data': {
         'sheetMusic': null,
@@ -236,7 +235,6 @@ const forceDrawing = {
         //{'func': drawForceGraph, 'dataSrc': 'force'}
         {'func': drawForceGraph, 'dataSrc': null}
     ],
-    'uiState': null,
     'eventListeners': {
         'mousedown': (e, other) => {
             const {camera, data, controls, uiState} = other;
@@ -252,7 +250,7 @@ const forceDrawing = {
             onMouseMove(camera, data, e);
         }
     },
-    'animationCallback': (renderer, timestamp, threejsDrawing, uiState, camera) => {
+    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
         threejsDrawing.data.simulation.tick(); // progress the simulation
         updateForceGraph(threejsDrawing.data.graphData, threejsDrawing.data.nodeSpheres, threejsDrawing.data.linkLines); // reflect new positions
     },

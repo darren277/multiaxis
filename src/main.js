@@ -158,9 +158,6 @@ async function contentLoadedCallback(threejsDrawing) {
 
     const { scene, camera, renderer, controls, stats, cssRenderer } = await setupScene('c', threejsDrawing.sceneElements, threejsDrawing.sceneConfig);
 
-    // TODO: Are these all necessary?
-    // And if any of them are, only conditionally?
-    // Also, possibly redundant with `uiState`.
     await prepareDrawingContext(threejsDrawing, scene, camera, renderer, controls, cssRenderer);
 
     for (const {func, dataSrc, dataType} of threejsDrawing.drawFuncs) {
@@ -212,19 +209,6 @@ async function contentLoadedCallback(threejsDrawing) {
         const clickKeyControls = new ClickAndKeyControls(scene, camera, renderer);
     }
 
-    // 2) Create a shared state for the UI
-    const uiState = {
-        camera,
-        controls,
-        orbitEnabled: true,
-        // anything else we might want the UI to manipulate
-    };
-
-    // update uiState to add the threejsDrawing uiState...
-    if (threejsDrawing) {
-        Object.assign(uiState, threejsDrawing.uiState);
-    }
-
     // --- OPTION 1: Panoramic cube skybox ---
     //usePanoramicCubeBackground(scene, 'textures/sun_temple_stripe.jpg');
     //usePanoramicCubeBackgroundSixFaces(scene, 'textures/exr/golden_gate_hills_1k');
@@ -243,13 +227,13 @@ async function contentLoadedCallback(threejsDrawing) {
     //drawImage(scene, 'textures/Canestra_di_frutta_Caravaggio.jpg');
 
     // 4) Setup UI listeners
-    attachUIListeners(uiPanelConfig, uiState);
+    //attachUIListeners(uiPanelConfig, uiState);
 
     // Add any event listeners from the threejsDrawing
     if (threejsDrawing.eventListeners) {
         for (const [eventName, eventFunc] of Object.entries(threejsDrawing.eventListeners)) {
             window.addEventListener(eventName, (e) => {
-                eventFunc(e, {camera, data: threejsDrawing.data, controls, uiState, renderer, scene});
+                eventFunc(e, {camera, data: threejsDrawing.data, controls, renderer, scene});
             });
         }
     }
@@ -266,9 +250,9 @@ async function contentLoadedCallback(threejsDrawing) {
         }
 
         // Update UI state and call your animation callback
-        uiState.rect = renderer.domElement.getBoundingClientRect();
+        // TODO: Determine if we still use this anywhere: uiState.rect = renderer.domElement.getBoundingClientRect();
         if (threejsDrawing.animationCallback) {
-            threejsDrawing.animationCallback(renderer, timestamp, threejsDrawing, uiState, camera);
+            threejsDrawing.animationCallback(renderer, timestamp, threejsDrawing, camera);
         }
 
         // Update camera projection if needed

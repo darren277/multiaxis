@@ -194,7 +194,7 @@ function drawGame(scene, threejsDrawing) {
 
 // ---------- animationCallback (runs every frame) ----------
 const clock = new Clock();
-function animationCallback(renderer, timestamp, threejsDrawing, uiState, camera) {
+function animationCallback(renderer, timestamp, threejsDrawing, camera) {
     const data     = threejsDrawing.data;
     const controls = data.controls;           // PointerLockControls comes from loader
     if (!controls) {
@@ -217,7 +217,6 @@ function animationCallback(renderer, timestamp, threejsDrawing, uiState, camera)
 const gameDrawing = {
     sceneElements: [],
     drawFuncs: [ { func: drawGame, dataSrc: null } ],
-    uiState: null,
     eventListeners: {
         keydown: (e, data) => onKey(e, data),
         keyup:   (e, data) => onKey(e, data)

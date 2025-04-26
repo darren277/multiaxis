@@ -223,9 +223,8 @@ const synapseDrawing = {
     'drawFuncs': [
         {'func': drawSynapse, 'dataSrc': null, 'dataType': null}
     ],
-    'uiState': null,
     'eventListeners': null,
-    'animationCallback': (renderer, timestamp, threejsDrawing, uiState, camera) => {
+    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
         const { scene, particles = [], vesicles = [], receptors = [] } = threejsDrawing.data;
 
         if (scene && vesicles.length > 0) {
