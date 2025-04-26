@@ -368,32 +368,53 @@ export default class MonitorScreen extends EventEmitter {
         this.createPerspectiveDimmer(maxOffset);
     }
 
-    loadItems(sources) {
-        const gltfLoader = new GLTFLoader();
-        const textureLoader = new TextureLoader();
-        const cubeTextureLoader = new CubeTextureLoader();
-        const audioLoader = new AudioLoader();
+    /**
+     * Load all assets listed in `sources`.
+     * Returns a Promise that resolves when every asset is ready.
+     */
+    async loadItems (sources) {
 
-        for (const source of sources) {
-            if (source.type === 'gltfModel') {
-                gltfLoader.load(source.path, (file) => {
-                    this.sourceLoaded(source, file);
-                });
-            } else if (source.type === 'texture') {
-                textureLoader.load(source.path, (file) => {
-                    file.encoding = RGBFormat;
-                    this.sourceLoaded(source, file);
-                });
-            } else if (source.type === 'cubeTexture') {
-                cubeTextureLoader.load(source.path, (file) => {
-                    this.sourceLoaded(source, file);
-                });
-            } else if (source.type === 'audio') {
-                audioLoader.load(source.path, (buffer) => {
-                    this.sourceLoaded(source, buffer);
-                });
+        const gltfLoader       = new GLTFLoader();
+        const textureLoader    = new TextureLoader();
+        const cubeTextureLoader= new CubeTextureLoader();
+        const audioLoader      = new AudioLoader();
+
+        // build one promise per source
+        const jobs = sources.map(src => {
+
+            switch (src.type) {
+
+                case 'gltfModel':
+                    return gltfLoader.loadAsync(src.path)
+                        .then(file => this.items.gltfModel[src.name] = file);
+
+                case 'texture':
+                    return textureLoader.loadAsync(src.path)
+                        .then(file => {
+                            file.encoding = THREE.sRGBEncoding;   // or RGBFormat
+                            this.items.texture[src.name] = file;
+                        });
+
+                case 'cubeTexture':
+                    return cubeTextureLoader.loadAsync(src.path)
+                        .then(file => this.items.cubeTexture[src.name] = file);
+
+                case 'audio':
+                    return audioLoader.loadAsync(src.path)
+                        .then(buffer => this.items.audio[src.name] = buffer);
+
+                default:
+                    return Promise.reject(
+                        new Error(`Unknown source type: ${src.type}`)
+                    );
             }
-        }
+        });
+
+        // wait for *all* jobs to finish (or fail fast on first error)
+        await Promise.all(jobs);
+
+        // Everything is ready at this point
+        console.log('All monitor assets loaded ✅');
     }
 
     sourceLoaded(source, file) {
@@ -800,7 +821,7 @@ async function drawMonitor(scene, threejsDrawing) {
     // Attach the scene components to the monitor
     await attachSceneComponentsToMonitor(data.monitorScreen, threejsDrawing, cssScene);
 
-    data.monitorScreen.loadItems(sources);
+    await data.monitorScreen.loadItems(sources);
 
     // Create the screen
     data.monitorScreen.mouse = new Mouse();
