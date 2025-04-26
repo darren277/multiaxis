@@ -6,33 +6,14 @@ import {
 } from 'three';
 import { GLTFLoader } from 'gltfloader';
 import { CSS3DObject } from 'css3drenderer';
-//import GUI from 'lil-gui';
-//import Application from '../Application';
-//import Resources from '../Utils/Resources';
 
-//let instance: Application | null = null;
 let instance = null;
 
 const sources = [
     {name: 'computerSetupModel', type: 'gltfModel', path: 'imagery/computer_setup.glb'},
     {name: 'computerSetupTexture', type: 'texture', path: 'textures/monitor/baked_computer.jpg'},
-    //{name: 'environmentModel', type: 'gltfModel', path: 'models/World/environment.glb'},
-    //{name: 'environmentTexture', type: 'texture', path: 'models/World/baked_environment.jpg'},
-    //{name: 'decorModel', type: 'gltfModel', path: 'models/Decor/decor.glb'},
-    //{name: 'decorTexture', type: 'texture', path: 'models/Decor/baked_decor_modified.jpg'},
     {name: 'monitorSmudgeTexture', type: 'texture', path: 'textures/monitor/smudges.jpg'},
     {name: 'monitorShadowTexture', type: 'texture', path: 'textures/monitor/shadow-compressed.png'},
-//    {name: 'mouseDown', type: 'audio', path: 'audio/mouse/mouse_down.mp3'},
-//    {name: 'mouseUp', type: 'audio', path: 'audio/mouse/mouse_up.mp3'},
-//    {name: 'keyboardKeydown1', type: 'audio', path: 'audio/keyboard/key_1.mp3'},
-//    {name: 'keyboardKeydown2', type: 'audio', path: 'audio/keyboard/key_2.mp3'},
-//    {name: 'keyboardKeydown3', type: 'audio', path: 'audio/keyboard/key_3.mp3'},
-//    {name: 'keyboardKeydown4', type: 'audio', path: 'audio/keyboard/key_4.mp3'},
-//    {name: 'keyboardKeydown5', type: 'audio', path: 'audio/keyboard/key_5.mp3'},
-//    {name: 'keyboardKeydown6', type: 'audio', path: 'audio/keyboard/key_6.mp3'},
-//    {name: 'startup', type: 'audio', path: 'audio/startup/startup.mp3'},
-//    {name: 'office', type: 'audio', path: 'audio/atmosphere/office.mp3'},
-//    {name: 'ccType', type: 'audio', path: 'audio/cc/type.mp3'},
 ];
 
 
@@ -277,105 +258,6 @@ const UIEventBus = {
     },
 };
 
-class Loading extends EventEmitter {
-    //progress: number;
-    //application: Application;
-    //resources: Resources;
-    //scene: THREE.Scene;
-
-    constructor() {
-        super();
-
-        this.scene = this.scene;
-        this.on('loadedSource', (sourceName, loaded, toLoad) => {
-            this.progress = loaded / toLoad;
-            UIEventBus.dispatch('loadedSource', {
-                sourceName: sourceName,
-                progress: loaded / toLoad,
-                toLoad: toLoad,
-                loaded: loaded,
-            });
-        });
-    }
-}
-
-class Sizes extends EventEmitter {
-    //width: number;
-    //height: number;
-    //pixelRatio: number;
-
-    constructor() {
-        super();
-
-        // Setup
-        this.width = window.innerWidth;
-        this.height = window.innerHeight;
-        this.pixelRatio = Math.min(window.devicePixelRatio, 2);
-
-        // Resize event
-        window.addEventListener('resize', () => {
-            this.width = window.innerWidth;
-            this.height = window.innerHeight;
-            this.pixelRatio = Math.min(window.devicePixelRatio, 2);
-
-            this.trigger('resize');
-        });
-    }
-}
-
-
-/* Application */
-
-class Application {
-    constructor() {
-        // Singleton
-        if (instance) {return instance;}
-
-        instance = this;
-
-        // Global access
-        //@ts-ignore
-        // window.Application = this;
-
-        // Setup
-        this.sizes = new Sizes();
-        //this.mouse = new Mouse();
-        this.loading = new Loading();
-        this.time = new Time();
-
-        // these will get assigned in the main application
-        this.scene = null;
-        this.cssScene = null;
-        this.overlayScene = null;
-        this.camera = null;
-        this.renderer = null;
-        //this.camera.createControls();
-        //this.world = new World();
-        //this.ui = new UI();
-
-        // Resize event
-        this.sizes.on('resize', () => {this.resize();});
-
-        // Time tick event
-        this.time.on('tick', () => {this.update();});
-    }
-
-    resize() {
-        this.camera.resize();
-        this.renderer.resize();
-    }
-
-    update() {
-        if (this.stats) this.stats.begin();
-        this.camera.update();
-        this.world.update();
-        this.renderer.update();
-        if (this.stats) this.stats.end();
-    }
-
-    destroy() {
-    }
-}
 
 function destroy(scene, renderer) {
     //this.sizes.off('resize');
