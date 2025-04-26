@@ -1,6 +1,10 @@
 /* Adapted from https://github.com/henryjeff/portfolio-website/blob/master/src/Application/World/MonitorScreen.ts */
 
-import { Vector2, Vector3, Euler, MathUtils, Mesh, MeshBasicMaterial, MeshLambertMaterial, PlaneGeometry, DoubleSide, Texture, VideoTexture, NoBlending, NormalBlending, AdditiveBlending } from 'three';
+import {
+    Vector2, Vector3, Euler, MathUtils, Mesh, MeshBasicMaterial, MeshLambertMaterial, PlaneGeometry, DoubleSide, RGBFormat, DirectionalLight,
+    Texture, VideoTexture, NoBlending, NormalBlending, AdditiveBlending, Scene, TextureLoader, CubeTextureLoader, AudioLoader,
+} from 'three';
+import { GLTFLoader } from 'gltfloader';
 import { CSS3DObject } from 'css3drenderer';
 //import GUI from 'lil-gui';
 //import Application from '../Application';
@@ -8,6 +12,28 @@ import { CSS3DObject } from 'css3drenderer';
 
 //let instance: Application | null = null;
 let instance = null;
+
+const sources = [
+    {name: 'computerSetupModel', type: 'gltfModel', path: 'imagery/computer_setup.glb'},
+    {name: 'computerSetupTexture', type: 'texture', path: 'textures/monitor/baked_computer.jpg'},
+    //{name: 'environmentModel', type: 'gltfModel', path: 'models/World/environment.glb'},
+    //{name: 'environmentTexture', type: 'texture', path: 'models/World/baked_environment.jpg'},
+    //{name: 'decorModel', type: 'gltfModel', path: 'models/Decor/decor.glb'},
+    //{name: 'decorTexture', type: 'texture', path: 'models/Decor/baked_decor_modified.jpg'},
+    {name: 'monitorSmudgeTexture', type: 'texture', path: 'textures/monitor/smudges.jpg'},
+    {name: 'monitorShadowTexture', type: 'texture', path: 'textures/monitor/shadow-compressed.png'},
+//    {name: 'mouseDown', type: 'audio', path: 'audio/mouse/mouse_down.mp3'},
+//    {name: 'mouseUp', type: 'audio', path: 'audio/mouse/mouse_up.mp3'},
+//    {name: 'keyboardKeydown1', type: 'audio', path: 'audio/keyboard/key_1.mp3'},
+//    {name: 'keyboardKeydown2', type: 'audio', path: 'audio/keyboard/key_2.mp3'},
+//    {name: 'keyboardKeydown3', type: 'audio', path: 'audio/keyboard/key_3.mp3'},
+//    {name: 'keyboardKeydown4', type: 'audio', path: 'audio/keyboard/key_4.mp3'},
+//    {name: 'keyboardKeydown5', type: 'audio', path: 'audio/keyboard/key_5.mp3'},
+//    {name: 'keyboardKeydown6', type: 'audio', path: 'audio/keyboard/key_6.mp3'},
+//    {name: 'startup', type: 'audio', path: 'audio/startup/startup.mp3'},
+//    {name: 'office', type: 'audio', path: 'audio/atmosphere/office.mp3'},
+//    {name: 'ccType', type: 'audio', path: 'audio/cc/type.mp3'},
+];
 
 
 
@@ -260,10 +286,7 @@ class Loading extends EventEmitter {
     constructor() {
         super();
 
-        this.application = new Application();
-        this.resources = this.application.resources;
-
-        this.scene = this.application.scene;
+        this.scene = this.scene;
         this.on('loadedSource', (sourceName, loaded, toLoad) => {
             this.progress = loaded / toLoad;
             UIEventBus.dispatch('loadedSource', {
@@ -324,7 +347,6 @@ class Application {
         this.scene = null;
         this.cssScene = null;
         this.overlayScene = null;
-        this.resources = null;
         this.camera = null;
         this.renderer = null;
         //this.camera.createControls();
@@ -377,6 +399,32 @@ class Application {
     }
 }
 
+export class Mouse extends EventEmitter {
+//    x: number;
+//    y: number;
+//    inComputer: boolean;
+//    application: Application;
+
+    constructor() {
+        super();
+
+        // Setup
+        this.x = 0;
+        this.y = 0;
+        this.inComputer = false;
+        // this.audio = this.application.world.audio;
+
+        // Resize event
+        this.on('mousemove', (event) => {
+            if (event && event.clientX && event.clientY) {
+                this.x = event.clientX;
+                this.y = event.clientY;
+
+                this.inComputer = event.inComputer ? true : false;
+            }
+        });
+    }
+}
 
 const SCREEN_SIZE = { w: 1280, h: 1024 };
 const IFRAME_PADDING = 32;
@@ -408,13 +456,15 @@ export default class MonitorScreen extends EventEmitter {
 
     constructor(url) {
         super();
-        this.application = new Application();
-        this.scene = this.application.scene;
-        this.cssScene = this.application.cssScene;
-        this.sizes = this.application.sizes;
-        this.resources = this.application.resources;
+        this.url = url;
+
+        this.scene = null;
+        this.cssScene = null;
+        this.sizes = null;
+        this.items = { texture: {}, cubeTexture: {}, gltfModel: {}, audio: {} };
+        this.sources = [];
         this.screenSize = new Vector2(SCREEN_SIZE.w, SCREEN_SIZE.h);
-        this.camera = this.application.camera;
+        this.camera = null;
         this.position = new Vector3(0, 950, 255);
         this.rotation = new Euler(-3 * MathUtils.DEG2RAD, 0, 0);
         this.videoTextures = {};
@@ -422,11 +472,50 @@ export default class MonitorScreen extends EventEmitter {
         this.shouldLeaveMonitor = false;
 
         // Create screen
+        // moved to a separate function...
+    }
+
+    createScreen() {
         this.initializeScreenEvents();
-        this.createIframe(url);
+        this.createIframe(this.url);
         const maxOffset = this.createTextureLayers();
         this.createEnclosingPlanes(maxOffset);
         this.createPerspectiveDimmer(maxOffset);
+    }
+
+    loadItems(sources) {
+        const gltfLoader = new GLTFLoader();
+        const textureLoader = new TextureLoader();
+        const cubeTextureLoader = new CubeTextureLoader();
+        const audioLoader = new AudioLoader();
+
+        for (const source of sources) {
+            if (source.type === 'gltfModel') {
+                gltfLoader.load(source.path, (file) => {
+                    this.sourceLoaded(source, file);
+                });
+            } else if (source.type === 'texture') {
+                textureLoader.load(source.path, (file) => {
+                    file.encoding = RGBFormat;
+                    this.sourceLoaded(source, file);
+                });
+            } else if (source.type === 'cubeTexture') {
+                cubeTextureLoader.load(source.path, (file) => {
+                    this.sourceLoaded(source, file);
+                });
+            } else if (source.type === 'audio') {
+                audioLoader.load(source.path, (buffer) => {
+                    this.sourceLoaded(source, buffer);
+                });
+            }
+        }
+    }
+
+    sourceLoaded(source, file) {
+        this.items[source.type][source.name] = file;
+
+        //this.loading.trigger('loadedSource', [source.name, this.loaded, this.toLoad]);
+        //if (this.loaded === this.toLoad) {this.trigger('ready');}
     }
 
     initializeScreenEvents() {
@@ -441,7 +530,7 @@ export default class MonitorScreen extends EventEmitter {
                 this.inComputer = event.inComputer;
 
                 if (this.inComputer && !this.prevInComputer) {
-                    this.camera.trigger('enterMonitor');
+                    // TODO: this.camera.trigger('enterMonitor');
                 }
 
                 if (
@@ -449,7 +538,7 @@ export default class MonitorScreen extends EventEmitter {
                     this.prevInComputer &&
                     !this.mouseClickInProgress
                 ) {
-                    this.camera.trigger('leftMonitor');
+                    // TODO: this.camera.trigger('leftMonitor');
                 }
 
                 if (
@@ -462,7 +551,7 @@ export default class MonitorScreen extends EventEmitter {
                     this.shouldLeaveMonitor = false;
                 }
 
-                this.application.mouse.trigger('mousemove', [event]);
+                this.mouse.trigger('mousemove', [event]);
 
                 this.prevInComputer = this.inComputer;
             },
@@ -472,7 +561,7 @@ export default class MonitorScreen extends EventEmitter {
             'mousedown',
             (event) => {
                 this.inComputer = event.inComputer;
-                this.application.mouse.trigger('mousedown', [event]);
+                this.mouse.trigger('mousedown', [event]);
 
                 this.mouseClickInProgress = true;
                 this.prevInComputer = this.inComputer;
@@ -483,7 +572,7 @@ export default class MonitorScreen extends EventEmitter {
             'mouseup',
             (event) => {
                 this.inComputer = event.inComputer;
-                this.application.mouse.trigger('mouseup', [event]);
+                this.mouse.trigger('mouseup', [event]);
 
                 if (this.shouldLeaveMonitor) {
                     this.camera.trigger('leftMonitor');
@@ -609,7 +698,7 @@ export default class MonitorScreen extends EventEmitter {
      * @returns the maximum offset of the texture layers
      */
     createTextureLayers() {
-        const textures = this.resources.items.texture;
+        const textures = this.items.texture;
 
         this.getVideoTextures('video-1');
         this.getVideoTextures('video-2');
@@ -804,15 +893,18 @@ export default class MonitorScreen extends EventEmitter {
 }
 
 
-async function attachSceneComponentsToMonitor(monitor, threejsDrawing) {
+async function attachSceneComponentsToMonitor(monitor, threejsDrawing, cssScene) {
     Object.assign(monitor, {
         scene: threejsDrawing.data.scene,
-        cssScene: threejsDrawing.data.cssRenderer,
+        cssScene: cssScene,
         camera: threejsDrawing.data.camera
     })
 }
 
 async function drawMonitor(scene, threejsDrawing) {
+    const cssScene = new Scene();
+    threejsDrawing.data.cssScene = cssScene;
+
     // Provide a data bucket if not present
     if (!threejsDrawing.data) threejsDrawing.data = {};
     const data = threejsDrawing.data;
@@ -821,19 +913,47 @@ async function drawMonitor(scene, threejsDrawing) {
     data.monitorScreen = new MonitorScreen(data.url);
 
     // Attach the scene components to the monitor
-    await attachSceneComponentsToMonitor(data.monitorScreen, threejsDrawing);
+    await attachSceneComponentsToMonitor(data.monitorScreen, threejsDrawing, cssScene);
+
+    data.monitorScreen.loadItems(sources);
+
+    // Create the screen
+    data.monitorScreen.mouse = new Mouse();
+    data.monitorScreen.createScreen();
 
     //scene.add(data.monitorScreen.scene);
     //data.cssScene.add(data.monitorScreen.cssScene);
 
     // Add the dimming plane to the CSS scene
-    data.cssScene.add(data.monitorScreen.dimmingPlane);
+    data.monitorScreen.cssScene.add(data.monitorScreen.dimmingPlane);
 
     // Set the camera to look at the monitor screen
-    threejsDrawing.camera.instance.lookAt(data.monitorScreen.position);
+    data.monitorScreen.camera.lookAt(data.monitorScreen.position);
+
+    // Set the camera to look at the monitor screen
+    data.monitorScreen.camera.position.copy(data.monitorScreen.position);
+    data.monitorScreen.camera.rotation.copy(data.monitorScreen.rotation);
+
+    // Add some lights...
+    const light = new DirectionalLight(0xffffff, 1);
+    light.position.set(0, 10, 0);
+    light.castShadow = true;
+    light.shadow.mapSize.width = 1024;
 }
 
 function animationCallback(renderer, timestamp, threejsDrawing, uiState, camera) {
+    const cssScene = threejsDrawing.data.cssScene;
+    const cssRenderer = threejsDrawing.data.cssRenderer;
+
+    if (!cssRenderer) {
+        console.warn('CSS Renderer not found');
+        return;
+    }
+    if (!cssScene) {
+        console.warn('CSS Scene not found');
+        return;
+    }
+    cssRenderer.render(cssScene, camera);
 }
 
 const monitorDrawing = {
@@ -848,6 +968,7 @@ const monitorDrawing = {
     sceneConfig: {
         //startPosition: { x: TILE*1.5, y: 2, z: TILE*1.5 },
         //controller: 'pointerlock'
+        'cssRenderer': '3D'
     }
 };
 
