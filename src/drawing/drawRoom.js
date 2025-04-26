@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import { TextureLoader } from 'three';
 import { GUI } from 'lil-gui';
 
 // Import our modular “draw” functions
@@ -8,7 +8,7 @@ import { drawWalls } from './drawWalls.js';
 
 let previousShadowMap = false;
 
-const textureLoader = new THREE.TextureLoader();
+const textureLoader = new TextureLoader();
 
 function drawRoom(scene, threejsDrawing) {
     // ~~~~~~~~~~~~~~~~~~

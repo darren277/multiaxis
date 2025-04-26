@@ -1,4 +1,4 @@
-import * as THREE from 'three'; // for any references you still need
+import { Vector3 } from 'three'; // for any references you still need
 import {Tween, Easing} from 'tween'
 
 let currentViewIndex = 0;
@@ -7,16 +7,16 @@ let currentViewIndex = 0;
 // Each view has a camera position (x, y, z) and a "lookAt" point
 const cameraViews = [
     {
-        position: new THREE.Vector3(30, 20, 50),
-        lookAt: new THREE.Vector3(0, 0, 0)
+        position: new Vector3(30, 20, 50),
+        lookAt: new Vector3(0, 0, 0)
     },
     {
-        position: new THREE.Vector3(-40, 10, 20),
-        lookAt: new THREE.Vector3(0, 0, 0)
+        position: new Vector3(-40, 10, 20),
+        lookAt: new Vector3(0, 0, 0)
     },
     {
-        position: new THREE.Vector3(0, 60, 0),
-        lookAt: new THREE.Vector3(0, 0, 0)
+        position: new Vector3(0, 60, 0),
+        lookAt: new Vector3(0, 0, 0)
     }
     // Add as many views as you like...
 ];

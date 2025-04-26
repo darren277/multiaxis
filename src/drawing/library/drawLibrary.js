@@ -1,15 +1,15 @@
-import * as THREE from 'three'; // for any references you still need
+import { TextureLoader, BoxGeometry, PlaneGeometry, SphereGeometry, Mesh, MeshBasicMaterial, MeshStandardMaterial, Vector2, Vector3, Raycaster, AmbientLight, DirectionalLight } from 'three'; // for any references you still need
 import { CSS2DObject } from 'css2drenderer';
 import { sortAlphabeticallyByName } from './sortResources.js';
 import { calculatePositionOfResource, casePitchX, rowPitchZ, worldX, worldZ } from './calculatePosition.js';
 import { onKeyDownWalking, onKeyUpWalking, walkingAnimationCallback } from '../../config/walking.js';
 
 function drawFloor(scene) {
-    const floorGeometry = new THREE.PlaneGeometry(200, 200);
-    const floorMaterial = new THREE.MeshStandardMaterial({
+    const floorGeometry = new PlaneGeometry(200, 200);
+    const floorMaterial = new MeshStandardMaterial({
         color: 0x888888,
     });
-    const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+    const floor = new Mesh(floorGeometry, floorMaterial);
     floor.rotation.x = -Math.PI / 2; // make it horizontal
     floor.position.y = 0;
     floor.receiveShadow = true;
@@ -17,41 +17,41 @@ function drawFloor(scene) {
 }
 
 
-const textureLoader = new THREE.TextureLoader();
+const textureLoader = new TextureLoader();
 
 
 function createBookCaseMesh(scene,
 {
     name, texturePath,
     width = 10, height = 10, depth = 0.5,
-    position = new THREE.Vector3(), rotation = new THREE.Vector3()
+    position = new Vector3(), rotation = new Vector3()
 }) {
     // Load the bookcase texture
     const bookCaseTexture = textureLoader.load(texturePath);
 
     // Option A: Just a plane (front face)
-    // const geometry = new THREE.PlaneGeometry(width, height);
-    // const material = new THREE.MeshBasicMaterial({
+    // const geometry = new PlaneGeometry(width, height);
+    // const material = new MeshBasicMaterial({
     //   map: bookCaseTexture,
-    //   side: THREE.DoubleSide
+    //   side: DoubleSide
     // });
-    // const bookCaseMesh = new THREE.Mesh(geometry, material);
+    // const bookCaseMesh = new Mesh(geometry, material);
 
     // Option B: A thin box for a bit more realism
-    const boxGeometry = new THREE.BoxGeometry(width, height, depth);
+    const boxGeometry = new BoxGeometry(width, height, depth);
     // We'll put the texture on the front face only:
     //  - For a quick approach, set 'map' for all faces or
     //  - Create different materials for front/back/sides
     const materials = [
-        new THREE.MeshBasicMaterial({ color: 0xcccccc }), // left
-        new THREE.MeshBasicMaterial({ color: 0xcccccc }), // right
-        new THREE.MeshBasicMaterial({ color: 0xcccccc }), // top
-        new THREE.MeshBasicMaterial({ color: 0xcccccc }), // bottom
-        new THREE.MeshBasicMaterial({ map: bookCaseTexture }), // front
-        new THREE.MeshBasicMaterial({ color: 0xcccccc })  // back
+        new MeshBasicMaterial({ color: 0xcccccc }), // left
+        new MeshBasicMaterial({ color: 0xcccccc }), // right
+        new MeshBasicMaterial({ color: 0xcccccc }), // top
+        new MeshBasicMaterial({ color: 0xcccccc }), // bottom
+        new MeshBasicMaterial({ map: bookCaseTexture }), // front
+        new MeshBasicMaterial({ color: 0xcccccc })  // back
     ];
 
-    const bookCaseMesh = new THREE.Mesh(boxGeometry, materials);
+    const bookCaseMesh = new Mesh(boxGeometry, materials);
 
     bookCaseMesh.name = name;
     // Position/rotate
@@ -84,13 +84,13 @@ function createBookCases(scene, width, height, depth, row1StartX, spaceBetween, 
             width: width,
             height: height,
             depth: depth,
-            position: new THREE.Vector3(x_pos, y_pos, z_pos)
+            position: new Vector3(x_pos, y_pos, z_pos)
         });
 
         // draw reverse side...
         const reverse_z_pos = z_pos - 0.5;
 
-        const rotation = new THREE.Vector3(0, Math.PI, 0);
+        const rotation = new Vector3(0, Math.PI, 0);
 
         createBookCaseMesh(
         scene,
@@ -100,7 +100,7 @@ function createBookCases(scene, width, height, depth, row1StartX, spaceBetween, 
             width: width,
             height: height,
             depth: depth,
-            position: new THREE.Vector3(x_pos, y_pos, reverse_z_pos),
+            position: new Vector3(x_pos, y_pos, reverse_z_pos),
             rotation: rotation
         });
 
@@ -120,11 +120,11 @@ function createBookCases(scene, width, height, depth, row1StartX, spaceBetween, 
 
 function createLights(scene) {
     // Ambient light
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+    const ambientLight = new AmbientLight(0xffffff, 0.7);
     scene.add(ambientLight);
 
     // Directional or point light
-    const dirLight = new THREE.DirectionalLight(0xffffff, 0.5);
+    const dirLight = new DirectionalLight(0xffffff, 0.5);
     dirLight.position.set(10, 20, 10);
     scene.add(dirLight);
 }
@@ -211,8 +211,8 @@ function drawLibrary(scene, threejsDrawing) {
 }
 
 
-const raycaster = new THREE.Raycaster();
-const mouse = new THREE.Vector2();
+const raycaster = new Raycaster();
+const mouse = new Vector2();
 
 
 function drawResources(scene, library, resources, row1StartX, row0StartZ, camera, renderer) {
@@ -227,9 +227,9 @@ function drawResources(scene, library, resources, row1StartX, row0StartZ, camera
         console.log(`Resource: ${resource.name}, Position: (${x}, ${y}, ${z})`);
 
         // simple sphere for now...
-        const sphere = new THREE.Mesh(
-            new THREE.SphereGeometry(0.5, 16, 16),
-            new THREE.MeshStandardMaterial({ color: 0x00ff00 })
+        const sphere = new Mesh(
+            new SphereGeometry(0.5, 16, 16),
+            new MeshStandardMaterial({ color: 0x00ff00 })
         );
 
         sphere.position.set(x, y, z);

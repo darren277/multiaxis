@@ -4,13 +4,19 @@ import { ClickAndKeyControls } from './config/clickControlHelper.js';
 
 import { drawImage } from './drawing/drawImage.js';
 
-import { usePanoramicCubeBackground, useProceduralBackground } from './drawing/drawBackground.js';
+import { OutlineEffect } from 'outline-effect';
+
+import { usePanoramicCubeBackground, useProceduralBackground, usePanoramicCubeBackgroundSixFaces } from './drawing/drawBackground.js';
 
 import uiPanelConfig from './config/uiPanelConfig.js';
+
+import { drawNavCubes, onClickNav } from './config/navigation.js';
 
 //import * as THREE from 'three'; // for any references you still need
 import { TextureLoader, FileLoader } from 'three'; // for texture loading
 // Or import { FileLoader } from 'three'; if you just need the loader
+
+import { BoxGeometry, Mesh, MeshNormalMaterial, GridHelper, FloatType } from 'three';
 
 import {update as tweenUpdate} from 'tween'
 
@@ -60,17 +66,34 @@ const THREEJS_DRAWINGS = {
     'force3d': () => import('./drawing/drawForce.js').then(m => m.force3dDrawing),
     'cards': () => import('./drawing/drawCards.js').then(m => m.cardsDrawing),
     'gltf': () => import('./drawing/drawGLTF.js').then(m => m.gltfDrawing),
+    'synapse': () => import('./drawing/drawNeuro.js').then(m => m.synapseDrawing),
+    'brain': () => import('./drawing/drawBrain.js').then(m => m.brainDrawing),
+    'chemistry': () => import('./drawing/drawChemistry.js').then(m => m.chemistryDrawing),
+    'game': () => import('./drawing/drawGame.js').then(m => m.gameDrawing),
+    'ammo': () => import('./drawing/drawAmmo.js').then(m => m.ammoDrawing),
+    'periodic': () => import('./drawing/drawPeriodic.js').then(m => m.periodicDrawing),
+    'monitor': () => import('./drawing/drawMonitor.js').then(m => m.monitorDrawing),
+    'tv': () => import('./drawing/drawTV.js').then(m => m.tvDrawing),
+    'drive': () => import('./drawing/drawDrive.js').then(m => m.driveDrawing),
+    'farm': () => import('./drawing/drawFarm.js').then(m => m.farmDrawing),
+    'exr': () => import('./drawing/drawEXR.js').then(m => m.exrDrawing),
+    'skibidi': () => import('./drawing/drawSkibidi.js').then(m => m.skibidiDrawing),
+    'physics': () => import('./drawing/drawPhysics.js').then(m => m.physicsDrawing),
+    'audioviz': () => import('./drawing/drawAudioViz.js').then(m => m.audioVizDrawing),
+    'network': () => import('./drawing/drawNetwork.js').then(m => m.networkDrawing),
+    'smoke': () => import('./drawing/drawSmoke.js').then(m => m.smokeDrawing),
+    'buildings': () => import('./drawing/drawGeo.js').then(m => m.buildingsDrawing),
 };
 
 
 function drawHelpers(scene, threejsDrawing) {
-    const refGeometry = new THREE.BoxGeometry(1, 1, 1); // 1x1x1 cube
-    const refMaterial = new THREE.MeshNormalMaterial({ wireframe: true });
-    const refCube = new THREE.Mesh(refGeometry, refMaterial);
+    const refGeometry = new BoxGeometry(1, 1, 1); // 1x1x1 cube
+    const refMaterial = new MeshNormalMaterial({ wireframe: true });
+    const refCube = new Mesh(refGeometry, refMaterial);
     refCube.position.set(0, 0.5, 0); // sit on ground
     scene.add(refCube);
 
-    const gridHelper = new THREE.GridHelper(10, 10); // 10x10 units
+    const gridHelper = new GridHelper(10, 10); // 10x10 units
     scene.add(gridHelper);
 
     //window.debugObject = object; // now accessible from console
@@ -98,6 +121,28 @@ document.addEventListener('DOMContentLoaded', () => {
     })
 })
 
+async function prepareDrawingContext(threejsDrawing, scene, camera, renderer, controls, cssRenderer) {
+    Object.assign(threejsDrawing.data, {
+        scene,
+        camera,
+        renderer,
+        controls,
+        cssRenderer,
+    });
+    return threejsDrawing;
+}
+
+
+const CUBE_DEFS = [
+    { targetScene: 'library', position: [1, 0.25, -2], color: 0x00ff00 },
+    { targetScene: 'farm', position: [2, 0.25, -2], color: 0x0000ff },
+    { targetScene: 'room', position: [3, 0.25, -2], color: 0xff0000 },
+    { targetScene: 'kitchen', position: [4, 0.25, -2], color: 0xffff00 },
+    { targetScene: 'bathroom', position: [5, 0.25, -2], color: 0xff00ff },
+    { targetScene: 'livingroom', position: [6, 0.25, -2], color: 0x00ffff }
+]
+
+
 async function contentLoadedCallback(threejsDrawing) {
     const dataSelected = document.querySelector('meta[name="data_selected"]').content;
 
@@ -110,19 +155,19 @@ async function contentLoadedCallback(threejsDrawing) {
     }
 
     const startPosition = threejsDrawing.sceneConfig && threejsDrawing.sceneConfig.startPosition || {x: 0, y: 2, z: 5};
+    const lookAt = threejsDrawing.sceneConfig && threejsDrawing.sceneConfig.lookAt || {x: 0, y: 0, z: 0};
     const clippingPlane = threejsDrawing.sceneConfig && threejsDrawing.sceneConfig.clippingPlane || 1000;
     const controller = threejsDrawing.sceneConfig && threejsDrawing.sceneConfig.controller || 'orbital';
     const cssRendererEnabled = threejsDrawing.sceneConfig && threejsDrawing.sceneConfig.cssRenderer || false;
+    const outlineEffectEnabled = threejsDrawing.sceneConfig && threejsDrawing.sceneConfig.outlineEffect || false;
+    const background = threejsDrawing.sceneConfig && threejsDrawing.sceneConfig.background || 0x000000;
 
-    const { scene, camera, renderer, controls, stats, cssRenderer } = await setupScene('c', threejsDrawing.sceneElements, startPosition, clippingPlane, controller, cssRendererEnabled);
+    const { scene, camera, renderer, controls, stats, cssRenderer } = await setupScene('c', threejsDrawing.sceneElements, startPosition, lookAt, clippingPlane, background, controller, cssRendererEnabled);
 
     // TODO: Are these all necessary?
     // And if any of them are, only conditionally?
     // Also, possibly redundant with `uiState`.
-    threejsDrawing.data.camera = camera;
-    threejsDrawing.data.renderer = renderer;
-    threejsDrawing.data.scene = scene;
-    threejsDrawing.data.controls = controls;
+    await prepareDrawingContext(threejsDrawing, scene, camera, renderer, controls, cssRenderer);
 
     for (const {func, dataSrc, dataType} of threejsDrawing.drawFuncs) {
         if (dataSrc) {
@@ -131,7 +176,7 @@ async function contentLoadedCallback(threejsDrawing) {
             threejsDrawing.data.dataSrc = data_src;
             if (dataType === 'svg') {
                 import('svgloader').then(m => {
-                    const SVGLoader = m.SVGLoader;
+                    const svgLoader = new m.SVGLoader();
                     svgLoader.load(`./imagery/${data_src}_out_annotated.svg`, (data) => {
                         func(scene, data, threejsDrawing);
                     });
@@ -156,11 +201,20 @@ async function contentLoadedCallback(threejsDrawing) {
                         func(scene, gltf, threejsDrawing);
                     });
                 });
+            } else if (dataType === 'exr') {
+                import('exrloader').then(m => {
+                    const EXRLoader = m.EXRLoader;
+                    const exrLoader = new EXRLoader();
+                    exrLoader.setDataType(FloatType).load(`./textures/${data_src}.exr`, (texture) => {
+                        console.log(`Loaded EXR texture: ${data_src}`, texture);
+                        func(scene, texture, threejsDrawing);
+                    });
+                });
             } else {
                 console.error(`Unknown data type: ${dataType}`);
             }
         } else {
-            func(scene, threejsDrawing);
+            await func(scene, threejsDrawing);
         }
     }
 
@@ -183,10 +237,19 @@ async function contentLoadedCallback(threejsDrawing) {
     }
 
     // --- OPTION 1: Panoramic cube skybox ---
-    //usePanoramicCubeBackground(scene);
+    //usePanoramicCubeBackground(scene, 'textures/sun_temple_stripe.jpg');
+    //usePanoramicCubeBackgroundSixFaces(scene, 'textures/exr/golden_gate_hills_1k');
 
     // --- OPTION 2: Simple procedural background ---
     /////useProceduralBackground(scene);
+
+    // NAV CUBE //
+    //drawNavCubes(scene, threejsDrawing, CUBE_DEFS);
+
+    // Add event listener for navigation
+    window.addEventListener('click', (event) => {
+        onClickNav(event, scene, renderer, camera);
+    });
 
     //drawImage(scene, 'textures/Canestra_di_frutta_Caravaggio.jpg');
 
@@ -202,6 +265,10 @@ async function contentLoadedCallback(threejsDrawing) {
         }
     }
 
+    if (outlineEffectEnabled) {
+        const effect = new OutlineEffect(renderer);
+    }
+
     // 5) Animate loop
     renderer.setAnimationLoop((timestamp, frame) => {
         // Update controls (if using OrbitControls or similar)
@@ -212,7 +279,6 @@ async function contentLoadedCallback(threejsDrawing) {
         // Update UI state and call your animation callback
         uiState.rect = renderer.domElement.getBoundingClientRect();
         if (threejsDrawing.animationCallback) {
-            threejsDrawing.data.controls = controls;
             threejsDrawing.animationCallback(renderer, timestamp, threejsDrawing, uiState, camera);
         }
 
@@ -233,6 +299,10 @@ async function contentLoadedCallback(threejsDrawing) {
         // CSS Renderer (2d or 3d)
         if (cssRenderer) {
             cssRenderer.render(scene, camera);
+        }
+
+        if (outlineEffectEnabled) {
+            effect.render(scene, camera);
         }
     });
 }

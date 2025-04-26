@@ -6,6 +6,18 @@ function importOrbitControls() {
     });
 }
 
+function importPointerLockControls() {
+    return import('pointerlockcontrols').then(module => {
+        return module.PointerLockControls;
+    });
+}
+
+function importTrackballControls() {
+    return import('trackballcontrols').then(module => {
+        return module.TrackballControls;
+    });
+}
+
 function importCSS3DRenderer() {
     return import('css3drenderer').then(module => {
         return module.CSS3DRenderer;
@@ -35,7 +47,9 @@ export async function setupScene(
     containerId = 'c',
     overlayElements = [],
     startPosition = { x: 0, y: 2, z: 5 },
+    lookAt = { x: 0, y: 0, z: 0 },
     clippingPlane = 1000,
+    background = 0x000000,
     controller = 'orbital',
     cssRendererEnabled = false,
     statsEnabled = false,
@@ -55,7 +69,7 @@ export async function setupScene(
 
     // 2) Scene
     const scene = new Scene();
-    scene.background = new Color(0x000000);
+    scene.background = new Color(background);
 
     // 3) Camera
     const camera = new PerspectiveCamera(75, width / height, 0.1, clippingPlane);
@@ -136,7 +150,7 @@ export async function setupScene(
         container.appendChild(el);
     }
 
-    camera.lookAt(0, 0, 0); // look at the origin
+    camera.lookAt(lookAt.x, lookAt.y, lookAt.z);
 
     // 6) Resize handling
     function onWindowResize() {
@@ -156,11 +170,22 @@ export async function setupScene(
         controls = new OrbitControls(camera, renderer.domElement);
         controls.enabled = true; // we can toggle later
 
-        controls.target.set(0, 0, 0); // set the target to the origin
+        //controls.target.set(0, 0, 0); // set the target to the origin
+        controls.target.set(lookAt.x, lookAt.y, lookAt.z); // set the target to the origin
         controls.update();
     } else if (controller === 'walking') {
         // TODO...
         controls = null;
+    } else if (controller === 'pointerlock') {
+        const PointerLockControls = await importPointerLockControls();
+        controls = new PointerLockControls(camera, renderer.domElement);
+        document.body.addEventListener('click', () => controls.lock());
+        scene.add(controls.object);
+    } else if (controller === 'trackball') {
+        const TrackballControls = await importTrackballControls();
+        controls = new TrackballControls(camera, renderer.domElement);
+        controls.minDistance = 500;
+        controls.maxDistance = 6000;
     } else {
         controls = null;
     }

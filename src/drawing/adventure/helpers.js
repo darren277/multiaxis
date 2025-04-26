@@ -56,3 +56,5 @@ function goToStep(camera, stepId, adventureSteps, controls, uiState) {
         }, stepData.autoNext.delay);
     }
 }
+
+export { goToStep };

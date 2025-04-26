@@ -57,21 +57,38 @@ def serve_threejs(animation):
         "textgeometry": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/geometries/TextGeometry.js",
         "fontloader": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/loaders/FontLoader.js",
         "orbitcontrols": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/controls/OrbitControls.js",
+        "pointerlockcontrols": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/controls/PointerLockControls.js",
+        "trackballcontrols": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/controls/TrackballControls.js",
         "svgloader": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/loaders/SVGLoader.js",
         "svgrenderer": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/renderers/SVGRenderer.js",
         "css2drenderer": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/renderers/CSS2DRenderer.js",
         "css3drenderer": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/renderers/CSS3DRenderer.js",
         "gltfloader": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/loaders/GLTFLoader.js",
+        "pdbloader": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/loaders/PDBLoader.js",
 
         "tween": "https://unpkg.com/@tweenjs/tween.js@23.1.3/dist/tween.esm.js",
 
         "stats": "https://cdnjs.cloudflare.com/ajax/libs/stats.js/r17/Stats.min.js",
         "lil-gui": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/libs/lil-gui.module.min.js",
 
+        'objloader': f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/loaders/OBJLoader.js",
+        'plyloader': f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/loaders/PLYLoader.js",
+        'exrloader': f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/loaders/EXRLoader.js",
+
         "d3-force-3d": "https://cdn.skypack.dev/d3-force-3d",
         "three-spritetext": "//unpkg.com/three-spritetext/dist/three-spritetext.mjs",
         "3d-force-graph": "https://cdn.jsdelivr.net/npm/3d-force-graph@1.77.0/+esm",
         "vrbutton": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/webxr/VRButton.js",
+
+        "convex-object-breaker": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/misc/ConvexObjectBreaker.js",
+        "convex-geometry": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/geometries/ConvexGeometry.js",
+
+        "perlin-noise": "https://cdn.jsdelivr.net/npm/perlin-noise@0.0.1/+esm",
+        "noisejs": "https://cdn.jsdelivr.net/npm/noisejs@2.1.0/+esm",
+
+        "outline-effect": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/effects/OutlineEffect.js",
+
+        "d3-hierarchy": "https://cdn.jsdelivr.net/npm/d3-hierarchy@3/+esm",
     }
 
     # Force3d importmap:
@@ -126,7 +143,7 @@ def serve_texture(filename, ext):
     Example: /textures/Canestra_di_frutta_Caravaggio.jpg
     """
     path = os.path.join('src', 'textures', f'{filename}.{ext}')
-    if ext not in ['jpg', 'jpeg', 'png', 'mp4']:
+    if ext not in ['jpg', 'jpeg', 'png', 'mp4', 'exr']:
         abort(404)
     if ext == 'jpg' or ext == 'jpeg':
         mimetype = 'image/jpeg'
@@ -134,6 +151,14 @@ def serve_texture(filename, ext):
         mimetype = 'image/png'
     elif ext == 'mp4':
         mimetype = 'video/mp4'
+    elif ext == 'exr':
+        mimetype = 'image/vnd.radiance'
+        if filename.startswith('OTHER_'):
+            # D:\OTHER\Blender\HDRI
+            filename = filename[6:]
+            path = os.path.join('D:', 'OTHER', 'Blender', 'HDRI', f'{filename}.{ext}')
+        else:
+            path = os.path.join('src', 'textures', 'exr', f'{filename}.{ext}')
     else:
         abort(404)
     if os.path.exists(path):
@@ -150,12 +175,18 @@ def serve_texture(filename, ext):
 @app.route('/threejs/imagery/<path:filename>.<ext>')
 def serve_image(filename, ext):
     """
-    Serve any image file under /images/.
-    Example: /images/Canestra_di_frutta_Caravaggio.jpg
+    Serve any image file under /imagery/.
+    Example: /imagery/Canestra_di_frutta_Caravaggio.jpg
     """
+    if sum(1 for c in ext if c == '.') > 1:
+        remaining_file_name_and_ext = ext.split('.')
+        remaining_file_name = remaining_file_name_and_ext[:-1]
+        ext = remaining_file_name_and_ext[-1]
+        remaining_file_name = ".".join(remaining_file_name)
+        filename = filename + '.' + remaining_file_name
     path = os.path.join('src', 'imagery', f'{filename}.{ext}')
     print(f"Serving image: {path}")
-    if ext not in ['jpg', 'jpeg', 'png', 'svg', 'glb']:
+    if ext not in ['jpg', 'jpeg', 'png', 'svg', 'glb', 'ply', 'obj', 'pdb', 'gltf', 'bin', 'mp3']:
         abort(404)
     if ext == 'jpg' or ext == 'jpeg':
         mimetype = 'image/jpeg'
@@ -165,11 +196,24 @@ def serve_image(filename, ext):
         mimetype = 'image/svg+xml'
     elif ext == 'glb':
         mimetype = 'model/gltf-binary'
+    elif ext == 'ply':
+        mimetype = 'model/ply'
+    elif ext == 'obj':
+        mimetype = 'model/obj'
+    elif ext == 'pdb':
+        mimetype = 'chemical/x-pdb'
+    elif ext == 'gltf':
+        mimetype = 'model/gltf+json'
+    elif ext == 'bin':
+        mimetype = 'application/octet-stream'
+    elif ext == 'mp3':
+        mimetype = 'audio/mpeg'
     else:
         abort(404)
     if os.path.exists(path):
         return send_file(path, mimetype=mimetype)
     else:
+        print(f"File not found: {path}")
         abort(404)
 
 @app.route('/scripts/helvetiker_regular.typeface.json')
@@ -182,19 +226,31 @@ def serve_helvetiker():
     else:
         abort(404)
 
-@app.route('/data/<path:filename>.json')
-@app.route('/threejs/<path:filename>.json')
-def serve_json(filename):
+@app.route('/data/<path:filename>.<ext>')
+@app.route('/threejs/<path:filename>.<ext>')
+def serve_json(filename, ext):
     """
     Serve any .json file from the current directory or subdirs,
     capturing anything that ends with .json.
     """
-    if not filename.startswith('data/'):
-        path = f'data/{filename}.json'
-    else:
-        path = f'{filename}.json'
-    if os.path.exists(path):
-        return send_file(path, mimetype='application/json')
+    print(f"Serving JSON: {filename}, ext: {ext}")
+    if ext == 'geojson':
+        mimetype = 'application/geo+json'
+        path = os.path.join(f'{filename}.geojson')
+        print(path)
+        if os.path.exists(path):
+            return send_file(path, mimetype=mimetype)
+        else:
+            abort(404)
+    elif ext == 'json':
+        if not filename.startswith('data/'):
+            path = f'data/{filename}.json'
+        else:
+            path = f'{filename}.json'
+        if os.path.exists(path):
+            return send_file(path, mimetype='application/json')
+        else:
+            abort(404)
     else:
         abort(404)
 

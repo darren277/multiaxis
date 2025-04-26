@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import { Vector3, Line, LineBasicMaterial, BufferGeometry } from 'three';
 
 function plotFunction(
 scene,
@@ -6,7 +6,7 @@ scene,
     fn,
     xRange = [-5, 5],
     samples = 100,
-    material = new THREE.LineBasicMaterial({ color: 0xff0000 }),
+    material = new LineBasicMaterial({ color: 0xff0000 }),
     zOffset = 0
 }) {
     const [xMin, xMax] = xRange;
@@ -20,13 +20,13 @@ scene,
         // compute y
         const y = fn(x);
 
-        // store as a THREE.Vector3
-        points.push(new THREE.Vector3(x, y, zOffset));
+        // store as a Vector3
+        points.push(new Vector3(x, y, zOffset));
     }
 
     // Step 2: Create geometry and line
-    const geometry = new THREE.BufferGeometry().setFromPoints(points);
-    const line = new THREE.Line(geometry, material);
+    const geometry = new BufferGeometry().setFromPoints(points);
+    const line = new Line(geometry, material);
     scene.add(line);
 
     return line; // in case you want a reference to the line object
@@ -40,7 +40,7 @@ function plotSomeFunctions(scene) {
         fn: (x) => 2 * x + 1,
         xRange: [-5, 5],
         samples: 200,
-        material: new THREE.LineBasicMaterial({ color: 0x0000ff }) // optional
+        material: new LineBasicMaterial({ color: 0x0000ff }) // optional
     });
 
     // Example 2: Exponential f(x) = e^x
@@ -49,7 +49,7 @@ function plotSomeFunctions(scene) {
         fn: (x) => Math.exp(x),
         xRange: [-2, 2],
         samples: 300,
-        material: new THREE.LineBasicMaterial({ color: 0x00ff00 })
+        material: new LineBasicMaterial({ color: 0x00ff00 })
     });
 
     // Example 3: Piecewise function
@@ -60,29 +60,29 @@ function plotSomeFunctions(scene) {
         fn: (x) => x < 0 ? x * x : 2 * x + 1,
         xRange: [-5, 5],
         samples: 500,
-        material: new THREE.LineBasicMaterial({ color: 0xff00ff })
+        material: new LineBasicMaterial({ color: 0xff00ff })
     });
 }
 
 function addAxes(scene, size = 10) {
     // X axis (red)
     const xPoints = [
-        new THREE.Vector3(-size, 0, 0),
-        new THREE.Vector3(size, 0, 0),
+        new Vector3(-size, 0, 0),
+        new Vector3(size, 0, 0),
     ];
-    const xGeom = new THREE.BufferGeometry().setFromPoints(xPoints);
-    const xMat = new THREE.LineBasicMaterial({ color: 0xff0000 });
-    const xAxis = new THREE.Line(xGeom, xMat);
+    const xGeom = new BufferGeometry().setFromPoints(xPoints);
+    const xMat = new LineBasicMaterial({ color: 0xff0000 });
+    const xAxis = new Line(xGeom, xMat);
     scene.add(xAxis);
 
     // Y axis (green)
     const yPoints = [
-        new THREE.Vector3(0, -size, 0),
-        new THREE.Vector3(0, size, 0),
+        new Vector3(0, -size, 0),
+        new Vector3(0, size, 0),
     ];
-    const yGeom = new THREE.BufferGeometry().setFromPoints(yPoints);
-    const yMat = new THREE.LineBasicMaterial({ color: 0x00ff00 });
-    const yAxis = new THREE.Line(yGeom, yMat);
+    const yGeom = new BufferGeometry().setFromPoints(yPoints);
+    const yMat = new LineBasicMaterial({ color: 0x00ff00 });
+    const yAxis = new Line(yGeom, yMat);
     scene.add(yAxis);
 }
 

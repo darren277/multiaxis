@@ -1,7 +1,7 @@
-import * as THREE from 'three';
+import { Mesh, MeshStandardMaterial, PlaneGeometry, RepeatWrapping, SRGBColorSpace } from 'three';
 
 export function drawFloor(scene, textureLoader) {
-    const floorMat = new THREE.MeshStandardMaterial({
+    const floorMat = new MeshStandardMaterial({
         roughness: 0.8,
         color: 0xffffff,
         metalness: 0.2,
@@ -10,18 +10,18 @@ export function drawFloor(scene, textureLoader) {
 
     // Load texture maps
     textureLoader.load('textures/hardwood2_diffuse.jpg', (map) => {
-        map.wrapS = THREE.RepeatWrapping;
-        map.wrapT = THREE.RepeatWrapping;
+        map.wrapS = RepeatWrapping;
+        map.wrapT = RepeatWrapping;
         map.anisotropy = 4;
         map.repeat.set(10, 24);
-        map.colorSpace = THREE.SRGBColorSpace;
+        map.colorSpace = SRGBColorSpace;
         floorMat.map = map;
         floorMat.needsUpdate = true;
     });
 
     textureLoader.load('textures/hardwood2_bump.jpg', (map) => {
-        map.wrapS = THREE.RepeatWrapping;
-        map.wrapT = THREE.RepeatWrapping;
+        map.wrapS = RepeatWrapping;
+        map.wrapT = RepeatWrapping;
         map.anisotropy = 4;
         map.repeat.set(10, 24);
         floorMat.bumpMap = map;
@@ -29,16 +29,16 @@ export function drawFloor(scene, textureLoader) {
     });
 
     textureLoader.load('textures/hardwood2_roughness.jpg', (map) => {
-        map.wrapS = THREE.RepeatWrapping;
-        map.wrapT = THREE.RepeatWrapping;
+        map.wrapS = RepeatWrapping;
+        map.wrapT = RepeatWrapping;
         map.anisotropy = 4;
         map.repeat.set(10, 24);
         floorMat.roughnessMap = map;
         floorMat.needsUpdate = true;
     });
 
-    const floorGeometry = new THREE.PlaneGeometry(20, 20);
-    const floorMesh = new THREE.Mesh(floorGeometry, floorMat);
+    const floorGeometry = new PlaneGeometry(20, 20);
+    const floorMesh = new Mesh(floorGeometry, floorMat);
     floorMesh.receiveShadow = true;
     floorMesh.rotation.x = -Math.PI / 2;
     scene.add(floorMesh);

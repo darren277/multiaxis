@@ -1,4 +1,80 @@
-import * as THREE from 'three';
+import { Mesh, MeshBasicMaterial, BoxGeometry, SphereGeometry, Raycaster, Vector2 } from 'three';
+import { GLTFLoader } from 'gltfloader';
+import { drawBasicLights } from './drawLights.js';
+import { Tween, Easing } from 'tween';
+
+import { AudioListener, Audio, AudioLoader } from 'three';
+
+const listener = new AudioListener();
+
+
+const KEY_SOUND_PATH = 'imagery/piano/piano-mp3/';
+
+const audioLoader = new AudioLoader();
+
+// create a helper function to verify these mappings from the browser console as they are played...
+
+const NOTE_MAPPING = {
+    'Box001_Solid_Glass_0': 'C1',
+    'Box008_Solid_Glass2_0': 'Db1',
+    'Object006_Solid_Glass_0': 'D1',
+    'Box009_Solid_Glass2_0': 'Eb1',
+    'Object005_Solid_Glass_0': 'E1',
+    'Object004_Solid_Glass_0': 'F1',
+    'Box010_Solid_Glass2_0': 'Gb1',
+    'Object003_Solid_Glass_0': 'G1',
+    'Box011_Solid_Glass2_0': 'Ab1',
+    'Object002_Solid_Glass_0': 'A2',
+    'Box012_Solid_Glass2_0': 'Bb1',
+    'Object001_Solid_Glass_0': 'B2',
+
+    'Box013_Solid_Glass2_0': 'C2',
+    'Box014_Solid_Glass2_0': 'Db2',
+    'Object012_Solid_Glass_0': 'D2',
+    'Box015_Solid_Glass2_0': 'Eb2',
+    'Object011_Solid_Glass_0': 'E2',
+    'Object010_Solid_Glass_0': 'F2',
+    'Box016_Solid_Glass2_0': 'Gb2',
+    'Object009_Solid_Glass_0': 'G2',
+    'Box017_Solid_Glass2_0': 'Ab2',
+    'Object008_Solid_Glass_0': 'A3',
+    'Box018_Solid_Glass2_0': 'Bb2',
+    'Object007_Solid_Glass_0': 'B3',
+
+    'Box019_Solid_Glass2_0': 'C3',
+    'Box020_Solid_Glass2_0': 'Db3',
+    'Object018_Solid_Glass_0': 'D3',
+    'Box021_Solid_Glass2_0': 'Eb3',
+    'Object017_Solid_Glass_0': 'E3',
+    'Object016_Solid_Glass_0': 'F3',
+    'Box022_Solid_Glass2_0': 'Gb3',
+    'Object015_Solid_Glass_0': 'G3',
+    'Box023_Solid_Glass2_0': 'Ab3',
+    'Object014_Solid_Glass_0': 'A4',
+    'Box024_Solid_Glass2_0': 'Bb3',
+    'Object013_Solid_Glass_0': 'B4',
+
+    'Box025_Solid_Glass2_0': 'C4',
+    'Box026_Solid_Glass2_0': 'Db4',
+    'Object024_Solid_Glass_0': 'D4',
+    'Box027_Solid_Glass2_0': 'Eb4',
+    'Object023_Solid_Glass_0': 'E4',
+    'Object024_Solid_Glass_0': 'F4',
+    'Box028_Solid_Glass2_0': 'Gb4',
+    'Object023_Solid_Glass_0': 'G4',
+    'Box029_Solid_Glass2_0': 'Ab4',
+    'Object022_Solid_Glass_0': 'A5',
+    'Box030_Solid_Glass2_0': 'Bb4',
+    'Object021_Solid_Glass_0': 'B5',
+
+    'Box031_Solid_Glass2_0': 'C5',
+    'Box032_Solid_Glass2_0': 'Db5',
+    'Object030_Solid_Glass_0': 'D5',
+
+}
+
+const noteSounds = {}; // e.g., { 'C4': AudioObject, ... }
+
 
 let startTime = null;
 
@@ -34,10 +110,10 @@ function drawSheetMusic(scene, data) {
     const notesRaw = track.notes || [];
 
     // 3) Draw staff lines (white lines on black background, or vice versa)
-    const lineMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    const lineMaterial = new MeshBasicMaterial({ color: 0xffffff });
     for (let i = 0; i < 5; i++) {
-        const lineGeom = new THREE.BoxGeometry(100, 0.02, 0.01);
-        const lineMesh = new THREE.Mesh(lineGeom, lineMaterial);
+        const lineGeom = new BoxGeometry(100, 0.02, 0.01);
+        const lineMesh = new Mesh(lineGeom, lineMaterial);
         // place lines from x=0..100, spaced in y
         lineMesh.position.set(50, i * 0.5, 0);
         scene.add(lineMesh);
@@ -77,9 +153,9 @@ function drawSheetMusic(scene, data) {
                 const yPos = 2 + (msg.note - 60) * 0.1;
 
                 // Build a sphere for the note
-                const geometry = new THREE.SphereGeometry(0.1, 16, 16);
-                const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
-                const noteMesh = new THREE.Mesh(geometry, material);
+                const geometry = new SphereGeometry(0.1, 16, 16);
+                const material = new MeshBasicMaterial({ color: 0xffffff });
+                const noteMesh = new Mesh(geometry, material);
 
                 // We'll place it off to the right (x=100 or so) and animate left.
                 // Initially place it at x=100 so we can scroll from x=10..-10 over note duration
@@ -120,8 +196,158 @@ function drawSheetMusic(scene, data) {
     };
 }
 
+async function loadGltfModel(data_src) {
+    const gltfLoader = new GLTFLoader();
+    const gltf = await gltfLoader.loadAsync(`./imagery/${data_src}.gltf`);
+    return gltf;
+}
+
+const raycaster = new Raycaster();
+const mouse = new Vector2();
+const clickableKeys = [];
+
+const keyZdelta = 5.0;
+
+function onKeyClick(keyMesh) {
+    const originalZ = keyMesh.position.z;
+
+    // Animate down
+    new Tween(keyMesh.position)
+        .to({ z: originalZ - keyZdelta }, 100)
+        .easing(Easing.Quadratic.Out)
+        .onComplete(() => {
+            // Animate up
+            new Tween(keyMesh.position)
+                .to({ z: originalZ }, 100)
+                .easing(Easing.Quadratic.In)
+                .start();
+        })
+        .start();
+
+    console.log('keyMesh', keyMesh);
+    //let note = keyMesh.userData.note;
+    //console.log('note', note);
+    console.log('noteSounds', noteSounds);
+    //console.log(`Playing sound for note: ${note}`);
+
+//    if (keyMesh.name === 'Object024_Solid_Glass_0') {
+//        note = 'D4';
+//    }
+    let note = NOTE_MAPPING[keyMesh.name];
+    const sound = noteSounds[note];
+
+    if (sound && sound.isPlaying) {
+        sound.stop(); // stop previous playback to allow replay
+    }
+    if (sound) sound.play();
+}
+
+function onMouseClick(event, camera, domElement) {
+    // Normalize mouse coordinates
+    const rect = domElement.getBoundingClientRect();
+    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObjects(clickableKeys);
+
+    if (intersects.length > 0) {
+        onKeyClick(intersects[0].object);
+    }
+}
+
+
+// Object040 = individual key?
 function drawMusic(scene, data, state) {
     state.data.sheetMusic = drawSheetMusic(scene, data);
+
+    const camera = state.data.camera;
+    camera.add(listener);
+
+    loadGltfModel('piano/scene').then((gltf) => {
+        const piano = gltf.scene;
+        piano.position.set(0, 5, 5);
+        piano.scale.set(0.1, 0.1, 0.1);
+        scene.add(piano);
+
+        // iterate over all children of the gltf scene
+        piano.traverse((child) => {
+            if (child.isMesh) {
+                child.castShadow = true;
+                child.receiveShadow = true;
+            }
+            console.log(`Child: ${child.name}`);
+
+            // Detect key names — adjust if different!
+            if (/^Object\d+$/.test(child.name)) {
+                console.log(`Clickable key: ${child.name}`);
+
+                console.log('child', child);
+                const glass = child.children[0].children[0];
+
+                // Simple mapping for now
+                let note = NOTE_MAPPING[glass.name];
+                console.log(`Note mapping: ${glass.name} => ${note}`);
+
+                // Load sound only once per note
+                if (!noteSounds[note]) {
+                    const sound = new Audio(listener);
+                    console.log(`Loading sound for note: ${note}`);
+                    audioLoader.load(`${KEY_SOUND_PATH}${note}.mp3`, (buffer) => {
+                        console.log(`Loaded sound for note: ${note}`);
+                        sound.setBuffer(buffer);
+                        sound.setVolume(0.7);
+                        noteSounds[note] = sound;
+                    });
+                }
+
+                console.log(`Adding note: ${note}`);
+                if (!child.userData) {
+                    child.userData = {};
+                }
+                child.userData.note = note;
+                console.log(`Child userData: ${child.userdata}`);
+
+                clickableKeys.push(child);
+            } else {
+                console.log(`Non-clickable child: ${child.name}`);
+                console.log('------ child', child);
+
+                if (child.children && child.children.length >= 1 && child.children[0].children.length >= 1) {
+                    const glass = child.children[0].children[0];
+                    console.log('glass', glass);
+                    if (glass) {
+                        // Simple mapping for now
+                        let note = NOTE_MAPPING[glass.name];
+                        console.log(`Note mapping: ${glass.name} => ${note}`);
+
+                        // Load sound only once per note
+                        if (!noteSounds[note]) {
+                            const sound = new Audio(listener);
+                            console.log(`Loading sound for note: ${note}`);
+                            audioLoader.load(`${KEY_SOUND_PATH}${note}.mp3`, (buffer) => {
+                                console.log(`Loaded sound for note: ${note}`);
+                                sound.setBuffer(buffer);
+                                sound.setVolume(0.7);
+                                noteSounds[note] = sound;
+                            });
+                        }
+
+                        console.log(`Adding note: ${note}`);
+                        if (!child.userData) {
+                            child.userData = {};
+                        }
+                        child.userData.note = note;
+                        console.log(`Child userData: ${child.userdata}`);
+
+                        clickableKeys.push(child);
+                    }
+                }
+            }
+        });
+    });
+
+    drawBasicLights(scene);
 }
 
 const musicDrawing = {
@@ -130,7 +356,13 @@ const musicDrawing = {
         {'func': drawMusic, 'dataSrc': 'music', 'dataType': 'json'},
     ],
     'uiState': {tempoScale: 1.0},
-    'eventListeners': null,
+    // domElement.addEventListener('click', (e) => onMouseClick(e, camera, domElement));
+    'eventListeners': {
+        'click': (event, data) => {
+            const { scene, renderer, camera } = data;
+            onMouseClick(event, camera, renderer.domElement);
+        },
+    },
     'animationCallback': (renderer, timestamp, threejsDrawing, uiState, camera) => {
         if (!startTime) startTime = timestamp;
         const elapsedMs = timestamp - startTime;
