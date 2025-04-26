@@ -244,7 +244,7 @@ async function contentLoadedCallback(threejsDrawing) {
     /////useProceduralBackground(scene);
 
     // NAV CUBE //
-    drawNavCubes(scene, threejsDrawing, CUBE_DEFS);
+    //drawNavCubes(scene, threejsDrawing, CUBE_DEFS);
 
     // Add event listener for navigation
     window.addEventListener('click', (event) => {
