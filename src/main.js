@@ -180,11 +180,6 @@ async function contentLoadedCallback(threejsDrawing) {
                 const worldHeight = pixelToWorldUnits(360, 5, camera);
                 threejsDrawing.data.worldWidth = worldWidth;
                 threejsDrawing.data.worldHeight = worldHeight;
-                if (threejsDrawing.sceneConfig && threejsDrawing.sceneConfig.isForceGraph) {
-                    threejsDrawing.data.renderer = renderer;
-                    threejsDrawing.data.camera = camera;
-                    threejsDrawing.data.controls = controls;
-                }
                 loadDataSource(scene, data_src, func, threejsDrawing);
             } else if (dataType === 'gltf') {
                 import('gltfloader').then(m => {
