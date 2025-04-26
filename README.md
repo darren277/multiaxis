@@ -8,6 +8,14 @@ Originally, it was just meant to be a simple 3D graphing library for plotting po
 
 I've continued to add new things to it, making it more and more modular and extensible until the point where it is now my entire Three.js ecosystem for drawing all kinds of things using one central library.
 
+## Table of Contents
+
+|                                                                                       | Brief Description                                                                                  | Current Status          | Sources                                |
+|---------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------|-------------------------|----------------------------------------|
+| [Adventure](https://github.com/darren277/multiaxis/tree/master/README.md#adventure)   | Programmatic rendering of strategically positioned presentation "slides" with keyboard navigation. | ~80%                    | My own custom implementation.          |
+| [Ammo](https://github.com/darren277/multiaxis/tree/master/README.md#ammo)             | Some demonstrations of the Ammo.js physics library.                                                | 100%                    | From the Three.js examples repository. |
+| [AudioViz](https://github.com/darren277/multiaxis/tree/master/README.md#audioviz) | For experimenting with audio visualiations.                                                        | Simple working example. | Custom implementation.                 |
+
 ## Main Use Cases
 
 ### 3D Graphing
