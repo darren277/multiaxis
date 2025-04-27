@@ -13,6 +13,53 @@ function isGiantWhiteBox(path) {
     return isGiantWhiteBox;
 }
 
+function deriveColorAndDepth(origType, fill, stroke) {
+    // Derive color from style or path.color
+    //let fillColor = fill || style.fill || path.color;
+    let fillColor = fill;
+    if (!fillColor || fillColor === 'none') fillColor = stroke;
+    //if (!fillColor || fillColor === 'none') fillColor = '#888888';
+
+    // Example: If it's "rect," extrude less; if it's "text," extrude more
+    let depth = (origType === 'rect') ? 2 : 6;
+
+    console.log('fillColor', fillColor);
+    //    // xffff00
+    //    if (fillColor === 'rgb(255,204,0)') {
+    //        //fillColor = '#ffff00';
+    //        fillColor = 'rgb(255,204,0)'
+    //        depth = 4;
+    //    }
+    //
+    //    //rgb(0,204,255)
+    //    if (fillColor === 'rgb(0,204,255)') {
+    //        fillColor = '#00ccff';
+    //        depth = 4;
+    //    }
+
+    if (fillColor.startsWith('rgb')) {
+        const rgb = fillColor.match(/\d+/g);
+        fillColor = `#${rgb.map(num => parseInt(num).toString(16).padStart(2, '0')).join('')}`;
+        depth = 4;
+    }
+
+    if (origType === 'circle') {
+        depth = 6; // make circles pop out more for visibility
+        //fillColor = '#00ccff'; // make them blue
+
+        //        const points = shapes[0].getPoints(64);
+        //        const geometry2d = new BufferGeometry().setFromPoints(points);
+        //        const outline = new LineLoop(geometry2d, new LineBasicMaterial({ color: 0xff0000 }));
+        //        scene.add(outline);
+    }
+
+    if (origType === 'badge') {
+        depth = 6;
+    }
+
+    return { depth, fillColor };
+}
+
 function processShape(shape, depth, fillColor, isText = false) {
     const geometry = new ExtrudeGeometry(shape, {
         depth,
@@ -61,49 +108,7 @@ function processPath(scene, path) {
     const shapes = SVGLoader.createShapes(path);
     if (!shapes.length) return;
 
-    // Derive color from style or path.color
-    //let fillColor = fill || style.fill || path.color;
-    let fillColor = fill;
-    if (!fillColor || fillColor === 'none') fillColor = style.stroke;
-    //if (!fillColor || fillColor === 'none') fillColor = '#888888';
-
-    // Example: If it's "rect," extrude less; if it's "text," extrude more
-    let depth = (origType === 'rect') ? 2 : 6;
-
-    console.log('fillColor', fillColor);
-//    // xffff00
-//    if (fillColor === 'rgb(255,204,0)') {
-//        //fillColor = '#ffff00';
-//        fillColor = 'rgb(255,204,0)'
-//        depth = 4;
-//    }
-//
-//    //rgb(0,204,255)
-//    if (fillColor === 'rgb(0,204,255)') {
-//        fillColor = '#00ccff';
-//        depth = 4;
-//    }
-
-    if (fillColor.startsWith('rgb')) {
-        const rgb = fillColor.match(/\d+/g);
-        fillColor = `#${rgb.map(num => parseInt(num).toString(16).padStart(2, '0')).join('')}`;
-        depth = 4;
-    }
-
-    if (origType === 'circle') {
-        depth = 6; // make circles pop out more for visibility
-        //fillColor = '#00ccff'; // make them blue
-
-//        const points = shapes[0].getPoints(64);
-//        const geometry2d = new BufferGeometry().setFromPoints(points);
-//        const outline = new LineLoop(geometry2d, new LineBasicMaterial({ color: 0xff0000 }));
-//        scene.add(outline);
-    }
-
-    if (origType === 'badge') {
-        depth = 6;
-    }
-
+    const { depth, fillColor } = deriveColorAndDepth(origType, fill, style.stroke);
 
     const isText = origType === 'text';
     console.log('path', isText, path);
