@@ -9,6 +9,7 @@ const THREEJS_DRAWINGS = {
     'geo3d': () => import('./drawing/drawGeo.js').then(m => m.geoDrawing3d),
     'quantum': () => import('./drawing/drawQuantum.js').then(m => m.quantumDrawing),
     'svg': () => import('./drawing/drawSvg.js').then(m => m.svgDrawing),
+    'multisvg': () => import('./drawing/drawSvg.js').then(m => m.multiSvgDrawing),
     'library': () => import('./drawing/library/drawLibrary.js').then(m => m.libraryDrawing),
     'plot': () => import('./drawing/drawPlotFunction.js').then(m => m.plotFunctionDrawing),
     'rubiks': () => import('./drawing/drawRubiksCube.js').then(m => m.rubiksCubeDrawing),
