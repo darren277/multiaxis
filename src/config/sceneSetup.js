@@ -137,6 +137,7 @@ export async function setupScene(
         const PointerLockControls = await importPointerLockControls();
         controls = new PointerLockControls(camera, renderer.domElement);
         document.body.addEventListener('click', () => controls.lock());
+        controls.name = 'PointerLockControls';
         scene.add(controls.object);
     } else if (controller === 'trackball') {
         const TrackballControls = await importTrackballControls();

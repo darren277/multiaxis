@@ -1,4 +1,4 @@
-import { Vector3, Clock, Quaternion } from 'three';
+import { Vector3, Clock, Quaternion, Box3 } from 'three';
 
 // For pointer lock movement
 let moveForward = false;
@@ -15,6 +15,10 @@ const WORLD_X   = new Vector3( 1, 0, 0 );
 const GROUND_Y  = 0.25; // height of the ground plane
 const turnSpeed = Math.PI / 2;      // 90 ° per second
 const qTmp      = new Quaternion(); // reused tmp to avoid GC
+
+const tempBox = new Box3();        // temporary box for the player
+const tempPosition = new Vector3(); // for calculating next pos
+const playerSize = 1.0;             // rough player "radius" (adjust if needed)
 
 const speed = 20.0; // units per second
 
@@ -73,9 +77,20 @@ function onKeyUpWalking(event) {
     }
 }
 
+function checkCollision(position, obstacleBoxes = []) {
+    tempBox.setFromCenterAndSize(position, new Vector3(playerSize, playerSize * 2, playerSize));
 
-function walkingAnimationCallback(scene, controls, override = false) {
-    if (controls.isLocked === true || (override === true && controls.getObject)) {
+    for (const box of obstacleBoxes) {
+        if (box.intersectsBox(tempBox)) {
+            return true; // collision detected
+        }
+    }
+
+    return false; // no collision
+}
+
+function walkingAnimationCallback(scene, controls, override = false, obstacleBoxes = []) {
+    if (controls.isLocked === true || (override === true && controls.name === 'PointerLockControls')) {
         const delta = clock.getDelta(); // measure time between frames
         const yawObject = controls.getObject();   // outer object of PLC
 
@@ -97,15 +112,27 @@ function walkingAnimationCallback(scene, controls, override = false) {
             }
         } else {
             // Normal WASD movement
-            direction.z = Number(moveForward) - Number(moveBackward);
+            direction.z = Number(moveBackward) - Number(moveForward);
             direction.x = Number(moveRight) - Number(moveLeft);
             direction.normalize();
 
             velocity.x = direction.x * speed;
             velocity.z = direction.z * speed;
 
-            controls.moveRight(velocity.x * delta);
-            controls.moveForward(velocity.z * delta);
+            tempPosition.copy(yawObject.position);
+
+            // Attempt to move sideways
+            tempPosition.x += velocity.x * delta;
+            if (!checkCollision(tempPosition)) {
+                yawObject.position.x = tempPosition.x;
+            }
+
+            // Attempt to move forward/backward
+            tempPosition.copy(yawObject.position);
+            tempPosition.z += velocity.z * delta;
+            if (!checkCollision(tempPosition, obstacleBoxes)) {
+                yawObject.position.z = tempPosition.z;
+            }
         }
 
         velocity.y -= GRAVITY * delta;
@@ -119,9 +146,14 @@ function walkingAnimationCallback(scene, controls, override = false) {
     }
 };
 
+function addObstacle(obstacleBoxes, mesh) {
+    const box = new Box3().setFromObject(mesh);
+    obstacleBoxes.push(box);
+}
 
 export {
     onKeyDownWalking,
     onKeyUpWalking,
-    walkingAnimationCallback
+    walkingAnimationCallback,
+    addObstacle,
 };

@@ -2,7 +2,7 @@ import { TextureLoader, BoxGeometry, PlaneGeometry, SphereGeometry, Mesh, MeshBa
 import { CSS2DObject } from 'css2drenderer';
 import { sortAlphabeticallyByName } from './sortResources.js';
 import { calculatePositionOfResource, casePitchX, rowPitchZ, worldX, worldZ } from './calculatePosition.js';
-import { onKeyDownWalking, onKeyUpWalking, walkingAnimationCallback } from '../../config/walking.js';
+import { onKeyDownWalking, onKeyUpWalking, walkingAnimationCallback, addObstacle } from '../../config/walking.js';
 
 function drawFloor(scene) {
     const floorGeometry = new PlaneGeometry(200, 200);
@@ -18,6 +18,8 @@ function drawFloor(scene) {
 
 
 const textureLoader = new TextureLoader();
+
+const obstacleBoxes = [];
 
 
 function createBookCaseMesh(scene,
@@ -59,6 +61,7 @@ function createBookCaseMesh(scene,
     bookCaseMesh.rotation.set(rotation.x, rotation.y, rotation.z);
 
     scene.add(bookCaseMesh);
+    addObstacle(obstacleBoxes, bookCaseMesh); // add to collision detection
     return bookCaseMesh;
 }
 
@@ -333,7 +336,9 @@ const libraryDrawing = {
             return;
         }
 
-        walkingAnimationCallback(scene, controls, true);
+        console.log('controls', controls.name);
+
+        walkingAnimationCallback(scene, controls, true, obstacleBoxes);
     },
     'data': {
     },
