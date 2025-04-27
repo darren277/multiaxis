@@ -4,7 +4,7 @@ import {
 } from 'three';
 import { drawBasicLights, drawSun } from './drawLights.js';
 import { GLTFLoader } from 'gltfloader'
-import { createPerlinGrassTexture, createGroundFromLayout, groundLayout, animateWater } from './drawGrass.js';
+import { createPerlinGrassTexture, createGroundFromLayout, groundLayout, animateWater } from './drawGround.js';
 
 
 const raycaster = new Raycaster();

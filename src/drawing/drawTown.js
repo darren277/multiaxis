@@ -1,6 +1,6 @@
 import { drawHouses } from './drawHouse.js';
 import { drawSun } from './drawLights.js';
-import { createPerlinGrassTexture } from './drawGrass.js';
+import { createPerlinGrassTexture } from './drawGround.js';
 import { PlaneGeometry, Mesh, MeshStandardMaterial } from 'three';
 
 

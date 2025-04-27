@@ -34,6 +34,7 @@ s3-drawing:
 	aws s3 cp src/drawing/drawGeo.js s3://$(BUCKET_NAME)/scripts/threejs/drawing/drawGeo.js
 	aws s3 cp src/drawing/drawGLTF.js s3://$(BUCKET_NAME)/scripts/threejs/drawing/drawGLTF.js
 	aws s3 cp src/drawing/drawGraph.js s3://$(BUCKET_NAME)/scripts/threejs/drawing/drawGraph.js
+	aws s3 cp src/drawing/drawGround.js s3://$(BUCKET_NAME)/scripts/threejs/drawing/drawGround.js
 	aws s3 cp src/drawing/drawImage.js s3://$(BUCKET_NAME)/scripts/threejs/drawing/drawImage.js
 	aws s3 cp src/drawing/drawLights.js s3://$(BUCKET_NAME)/scripts/threejs/drawing/drawLights.js
 	aws s3 cp src/drawing/drawOrbits.js s3://$(BUCKET_NAME)/scripts/threejs/drawing/drawOrbits.js
