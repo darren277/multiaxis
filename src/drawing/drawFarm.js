@@ -20,6 +20,10 @@ async function loadGltfModel(data_src) {
     return gltf;
 }
 
+// Alternative:
+// "Barn":          { position: tileToPosition(3, 2), rotation: [0, 0, 0], scale: [1, 5, 1] },
+// "Big Barn":      { position: tileToPosition(7, 1), rotation: [0, Math.PI/2, 0], scale: [1, 1, 1] },
+
 const modelLayout = {
     "Barn":          { position: [0, 0, 0],     rotation: [0, 0, 0], scale: [1, 5, 1] },
     "Big Barn":      { position: [20, 0, 10],   rotation: [0, Math.PI / 2, 0], scale: [1, 1, 1] },
@@ -190,6 +194,20 @@ const farmDrawing = {
         animateWater(renderer, timestamp, threejsDrawing, camera)
     },
     'data': {
+    },
+    'sceneConfig': {
+        'startPosition': {
+            'x': 0,
+            // height above ground
+            'y': 10,
+            // groundHeight/2 + 5 // a little past the top edge
+            'z': 10
+        },
+        'lookAt': {
+            'x': 0,
+            'y': 0,
+            'z': 0
+        }
     }
 }
 

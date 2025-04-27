@@ -299,8 +299,15 @@ function createGroundFromLayout(layout, tileSize = 10) {
         'water': createWaterTexture()
     };
 
-    for (let row = 0; row < layout.length; row++) {
-        for (let col = 0; col < layout[row].length; col++) {
+    const numRows = layout.length;
+    const numCols = layout[0].length;
+
+    // Center offset calculations
+    const offsetX = (numCols * tileSize) / 2;
+    const offsetZ = (numRows * tileSize) / 2;
+
+    for (let row = 0; row < numRows; row++) {
+        for (let col = 0; col < numCols; col++) {
             const type = layout[row][col];
             const tex = textures[type];
             if (!tex) continue;
@@ -309,7 +316,14 @@ function createGroundFromLayout(layout, tileSize = 10) {
 
             const tile = new Mesh(new PlaneGeometry(tileSize, tileSize), material);
             tile.rotation.x = -Math.PI / 2;
-            tile.position.set(col * tileSize, 0, row * tileSize);
+
+            // Subtract offset to center the grid around (0,0,0)
+            tile.position.set(
+                col * tileSize - offsetX + tileSize / 2,
+                0,
+                row * tileSize - offsetZ + tileSize / 2
+            );
+
             tile.receiveShadow = true;
 
             group.add(tile);
@@ -319,8 +333,21 @@ function createGroundFromLayout(layout, tileSize = 10) {
     return group;
 }
 
+function tileToPosition(col, row, tileSize = 10, layout = groundLayout) {
+    const numRows = layout.length;
+    const numCols = layout[0].length;
+
+    const offsetX = (numCols * tileSize) / 2;
+    const offsetZ = (numRows * tileSize) / 2;
+
+    return [
+        col * tileSize - offsetX + tileSize / 2,
+        0,
+        row * tileSize - offsetZ + tileSize / 2
+    ];
+}
 
 export {
     createPerlinGrassTexture, grassMaterial, createGrassTexture, createDirtRoadTexture, createGrassDirtComboTexture,
-    groundLayout, createGroundFromLayout, drawWater, animateWater
+    groundLayout, createGroundFromLayout, drawWater, animateWater, tileToPosition
 };
