@@ -116,8 +116,11 @@ function walkingAnimationCallback(scene, controls, override = false, obstacleBox
             direction.x = Number(moveRight) - Number(moveLeft);
             direction.normalize();
 
-            velocity.x = direction.x * speed;
-            velocity.z = direction.z * speed;
+            const moveVector = new Vector3(direction.x, 0, direction.z);
+            moveVector.applyQuaternion(yawObject.quaternion);
+
+            velocity.x = moveVector.x * speed;
+            velocity.z = moveVector.z * speed;
 
             tempPosition.copy(yawObject.position);
 

@@ -336,8 +336,6 @@ const libraryDrawing = {
             return;
         }
 
-        console.log('controls', controls.name);
-
         walkingAnimationCallback(scene, controls, true, obstacleBoxes);
     },
     'data': {
