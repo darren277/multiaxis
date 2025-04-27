@@ -1,4 +1,4 @@
-import { BoxGeometry, Mesh, MeshBasicMaterial } from 'three';
+import { BoxGeometry, Mesh, MeshBasicMaterial, MeshNormalMaterial, GridHelper } from 'three';
 import { FileLoader } from 'three'; // for texture loading
 
 function drawTestCube(scene) {
