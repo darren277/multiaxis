@@ -132,10 +132,8 @@ export async function setupScene(
         //controls.target.set(0, 0, 0); // set the target to the origin
         controls.target.set(lookAt.x, lookAt.y, lookAt.z); // set the target to the origin
         controls.update();
-    } else if (controller === 'walking') {
-        // TODO...
-        controls = null;
-    } else if (controller === 'pointerlock') {
+    } else if (controller === 'walking' || controller === 'pointerlock') {
+        console.log('PointerLockControls enabled');
         const PointerLockControls = await importPointerLockControls();
         controls = new PointerLockControls(camera, renderer.domElement);
         document.body.addEventListener('click', () => controls.lock());

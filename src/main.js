@@ -35,6 +35,12 @@ async function contentLoadedCallback(threejsDrawing) {
 
     const queryOptions = parseQueryParams(window.location.search);
 
+    if (queryOptions) {
+        if (queryOptions.controls && queryOptions.controls === 'walking') {
+            threejsDrawing.sceneConfig.controller = 'walking';
+        }
+    }
+
     if (!threejsDrawing) {
         console.error(`No drawing found for ${drawingName}`);
         return;

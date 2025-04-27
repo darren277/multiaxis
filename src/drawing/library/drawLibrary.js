@@ -289,7 +289,6 @@ function drawResources(scene, library, resources, row1StartX, row0StartZ, camera
     window.addEventListener('click', onClick, false);
 
     function onClick(event) {
-        console.log('onClick', event);
         // normalised device coords
         const rect = renderer.domElement.getBoundingClientRect();   // ← key line
         mouse.x =  ( (event.clientX - rect.left) / rect.width  ) * 2 - 1;
@@ -297,13 +296,11 @@ function drawResources(scene, library, resources, row1StartX, row0StartZ, camera
 
         raycaster.setFromCamera(mouse, camera);
         const hit = raycaster.intersectObjects(resourceMeshes, /* recursive = */ false)[0];
-        console.log('resourceMeshes', resourceMeshes);
         if (hit) showOverlay(hit.object.userData.resource);
     }
 }
 
 function showOverlay(resource) {
-    console.log('showOverlay', resource);
     document.getElementById('overlayTitle'     ).textContent = resource.name;
     document.getElementById('overlayAuthorYear').textContent = `${resource.author} • ${resource.year}`;
     document.getElementById('overlayBody'      ).innerHTML   = resource.description || '<em>No description yet.</em>';
@@ -322,13 +319,9 @@ const libraryDrawing = {
         //'click': (event) => {},
         //'mousemove': (event) => {},
         'keydown': (event) => {
-            // Handle key down events here
-            console.log('Key pressed:', event);
             onKeyDownWalking(event);
         },
         'keyup': (event) => {
-            // Handle key up events here
-            console.log('Key released:', event);
             onKeyUpWalking(event);
         },
     },
@@ -339,12 +332,14 @@ const libraryDrawing = {
             console.warn('No controls found.');
             return;
         }
-        walkingAnimationCallback(scene, controls);
+
+        walkingAnimationCallback(scene, controls, true);
     },
     'data': {
     },
     'sceneConfig': {
         'cssRenderer': '2D',
+        'startPosition': { x: 0, y: 2, z: 5 },
     }
 }
 
