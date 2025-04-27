@@ -4,7 +4,7 @@ import {
 } from 'three';
 import { drawBasicLights, drawSun } from './drawLights.js';
 import { GLTFLoader } from 'gltfloader'
-import { createPerlinGrassTexture } from './drawGrass.js';
+import { createPerlinGrassTexture, createGroundFromLayout, groundLayout, animateWater } from './drawGrass.js';
 
 
 const raycaster = new Raycaster();
@@ -21,7 +21,7 @@ async function loadGltfModel(data_src) {
 }
 
 const modelLayout = {
-    "Barn":          { position: [0, 0, 0],     rotation: [0, 0, 0], scale: [1, 1, 1] },
+    "Barn":          { position: [0, 0, 0],     rotation: [0, 0, 0], scale: [1, 5, 1] },
     "Big Barn":      { position: [20, 0, 10],   rotation: [0, Math.PI / 2, 0], scale: [1, 1, 1] },
     "ChickenCoop":   { position: [-10, 0, 5],   rotation: [0, 0, 0], scale: [1.2, 1.2, 1.2] },
     "Fence":         { position: [5, 0, -15],   rotation: [0, Math.PI / 4, 0], scale: [1, 1, 1] },
@@ -131,13 +131,13 @@ function drawFarm(scene, threejsDrawing) {
         });
     }
 
-    const floorGeometry = new PlaneGeometry(200, 200);
-    const floor = new Mesh(floorGeometry, new MeshStandardMaterial({map: createPerlinGrassTexture()}));
-
-    floor.rotation.x = -Math.PI / 2;
-    floor.receiveShadow = true;
-
-    scene.add(floor);
+    //const floorGeometry = new PlaneGeometry(200, 200);
+    //const floor = new Mesh(floorGeometry, new MeshStandardMaterial({map: createPerlinGrassTexture()}));
+    const tileSize = 5;
+    const terrain = createGroundFromLayout(groundLayout, tileSize);
+    //terrain.rotation.x = -Math.PI / 2;
+    //terrain.receiveShadow = true;
+    scene.add(terrain);
 
     drawSun(scene);
 }
@@ -187,6 +187,7 @@ const farmDrawing = {
     'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
         const delta = clock.getDelta();
         animateDoors(delta);
+        animateWater(renderer, timestamp, threejsDrawing, camera)
     },
     'data': {
     }
