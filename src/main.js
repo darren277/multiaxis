@@ -2,7 +2,7 @@ import { setupScene } from './config/sceneSetup.js';
 import { attachUIListeners } from './config/attachUIListeners.js';
 import { ClickAndKeyControls } from './config/clickControlHelper.js';
 import { drawImage } from './drawing/drawImage.js';
-import { loadDataSource, pixelToWorldUnits, prepareDrawingContext, drawHelpers } from './config/utils.js';
+import { loadDataSource, pixelToWorldUnits, prepareDrawingContext, drawHelpers, parseQueryParams } from './config/utils.js';
 import { loadThenDraw } from './config/loadThenDraw.js';
 import { OutlineEffect } from 'outline-effect';
 import { usePanoramicCubeBackground, useProceduralBackground, usePanoramicCubeBackgroundSixFaces } from './drawing/drawBackground.js';
@@ -32,6 +32,8 @@ document.addEventListener('DOMContentLoaded', () => {
 async function contentLoadedCallback(threejsDrawing) {
     const dataSelected = document.querySelector('meta[name="data_selected"]').content;
     console.log(`Drawing name: ${threejsDrawing.name}. Data selected: ${dataSelected}`);
+
+    const queryOptions = parseQueryParams(window.location.search);
 
     if (!threejsDrawing) {
         console.error(`No drawing found for ${drawingName}`);

@@ -72,4 +72,33 @@ async function prepareDrawingContext(threejsDrawing, scene, camera, renderer, co
     return threejsDrawing;
 }
 
-export { drawTestCube, determineLabelCoordinates, loadDataSource, pixelToWorldUnits, prepareDrawingContext, drawHelpers };
+function parseQueryParams(queryString) {
+    const urlParams = new URLSearchParams(queryString);
+    const queryParams = {};
+    for (const [key, value] of urlParams.entries()) {
+        if (key === 'nav') {
+            if (value === 'true') {
+                queryParams[key] = true;
+            } else if (value === 'false') {
+                queryParams[key] = false;
+            } else {
+                console.warn(`Invalid value for ${key}: ${value}. Expected 'true' or 'false'.`);
+            }
+            queryParams[key] = value;
+        } else if (key === 'controls') {
+            if (value === 'walking') {
+                queryParams[key] = value;
+            } else if (value === 'orbit') {
+                queryParams[key] = value;
+            } else {
+                console.warn(`Invalid value for ${key}: ${value}. Expected 'walking' or 'orbit'.`);
+            }
+        } else {
+            console.warn(`Unknown query parameter: ${key}`);
+        }
+    }
+    console.log(`Query params: ${JSON.stringify(queryParams)}`);
+    return queryParams;
+}
+
+export { drawTestCube, determineLabelCoordinates, loadDataSource, pixelToWorldUnits, prepareDrawingContext, drawHelpers, parseQueryParams };
