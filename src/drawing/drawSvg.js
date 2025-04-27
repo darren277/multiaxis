@@ -1,8 +1,15 @@
-import { ExtrudeGeometry, Color, Mesh, MeshBasicMaterial, MeshStandardMaterial, PlaneGeometry, Group, Box3, Vector3 } from 'three';
+import {
+    ExtrudeGeometry, Color, Mesh, MeshBasicMaterial, MeshStandardMaterial, PlaneGeometry, Group, Box3,
+    Vector2, Vector3, Raycaster, DoubleSide
+} from 'three';
 import { SVGLoader } from 'svgloader';
 import { drawBasicLights } from './drawLights.js';
 
 const svgLoader = new SVGLoader();
+const interactiveSvgGroups = [];
+const raycaster = new Raycaster();
+const pointer   = new Vector2();
+let   hovered   = null;
 
 function isGiantWhiteBox(path) {
     const isGiantWhiteBox = path.color === 0xffffff && path.toShapes(true).length === 1;
@@ -71,6 +78,16 @@ function processShape(shape, depth, fillColor, isText = false) {
     const threeColor = new Color(fillColor);
 
     const material = new MeshBasicMaterial({ color: threeColor });
+//    const material = new MeshStandardMaterial({
+//        color: threeColor,
+//        flatShading: true,
+//        //transparent: true,
+//        //opacity: 0.5,
+//        //depthWrite: false,
+//        side: DoubleSide,
+//        //emissive: threeColor,
+//    });
+
     const mesh = new Mesh(geometry, material);
 
     // Example transform to ensure correct orientation
@@ -89,7 +106,6 @@ function processShape(shape, depth, fillColor, isText = false) {
 }
 
 function processPath(path) {
-    console.log('processPath', path);
     const style = path.userData?.style || {};
     const node  = path.userData?.node;  // The raw SVG DOM node (if present)
     const origType = node?.getAttribute('data-orig-type') || '';
@@ -121,6 +137,13 @@ function processPath(path) {
         const mesh = processShape(shape, depth, fillColor, isText);
         pathGroup.add(mesh);
     });
+
+    pathGroup.userData = {
+        kind : 'svgPath',
+        label: node?.getAttribute('id') ||  node?.getAttribute('class') || 'unnamed'
+    };
+
+    interactiveSvgGroups.push(pathGroup);
 
     return pathGroup;
 }
@@ -319,6 +342,59 @@ async function drawMultipleSvgs(scene, data, threejsDrawing) {
     });
 }
 
+function updatePointer(evt, renderer) {
+    const { left, top, width, height } = renderer.domElement.getBoundingClientRect();
+    pointer.x =  ( (evt.clientX - left) / width  ) * 2 - 1;
+    pointer.y = -( (evt.clientY - top ) / height ) * 2 + 1;
+}
+
+function onPointerMove(evt, renderer, camera) {
+    updatePointer(evt, renderer);
+
+    raycaster.setFromCamera(pointer, camera);
+    const [hit] = raycaster.intersectObjects(interactiveSvgGroups, true);
+
+    const newHovered = hit ? findInteractiveParent(hit.object) : null;
+
+    if (newHovered !== hovered) {
+        if (hovered) hovered.traverse(ch => {
+            if (ch.material?.color) ch.material.color.copy(ch.userData.origColor);
+        });
+        hovered = newHovered;
+        if (hovered) hovered.traverse(ch => {
+            if (ch.material?.color) {
+                if (!ch.userData.origColor) {
+                    ch.userData.origColor = ch.material.color.clone();
+                }
+                ch.material.color.offsetHSL(0, 0, 0.2);
+            }
+        });
+
+        renderer.domElement.style.cursor = hovered ? 'pointer' : 'default';
+    }
+}
+
+function findInteractiveParent(obj) {
+    while (obj) {
+        if (obj.userData?.kind === 'svgPath') return obj;
+        obj = obj.parent;
+    }
+    return null;
+}
+
+function onPointerClick(evt) {
+    if (!hovered) return;            // nothing under pointer
+
+    // simple demo: log info
+    console.log('Clicked SVG path', hovered.userData.label);
+
+    //  tailor behaviour per-path if you want …
+    if (hovered.userData.label === 'my-special-rect') {
+        // do something unique
+    }
+}
+
+
 const svgDrawing = {
     'sceneElements': [],
     'drawFuncs': [
@@ -336,7 +412,15 @@ const multiSvgDrawing = {
     'drawFuncs': [
         {'func': drawMultipleSvgs, 'dataSrc': null, 'dataType': 'svg'}
     ],
-    'eventListeners': null,
+    'eventListeners': {
+        'pointermove': (event, data) => {
+            onPointerMove(event, data.renderer, data.camera);
+        },
+        'click': (event, data) => {
+            console.log('click', event, data);
+            onPointerClick(event, data.renderer, data.camera);
+        }
+    },
     'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
     },
     'data': {
