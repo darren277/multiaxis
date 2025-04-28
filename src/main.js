@@ -7,7 +7,7 @@ import { loadThenDraw } from './config/loadThenDraw.js';
 import { OutlineEffect } from 'outline-effect';
 import { usePanoramicCubeBackground, useProceduralBackground, usePanoramicCubeBackgroundSixFaces } from './drawing/drawBackground.js';
 import uiPanelConfig from './config/uiPanelConfig.js';
-import { drawNavCubes, onClickNav, CUBE_DEFS } from './config/navigation.js';
+import { drawNavCubes, onClickNav, CUBE_DEFS, CUBE_DEFS_LIBRARY } from './config/navigation.js';
 import { TextureLoader, FileLoader } from 'three';
 import { BoxGeometry, Mesh, MeshNormalMaterial, GridHelper, FloatType } from 'three';
 import {update as tweenUpdate} from 'tween'
@@ -74,6 +74,7 @@ async function contentLoadedCallback(threejsDrawing) {
 
     // NAV CUBE //
     //drawNavCubes(scene, threejsDrawing, CUBE_DEFS);
+    drawNavCubes(scene, threejsDrawing, CUBE_DEFS_LIBRARY, DEBUG);
 
     // Add event listener for navigation
     window.addEventListener('click', (event) => {
