@@ -252,7 +252,8 @@ function determineColor(path) {
 
 function drawSvg(scene, data, threejsDrawing) {
     data.paths.forEach((path, i) => {
-        processPath(scene, path);
+        const pathGroup = processPath(path);
+        scene.add(pathGroup);
     });
 
     const floorGeometry = new PlaneGeometry(200, 200);
