@@ -1,6 +1,6 @@
 import {
     ExtrudeGeometry, Color, Mesh, MeshBasicMaterial, MeshStandardMaterial, PlaneGeometry, Group, Box3,
-    Vector2, Vector3, Raycaster, DoubleSide
+    Vector2, Vector3, Raycaster, DoubleSide, ShaderMaterial
 } from 'three';
 import { SVGLoader } from 'svgloader';
 import { drawBasicLights } from './drawLights.js';
@@ -10,6 +10,45 @@ const interactiveSvgGroups = [];
 const raycaster = new Raycaster();
 const pointer   = new Vector2();
 let   hovered   = null;
+
+function renderLinearGradient(vDirValues, colorA, colorB) {
+    //const vDir = new Vector2(1004.84 - 924.84, 654.9  - 614.9).normalize();
+    const vDir = new Vector2(vDirValues[0], vDirValues[1]).normalize();
+
+    // pass to shader
+    const material = new ShaderMaterial({
+        uniforms: {
+            //colorA: {value: new Color(0xE8EEF7)},
+            //colorB: {value: new Color(0xB7C9E3)},
+            colorA: {value: new Color(colorA)},
+            colorB: {value: new Color(colorB)},
+            gDir:   {value: vDir}
+        },
+        vertexShader: `
+            varying vec2 vUv;
+            void main() {
+                vUv = uv;                          // pass UV to frag
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
+            }`,
+        fragmentShader: `
+            uniform vec3 colorA;
+            uniform vec3 colorB;
+            uniform vec2 gDir;
+            varying vec2 vUv;
+
+            void main() {
+                // project UV onto gradient direction
+                float t = dot(vUv, normalize(gDir));
+                // reflect mode ⇒ mirror at every integer
+                t = abs(fract(t * 1.0) * 2.0 - 1.0);
+                gl_FragColor = vec4(mix(colorA, colorB, t), 1.0);
+            }`
+        });
+
+    //const mesh = new Mesh(new PlaneGeometry(2,1), material);
+    //scene.add(mesh);
+    return material;
+}
 
 function isGiantWhiteBox(path) {
     const isGiantWhiteBox = path.color === 0xffffff && path.toShapes(true).length === 1;
@@ -68,7 +107,7 @@ function deriveColorAndDepth(origType, fill, stroke) {
     return { depth, fillColor };
 }
 
-function processShape(shape, depth, fillColor, isText = false) {
+function processShape(shape, depth, fillColor, isText = false, linearGradient = null) {
     const geometry = new ExtrudeGeometry(shape, {
         depth,
         bevelEnabled: false
@@ -77,7 +116,12 @@ function processShape(shape, depth, fillColor, isText = false) {
     // Convert fillColor to a Three.Color
     const threeColor = new Color(fillColor);
 
-    const material = new MeshBasicMaterial({ color: threeColor });
+    let material;
+    if (linearGradient) {
+        material = renderLinearGradient(linearGradient.vDir, linearGradient.colorA, linearGradient.colorB);
+    } else {
+        material = new MeshBasicMaterial({ color: threeColor });
+    }
 //    const material = new MeshStandardMaterial({
 //        color: threeColor,
 //        flatShading: true,
@@ -110,6 +154,19 @@ function processPath(path) {
     const node  = path.userData?.node;  // The raw SVG DOM node (if present)
     const origType = node?.getAttribute('data-orig-type') || '';
     const fill = node?.getAttribute('data-orig-fill') || '';
+    let linearGradient;
+
+    // g: linear-gradient="80.0,40.0,rgb(232,238,247),rgb(183,201,227)"
+    if (node?.getAttribute('linear-gradient')) {
+        const gradient = node.getAttribute('linear-gradient');
+        const [x, y, colorA, colorB] = gradient.split(';');
+        const vDir = [parseFloat(x), parseFloat(y)];
+        linearGradient = {
+            vDir: vDir,
+            colorA: colorA,
+            colorB: colorB
+        }
+    }
 
     const pathGroup = new Group();
 
@@ -128,13 +185,13 @@ function processPath(path) {
     const shapes = SVGLoader.createShapes(path);
     if (!shapes.length) return;
 
-    const { depth, fillColor } = deriveColorAndDepth(origType, fill, style.stroke);
+    const { depth, fillColor } = linearGradient ? { depth: 6, fillColor: null } : deriveColorAndDepth(origType, fill, style.stroke)
 
     const isText = origType === 'text';
     console.log('path', isText, path);
 
     shapes.forEach(shape => {
-        const mesh = processShape(shape, depth, fillColor, isText);
+        const mesh = processShape(shape, depth, fillColor, isText, linearGradient);
         pathGroup.add(mesh);
     });
 
