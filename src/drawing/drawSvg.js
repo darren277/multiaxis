@@ -89,25 +89,6 @@ function removeSpacesRGB(rgb) {
     return `#${rgb.map(num => parseInt(num).toString(16).padStart(2, '0')).join('')}`;
 }
 
-function deriveColorAndDepth(origType, fill, stroke) {
-    let fillColor = fill;
-    if (!fillColor || fillColor === 'none') fillColor = stroke;
-
-    // Example: If it's "rect," extrude less; if it's "text," extrude more
-    let depth = (origType === 'rect') ? 2 : 6;
-
-    if (fillColor.startsWith('rgb')) {
-        fillColor = removeSpacesRGB(fillColor);
-        depth = 4;
-    }
-
-    if (origType === 'circle' || origType === 'badge' || origType === 'ellipse' || origType === 'diamond') {
-        depth = 6;
-    }
-
-    return { depth, fillColor };
-}
-
 function processShape(shape, depth, fillColor, isText = false, linearGradient = null) {
     const geometry = new ExtrudeGeometry(shape, {
         depth,
@@ -146,6 +127,7 @@ function processPath(path) {
     const origType = node?.getAttribute('data-orig-type') || configuration || '';
     const fill = node?.getAttribute('data-orig-fill') || '';
     let linearGradient;
+    let fillColor;
 
     // g: linear-gradient="80.0,40.0,rgb(232,238,247),rgb(183,201,227)"
     if (node?.getAttribute('linear-gradient')) {
@@ -171,7 +153,19 @@ function processPath(path) {
     const shapes = SVGLoader.createShapes(path);
     if (!shapes.length) return;
 
-    const { depth, fillColor } = linearGradient ? { depth: 6, fillColor: null } : deriveColorAndDepth(origType, fill, style.stroke)
+    if (!fill || fill === 'none') fillColor = style.stroke;
+
+    // Example: If it's "rect," extrude less; if it's "text," extrude more
+    let depth = (origType === 'rect') ? 2 : 6;
+
+    if (fillColor.startsWith('rgb')) {
+        fillColor = removeSpacesRGB(fillColor);
+        depth = 4;
+    }
+
+    if (origType === 'circle' || origType === 'badge' || origType === 'ellipse' || origType === 'diamond') {
+        depth = 6;
+    }
 
     const isText = origType === 'text';
 
