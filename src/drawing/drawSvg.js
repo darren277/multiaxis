@@ -1,6 +1,6 @@
 import {
     ExtrudeGeometry, Color, Mesh, MeshBasicMaterial, MeshStandardMaterial, PlaneGeometry, Group, Box3,
-    Vector2, Vector3, Raycaster, DoubleSide, ShaderMaterial
+    Vector2, Vector3, Raycaster, DoubleSide, ShaderMaterial, AmbientLight, CanvasTexture, MirroredRepeatWrapping, SRGBColorSpace
 } from 'three';
 import { SVGLoader } from 'svgloader';
 import { drawBasicLights } from './drawLights.js';
@@ -11,15 +11,38 @@ const raycaster = new Raycaster();
 const pointer   = new Vector2();
 let   hovered   = null;
 
+function cssToColor(cssString, fallback = 0x888888) {
+    const c = new Color();
+    // setStyle understands rgb(), hsl(), hex, named colours … everything the <svg> can throw at you
+    const ok = c.setStyle(cssString);
+    return ok ? c : new Color(fallback);
+}
+
+function renderLinearGradientCanvas(colA, colB, horizontal = true) {
+    const size    = 128;               // tiny; will be stretched by UVs
+    const canvas  = document.createElement('canvas');
+    canvas.width  = canvas.height = size;
+    const ctx     = canvas.getContext('2d');
+
+    const grad = ctx.createLinearGradient(0, 0, horizontal ? size : 0, horizontal ? 0    : size);
+    grad.addColorStop(0, colA);
+    grad.addColorStop(1, colB);
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, size, size);
+
+    const tex = new CanvasTexture(canvas);
+    tex.wrapS = tex.wrapT = MirroredRepeatWrapping;   // ⇐ “reflect” like SVG
+    tex.colorSpace = SRGBColorSpace;
+    tex.needsUpdate = true;
+    return new MeshBasicMaterial({ map: tex, side: DoubleSide, toneMapped: false });
+}
+
 function renderLinearGradient(vDirValues, colorA, colorB) {
     //const vDir = new Vector2(1004.84 - 924.84, 654.9  - 614.9).normalize();
     const vDir = new Vector2(vDirValues[0], vDirValues[1]).normalize();
 
-    // pass to shader
     const material = new ShaderMaterial({
         uniforms: {
-            //colorA: {value: new Color(0xE8EEF7)},
-            //colorB: {value: new Color(0xB7C9E3)},
             colorA: {value: new Color(colorA)},
             colorB: {value: new Color(colorB)},
             gDir:   {value: vDir}
@@ -42,8 +65,10 @@ function renderLinearGradient(vDirValues, colorA, colorB) {
                 // reflect mode ⇒ mirror at every integer
                 t = abs(fract(t * 1.0) * 2.0 - 1.0);
                 gl_FragColor = vec4(mix(colorA, colorB, t), 1.0);
-            }`
-        });
+            }`,
+        side: DoubleSide,
+        toneMapped: false                 // keep colours pure when colour-management is on
+    });
 
     //const mesh = new Mesh(new PlaneGeometry(2,1), material);
     //scene.add(mesh);
@@ -60,29 +85,12 @@ function isGiantWhiteBox(path) {
 }
 
 function deriveColorAndDepth(origType, fill, stroke) {
-    console.log('origType', origType, fill, stroke);
-    // Derive color from style or path.color
-    //let fillColor = fill || style.fill || path.color;
     let fillColor = fill;
     if (!fillColor || fillColor === 'none') fillColor = stroke;
     //if (!fillColor || fillColor === 'none') fillColor = '#888888';
 
     // Example: If it's "rect," extrude less; if it's "text," extrude more
     let depth = (origType === 'rect') ? 2 : 6;
-
-    console.log('fillColor', fillColor);
-    //    // xffff00
-    //    if (fillColor === 'rgb(255,204,0)') {
-    //        //fillColor = '#ffff00';
-    //        fillColor = 'rgb(255,204,0)'
-    //        depth = 4;
-    //    }
-    //
-    //    //rgb(0,204,255)
-    //    if (fillColor === 'rgb(0,204,255)') {
-    //        fillColor = '#00ccff';
-    //        depth = 4;
-    //    }
 
     if (fillColor.startsWith('rgb')) {
         const rgb = fillColor.match(/\d+/g);
@@ -92,12 +100,6 @@ function deriveColorAndDepth(origType, fill, stroke) {
 
     if (origType === 'circle') {
         depth = 6; // make circles pop out more for visibility
-        //fillColor = '#00ccff'; // make them blue
-
-        //        const points = shapes[0].getPoints(64);
-        //        const geometry2d = new BufferGeometry().setFromPoints(points);
-        //        const outline = new LineLoop(geometry2d, new LineBasicMaterial({ color: 0xff0000 }));
-        //        scene.add(outline);
     }
 
     if (origType === 'badge') {
@@ -113,46 +115,36 @@ function processShape(shape, depth, fillColor, isText = false, linearGradient = 
         bevelEnabled: false
     });
 
-    // Convert fillColor to a Three.Color
-    const threeColor = new Color(fillColor);
-
     let material;
     if (linearGradient) {
-        material = renderLinearGradient(linearGradient.vDir, linearGradient.colorA, linearGradient.colorB);
+        //material = renderLinearGradient(linearGradient.vDir, linearGradient.colorA, linearGradient.colorB);
+        material = renderLinearGradientCanvas(linearGradient.colorA, linearGradient.colorB, Math.abs(linearGradient.vDir[0]) > Math.abs(linearGradient.vDir[1]));
     } else {
-        material = new MeshBasicMaterial({ color: threeColor });
+        const threeColor = cssToColor(fillColor, 0x888888);
+        material = new MeshBasicMaterial({ color: threeColor, side: DoubleSide, toneMapped: false });
     }
-//    const material = new MeshStandardMaterial({
-//        color: threeColor,
-//        flatShading: true,
-//        //transparent: true,
-//        //opacity: 0.5,
-//        //depthWrite: false,
-//        side: DoubleSide,
-//        //emissive: threeColor,
-//    });
+    material.side = DoubleSide;
 
     const mesh = new Mesh(geometry, material);
 
     // Example transform to ensure correct orientation
     if (isText) {
-        //mesh.rotation.x = Math.PI / 2; // Rotate text to face up
-        // set it to be thicker and more visible
-        console.log('isText', isText, mesh);
-        //mesh.scale.set(2, 2, 4);
-        //mesh.position.x += 2; // Move it up a bit
         mesh.scale.set(0.1, -0.1, 0.1);
     } else {
         mesh.scale.set(0.1, -0.1, 0.1);
     }
+
+    mesh.scale.set(0.1, 0.1, 0.1);
+    mesh.rotateX(Math.PI);
 
     return mesh;
 }
 
 function processPath(path) {
     const style = path.userData?.style || {};
-    const node  = path.userData?.node;  // The raw SVG DOM node (if present)
-    const origType = node?.getAttribute('data-orig-type') || '';
+    const node  = path.userData?.node;  // Original SVG DOM node (if present)
+    const configuration = node?.getAttribute('data-configuration') || '';
+    const origType = node?.getAttribute('data-orig-type') || configuration || '';
     const fill = node?.getAttribute('data-orig-fill') || '';
     let linearGradient;
 
@@ -176,11 +168,6 @@ function processPath(path) {
         return;
     }
 
-    // If we ONLY want "rect" or "text," skip if not:
-    if (origType !== 'rect' && origType !== 'text') {
-        //return;
-    }
-
     // Convert path to shapes
     const shapes = SVGLoader.createShapes(path);
     if (!shapes.length) return;
@@ -188,10 +175,19 @@ function processPath(path) {
     const { depth, fillColor } = linearGradient ? { depth: 6, fillColor: null } : deriveColorAndDepth(origType, fill, style.stroke)
 
     const isText = origType === 'text';
-    console.log('path', isText, path);
 
     shapes.forEach(shape => {
-        const mesh = processShape(shape, depth, fillColor, isText, linearGradient);
+        let theColor;
+        console.log('fillColor', fillColor, linearGradient);
+        if (fillColor === 'none' || fillColor === 'url(#linearGradient1)') {
+            console.warn('Skipping shape with fillColor none or linear gradient', fillColor, path);
+            theColor = 'yellow';
+        } else if (linearGradient) {
+            theColor = null;
+        } else {
+            theColor = fillColor || 'blue';
+        }
+        const mesh = processShape(shape, 6, theColor, isText, linearGradient);
         pathGroup.add(mesh);
     });
 
@@ -219,42 +215,40 @@ function determineColor(path) {
     }
     if (!fillColor || fillColor === 'none') {
         // fallback
-        //fillColor = '#888888';
         fillColor = 'none';
     }
 
-    console.log('style', style);
-
     if (fillColor.startsWith('rgb')) {
-        console.log('rgb', fillColor);
         const rgb = fillColor.match(/\d+/g);
         fillColor = `#${rgb.map(num => parseInt(num).toString(16).padStart(2, '0')).join('')}`;
-        //const threeColor = new Color(fillColor);
-        // yellow
         const threeColor = new Color(0xffff00);
         return threeColor;
     }
     if (fillColor.startsWith('#')) {
-        console.log('hex', fillColor);
         const threeColor = new Color(fillColor);
         return threeColor;
     }
     if (fillColor.startsWith('none')) {
-        console.log('none', fillColor);
         return null;
     }
 
-    console.log('unknown', fillColor);
     // default to black...
     const threeColor = new Color(0x888888);
     return threeColor;
 }
 
 function drawSvg(scene, data, threejsDrawing) {
+    const svgGroup = new Group();
     data.paths.forEach((path, i) => {
         const pathGroup = processPath(path);
-        scene.add(pathGroup);
+        svgGroup.add(pathGroup);
     });
+
+    svgGroup.scale.set(0.5, 0.5, 0.5);
+    svgGroup.position.set(0, 50, -20);
+    svgGroup.rotateY(Math.PI);
+
+    scene.add(svgGroup);
 
     const floorGeometry = new PlaneGeometry(200, 200);
     const floorMaterial = new MeshStandardMaterial({
@@ -270,6 +264,10 @@ function drawSvg(scene, data, threejsDrawing) {
 
     // Add basic lights
     drawBasicLights(scene);
+
+    // add ambient lights...
+    const ambientLight = new AmbientLight(0xffffff, 0.5);
+    scene.add(ambientLight);
 }
 
 const toArray = (v, n) => Array.isArray(v) ? v : Array(n).fill(v);
@@ -462,6 +460,10 @@ const svgDrawing = {
     'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
     },
     'data': {
+    },
+    'sceneConfig': {
+        'startPosition': {'x': 0, 'y': 0, 'z': -80},
+        'clippingPlane': 2000,
     }
 }
 
