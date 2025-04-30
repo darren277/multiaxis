@@ -84,25 +84,24 @@ function isGiantWhiteBox(path) {
     return isGiantWhiteBox;
 }
 
+function removeSpacesRGB(rgb) {
+    const rgbString = rgbString.match(/\d+/g);
+    return `#${rgb.map(num => parseInt(num).toString(16).padStart(2, '0')).join('')}`;
+}
+
 function deriveColorAndDepth(origType, fill, stroke) {
     let fillColor = fill;
     if (!fillColor || fillColor === 'none') fillColor = stroke;
-    //if (!fillColor || fillColor === 'none') fillColor = '#888888';
 
     // Example: If it's "rect," extrude less; if it's "text," extrude more
     let depth = (origType === 'rect') ? 2 : 6;
 
     if (fillColor.startsWith('rgb')) {
-        const rgb = fillColor.match(/\d+/g);
-        fillColor = `#${rgb.map(num => parseInt(num).toString(16).padStart(2, '0')).join('')}`;
+        fillColor = removeSpacesRGB(fillColor);
         depth = 4;
     }
 
-    if (origType === 'circle') {
-        depth = 6; // make circles pop out more for visibility
-    }
-
-    if (origType === 'badge') {
+    if (origType === 'circle' || origType === 'badge' || origType === 'ellipse' || origType === 'diamond') {
         depth = 6;
     }
 
