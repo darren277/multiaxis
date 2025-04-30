@@ -1,6 +1,6 @@
-import { Mesh, MeshStandardMaterial, PlaneGeometry, RepeatWrapping, SRGBColorSpace } from 'three';
+import { Mesh, MeshStandardMaterial, PlaneGeometry, RepeatWrapping, SRGBColorSpace, DoubleSide } from 'three';
 
-export function drawFloor(scene, textureLoader) {
+export function drawFloor(scene, textureLoader, size = 20) {
     const floorMat = new MeshStandardMaterial({
         roughness: 0.8,
         color: 0xffffff,
@@ -37,12 +37,13 @@ export function drawFloor(scene, textureLoader) {
         floorMat.needsUpdate = true;
     });
 
-    const floorGeometry = new PlaneGeometry(20, 20);
+    const floorGeometry = new PlaneGeometry(size, size);
     const floorMesh = new Mesh(floorGeometry, floorMat);
     floorMesh.receiveShadow = true;
     floorMesh.rotation.x = -Math.PI / 2;
+    floorMat.side = DoubleSide;
     scene.add(floorMesh);
 
     // Return the floor material or mesh if you need to update it
-    return floorMat;
+    return floorMesh;
 }

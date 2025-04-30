@@ -20,7 +20,33 @@ function drawRoom(scene, threejsDrawing) {
 
     // ~~~~~~~~~~~~~~~~~~
     // Draw floor
-    threejsDrawing.data.floorMat = drawFloor(scene, textureLoader);
+    threejsDrawing.data.floor = drawFloor(scene, textureLoader, 200);
+
+    // Draw ceiling
+    threejsDrawing.data.ceiling = drawFloor(scene, textureLoader, 200);
+    threejsDrawing.data.ceiling.rotation.x = Math.PI / 2;
+    threejsDrawing.data.ceiling.position.y = 200;
+
+    // Draw walls
+    threejsDrawing.data.southWall = drawFloor(scene, textureLoader, 200);
+    threejsDrawing.data.southWall.rotation.x = Math.PI;
+    threejsDrawing.data.southWall.position.z = -100;
+    threejsDrawing.data.southWall.position.y = 100;
+
+    threejsDrawing.data.northWall = drawFloor(scene, textureLoader, 200);
+    threejsDrawing.data.northWall.rotation.x = Math.PI;
+    threejsDrawing.data.northWall.position.z = 100;
+    threejsDrawing.data.northWall.position.y = 100;
+
+    threejsDrawing.data.eastWall = drawFloor(scene, textureLoader, 200);
+    threejsDrawing.data.eastWall.rotation.y = Math.PI / 2;
+    threejsDrawing.data.eastWall.position.x = 100;
+    threejsDrawing.data.eastWall.position.y = 100;
+
+    threejsDrawing.data.westWall = drawFloor(scene, textureLoader, 200);
+    threejsDrawing.data.westWall.rotation.y = -Math.PI / 2;
+    threejsDrawing.data.westWall.position.x = -100;
+    threejsDrawing.data.westWall.position.y = 100;
 
     // ~~~~~~~~~~~~~~~~~~
     // Draw walls (and sphere)

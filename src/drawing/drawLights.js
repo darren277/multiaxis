@@ -61,8 +61,8 @@ export const hemiLuminousIrradiances = {
 export const lightingParams = {
     shadows: true,
     exposure: 0.68,
-    bulbPower: Object.keys( bulbLuminousPowers )[4],
-    hemiIrradiance: Object.keys( hemiLuminousIrradiances )[0]
+    bulbPower: Object.keys(bulbLuminousPowers)[4],
+    hemiIrradiance: Object.keys(hemiLuminousIrradiances)[2]
 };
 
 
