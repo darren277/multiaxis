@@ -3,7 +3,7 @@ import { GUI } from 'lil-gui';
 
 // Import our modular “draw” functions
 import { drawLights, updateLights, lightingParams, bulbLuminousPowers, hemiLuminousIrradiances } from './drawLights.js';
-import { drawFloor, loadWoodTextures, makeWoodMaterial } from './drawFloor.js';
+import { drawFloor, loadWoodTextures, makeWoodMaterial, drawPerimeterWalkway } from './drawFloor.js';
 import { drawWalls } from './drawWalls.js';
 import { walkingAnimationCallback, addObstacle, onKeyDownWalking, onKeyUpWalking } from '../config/walking.js';
 
@@ -20,6 +20,8 @@ function drawRoom(scene, threejsDrawing) {
     threejsDrawing.data.bulbLight = lights.bulbLight;
     threejsDrawing.data.bulbMat   = lights.bulbMat;
     threejsDrawing.data.hemiLight = lights.hemiLight;
+
+    threejsDrawing.data.hemiLight.groundColor.set(0x666666);
 
     const woodTex = loadWoodTextures();           // one‑time
     const woodMat = makeWoodMaterial(woodTex);    // one shared material
@@ -70,6 +72,13 @@ function drawRoom(scene, threejsDrawing) {
     addObstacle(obstacleBoxes, cubeMesh);
     addObstacle(obstacleBoxes, ballMesh);
 
+    // Draw second floor walkway...
+    threejsDrawing.data.secondFloorWalkway = drawPerimeterWalkway(scene, woodMat, 200, 25, 50);
+    const { east, west, north, south } = threejsDrawing.data.secondFloorWalkway;
+    addObstacle(obstacleBoxes, east);
+    addObstacle(obstacleBoxes, west);
+    addObstacle(obstacleBoxes, north);
+    addObstacle(obstacleBoxes, south);
 
     // ~~~~~~~~~~~~~~~~~~
     // GUI

@@ -1,4 +1,4 @@
-import { Mesh, MeshStandardMaterial, PlaneGeometry, RepeatWrapping, SRGBColorSpace, DoubleSide, TextureLoader } from 'three';
+import { Mesh, MeshStandardMaterial, PlaneGeometry, RepeatWrapping, SRGBColorSpace, DoubleSide, TextureLoader, BoxGeometry } from 'three';
 
 /*
 Some notes:
@@ -48,4 +48,44 @@ export function drawFloor(scene, woodMat, size = 20) {
 
     // Return the floor material or mesh if you need to update it
     return floorMesh;
+}
+
+export function drawPerimeterWalkway(
+    scene,
+    mat,
+    roomSize = 200,     // matches your floor
+    rimWidth = 25,      // width of the walkway
+    height = 90         // Y position (second storey)
+) {
+    const half = roomSize / 2;
+    //const gLong  = new PlaneGeometry(roomSize - 2 * rimWidth, rimWidth); // north & south
+    //const gShort = new PlaneGeometry(rimWidth, roomSize);                 // east & west
+    const gLong = new BoxGeometry(roomSize - 2*rimWidth, rimWidth, 1.0);
+    gLong.translate(0, -0.25, 0);   // bottom flush with Y=0 of the ring
+    const gShort = new BoxGeometry(rimWidth, roomSize, 1.0);
+    gShort.translate(0, -0.25, 0);   // bottom flush with Y=0 of the ring
+
+    // south (‑Z)
+    const south = new Mesh(gLong, mat);
+    south.rotation.x = -Math.PI / 2;
+    south.position.set(0, height, -half + rimWidth / 2);
+    scene.add(south);
+
+    // north (+Z)
+    const north = south.clone();
+    north.position.z =  half - rimWidth / 2;
+    scene.add(north);
+
+    // west (‑X)
+    const west = new Mesh(gShort, mat);
+    west.rotation.x = -Math.PI / 2;
+    west.position.set(-half + rimWidth / 2, height, 0);
+    scene.add(west);
+
+    // east (+X)
+    const east = west.clone();
+    east.position.x =  half - rimWidth / 2;
+    scene.add(east);
+
+    return {south, north, east, west};   // handy for collision boxes
 }
