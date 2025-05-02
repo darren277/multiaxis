@@ -1,4 +1,7 @@
-import { Mesh, MeshStandardMaterial, PlaneGeometry, RepeatWrapping, SRGBColorSpace, DoubleSide, TextureLoader, BoxGeometry } from 'three';
+import {
+    Mesh, MeshStandardMaterial, PlaneGeometry, RepeatWrapping, SRGBColorSpace, DoubleSide, TextureLoader,
+    BoxGeometry, Box3, Vector3, Raycaster
+} from 'three';
 
 /*
 Some notes:
@@ -88,4 +91,42 @@ export function drawPerimeterWalkway(
     scene.add(east);
 
     return {south, north, east, west};   // handy for collision boxes
+}
+
+export function drawElevator(scene, material, {
+    size      = 20,     // X–Z footprint
+    thick     = 0.4,    // elevator slab thickness
+    floorY    = 0.2,    // start height (just above ground floor)
+    targetY   = 90,     // same height as your walkway
+    rimClear  = 25      // distance you want to stop from the wall
+} = {}) {
+
+    const geo = new BoxGeometry(size, thick, size);
+    // move geometry so its top sits at geo origin (easier math)
+    geo.translate(0, thick / 2, 0);
+
+    const lift = new Mesh(geo, material);
+    lift.castShadow = lift.receiveShadow = true;
+    lift.position.set(0, floorY, -(rimClear + size/2));   // centred front of room
+    scene.add(lift);
+
+    lift.userData = {
+        floorY,
+        targetY,
+        state : 'down',   // 'down' | 'moving' | 'up'
+        box   : new Box3().setFromObject(lift)
+    };
+
+    return lift;
+}
+
+const downRay = new Raycaster();
+const DOWN    = new Vector3(0, -1, 0);
+const STEP_FAR = 2.0;           // enough to hit a 0.2m slab
+// (If you later allow crouching, compute STEP_FAR from player height.)
+
+export function playerOnPlatform(platform, player) {
+    downRay.set(player.position, DOWN);
+    downRay.far = STEP_FAR;
+    return downRay.intersectObject(platform, false).length > 0;
 }

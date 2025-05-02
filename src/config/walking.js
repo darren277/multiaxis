@@ -27,6 +27,10 @@ const direction = new Vector3();
 
 const clock = new Clock();
 
+export const staticBoxes   = [];   // immovable stuff
+export const movingMeshes  = [];   // meshes that move every frame
+export const obstacleBoxes = [];   // what the player collides with
+
 function onKeyDownWalking(event) {
     event.preventDefault();
     switch (event.code) {
@@ -97,12 +101,12 @@ function walkingAnimationCallback(scene, controls, override = false, obstacleBox
         if (isShiftDown) {
             // Rotate instead of move sideways
             if (moveLeft) {
-                qTmp.setFromAxisAngle( WORLD_Y,  turnSpeed * delta ); // left
-                yawObject.quaternion.premultiply( qTmp );
+                qTmp.setFromAxisAngle(WORLD_Y,  turnSpeed * delta); // left
+                yawObject.quaternion.premultiply(qTmp);
             }
             if (moveRight) {
-                qTmp.setFromAxisAngle( WORLD_Y, -turnSpeed * delta ); // right
-                yawObject.quaternion.premultiply( qTmp );
+                qTmp.setFromAxisAngle(WORLD_Y, -turnSpeed * delta); // right
+                yawObject.quaternion.premultiply(qTmp);
             }
             if (moveForward) {
                 // TODO...
@@ -141,7 +145,7 @@ function walkingAnimationCallback(scene, controls, override = false, obstacleBox
         velocity.y -= GRAVITY * delta;
         yawObject.position.y += velocity.y * delta;
 
-        if ( yawObject.position.y < GROUND_Y ) {
+        if (yawObject.position.y < GROUND_Y) {
             velocity.y = 0;
             yawObject.position.y = GROUND_Y;
             canJump = true;
@@ -149,9 +153,27 @@ function walkingAnimationCallback(scene, controls, override = false, obstacleBox
     }
 };
 
-function addObstacle(obstacleBoxes, mesh) {
+function addObstacle(mesh) {
     const box = new Box3().setFromObject(mesh);
-    obstacleBoxes.push(box);
+    staticBoxes.push(box);
+}
+
+export function updateObstacleBoxes() {
+    obstacleBoxes.length = 0;               // recycle the array
+
+    // 1) copy all the static ones
+    staticBoxes.forEach(b => obstacleBoxes.push(b));
+
+    // 2) refresh & copy each moving mesh
+    movingMeshes.forEach(mesh => {
+        if (!mesh.userData.box) mesh.userData.box = new Box3();
+        mesh.userData.box.setFromObject(mesh);   // track its new position
+
+        // make it tall enough to collide with the player
+        mesh.userData.box.expandByVector(new Vector3(0, 2, 0));
+
+        obstacleBoxes.push(mesh.userData.box);
+    });
 }
 
 export {
