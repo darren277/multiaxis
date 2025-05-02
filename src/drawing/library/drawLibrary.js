@@ -3,6 +3,7 @@ import { CSS2DObject } from 'css2drenderer';
 import { sortAlphabeticallyByName } from './sortResources.js';
 import { calculatePositionOfResource, casePitchX, rowPitchZ, worldX, worldZ } from './calculatePosition.js';
 import { onKeyDownWalking, onKeyUpWalking, walkingAnimationCallback, addObstacle } from '../../config/walking.js';
+import { drawRoom, animateRoom } from '../drawRoom.js';
 
 function drawFloor(scene) {
     const floorGeometry = new PlaneGeometry(200, 200);
@@ -19,14 +20,12 @@ function drawFloor(scene) {
 
 const textureLoader = new TextureLoader();
 
-const obstacleBoxes = [];
 
-
-function createBookCaseMesh(scene,
+function createBookCaseMesh(scene, staticBoxes,
 {
     name, texturePath,
     width = 10, height = 10, depth = 0.5,
-    position = new Vector3(), rotation = new Vector3()
+    position = new Vector3(), rotation = new Vector3(),
 }) {
     // Load the bookcase texture
     const bookCaseTexture = textureLoader.load(texturePath);
@@ -61,7 +60,7 @@ function createBookCaseMesh(scene,
     bookCaseMesh.rotation.set(rotation.x, rotation.y, rotation.z);
 
     scene.add(bookCaseMesh);
-    addObstacle(obstacleBoxes, bookCaseMesh); // add to collision detection
+    addObstacle(staticBoxes, bookCaseMesh); // add to collision detection
     return bookCaseMesh;
 }
 
@@ -69,7 +68,7 @@ function createBookCaseMesh(scene,
 // Now we can create multiple shelves, labeling them book_case_1a, book_case_1b, etc. Suppose we have two bookcases in “Row 1”, spaced out along the x axis.
 
 
-function createBookCases(scene, width, height, depth, row1StartX, spaceBetween, caseCount = 3, z_pos = 5) {
+function createBookCases(scene, staticBoxes, width, height, depth, row1StartX, spaceBetween, caseCount = 3, z_pos = 5) {
     // Example usage:
     const y_pos = 5;
 
@@ -80,7 +79,7 @@ function createBookCases(scene, width, height, depth, row1StartX, spaceBetween, 
         const x_pos = row1StartX + i * spaceBetween;   // now 18 per case
 
         createBookCaseMesh(
-        scene,
+        scene, staticBoxes,
         {
             name: `book_case_1${String.fromCharCode(97 + i)}`, // e.g., 1a, 1b, 1c
             texturePath: `textures/bookcase${bookCaseI+1}.png`,
@@ -96,7 +95,7 @@ function createBookCases(scene, width, height, depth, row1StartX, spaceBetween, 
         const rotation = new Vector3(0, Math.PI, 0);
 
         createBookCaseMesh(
-        scene,
+        scene, staticBoxes,
         {
             name: `book_case_1${String.fromCharCode(97 + i)}_back`, // e.g., 1a, 1b, 1c
             texturePath: `textures/bookcase${bookCaseI+1}.png`,
@@ -169,8 +168,14 @@ const DATA = {
 }
 
 function drawLibrary(scene, threejsDrawing) {
+    threejsDrawing.data.movingMeshes = [];
+    threejsDrawing.data.worldMeshes = [];
+    threejsDrawing.data.staticBoxes = [];
+    threejsDrawing.data.obstacleBoxes = [];
+
     // Draw the floor
-    drawFloor(scene);
+    //drawFloor(scene);
+    drawRoom(scene, threejsDrawing);
 
     const resources = DATA.resources;
     const library = DATA.library;
@@ -193,6 +198,7 @@ function drawLibrary(scene, threejsDrawing) {
         const zPos = row0StartZ + i * rowSpacing;   // –92, –81.5, …
         createBookCases(
             scene,
+            threejsDrawing.data.staticBoxes,
             width, height, depth,
             row1StartX,
             //spaceBetweenRows,                       // 10 → wrong
@@ -211,6 +217,8 @@ function drawLibrary(scene, threejsDrawing) {
     const renderer = threejsDrawing.data.renderer;
 
     drawResources(scene, library, resources, row1StartX, row0StartZ, camera, renderer);
+
+    scene.updateMatrixWorld(true);
 }
 
 
@@ -329,20 +337,18 @@ const libraryDrawing = {
         },
     },
     'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
-        const scene = threejsDrawing.data.scene;
-        const controls = threejsDrawing.data.controls;
-        if (!controls) {
-            console.warn('No controls found.');
+        if (!threejsDrawing.data.staticBoxes || !threejsDrawing.data.movingMeshes || !threejsDrawing.data.worldMeshes) {
+            console.warn('No static boxes, moving meshes, or world meshes found.');
             return;
         }
-
-        walkingAnimationCallback(scene, controls, true, obstacleBoxes);
+        animateRoom(renderer, timestamp, threejsDrawing, camera);
     },
     'data': {
     },
     'sceneConfig': {
         'cssRenderer': '2D',
-        'startPosition': { x: 0, y: 2, z: 5 },
+        'startPosition': { x: 0, y: 10, z: 0 },
+        'lookAt': { x: 0, y: 10, z: 10 },
     }
 }
 

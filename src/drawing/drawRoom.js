@@ -5,7 +5,7 @@ import { GUI } from 'lil-gui';
 import { drawLights, updateLights, lightingParams, bulbLuminousPowers, hemiLuminousIrradiances } from './drawLights.js';
 import { drawFloor, loadWoodTextures, makeWoodMaterial, drawPerimeterWalkway, drawElevator, playerOnPlatform } from './drawFloor.js';
 import { drawWalls } from './drawWalls.js';
-import { walkingAnimationCallback, addObstacle, onKeyDownWalking, onKeyUpWalking, updateObstacleBoxes, movingMeshes, obstacleBoxes, worldMeshes } from '../config/walking.js';
+import { walkingAnimationCallback, addObstacle, onKeyDownWalking, onKeyUpWalking, updateObstacleBoxes } from '../config/walking.js';
 
 let previousShadowMap = false;
 
@@ -28,38 +28,38 @@ function drawRoom(scene, threejsDrawing) {
     // Draw floor
     threejsDrawing.data.floor = drawFloor(scene, woodMat, 200);
     threejsDrawing.data.floor.userData.isGround = true;   // optional flag
-    worldMeshes.push(threejsDrawing.data.floor);          // add once at scene setup
+    threejsDrawing.data.worldMeshes.push(threejsDrawing.data.floor);          // add once at scene setup
 
     // Draw ceiling
     threejsDrawing.data.ceiling = drawFloor(scene, woodMat, 200);
     threejsDrawing.data.ceiling.rotation.x = Math.PI / 2;
     threejsDrawing.data.ceiling.position.y = 200;
-    addObstacle(threejsDrawing.data.ceiling);
+    addObstacle(threejsDrawing.data.staticBoxes, threejsDrawing.data.ceiling);
 
     // Draw walls
     threejsDrawing.data.southWall = drawFloor(scene, woodMat, 200);
     threejsDrawing.data.southWall.rotation.x = Math.PI;
     threejsDrawing.data.southWall.position.z = -100;
     threejsDrawing.data.southWall.position.y = 100;
-    addObstacle(threejsDrawing.data.southWall);
+    addObstacle(threejsDrawing.data.staticBoxes, threejsDrawing.data.southWall);
 
     threejsDrawing.data.northWall = drawFloor(scene, woodMat, 200);
     threejsDrawing.data.northWall.rotation.x = Math.PI;
     threejsDrawing.data.northWall.position.z = 100;
     threejsDrawing.data.northWall.position.y = 100;
-    addObstacle(threejsDrawing.data.northWall);
+    addObstacle(threejsDrawing.data.staticBoxes, threejsDrawing.data.northWall);
 
     threejsDrawing.data.eastWall = drawFloor(scene, woodMat, 200);
     threejsDrawing.data.eastWall.rotation.y = Math.PI / 2;
     threejsDrawing.data.eastWall.position.x = 100;
     threejsDrawing.data.eastWall.position.y = 100;
-    addObstacle(threejsDrawing.data.eastWall);
+    addObstacle(threejsDrawing.data.staticBoxes, threejsDrawing.data.eastWall);
 
     threejsDrawing.data.westWall = drawFloor(scene, woodMat, 200);
     threejsDrawing.data.westWall.rotation.y = -Math.PI / 2;
     threejsDrawing.data.westWall.position.x = -100;
     threejsDrawing.data.westWall.position.y = 100;
-    addObstacle(threejsDrawing.data.westWall);
+    addObstacle(threejsDrawing.data.staticBoxes, threejsDrawing.data.westWall);
 
     // ~~~~~~~~~~~~~~~~~~
     // Draw walls (and sphere)
@@ -68,25 +68,28 @@ function drawRoom(scene, threejsDrawing) {
     threejsDrawing.data.ballMat = ballMat;
     threejsDrawing.data.cubeMesh = cubeMesh;
     threejsDrawing.data.ballMesh = ballMesh;
-    addObstacle(cubeMesh);
-    addObstacle(ballMesh);
+    addObstacle(threejsDrawing.data.staticBoxes, cubeMesh);
+    addObstacle(threejsDrawing.data.staticBoxes, ballMesh);
 
     // Draw second floor walkway...
     threejsDrawing.data.secondFloorWalkway = drawPerimeterWalkway(scene, woodMat, 200, 25, 50);
     const { east, west, north, south } = threejsDrawing.data.secondFloorWalkway;
-    addObstacle(east);
-    addObstacle(west);
-    addObstacle(north);
-    addObstacle(south);
-    worldMeshes.push(east);
-    worldMeshes.push(west);
-    worldMeshes.push(north);
-    worldMeshes.push(south);
+    addObstacle(threejsDrawing.data.staticBoxes, east);
+    addObstacle(threejsDrawing.data.staticBoxes, west);
+    addObstacle(threejsDrawing.data.staticBoxes, north);
+    addObstacle(threejsDrawing.data.staticBoxes, south);
+    threejsDrawing.data.worldMeshes.push(east);
+    threejsDrawing.data.worldMeshes.push(west);
+    threejsDrawing.data.worldMeshes.push(north);
+    threejsDrawing.data.worldMeshes.push(south);
 
     const elevator = drawElevator(scene, woodMat, {size: 20, thick: 0.4, floorY: 2.0, targetY: 90, rimClear: 50});
     threejsDrawing.data.elevator = elevator;
-    movingMeshes.push(elevator);
-    worldMeshes.push(elevator);
+    threejsDrawing.data.movingMeshes.push(elevator);
+    threejsDrawing.data.worldMeshes.push(elevator);
+
+    scene.updateMatrixWorld(true);
+    threejsDrawing.data.worldMeshes.forEach(m => {console.assert(!m.matrixWorldNeedsUpdate, `${m.uuid.slice(0,8)} still dirty (${m.name || 'unnamed'})`);});
 
     // ~~~~~~~~~~~~~~~~~~
     // GUI
@@ -167,6 +170,30 @@ function animateLights(renderer, threejsDrawing) {
     threejsDrawing.data.bulbLight.position.y = Math.cos(time) * 0.75 + 1.25;
 }
 
+export function animateRoom(renderer, timestamp, threejsDrawing, camera) {
+    animateLights(renderer, threejsDrawing);
+
+    const scene = threejsDrawing.data.scene;
+    const controls = threejsDrawing.data.controls;
+    if (!controls) {
+        console.warn('No controls found.');
+        return;
+    }
+
+    const lift     = threejsDrawing.data.elevator;
+    const player   = controls.object;
+
+    const elapsed  = clock.getDelta();
+
+    if (lift) {
+        animateElevator(lift, player, elapsed);
+    }
+
+    updateObstacleBoxes(threejsDrawing.data.staticBoxes, threejsDrawing.data.movingMeshes, threejsDrawing.data.obstacleBoxes);
+
+    walkingAnimationCallback(scene, controls, player, threejsDrawing.data.worldMeshes, threejsDrawing.data.obstacleBoxes, true);
+}
+
 const roomDrawing = {
     'sceneElements': [],
     'drawFuncs': [
@@ -180,29 +207,7 @@ const roomDrawing = {
             onKeyUpWalking(event);
         },
     },
-    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
-        animateLights(renderer, threejsDrawing);
-
-        const scene = threejsDrawing.data.scene;
-        const controls = threejsDrawing.data.controls;
-        if (!controls) {
-            console.warn('No controls found.');
-            return;
-        }
-
-        const lift     = threejsDrawing.data.elevator;
-        const player   = controls.object;
-
-        const elapsed  = clock.getDelta();
-
-        if (lift) {
-            animateElevator(lift, player, elapsed);
-        }
-
-        updateObstacleBoxes();
-
-        walkingAnimationCallback(scene, controls, player, true);
-    },
+    'animationCallback': animateRoom,
     'data': {
         'bulbLight': null,
         'bulbMat': null,
@@ -216,4 +221,4 @@ const roomDrawing = {
     }
 }
 
-export { roomDrawing };
+export { roomDrawing, drawRoom, animateLights, animateElevator };

@@ -16,6 +16,8 @@ const GROUND_Y  = 0.25; // height of the ground plane
 const turnSpeed = Math.PI / 2;      // 90 ° per second
 const qTmp      = new Quaternion(); // reused tmp to avoid GC
 
+const STEP_DOWN = 0.4;             // max step‑down before we consider it a fall
+
 const tempBox = new Box3();        // temporary box for the player
 const tempPosition = new Vector3(); // for calculating next pos
 const playerSize = 1.0;             // rough player "radius" (adjust if needed)
@@ -27,9 +29,9 @@ const direction = new Vector3();
 
 const clock = new Clock();
 
-export const staticBoxes   = [];   // immovable stuff
-export const movingMeshes  = [];   // meshes that move every frame
-export const obstacleBoxes = [];   // what the player collides with
+//export const staticBoxes   = [];   // immovable stuff
+//export const movingMeshes  = [];   // meshes that move every frame
+//export const obstacleBoxes = [];   // what the player collides with
 
 const groundRay = new Raycaster();
 const DOWN      = new Vector3(0, -1, 0);
@@ -99,7 +101,7 @@ function checkCollision(position, obstacleBoxes = [], ignore = null) {
     return false; // no collision
 }
 
-function walkingAnimationCallback(scene, controls, player, override = false) {
+function walkingAnimationCallback(scene, controls, player, worldMeshes, obstacleBoxes, override = false) {
     if (controls.isLocked === true || (override === true && controls.name === 'PointerLockControls')) {
         const delta = clock.getDelta(); // measure time between frames
         const yawObject = controls.getObject();   // outer object of PLC
@@ -157,32 +159,49 @@ function walkingAnimationCallback(scene, controls, player, override = false) {
         yawObject.position.y += velocity.y * delta;
 
         // ───── New: raycast straight down for ground ────────────────
-        const halfHeight = playerSize;               // from your earlier code
-        groundRay.set(yawObject.position, DOWN);
-        groundRay.far = halfHeight + 0.05;           // just past the player's feet
+        const halfHeight = playerSize;      // soles‑to‑eyes
+        const footPos    = yawObject.position.clone().subScalar(halfHeight - 0.01);
 
-        const hit = groundRay.intersectObjects(worldMeshes, false)[0];
+        /* ---------- boot strap ---------- */
+        if (player.userData.lastGroundY === undefined) {
+            // we have never stood on anything yet → cast long
+            //groundRay.set(footPos, DOWN);
+            groundRay.far = 50;             // long enough for any reasonable spawn
+        } else {
+            /* ---------- adaptive length ---------- */
+            const maxPossibleDrop = Math.max(player.userData.lastGroundY - footPos.y, 0);
+            //groundRay.set(footPos, DOWN);
+            groundRay.far = STEP_DOWN + maxPossibleDrop;   // 0.4 m + drop since last frame
+        }
+        /* ----------------------------------------- */
+
+        const hit = groundRay.intersectObjects(worldMeshes, true)[0]; // recurse = true
         if (hit) {
-            // stand exactly on the hit point
-            yawObject.position.y = hit.point.y + halfHeight;
-            velocity.y = 0;
-            canJump = true;
-            // store the mesh we’re standing on
-            player.userData.currentGround = hit.object;
+            const gap = footPos.y - hit.point.y;
+            if (velocity.y <= 0 && gap <= STEP_DOWN + 0.01) { // land **only** when close
+                // stand exactly on the hit point
+                yawObject.position.y = hit.point.y + halfHeight;
+                velocity.y = 0;
+                canJump = true;
+
+                player.userData.lastGroundY = hit.point.y;
+                // store the mesh we’re standing on
+                player.userData.currentGround = hit.object;
+            }
         } else {
             player.userData.currentGround = null;
         }
     }
 };
 
-function addObstacle(mesh) {
+function addObstacle(staticBoxes, mesh) {
     const box = new Box3().setFromObject(mesh);
     box.object = mesh;
     mesh.userData.box = box;
     staticBoxes.push(box);
 }
 
-export function updateObstacleBoxes() {
+export function updateObstacleBoxes(staticBoxes, movingMeshes, obstacleBoxes) {
     obstacleBoxes.length = 0;               // recycle the array
 
     // 1) copy all the static ones
