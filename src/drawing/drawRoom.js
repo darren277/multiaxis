@@ -5,7 +5,7 @@ import { GUI } from 'lil-gui';
 import { drawLights, updateLights, lightingParams, bulbLuminousPowers, hemiLuminousIrradiances } from './drawLights.js';
 import { drawFloor, loadWoodTextures, makeWoodMaterial, drawPerimeterWalkway, drawElevator, playerOnPlatform } from './drawFloor.js';
 import { drawWalls } from './drawWalls.js';
-import { walkingAnimationCallback, addObstacle, onKeyDownWalking, onKeyUpWalking, updateObstacleBoxes, movingMeshes, obstacleBoxes } from '../config/walking.js';
+import { walkingAnimationCallback, addObstacle, onKeyDownWalking, onKeyUpWalking, updateObstacleBoxes, movingMeshes, obstacleBoxes, worldMeshes } from '../config/walking.js';
 
 let previousShadowMap = false;
 
@@ -27,7 +27,8 @@ function drawRoom(scene, threejsDrawing) {
     // ~~~~~~~~~~~~~~~~~~
     // Draw floor
     threejsDrawing.data.floor = drawFloor(scene, woodMat, 200);
-    addObstacle(threejsDrawing.data.floor);
+    threejsDrawing.data.floor.userData.isGround = true;   // optional flag
+    worldMeshes.push(threejsDrawing.data.floor);          // add once at scene setup
 
     // Draw ceiling
     threejsDrawing.data.ceiling = drawFloor(scene, woodMat, 200);
@@ -77,10 +78,15 @@ function drawRoom(scene, threejsDrawing) {
     addObstacle(west);
     addObstacle(north);
     addObstacle(south);
+    worldMeshes.push(east);
+    worldMeshes.push(west);
+    worldMeshes.push(north);
+    worldMeshes.push(south);
 
-    const elevator = drawElevator(scene, woodMat, {size: 20, thick: 0.4, floorY: 0.2, targetY: 90, rimClear: 25});
+    const elevator = drawElevator(scene, woodMat, {size: 20, thick: 0.4, floorY: 2.0, targetY: 90, rimClear: 50});
     threejsDrawing.data.elevator = elevator;
     movingMeshes.push(elevator);
+    worldMeshes.push(elevator);
 
     // ~~~~~~~~~~~~~~~~~~
     // GUI
@@ -93,12 +99,14 @@ function drawRoom(scene, threejsDrawing) {
 }
 
 function animateElevator(lift, player, elapsed) {
-    console.log('movingMeshes', movingMeshes);
-    console.log(movingMeshes[0].userData.box);
     if (lift.userData.state === 'down') {
         if (playerOnPlatform(lift, player)) {
             lift.userData.state = 'moving';
             lift.userData.vy    = 10;           // units per second
+
+            lift.userData.rider     = player;
+            lift.userData.offsetY   = player.position.y - lift.position.y;
+            player.userData.currentPlatform = lift;
         }
     }
 
@@ -108,20 +116,26 @@ function animateElevator(lift, player, elapsed) {
         // simple linear rise
         lift.position.y += deltaY;
 
-        // move player with the lift *if* they’re still on it
-        if (playerOnPlatform(lift, player)) {
-            player.position.y  += deltaY;
+        // carry the rider, if any
+        if (lift.userData.rider) {
+            const r = lift.userData.rider;
+            r.position.y = lift.position.y + lift.userData.offsetY;
+            player.userData.currentPlatform = lift;
+
+            // did the player walk / jump off?
+            if (!playerOnPlatform(lift, r)) {
+                lift.userData.rider = null;      // drop the latch
+            }
         }
 
         if (lift.position.y >= lift.userData.targetY) {
-            // clamp, switch to 'up' state
-            const overshoot = lift.position.y - lift.userData.targetY;
-            lift.position.y -= overshoot;
-            if (playerOnPlatform(lift, player)) {
-                player.position.y -= overshoot;
-            }
+            lift.position.y = lift.userData.targetY;
             lift.userData.state = 'up';
+            lift.userData.rider = null;          // trip is over
+            player.userData.currentPlatform = null;
         }
+
+        lift.updateMatrixWorld();
     }
 }
 
@@ -178,13 +192,13 @@ const roomDrawing = {
 
         const elapsed  = clock.getDelta();
 
-        updateObstacleBoxes();
-
         if (lift) {
             animateElevator(lift, player, elapsed);
         }
 
-        walkingAnimationCallback(scene, controls, true, obstacleBoxes);
+        updateObstacleBoxes();
+
+        walkingAnimationCallback(scene, controls, player, true);
     },
     'data': {
         'bulbLight': null,
@@ -193,6 +207,9 @@ const roomDrawing = {
         'floorMat': null,
         'cubeMat': null,
         'ballMat': null
+    },
+    'sceneConfig': {
+        'startPosition': { x: 0, y: 10, z: -75 },
     }
 }
 

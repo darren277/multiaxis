@@ -1,4 +1,4 @@
-import { Vector3, Clock, Quaternion, Box3 } from 'three';
+import { Vector3, Clock, Quaternion, Box3, Raycaster } from 'three';
 
 // For pointer lock movement
 let moveForward = false;
@@ -10,8 +10,8 @@ let isShiftDown = false;
 
 let canJump = true;
 const GRAVITY = 9.8 * 10; // units per second squared
-const WORLD_Y   = new Vector3( 0, 1, 0 );
-const WORLD_X   = new Vector3( 1, 0, 0 );
+const WORLD_Y   = new Vector3(0, 1, 0);
+const WORLD_X   = new Vector3(1, 0, 0);
 const GROUND_Y  = 0.25; // height of the ground plane
 const turnSpeed = Math.PI / 2;      // 90 ° per second
 const qTmp      = new Quaternion(); // reused tmp to avoid GC
@@ -30,6 +30,11 @@ const clock = new Clock();
 export const staticBoxes   = [];   // immovable stuff
 export const movingMeshes  = [];   // meshes that move every frame
 export const obstacleBoxes = [];   // what the player collides with
+
+const groundRay = new Raycaster();
+const DOWN      = new Vector3(0, -1, 0);
+
+export const worldMeshes = []; // meshes to check for ground
 
 function onKeyDownWalking(event) {
     event.preventDefault();
@@ -81,10 +86,11 @@ function onKeyUpWalking(event) {
     }
 }
 
-function checkCollision(position, obstacleBoxes = []) {
+function checkCollision(position, obstacleBoxes = [], ignore = null) {
     tempBox.setFromCenterAndSize(position, new Vector3(playerSize, playerSize * 2, playerSize));
 
     for (const box of obstacleBoxes) {
+        if (box === ignore) continue;
         if (box.intersectsBox(tempBox)) {
             return true; // collision detected
         }
@@ -93,7 +99,7 @@ function checkCollision(position, obstacleBoxes = []) {
     return false; // no collision
 }
 
-function walkingAnimationCallback(scene, controls, override = false, obstacleBoxes = []) {
+function walkingAnimationCallback(scene, controls, player, override = false) {
     if (controls.isLocked === true || (override === true && controls.name === 'PointerLockControls')) {
         const delta = clock.getDelta(); // measure time between frames
         const yawObject = controls.getObject();   // outer object of PLC
@@ -128,16 +134,21 @@ function walkingAnimationCallback(scene, controls, override = false, obstacleBox
 
             tempPosition.copy(yawObject.position);
 
+            const ignore =
+                player.userData.currentPlatform?.userData.box        // moving lift
+             || player.userData.currentGround?.userData.box          // static ground (walkway, floor)
+             || null;
+
             // Attempt to move sideways
             tempPosition.x += velocity.x * delta;
-            if (!checkCollision(tempPosition)) {
+            if (!checkCollision(tempPosition, obstacleBoxes, ignore)) {
                 yawObject.position.x = tempPosition.x;
             }
 
             // Attempt to move forward/backward
             tempPosition.copy(yawObject.position);
             tempPosition.z += velocity.z * delta;
-            if (!checkCollision(tempPosition, obstacleBoxes)) {
+            if (!checkCollision(tempPosition, obstacleBoxes, ignore)) {
                 yawObject.position.z = tempPosition.z;
             }
         }
@@ -145,16 +156,29 @@ function walkingAnimationCallback(scene, controls, override = false, obstacleBox
         velocity.y -= GRAVITY * delta;
         yawObject.position.y += velocity.y * delta;
 
-        if (yawObject.position.y < GROUND_Y) {
+        // ───── New: raycast straight down for ground ────────────────
+        const halfHeight = playerSize;               // from your earlier code
+        groundRay.set(yawObject.position, DOWN);
+        groundRay.far = halfHeight + 0.05;           // just past the player's feet
+
+        const hit = groundRay.intersectObjects(worldMeshes, false)[0];
+        if (hit) {
+            // stand exactly on the hit point
+            yawObject.position.y = hit.point.y + halfHeight;
             velocity.y = 0;
-            yawObject.position.y = GROUND_Y;
             canJump = true;
+            // store the mesh we’re standing on
+            player.userData.currentGround = hit.object;
+        } else {
+            player.userData.currentGround = null;
         }
     }
 };
 
 function addObstacle(mesh) {
     const box = new Box3().setFromObject(mesh);
+    box.object = mesh;
+    mesh.userData.box = box;
     staticBoxes.push(box);
 }
 
@@ -171,6 +195,7 @@ export function updateObstacleBoxes() {
 
         // make it tall enough to collide with the player
         mesh.userData.box.expandByVector(new Vector3(0, 2, 0));
+        mesh.userData.box.object = mesh;
 
         obstacleBoxes.push(mesh.userData.box);
     });

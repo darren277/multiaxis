@@ -114,7 +114,9 @@ export function drawElevator(scene, material, {
         floorY,
         targetY,
         state : 'down',   // 'down' | 'moving' | 'up'
-        box   : new Box3().setFromObject(lift)
+        box   : new Box3().setFromObject(lift),
+        rider: null,
+        offsetY: 0, // offset from lift to player
     };
 
     return lift;
