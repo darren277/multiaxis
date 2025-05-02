@@ -1,47 +1,32 @@
-import { Mesh, MeshStandardMaterial, PlaneGeometry, RepeatWrapping, SRGBColorSpace, DoubleSide } from 'three';
+import { Mesh, MeshStandardMaterial, PlaneGeometry, RepeatWrapping, SRGBColorSpace, DoubleSide, TextureLoader } from 'three';
 
-export function drawFloor(scene, textureLoader, size = 20) {
-    const floorMat = new MeshStandardMaterial({
-        roughness: 0.8,
-        color: 0xffffff,
-        metalness: 0.2,
-        bumpScale: 1
+export function loadWoodTextures(path = 'textures/') {
+    const loader = new TextureLoader();
+
+    const diffuse  = loader.load(path + 'hardwood2_diffuse.jpg');
+    const bump     = loader.load(path + 'hardwood2_bump.jpg');
+    const rough    = loader.load(path + 'hardwood2_roughness.jpg');
+
+    // configure once, re‑used everywhere
+    [diffuse, bump, rough].forEach(t => {
+        t.wrapS = t.wrapT = RepeatWrapping;
+        t.colorSpace = SRGBColorSpace;          // only needed on the color map
+        t.anisotropy = 4;                       // or renderer.capabilities.getMaxAnisotropy()
+        t.repeat.set(10, 24);
     });
 
-    // Load texture maps
-    textureLoader.load('textures/hardwood2_diffuse.jpg', (map) => {
-        map.wrapS = RepeatWrapping;
-        map.wrapT = RepeatWrapping;
-        map.anisotropy = 4;
-        map.repeat.set(10, 24);
-        map.colorSpace = SRGBColorSpace;
-        floorMat.map = map;
-        floorMat.needsUpdate = true;
-    });
+    return { diffuse, bump, rough };
+}
 
-    textureLoader.load('textures/hardwood2_bump.jpg', (map) => {
-        map.wrapS = RepeatWrapping;
-        map.wrapT = RepeatWrapping;
-        map.anisotropy = 4;
-        map.repeat.set(10, 24);
-        floorMat.bumpMap = map;
-        floorMat.needsUpdate = true;
-    });
+export function makeWoodMaterial(tex) {
+    return new MeshStandardMaterial({map: tex.diffuse, bumpMap: tex.bump, roughnessMap: tex.rough, roughness: 0.8, metalness: 0.2, side: DoubleSide});
+}
 
-    textureLoader.load('textures/hardwood2_roughness.jpg', (map) => {
-        map.wrapS = RepeatWrapping;
-        map.wrapT = RepeatWrapping;
-        map.anisotropy = 4;
-        map.repeat.set(10, 24);
-        floorMat.roughnessMap = map;
-        floorMat.needsUpdate = true;
-    });
-
+export function drawFloor(scene, woodMat, size = 20) {
     const floorGeometry = new PlaneGeometry(size, size);
-    const floorMesh = new Mesh(floorGeometry, floorMat);
+    const floorMesh = new Mesh(floorGeometry, woodMat);
     floorMesh.receiveShadow = true;
     floorMesh.rotation.x = -Math.PI / 2;
-    floorMat.side = DoubleSide;
     scene.add(floorMesh);
 
     // Return the floor material or mesh if you need to update it

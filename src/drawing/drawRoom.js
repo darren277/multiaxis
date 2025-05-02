@@ -3,7 +3,7 @@ import { GUI } from 'lil-gui';
 
 // Import our modular “draw” functions
 import { drawLights, updateLights, lightingParams, bulbLuminousPowers, hemiLuminousIrradiances } from './drawLights.js';
-import { drawFloor } from './drawFloor.js';
+import { drawFloor, loadWoodTextures, makeWoodMaterial } from './drawFloor.js';
 import { drawWalls } from './drawWalls.js';
 import { walkingAnimationCallback, addObstacle, onKeyDownWalking, onKeyUpWalking } from '../config/walking.js';
 
@@ -21,37 +21,40 @@ function drawRoom(scene, threejsDrawing) {
     threejsDrawing.data.bulbMat   = lights.bulbMat;
     threejsDrawing.data.hemiLight = lights.hemiLight;
 
+    const woodTex = loadWoodTextures();           // one‑time
+    const woodMat = makeWoodMaterial(woodTex);    // one shared material
+
     // ~~~~~~~~~~~~~~~~~~
     // Draw floor
-    threejsDrawing.data.floor = drawFloor(scene, textureLoader, 200);
+    threejsDrawing.data.floor = drawFloor(scene, woodMat, 200);
     addObstacle(obstacleBoxes, threejsDrawing.data.floor);
 
     // Draw ceiling
-    threejsDrawing.data.ceiling = drawFloor(scene, textureLoader, 200);
+    threejsDrawing.data.ceiling = drawFloor(scene, woodMat, 200);
     threejsDrawing.data.ceiling.rotation.x = Math.PI / 2;
     threejsDrawing.data.ceiling.position.y = 200;
     addObstacle(obstacleBoxes, threejsDrawing.data.ceiling);
 
     // Draw walls
-    threejsDrawing.data.southWall = drawFloor(scene, textureLoader, 200);
+    threejsDrawing.data.southWall = drawFloor(scene, woodMat, 200);
     threejsDrawing.data.southWall.rotation.x = Math.PI;
     threejsDrawing.data.southWall.position.z = -100;
     threejsDrawing.data.southWall.position.y = 100;
     addObstacle(obstacleBoxes, threejsDrawing.data.southWall);
 
-    threejsDrawing.data.northWall = drawFloor(scene, textureLoader, 200);
+    threejsDrawing.data.northWall = drawFloor(scene, woodMat, 200);
     threejsDrawing.data.northWall.rotation.x = Math.PI;
     threejsDrawing.data.northWall.position.z = 100;
     threejsDrawing.data.northWall.position.y = 100;
     addObstacle(obstacleBoxes, threejsDrawing.data.northWall);
 
-    threejsDrawing.data.eastWall = drawFloor(scene, textureLoader, 200);
+    threejsDrawing.data.eastWall = drawFloor(scene, woodMat, 200);
     threejsDrawing.data.eastWall.rotation.y = Math.PI / 2;
     threejsDrawing.data.eastWall.position.x = 100;
     threejsDrawing.data.eastWall.position.y = 100;
     addObstacle(obstacleBoxes, threejsDrawing.data.eastWall);
 
-    threejsDrawing.data.westWall = drawFloor(scene, textureLoader, 200);
+    threejsDrawing.data.westWall = drawFloor(scene, woodMat, 200);
     threejsDrawing.data.westWall.rotation.y = -Math.PI / 2;
     threejsDrawing.data.westWall.position.x = -100;
     threejsDrawing.data.westWall.position.y = 100;
