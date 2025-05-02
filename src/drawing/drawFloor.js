@@ -1,5 +1,22 @@
 import { Mesh, MeshStandardMaterial, PlaneGeometry, RepeatWrapping, SRGBColorSpace, DoubleSide, TextureLoader } from 'three';
 
+/*
+Some notes:
+* Different UV tiling/rotation.
+** `texture.repeat` (and `offset`, `rotation`, etc.) belong to the Texture object, so all materials that share that object will change together.
+** If your walls need `repeat.set(24, 10)` instead of `10, 24`, call `woodTex.diffuse.clone()` first.
+** The clone shares the image data (zero extra GPU memory) but gets its own transform:
+
+const wallTex = woodTex.diffuse.clone();
+wallTex.repeat.set(24, 10);
+
+const wallMat = woodMat.clone();
+wallMat.map = wallTex;
+
+* Different shading properties.
+** If you want glossy varnish on the ceiling but matte walls, keep the same textures but `woodMat.clone()` and tweak `roughness`, etc.
+*/
+
 export function loadWoodTextures(path = 'textures/') {
     const loader = new TextureLoader();
 
