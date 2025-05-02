@@ -85,15 +85,12 @@ function isGiantWhiteBox(path) {
 }
 
 function removeSpacesRGB(rgb) {
-    const rgbString = rgbString.match(/\d+/g);
-    return `#${rgb.map(num => parseInt(num).toString(16).padStart(2, '0')).join('')}`;
+    const rgbString = rgb.match(/\d+/g);
+    return `#${rgbString.map(num => parseInt(num).toString(16).padStart(2, '0')).join('')}`;
 }
 
 function processShape(shape, depth, fillColor, isText = false, linearGradient = null) {
-    const geometry = new ExtrudeGeometry(shape, {
-        depth,
-        bevelEnabled: false
-    });
+    const geometry = new ExtrudeGeometry(shape, {depth, bevelEnabled: false});
 
     let material;
     if (linearGradient) {
@@ -101,7 +98,8 @@ function processShape(shape, depth, fillColor, isText = false, linearGradient = 
         material = renderLinearGradientCanvas(linearGradient.colorA, linearGradient.colorB, Math.abs(linearGradient.vDir[0]) > Math.abs(linearGradient.vDir[1]));
     } else {
         const threeColor = cssToColor(fillColor, 0x888888);
-        material = new MeshBasicMaterial({ color: threeColor, side: DoubleSide, toneMapped: false });
+        console.log('threeColor', threeColor, fillColor);
+        material = new MeshBasicMaterial({ color: threeColor, toneMapped: false });
     }
     material.side = DoubleSide;
 
@@ -114,8 +112,8 @@ function processShape(shape, depth, fillColor, isText = false, linearGradient = 
         mesh.scale.set(0.1, -0.1, 0.1);
     }
 
-    mesh.scale.set(0.1, 0.1, 0.1);
-    mesh.rotateX(Math.PI);
+    //mesh.scale.set(0.1, 0.1, 0.1);
+    //mesh.rotateX(Math.PI);
 
     return mesh;
 }
@@ -126,6 +124,7 @@ function processPath(path) {
     const configuration = node?.getAttribute('data-configuration') || '';
     const origType = node?.getAttribute('data-orig-type') || configuration || '';
     const fill = node?.getAttribute('data-orig-fill') || '';
+    console.log('node', origType, node);
     let linearGradient;
     let fillColor;
 
@@ -158,8 +157,8 @@ function processPath(path) {
     // Example: If it's "rect," extrude less; if it's "text," extrude more
     let depth = (origType === 'rect') ? 2 : 6;
 
-    if (fillColor.startsWith('rgb')) {
-        fillColor = removeSpacesRGB(fillColor);
+    if (fill.startsWith('rgb')) {
+        fillColor = removeSpacesRGB(fill);
         depth = 4;
     }
 
@@ -172,28 +171,47 @@ function processPath(path) {
     shapes.forEach(shape => {
         let theColor;
         console.log('fillColor', fillColor, linearGradient);
-        if (fillColor === 'none' || fillColor === 'url(#linearGradient1)') {
+        if (fillColor === 'none' && isText) {
             console.warn('Skipping shape with fillColor none or linear gradient', fillColor, path);
-            theColor = 'yellow';
+            theColor = 'black';
+
+            const mesh = processShape(shape, 6, theColor, isText, linearGradient);
+            pathGroup.add(mesh);
         } else if (linearGradient) {
             theColor = null;
+
+            const mesh = processShape(shape, 6, theColor, isText, linearGradient);
+            pathGroup.add(mesh);
         } else {
             theColor = fillColor || 'blue';
+
+            if (origType === 'edge') {
+                const mesh = processShape(shape, 6, 'yellow', isText, linearGradient);
+                pathGroup.add(mesh);
+            } else if ((origType === 'rect' || origType === 'ellipse' || origType === 'circle') && fillColor !== 'black') {
+                // rect or ellipse etc with fillColor black is probably the outline only...
+                console.log('rect', theColor);
+                //theColor = 'yellow';
+                //theColor = '#ffcc00';
+                const mesh = processShape(shape, 4, theColor, isText, linearGradient);
+                pathGroup.add(mesh);
+            }
         }
-        const mesh = processShape(shape, 6, theColor, isText, linearGradient);
-        pathGroup.add(mesh);
     });
 
-    pathGroup.userData = {
-        kind : 'svgPath',
-        label: node?.getAttribute('id') ||  node?.getAttribute('class') || 'unnamed'
-    };
+    pathGroup.userData = {kind : 'svgPath', label: node?.getAttribute('id') ||  node?.getAttribute('class') || 'unnamed'};
 
     interactiveSvgGroups.push(pathGroup);
 
     return pathGroup;
 }
 
+class Path {
+    constructor(path) {
+        this.path = path;
+        this.color = determineColor(path);
+    }
+}
 
 function determineColor(path) {
     const style = path.userData?.style || {};
