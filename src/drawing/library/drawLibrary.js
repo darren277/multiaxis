@@ -20,15 +20,24 @@ function drawFloor(scene) {
 
 const textureLoader = new TextureLoader();
 
+const BOOK_CASE_TEXTURES = {
+    'bookcase1': textureLoader.load('textures/bookcase1.png'),
+    'bookcase2': textureLoader.load('textures/bookcase2.png'),
+    'bookcase3': textureLoader.load('textures/bookcase3.png'),
+    'bookcase4': textureLoader.load('textures/bookcase4.png'),
+    'bookcase5': textureLoader.load('textures/bookcase5.png'),
+    'bookcase6': textureLoader.load('textures/bookcase6.png'),
+};
 
 function createBookCaseMesh(scene, staticBoxes,
 {
-    name, texturePath,
+    name, textureName,
     width = 10, height = 10, depth = 0.5,
     position = new Vector3(), rotation = new Vector3(),
 }) {
     // Load the bookcase texture
-    const bookCaseTexture = textureLoader.load(texturePath);
+    const bookCaseTexture = BOOK_CASE_TEXTURES[textureName];
+    console.log(`Loading texture: ${textureName}`, bookCaseTexture);
 
     // Option A: Just a plane (front face)
     // const geometry = new PlaneGeometry(width, height);
@@ -82,7 +91,7 @@ function createBookCases(scene, staticBoxes, width, height, depth, row1StartX, s
         scene, staticBoxes,
         {
             name: `book_case_1${String.fromCharCode(97 + i)}`, // e.g., 1a, 1b, 1c
-            texturePath: `textures/bookcase${bookCaseI+1}.png`,
+            textureName: `bookcase${bookCaseI+1}`,
             width: width,
             height: height,
             depth: depth,
@@ -98,7 +107,7 @@ function createBookCases(scene, staticBoxes, width, height, depth, row1StartX, s
         scene, staticBoxes,
         {
             name: `book_case_1${String.fromCharCode(97 + i)}_back`, // e.g., 1a, 1b, 1c
-            texturePath: `textures/bookcase${bookCaseI+1}.png`,
+            textureName: `bookcase${bookCaseI+1}`,
             width: width,
             height: height,
             depth: depth,
