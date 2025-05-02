@@ -141,6 +141,32 @@ function animateElevator(lift, player, elapsed) {
 
 const clock    = new Clock();
 
+function animateLights(renderer, threejsDrawing) {
+    // Tone Mapping
+    renderer.toneMappingExposure = Math.pow(lightingParams.exposure, 5.0);
+
+    // Shadows
+    renderer.shadowMap.enabled = lightingParams.shadows;
+    threejsDrawing.data.bulbLight.castShadow = lightingParams.shadows;
+    if (lightingParams.shadows !== previousShadowMap) {
+        previousShadowMap = lightingParams.shadows;
+    }
+
+    // Update the lights
+    updateLights({
+        bulbLight: threejsDrawing.data.bulbLight,
+        bulbMat: threejsDrawing.data.bulbMat,
+        hemiLight: threejsDrawing.data.hemiLight,
+        lightingParams,
+        bulbLuminousPowers: bulbLuminousPowers,
+        hemiLuminousIrradiances: hemiLuminousIrradiances
+    });
+
+    // Animate the bulb bouncing
+    const time = Date.now() * 0.0005;
+    threejsDrawing.data.bulbLight.position.y = Math.cos(time) * 0.75 + 1.25;
+}
+
 const roomDrawing = {
     'sceneElements': [],
     'drawFuncs': [
@@ -155,30 +181,7 @@ const roomDrawing = {
         },
     },
     'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
-        // LIGHT STUFF //
-        // Tone Mapping
-        renderer.toneMappingExposure = Math.pow(lightingParams.exposure, 5.0);
-
-        // Shadows
-        renderer.shadowMap.enabled = lightingParams.shadows;
-        threejsDrawing.data.bulbLight.castShadow = lightingParams.shadows;
-        if (lightingParams.shadows !== previousShadowMap) {
-            previousShadowMap = lightingParams.shadows;
-        }
-
-        // Update the lights
-        updateLights({
-            bulbLight: threejsDrawing.data.bulbLight,
-            bulbMat: threejsDrawing.data.bulbMat,
-            hemiLight: threejsDrawing.data.hemiLight,
-            lightingParams,
-            bulbLuminousPowers: bulbLuminousPowers,
-            hemiLuminousIrradiances: hemiLuminousIrradiances
-        });
-
-        // Animate the bulb bouncing
-        const time = Date.now() * 0.0005;
-        threejsDrawing.data.bulbLight.position.y = Math.cos(time) * 0.75 + 1.25;
+        animateLights(renderer, threejsDrawing);
 
         const scene = threejsDrawing.data.scene;
         const controls = threejsDrawing.data.controls;
