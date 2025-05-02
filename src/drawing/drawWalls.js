@@ -75,5 +75,9 @@ export function drawWalls(scene, textureLoader) {
     scene.add(ballMesh);
 
     // Return references if needed
-    return {cubeMat, ballMat};
+    return {
+        cubeMat, ballMat,
+        cubeMesh: boxMesh1,
+        ballMesh,
+    };
 }

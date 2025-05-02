@@ -35,9 +35,11 @@ async function contentLoadedCallback(threejsDrawing) {
 
     const queryOptions = parseQueryParams(window.location.search);
 
+    const sceneConfig = threejsDrawing.sceneConfig || {};
+
     if (queryOptions) {
         if (queryOptions.controls && queryOptions.controls === 'walking') {
-            threejsDrawing.sceneConfig.controller = 'walking';
+            sceneConfig.controller = 'walking';
         }
     }
 
@@ -46,9 +48,9 @@ async function contentLoadedCallback(threejsDrawing) {
         return;
     }
 
-    const outlineEffectEnabled = threejsDrawing.sceneConfig && threejsDrawing.sceneConfig.outlineEffect || false;
+    const outlineEffectEnabled = sceneConfig && sceneConfig.outlineEffect || false;
 
-    const { scene, camera, renderer, controls, stats, cssRenderer } = await setupScene('c', threejsDrawing.sceneElements, threejsDrawing.sceneConfig);
+    const { scene, camera, renderer, controls, stats, cssRenderer } = await setupScene('c', threejsDrawing.sceneElements, sceneConfig);
 
     await prepareDrawingContext(threejsDrawing, scene, camera, renderer, controls, cssRenderer);
 
