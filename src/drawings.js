@@ -37,6 +37,7 @@ const THREEJS_DRAWINGS = {
     'smoke': () => import('./drawing/drawSmoke.js').then(m => m.smokeDrawing),
     'buildings': () => import('./drawing/drawGeo.js').then(m => m.buildingsDrawing),
     'town': () => import('./drawing/drawTown.js').then(m => m.townDrawing),
+    'complex': () => import('./drawing/drawComplex.js').then(m => m.complexDrawing),
 };
 
 export { THREEJS_DRAWINGS };

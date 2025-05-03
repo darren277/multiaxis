@@ -544,4 +544,10 @@ ANIMATIONS_DICT = {
             'data_sources': ['town'],
             'custom_meta': dict(),
         },
+    'complex':
+        {
+            'name': 'Complex',
+            'data_sources': ['complex'],
+            'custom_meta': dict(),
+        },
 }
