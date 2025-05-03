@@ -357,7 +357,7 @@ const svgsToRender = [
     {
         //data: svgData_1,              // output of SVGLoader.parse() or loader.loadAsync()
         data_src: 'OpenProject_out_annotated', // path to SVG file
-        position: [   0, 0,   0],
+        position: [-50, 50, -98],
         rotation: [   0, 0,   0],     // (optional) radians
         //scale   : 0.1,                // (optional) uniform; can also be [sx,sy,sz]
         scale: 1,
@@ -366,8 +366,9 @@ const svgsToRender = [
     {
         //data: svgData_2,
         data_src: 'OpenProject_out_annotated', // path to SVG file
-        position: [ 50, 0, 25],
-        rotation: [  0, Math.PI/2, 0],
+        position: [-80, 50, -98],
+        //rotation: [  0, Math.PI/2, 0],
+        rotation: [0, 0, 0],     // (optional) radians
         //scale   : 0.05,
         scale: 1,
         depth   : 0.8
@@ -501,4 +502,4 @@ const multiSvgDrawing = {
     }
 }
 
-export { svgDrawing, multiSvgDrawing };
+export { svgDrawing, multiSvgDrawing, drawSvg, drawMultipleSvgs };
