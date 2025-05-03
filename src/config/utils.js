@@ -61,13 +61,14 @@ function pixelToWorldUnits(pixelSize, distance, camera) {
     return pixelSize * pixelHeightInWorld;
 }
 
-async function prepareDrawingContext(threejsDrawing, scene, camera, renderer, controls, cssRenderer) {
+async function prepareDrawingContext(threejsDrawing, scene, camera, renderer, controls, css2DRenderer = null, css3DRenderer = null) {
     Object.assign(threejsDrawing.data, {
         scene,
         camera,
         renderer,
         controls,
-        cssRenderer,
+        css2DRenderer,
+        css3DRenderer,
     });
     return threejsDrawing;
 }

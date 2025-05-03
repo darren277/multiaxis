@@ -50,9 +50,9 @@ async function contentLoadedCallback(threejsDrawing) {
 
     const outlineEffectEnabled = sceneConfig && sceneConfig.outlineEffect || false;
 
-    const { scene, camera, renderer, controls, stats, cssRenderer } = await setupScene('c', threejsDrawing.sceneElements, sceneConfig);
+    let { scene, camera, renderer, controls, stats, css2DRenderer, css3DRenderer } = await setupScene('c', threejsDrawing.sceneElements, sceneConfig);
 
-    await prepareDrawingContext(threejsDrawing, scene, camera, renderer, controls, cssRenderer);
+    await prepareDrawingContext(threejsDrawing, scene, camera, renderer, controls, css2DRenderer, css3DRenderer);
 
     for (const {func, dataSrc, dataType} of threejsDrawing.drawFuncs) {
         if (dataSrc) {
@@ -122,9 +122,12 @@ async function contentLoadedCallback(threejsDrawing) {
 
         renderer.render(scene, camera);
 
-        // CSS Renderer (2d or 3d)
-        if (cssRenderer) {
-            cssRenderer.render(scene, camera);
+        if (css2DRenderer) {
+            css2DRenderer.render(css2DRenderer.scene, camera);
+        }
+
+        if (css3DRenderer) {
+            css3DRenderer.render(css3DRenderer.scene, camera);
         }
 
         if (outlineEffectEnabled) {
