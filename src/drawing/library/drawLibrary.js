@@ -77,10 +77,7 @@ function createBookCaseMesh(scene, staticBoxes,
 // Now we can create multiple shelves, labeling them book_case_1a, book_case_1b, etc. Suppose we have two bookcases in “Row 1”, spaced out along the x axis.
 
 
-function createBookCases(scene, staticBoxes, width, height, depth, row1StartX, spaceBetween, caseCount = 3, z_pos = 5) {
-    // Example usage:
-    const y_pos = 5;
-
+function createBookCases(scene, staticBoxes, width, height, depth, row1StartX, spaceBetween, caseCount = 3, y_pos = 5, z_pos = 5) {
     let bookCaseI = 0;
 
     for (let i = 0; i < caseCount; i++) {
@@ -159,7 +156,7 @@ const DATA = {
             'depth': 0.5
         },
         'numberOfRows': 10,
-        'numberOfCases': 20,
+        'numberOfCases': 15,
         'spaceBetweenRows': 10,
         'spaceBetweenCases': 0,
         'numberOfFloors': 1,
@@ -190,8 +187,12 @@ function drawLibrary(scene, threejsDrawing) {
     const library = DATA.library;
 
     // row1StartX matches the hard‑coded −20 you used earlier.
-    const row1StartX = -20;                        // CHANGE in one place if you move the aisle.
-    const row0StartZ = library.spaceBetweenCases - 100; // mirrors   zPos - 100   in your loop
+    //const row1StartX = -20;
+    const row1StartX = -70;
+    //const zStart = 100;
+    const zStart = 0;
+
+    const row0StartZ = library.spaceBetweenCases - zStart; // mirrors   zPos - 100   in your loop
 
     const { width, height, depth } = DATA.library.bookcase;
     const rowCount = DATA.library.numberOfRows;
@@ -200,6 +201,8 @@ function drawLibrary(scene, threejsDrawing) {
     // -  const spaceBetweenCases  = DATA.library.spaceBetweenCases;  // 8
     const caseSpacing = casePitchX(DATA.library);  // 18
     const rowSpacing  = rowPitchZ(DATA.library);  // 10.5
+
+    const yPos = 5;
 
     // Create the bookcases
     for (let i = 0; i < rowCount; i++) {
@@ -214,6 +217,7 @@ function drawLibrary(scene, threejsDrawing) {
             caseSpacing,                            // 18 → matches placer
             caseCount,
             //zPos - 100                              // –92, –84, …
+            yPos,
             zPos                                     // already absolute
         );
     }
