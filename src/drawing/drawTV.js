@@ -225,7 +225,7 @@ function drawTV(scene, data, threejsDrawing) {
         video.play();
         //threejsDrawing.data = { video, texture, plane, material };
         if (!threejsDrawing.data || !threejsDrawing.data.videoPlaylist) {
-            threejsDrawing.data = {
+            threejsDrawing.data = {...threejsDrawing.data,
                 video,
                 texture,
                 material,
