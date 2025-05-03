@@ -1,4 +1,4 @@
-import { TextureLoader, Clock } from 'three';
+import { TextureLoader, Clock, Vector3, Box3 } from 'three';
 import { GUI } from 'lil-gui';
 
 // Import our modular “draw” functions
@@ -139,6 +139,8 @@ function animateElevator(lift, player, elapsed) {
         }
 
         lift.updateMatrixWorld();
+        lift.userData.box.setFromObject(lift);
+        lift.userData.box.expandByVector(new Vector3(0, 2, 0));
     }
 }
 

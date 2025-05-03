@@ -162,6 +162,31 @@ function walkingAnimationCallback(scene, controls, player, worldMeshes, obstacle
         const halfHeight = playerSize;      // soles‑to‑eyes
         const footPos    = yawObject.position.clone().subScalar(halfHeight - 0.01);
 
+        // ---------------------------------------------------------------
+        // 0.1m‑high box under the player's soles
+        const footBox = new Box3().setFromCenterAndSize(
+            footPos,                               // footPos you already compute
+            new Vector3(playerSize * 0.6, 0.1, playerSize * 0.6)
+        );
+
+        if (player.userData.currentPlatform) {
+            const plat = player.userData.currentPlatform;
+
+            // update its box just in case we haven't yet this frame
+            if (plat.userData.boxNeedsRefresh) {
+                plat.userData.box.setFromObject(plat);
+                plat.userData.box.expandByVector(new Vector3(0, 2, 0));
+                plat.userData.boxNeedsRefresh = false;
+            }
+
+            // ------- DETACH logic ---------
+            if (!footBox.intersectsBox(plat.userData.box)) {
+                // soles no longer overlap deck → un‑latch
+                player.userData.currentPlatform = null;
+                plat.userData.rider = null;
+            }
+        }
+
         /* ---------- boot strap ---------- */
         if (player.userData.lastGroundY === undefined) {
             // we have never stood on anything yet → cast long
@@ -175,21 +200,32 @@ function walkingAnimationCallback(scene, controls, player, worldMeshes, obstacle
         }
         /* ----------------------------------------- */
 
-        const hit = groundRay.intersectObjects(worldMeshes, true)[0]; // recurse = true
-        if (hit) {
-            const gap = footPos.y - hit.point.y;
-            if (velocity.y <= 0 && gap <= STEP_DOWN + 0.01) { // land **only** when close
-                // stand exactly on the hit point
-                yawObject.position.y = hit.point.y + halfHeight;
-                velocity.y = 0;
-                canJump = true;
-
-                player.userData.lastGroundY = hit.point.y;
-                // store the mesh we’re standing on
-                player.userData.currentGround = hit.object;
-            }
+        if (player.userData.currentPlatform) {
+            const plat = player.userData.currentPlatform;
+            yawObject.position.y = plat.position.y + plat.userData.offsetY + halfHeight;
+            velocity.y = 0;
+            canJump    = true;
+            player.userData.lastGroundY   = plat.position.y;
+            player.userData.currentGround = plat;
         } else {
-            player.userData.currentGround = null;
+            // normal ray logic
+            const rayTargets = player.userData.currentPlatform ? [...worldMeshes, player.userData.currentPlatform] : worldMeshes;
+            const hit = groundRay.intersectObjects(worldMeshes, true)[0]; // recurse = true
+            if (hit) {
+                const gap = footPos.y - hit.point.y;
+                if (velocity.y <= 0 && gap <= STEP_DOWN + 0.01) { // land **only** when close
+                    // stand exactly on the hit point
+                    yawObject.position.y = hit.point.y + halfHeight;
+                    velocity.y = 0;
+                    canJump = true;
+
+                    player.userData.lastGroundY = hit.point.y;
+                    // store the mesh we’re standing on
+                    player.userData.currentGround = hit.object;
+                }
+            } else {
+                player.userData.currentGround = null;
+            }
         }
     }
 };
