@@ -174,11 +174,6 @@ const DATA = {
 }
 
 function drawLibrary(scene, threejsDrawing) {
-    threejsDrawing.data.movingMeshes = [];
-    threejsDrawing.data.worldMeshes = [];
-    threejsDrawing.data.staticBoxes = [];
-    threejsDrawing.data.obstacleBoxes = [];
-
     // Draw the floor
     //drawFloor(scene);
     drawRoom(scene, threejsDrawing);
@@ -334,10 +329,19 @@ function showOverlay(resource) {
 // document.addEventListener('keydown', onKeyDownWalking);
 // document.addEventListener('keyup', onKeyUpWalking);
 
+function drawLibraryRoom(scene, threejsDrawing) {
+    threejsDrawing.data.movingMeshes = [];
+    threejsDrawing.data.worldMeshes = [];
+    threejsDrawing.data.staticBoxes = [];
+    threejsDrawing.data.obstacleBoxes = [];
+
+    drawLibrary(scene, threejsDrawing);
+}
+
 const libraryDrawing = {
     'sceneElements': [],
     'drawFuncs': [
-        {'func': drawLibrary, 'dataSrc': null}
+        {'func': drawLibraryRoom, 'dataSrc': null}
     ],
     'eventListeners': {
         //'click': (event) => {},
@@ -369,4 +373,4 @@ const libraryDrawing = {
 // TODO: Add a function for determining position based off of specific shelf attribute...
 // For example, if you use a library inventory system that corresponds with actual physical bookshelves (or even boxes), you can specify which shelf each book (or other resource) is in...
 
-export { libraryDrawing };
+export { libraryDrawing, drawLibrary };
