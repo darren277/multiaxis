@@ -101,15 +101,6 @@ function checkCollision(position, obstacleBoxes = [], ignore = null) {
     return false; // no collision
 }
 
-function getYawObject(controls) {
-    const yawObject =
-      controls.object?.quaternion ? controls.object              // camera
-    : controls?._controls?.object?.quaternion ? controls._controls.object
-    : controls;
-
-    return yawObject;
-}
-
 function simpleBoxClamp(yawObject, obstacleBoxes) {
     // ———————————————— simple box clamp ————————————————
     // snap to the highest static box under your feet
