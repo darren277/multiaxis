@@ -126,7 +126,7 @@ export class CollisionManager {
     update(controls, dt, obstacleIgnore = null) {
         //const dt         = Math.min(this.clock.getDelta(), 0.1);
         //const dt         = this.clock.getDelta();
-        console.log('dt (s):', dt.toFixed(3), 'vel.x:', this.velocity.x.toFixed(2), 'vel.y:', this.velocity.y.toFixed(2));
+        //console.log('dt (s):', dt.toFixed(3), 'vel.x:', this.velocity.x.toFixed(2), 'vel.y:', this.velocity.y.toFixed(2));
 
         const yawObject  = getYawObject(controls);
         const pos        = yawObject.position;
@@ -180,12 +180,32 @@ export class CollisionManager {
     }
 
     _applyGravityAndGroundClamp(yawObject, pos, halfHeight, dt) {
+        let plat;
+
         // apply gravity
         this.velocity.y -= this.gravity * dt;
         pos.y           += this.velocity.y * dt;
 
         // set up the down-ray
         const footPos = pos.clone().subScalar(halfHeight - 0.01);
+        const footBox = new Box3().setFromCenterAndSize(footPos, new Vector3(this.playerSize * 0.6, 0.1, this.playerSize * 0.6));
+
+        // DETACH from a moving platform if you walked off it
+        if (this.player.userData.currentPlatform) {
+            plat = this.player.userData.currentPlatform;
+            // refresh its box if needed
+            if (plat.userData.boxNeedsRefresh) {
+                plat.userData.box.setFromObject(plat);
+                plat.userData.box.expandByVector(new Vector3(0, 2, 0));
+                plat.userData.boxNeedsRefresh = false;
+            }
+            // if your foot‐box no longer overlaps it, un‐latch
+            if (!footBox.intersectsBox(plat.userData.box)) {
+                this.player.userData.currentPlatform = null;
+                plat.userData.rider = null;
+            }
+        }
+
         this.ray.set(footPos, this.DOWN);
 
         // adaptive far
@@ -197,7 +217,9 @@ export class CollisionManager {
         }
 
         // raycast
-        const hits = this.ray.intersectObjects(this.worldMeshes, true);
+        //const hits = this.ray.intersectObjects(this.worldMeshes, true);
+        const rayTargets = this.player.userData.currentPlatform ? [...this.worldMeshes, this.player.userData.currentPlatform] : this.worldMeshes;
+        const hits = this.ray.intersectObjects(rayTargets, true);
         const hit = hits[0]; // first hit
         if (hit && this.velocity.y <= 0) {
             const floorY = hit.point.y;
@@ -205,22 +227,43 @@ export class CollisionManager {
             const gap    = footPos.y - floorY;
             const eyeY   = floorY + halfHeight;
 
+            // —— SNAP TO MOVING PLATFORM ——
+            if (plat) {
+                yawObject.position.y    = plat.position.y + plat.userData.offsetY + halfHeight;
+                this.velocity.y         = 0;
+                this.keyManager.canJump = true;
+                this.lastGroundY        = plat.position.y;
+                this.player.userData.currentGround = plat;
+                return;
+            }
+
+            // —— ATTACH TO A NEW PLATFORM ——
+            if (hit.object.userData.isPlatform) {
+                const plat = hit.object;
+                plat.userData.offsetY             = (footPos.y - floorY);
+                this.player.userData.currentPlatform = plat;
+                plat.userData.rider               = this.player;
+                return;
+            }
+
             // — SNAP ON ANY GROUND MESH —
+            //if (isGroundHit(hit) || gap <= this.stepDown + 0.01) {
             if (isGroundHit(hit)) {
                 // you’re on the floor plane → always clamp
                 yawObject.position.y    = eyeY;
                 this.velocity.y         = 0;
                 this.keyManager.canJump = true;
                 this.lastGroundY        = floorY;
+                this.player.userData.currentGround = hit.object;
             }
             // — OTHERWISE, handle little steps (optional) —
             else {
-                const gap = footPos.y - floorY;
                 if (gap <= this.stepDown + 0.01) {
                     yawObject.position.y    = eyeY;
                     this.velocity.y         = 0;
                     this.keyManager.canJump = true;
                     this.lastGroundY        = floorY;
+                    this.player.userData.currentGround = hit.object;
                 }
             }
         }
@@ -231,6 +274,8 @@ export class CollisionManager {
             this.velocity.y         = 0;
             this.keyManager.canJump = true;
             this.lastGroundY        = GROUND_Y;
+            this.player.userData.currentGround = null;
+            this.player.userData.currentPlatform = null;
         }
     }
 

@@ -212,7 +212,12 @@ function walkingAnimationCallback(scene, controls, collision, elapsed, override 
         //const delta = clock.getDelta(); // measure time between frames
         //const yawObject = controls.getObject();   // outer object of PLC
         //const yawObject = getYawObject(controls);
-        collision.update(controls, elapsed);
+        const ignore =
+                collision.player.userData.currentPlatform?.userData.box        // moving lift
+             || collision.player.userData.currentGround?.userData.box          // static ground (walkway, floor)
+             || null;
+
+        collision.update(controls, elapsed, ignore);
     }
 }
 
