@@ -77,8 +77,8 @@ export function drawBasicLights(scene, threejsDrawing) {
 
 
 export function drawSun(scene) {
-    const sunLight = new DirectionalLight(0xffffff, 1.2); // color, intensity
-    sunLight.position.set(100, 200, 100); // x, y, z — higher Y for "sun above"
+    const sunLight = new DirectionalLight(0xffffff, 10.0); // color, intensity
+    sunLight.position.set(100, 300, 100); // x, y, z — higher Y for "sun above"
 
     // Optional: Add helper to visualize the direction
     const helper = new DirectionalLightHelper(sunLight, 10);
