@@ -1,105 +1,64 @@
 import { Vector3, Clock, Quaternion, Box3, Raycaster } from 'three';
-
-// For pointer lock movement
-let moveForward = false;
-let moveBackward = false;
-let moveLeft = false;
-let moveRight = false;
-
-let isShiftDown = false;
-
-let canJump = true;
-const GRAVITY = 9.8 * 10; // units per second squared
-const WORLD_Y   = new Vector3(0, 1, 0);
-const WORLD_X   = new Vector3(1, 0, 0);
-const GROUND_Y  = 0.25; // height of the ground plane
-const turnSpeed = Math.PI / 2;      // 90 ° per second
-const qTmp      = new Quaternion(); // reused tmp to avoid GC
-
-const STEP_DOWN = 1.0;             // max step‑down before we consider it a fall
-
-const tempBox = new Box3();        // temporary box for the player
-const tempPosition = new Vector3(); // for calculating next pos
-const playerSize = 1.0;             // rough player "radius" (adjust if needed)
-
-const speed = 20.0; // units per second
-
-const velocity = new Vector3();
-const direction = new Vector3();
-
-const clock = new Clock();
+import { getYawObject, CollisionManager } from './collisionManager.js';
 
 //export const staticBoxes   = [];   // immovable stuff
 //export const movingMeshes  = [];   // meshes that move every frame
 //export const obstacleBoxes = [];   // what the player collides with
 
-const groundRay = new Raycaster();
-const DOWN      = new Vector3(0, -1, 0);
 
 export const worldMeshes = []; // meshes to check for ground
 
-function onKeyDownWalking(event) {
+
+function onKeyDownWalking(event, keyManager) {
     event.preventDefault();
     switch (event.code) {
         case 'ShiftLeft':
         case 'ShiftRight':
-            isShiftDown = true; break;
+            keyManager.isShiftDown = true; break;
         case 'KeyW':
         case 'ArrowUp':
-            moveForward = true; break;
+            keyManager.moveForward = true; break;
         case 'KeyA':
         case 'ArrowLeft':
-            moveLeft = true; break;
+            keyManager.moveLeft = true; break;
         case 'KeyS':
         case 'ArrowDown':
-            moveBackward = true; break;
+            keyManager.moveBackward = true; break;
         case 'KeyD':
         case 'ArrowRight':
-            moveRight = true; break;
+            keyManager.moveRight = true; break;
         case 'Space':
-            if (canJump === true) {
-                velocity.y = 50;
-                canJump = false;
+            if (keyManager.canJump === true) {
+                //keyManager.velocity.y = 50;
+                keyManager.jumpPressed = true;
             }
             break;
         default: break;
     }
 }
 
-function onKeyUpWalking(event) {
+function onKeyUpWalking(event, keyManager) {
     event.preventDefault();
     switch (event.code) {
         case 'ShiftLeft':
         case 'ShiftRight':
-            isShiftDown = false; break;
+            keyManager.isShiftDown = false; break;
         case 'KeyW':
         case 'ArrowUp':
-            moveForward = false; break;
+            keyManager.moveForward = false; break;
         case 'KeyA':
         case 'ArrowLeft':
-            moveLeft = false; break;
+            keyManager.moveLeft = false; break;
         case 'KeyS':
         case 'ArrowDown':
-            moveBackward = false; break;
+            keyManager.moveBackward = false; break;
         case 'KeyD':
         case 'ArrowRight':
-            moveRight = false; break;
+            keyManager.moveRight = false; break;
         default: break;
     }
 }
 
-function checkCollision(position, obstacleBoxes = [], ignore = null) {
-    tempBox.setFromCenterAndSize(position, new Vector3(playerSize, playerSize * 2, playerSize));
-
-    for (const box of obstacleBoxes) {
-        if (box === ignore) continue;
-        if (box.intersectsBox(tempBox)) {
-            return true; // collision detected
-        }
-    }
-
-    return false; // no collision
-}
 
 function simpleBoxClamp(yawObject, obstacleBoxes) {
     // ———————————————— simple box clamp ————————————————
@@ -116,7 +75,7 @@ function simpleBoxClamp(yawObject, obstacleBoxes) {
     return bestY;
 }
 
-function walkingAnimationCallback(scene, controls, player, worldMeshes, obstacleBoxes, override = false) {
+function walkingAnimationCallbackOld(scene, controls, player, worldMeshes, obstacleBoxes, override = false) {
     if (controls.isLocked === true || (override === true && controls.name === 'PointerLockControls')) {
         const delta = clock.getDelta(); // measure time between frames
         //const yawObject = controls.getObject();   // outer object of PLC
@@ -246,6 +205,16 @@ function walkingAnimationCallback(scene, controls, player, worldMeshes, obstacle
         }
     }
 };
+
+
+function walkingAnimationCallback(scene, controls, collision, elapsed, override = false) {
+    if (controls.isLocked === true || (override === true && controls.name === 'PointerLockControls')) {
+        //const delta = clock.getDelta(); // measure time between frames
+        //const yawObject = controls.getObject();   // outer object of PLC
+        //const yawObject = getYawObject(controls);
+        collision.update(controls, elapsed);
+    }
+}
 
 function addObstacle(staticBoxes, mesh) {
     const box = new Box3().setFromObject(mesh);
