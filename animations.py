@@ -558,4 +558,10 @@ ANIMATIONS_DICT = {
             'custom_js': """
 """
         },
+    'city':
+        {
+            'name': 'City',
+            'data_sources': ['city'],
+            'custom_meta': dict(),
+        },
 }

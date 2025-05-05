@@ -38,6 +38,7 @@ const THREEJS_DRAWINGS = {
     'buildings': () => import('./drawing/drawGeo.js').then(m => m.buildingsDrawing),
     'town': () => import('./drawing/drawTown.js').then(m => m.townDrawing),
     'complex': () => import('./drawing/drawComplex.js').then(m => m.complexDrawing),
+    'city': () => import('./drawing/drawCity.js').then(m => m.cityDrawing),
 };
 
 export { THREEJS_DRAWINGS };
