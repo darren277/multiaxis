@@ -346,11 +346,13 @@ const libraryDrawing = {
     'eventListeners': {
         //'click': (event) => {},
         //'mousemove': (event) => {},
-        'keydown': (event) => {
-            onKeyDownWalking(event);
+        'keydown': (event, stuff) => {
+            const keyManager = stuff.data.keyManager;
+            onKeyDownWalking(event, keyManager);
         },
-        'keyup': (event) => {
-            onKeyUpWalking(event);
+        'keyup': (event, stuff) => {
+            const keyManager = stuff.data.keyManager;
+            onKeyUpWalking(event, keyManager);
         },
     },
     'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
@@ -361,6 +363,8 @@ const libraryDrawing = {
         animateRoom(renderer, timestamp, threejsDrawing, camera);
     },
     'data': {
+        'collision': null,
+        'keyManager': null,
     },
     'sceneConfig': {
         'cssRenderer': '2D',
