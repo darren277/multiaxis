@@ -6,6 +6,7 @@ import { drawLights, updateLights, lightingParams, bulbLuminousPowers, hemiLumin
 import { drawFloor, loadWoodTextures, makeWoodMaterial, drawPerimeterWalkway, drawElevator, playerOnPlatform } from './drawFloor.js';
 import { drawWalls } from './drawWalls.js';
 import { walkingAnimationCallback, addObstacle, onKeyDownWalking, onKeyUpWalking, updateObstacleBoxes } from '../config/walking.js';
+import { CollisionManager } from '../config/collisionManager.js';
 
 let previousShadowMap = false;
 
@@ -99,6 +100,26 @@ function drawRoom(scene, threejsDrawing) {
     gui.add(lightingParams, 'exposure', 0, 1);
     gui.add(lightingParams, 'shadows');
     gui.open();
+
+    const collision = new CollisionManager({
+        player:        threejsDrawing.data.controls.object,
+        worldMeshes:   threejsDrawing.data.worldMeshes,
+        staticBoxes:   threejsDrawing.data.staticBoxes,
+        movingMeshes:  threejsDrawing.data.movingMeshes,
+        obstacleBoxes: threejsDrawing.data.obstacleBoxes,
+        params: {playerSize:  1.0, stepDown: 1.0, gravity: 9.8 * 10, speed: 20.0}
+    });
+
+    collision.lastGroundY         = undefined;
+    collision.keyManager.canJump  = true;
+    collision.velocity.set(0, 0, 0);
+
+    threejsDrawing.data.collision = collision;
+    threejsDrawing.data.keyManager = collision.keyManager;
+
+    threejsDrawing.data.controls.object.position.set(threejsDrawing.sceneConfig.startPosition.x, threejsDrawing.sceneConfig.startPosition.y, threejsDrawing.sceneConfig.startPosition.z)
+
+    threejsDrawing.data.ready = true;
 }
 
 function animateElevator(lift, player, elapsed) {
@@ -144,7 +165,6 @@ function animateElevator(lift, player, elapsed) {
     }
 }
 
-const clock    = new Clock();
 
 function animateLights(renderer, threejsDrawing) {
     // Tone Mapping
@@ -172,6 +192,8 @@ function animateLights(renderer, threejsDrawing) {
     threejsDrawing.data.bulbLight.position.y = Math.cos(time) * 0.75 + 1.25;
 }
 
+let lastTime = 0;
+
 export function animateRoom(renderer, timestamp, threejsDrawing, camera) {
     animateLights(renderer, threejsDrawing);
 
@@ -182,10 +204,16 @@ export function animateRoom(renderer, timestamp, threejsDrawing, camera) {
         return;
     }
 
+    if (!threejsDrawing.data.ready) return;
+
     const lift     = threejsDrawing.data.elevator;
     const player   = controls.object;
 
-    const elapsed  = clock.getDelta();
+    //const elapsed = threejsDrawing.data.collision.clock.getDelta();
+    const elapsed = Math.min((timestamp - lastTime) / 1000, 0.1);
+    lastTime = timestamp;
+
+    scene.updateMatrixWorld(true);
 
     if (lift) {
         animateElevator(lift, player, elapsed);
@@ -193,7 +221,7 @@ export function animateRoom(renderer, timestamp, threejsDrawing, camera) {
 
     updateObstacleBoxes(threejsDrawing.data.staticBoxes, threejsDrawing.data.movingMeshes, threejsDrawing.data.obstacleBoxes);
 
-    walkingAnimationCallback(scene, controls, player, threejsDrawing.data.worldMeshes, threejsDrawing.data.obstacleBoxes, true);
+    walkingAnimationCallback(scene, controls, threejsDrawing.data.collision, elapsed, true);
 }
 
 const roomDrawing = {
@@ -202,11 +230,13 @@ const roomDrawing = {
         {'func': drawRoom, 'dataSrc': null},
     ],
     'eventListeners': {
-        'keydown': (event) => {
-            onKeyDownWalking(event);
+        'keydown': (event, stuff) => {
+            const keyManager = stuff.data.keyManager;
+            onKeyDownWalking(event, keyManager);
         },
-        'keyup': (event) => {
-            onKeyUpWalking(event);
+        'keyup': (event, stuff) => {
+            const keyManager = stuff.data.keyManager;
+            onKeyUpWalking(event, keyManager);
         },
     },
     'animationCallback': animateRoom,
@@ -216,10 +246,16 @@ const roomDrawing = {
         'hemiLight': null,
         'floorMat': null,
         'cubeMat': null,
-        'ballMat': null
+        'ballMat': null,
+        'worldMeshes': [],
+        'movingMeshes': [],
+        'staticBoxes': [],
+        'obstacleBoxes': [],
+        'collision': null,
+        'keyManager': null,
     },
     'sceneConfig': {
-        'startPosition': { x: 0, y: 10, z: -75 },
+        'startPosition': { x: 0, y: 2, z: -75 },
     }
 }
 
