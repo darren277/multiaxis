@@ -62,7 +62,8 @@ async function contentLoadedCallback(threejsDrawing) {
         }
     }
 
-    if (DEBUG === true) {
+    if (DEBUG === true || queryOptions.debug === true) {
+        console.log('Debug mode enabled');
         drawHelpers(scene, threejsDrawing);
         const clickKeyControls = new ClickAndKeyControls(scene, camera, renderer);
     }

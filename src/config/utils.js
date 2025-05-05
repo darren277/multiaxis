@@ -94,6 +94,14 @@ function parseQueryParams(queryString) {
             } else {
                 console.warn(`Invalid value for ${key}: ${value}. Expected 'walking' or 'orbit'.`);
             }
+        } else if (key === 'debug') {
+            if (value === 'true') {
+                queryParams[key] = true;
+            } else if (value === 'false') {
+                queryParams[key] = false;
+            } else {
+                console.warn(`Invalid value for ${key}: ${value}. Expected 'true' or 'false'.`);
+            }
         } else {
             console.warn(`Unknown query parameter: ${key}`);
         }
