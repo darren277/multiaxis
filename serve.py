@@ -89,6 +89,8 @@ def serve_threejs(animation):
         "outline-effect": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/effects/OutlineEffect.js",
 
         "d3-hierarchy": "https://cdn.jsdelivr.net/npm/d3-hierarchy@3/+esm",
+
+        "buffer-geometry-utils": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/utils/BufferGeometryUtils.js",
     }
 
     # Force3d importmap:
