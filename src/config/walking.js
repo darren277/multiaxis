@@ -101,10 +101,35 @@ function checkCollision(position, obstacleBoxes = [], ignore = null) {
     return false; // no collision
 }
 
+function getYawObject(controls) {
+    const yawObject =
+      controls.object?.quaternion ? controls.object              // camera
+    : controls?._controls?.object?.quaternion ? controls._controls.object
+    : controls;
+
+    return yawObject;
+}
+
+function simpleBoxClamp(yawObject, obstacleBoxes) {
+    // ———————————————— simple box clamp ————————————————
+    // snap to the highest static box under your feet
+    const px = yawObject.position.x, pz = yawObject.position.z;
+    let bestY = -Infinity;
+
+    for (const box of obstacleBoxes) {
+        if (px >= box.min.x && px <= box.max.x && pz >= box.min.z && pz <= box.max.z) {
+            bestY = Math.max(bestY, box.max.y);
+        }
+    }
+
+    return bestY;
+}
+
 function walkingAnimationCallback(scene, controls, player, worldMeshes, obstacleBoxes, override = false) {
     if (controls.isLocked === true || (override === true && controls.name === 'PointerLockControls')) {
         const delta = clock.getDelta(); // measure time between frames
-        const yawObject = controls.getObject();   // outer object of PLC
+        //const yawObject = controls.getObject();   // outer object of PLC
+        const yawObject = getYawObject(controls);
 
         if (isShiftDown) {
             // Rotate instead of move sideways
