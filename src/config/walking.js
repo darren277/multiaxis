@@ -16,7 +16,7 @@ const GROUND_Y  = 0.25; // height of the ground plane
 const turnSpeed = Math.PI / 2;      // 90 ° per second
 const qTmp      = new Quaternion(); // reused tmp to avoid GC
 
-const STEP_DOWN = 0.4;             // max step‑down before we consider it a fall
+const STEP_DOWN = 1.0;             // max step‑down before we consider it a fall
 
 const tempBox = new Box3();        // temporary box for the player
 const tempPosition = new Vector3(); // for calculating next pos
