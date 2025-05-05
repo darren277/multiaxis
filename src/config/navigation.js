@@ -43,7 +43,8 @@ function onClickNav(event, scene, renderer, camera) {
         if (obj.userData && obj.userData.targetScene) {
             const target = obj.userData.targetScene;
             console.log(`Navigating to scene: ${target}`);
-            window.location.href = `/threejs/${target}?controls=walking`;
+            const prev = window.location.pathname.split('/').pop(); // get the last part of the URL
+            window.location.href = `/threejs/${target}?prev=${prev}&nav=true&controls=walking`;
             break;
         }
     }
@@ -203,8 +204,8 @@ function constructCubeDefs(map, allowDiagonals = false) {
     return cubeDefsMap;
 }
 
-const all_cube_defs = constructCubeDefs(FULL_MAP_TEST);
+const ALL_CUBE_DEFS = constructCubeDefs(FULL_MAP_TEST);
 
-console.log('CUBE DEFS!', all_cube_defs);
+console.log('CUBE DEFS!', ALL_CUBE_DEFS);
 
-export { drawNavCubes, onClickNav, CUBE_DEFS, CUBE_DEFS_LIBRARY, CUBE_DEFS_FARM };
+export { drawNavCubes, onClickNav, CUBE_DEFS, CUBE_DEFS_LIBRARY, CUBE_DEFS_FARM, ALL_CUBE_DEFS };

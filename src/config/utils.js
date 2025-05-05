@@ -61,7 +61,7 @@ function pixelToWorldUnits(pixelSize, distance, camera) {
     return pixelSize * pixelHeightInWorld;
 }
 
-async function prepareDrawingContext(threejsDrawing, scene, camera, renderer, controls, css2DRenderer = null, css3DRenderer = null) {
+async function prepareDrawingContext(threejsDrawing, scene, camera, renderer, controls, css2DRenderer = null, css3DRenderer = null, queryOptions = {}) {
     Object.assign(threejsDrawing.data, {
         scene,
         camera,
@@ -69,6 +69,7 @@ async function prepareDrawingContext(threejsDrawing, scene, camera, renderer, co
         controls,
         css2DRenderer,
         css3DRenderer,
+        queryOptions,
     });
     return threejsDrawing;
 }
@@ -102,6 +103,8 @@ function parseQueryParams(queryString) {
             } else {
                 console.warn(`Invalid value for ${key}: ${value}. Expected 'true' or 'false'.`);
             }
+        } else if (key === 'prev') {
+            queryParams[key] = value;
         } else {
             console.warn(`Unknown query parameter: ${key}`);
         }

@@ -7,7 +7,7 @@ import { loadThenDraw } from './config/loadThenDraw.js';
 import { OutlineEffect } from 'outline-effect';
 import { usePanoramicCubeBackground, useProceduralBackground, usePanoramicCubeBackgroundSixFaces } from './drawing/drawBackground.js';
 import uiPanelConfig from './config/uiPanelConfig.js';
-import { drawNavCubes, onClickNav, CUBE_DEFS, CUBE_DEFS_LIBRARY } from './config/navigation.js';
+import { drawNavCubes, onClickNav, ALL_CUBE_DEFS } from './config/navigation.js';
 import { TextureLoader, FileLoader } from 'three';
 import { BoxGeometry, Mesh, MeshNormalMaterial, GridHelper, FloatType } from 'three';
 import {update as tweenUpdate} from 'tween'
@@ -23,23 +23,32 @@ document.addEventListener('DOMContentLoaded', () => {
     const drawingName = document.querySelector('meta[name="threejs_drawing_name"]').content;
 
     THREEJS_DRAWINGS[drawingName]().then(threejsDrawing => {
-        contentLoadedCallback(threejsDrawing);
+        contentLoadedCallback(drawingName, threejsDrawing);
     })
 })
 
 
 
-async function contentLoadedCallback(threejsDrawing) {
+async function contentLoadedCallback(drawingName, threejsDrawing) {
     const dataSelected = document.querySelector('meta[name="data_selected"]').content;
-    console.log(`Drawing name: ${threejsDrawing.name}. Data selected: ${dataSelected}`);
+    console.log(`Drawing name: ${drawingName}. Data selected: ${dataSelected}`);
 
     const queryOptions = parseQueryParams(window.location.search);
+
+    const debugMode = DEBUG === true || queryOptions.debug === true;
 
     const sceneConfig = threejsDrawing.sceneConfig || {};
 
     if (queryOptions) {
         if (queryOptions.controls && queryOptions.controls === 'walking') {
             sceneConfig.controller = 'walking';
+        }
+        if (queryOptions.prev) {
+            // TODO: use a detailed lookup map defined elsewhere...
+            // override sceneConfig.startPosition
+            if (queryOptions.prev === 'town') {
+                sceneConfig.startPosition = { x: 0, y: 10, z: -80 };
+            }
         }
     }
 
@@ -52,7 +61,7 @@ async function contentLoadedCallback(threejsDrawing) {
 
     let { scene, camera, renderer, controls, stats, css2DRenderer, css3DRenderer } = await setupScene('c', threejsDrawing.sceneElements, sceneConfig);
 
-    await prepareDrawingContext(threejsDrawing, scene, camera, renderer, controls, css2DRenderer, css3DRenderer);
+    await prepareDrawingContext(threejsDrawing, scene, camera, renderer, controls, css2DRenderer, css3DRenderer, queryOptions);
 
     for (const {func, dataSrc, dataType} of threejsDrawing.drawFuncs) {
         if (dataSrc) {
@@ -62,7 +71,7 @@ async function contentLoadedCallback(threejsDrawing) {
         }
     }
 
-    if (DEBUG === true || queryOptions.debug === true) {
+    if (debugMode) {
         console.log('Debug mode enabled');
         drawHelpers(scene, threejsDrawing);
         const clickKeyControls = new ClickAndKeyControls(scene, camera, renderer);
@@ -77,7 +86,10 @@ async function contentLoadedCallback(threejsDrawing) {
 
     // NAV CUBE //
     //drawNavCubes(scene, threejsDrawing, CUBE_DEFS);
-    drawNavCubes(scene, threejsDrawing, CUBE_DEFS_LIBRARY, DEBUG);
+    if (queryOptions.nav) {
+        const cubeDefs = ALL_CUBE_DEFS[drawingName];
+        drawNavCubes(scene, threejsDrawing, cubeDefs, debugMode);
+    }
 
     // Add event listener for navigation
     window.addEventListener('click', (event) => {
