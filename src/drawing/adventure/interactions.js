@@ -27,16 +27,17 @@ function onAdventureKeyDown(camera, event, adventureSteps, controls, currentStep
     const stepData = adventureSteps[currentStepId];
     if (!stepData) return;
 
+    let nextStep;
     if (event.key === "ArrowLeft") {
-        const nextStep = stepData.choices.left;
-        if (nextStep) return goToStep(camera, nextStep, adventureSteps, controls);
+        nextStep = stepData.choices.left;
+    } else if (event.key === "ArrowRight") {
+        nextStep = stepData.choices.right;
+    } else if (event.key === "ArrowDown") {
+        nextStep = stepData.choices.down;
+    } else if (event.key === "ArrowUp") {
+        nextStep = stepData.choices.up;
     }
-    else if (event.key === "ArrowRight") {
-        const nextStep = stepData.choices.right;
-        if (nextStep) return goToStep(camera, nextStep, adventureSteps, controls);
-    } else if (event.key === "DownArrow") {
-        console.log("Go back (not yet implemented).");
-    }
+    if (nextStep) return goToStep(camera, nextStep, adventureSteps, controls);
 }
 
 

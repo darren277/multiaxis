@@ -111,7 +111,8 @@ function buildSceneItems(scene, sceneItems, worldWidth = 4, worldHeight = 3, css
     const adventureSteps = {};
     sceneItems.forEach((item, index) => {
         const vantage = vantagePointForItem(item);
-        const stepId = `view_${item.id}`;
+        //const stepId = `view_${item.id}`;
+        const stepId = item.id;
 
         adventureSteps[stepId] = {
             id: stepId,
@@ -120,19 +121,21 @@ function buildSceneItems(scene, sceneItems, worldWidth = 4, worldHeight = 3, css
                 lookAt: vantage.lookAt,
             },
             text: item.caption,
-            choices: {},
+            choices: item.choices || null, // Use item.choices if it exists
         };
     });
 
-    // Link them in a linear chain
+    // Link them in a linear chain (but only IF the step doesn't already have predefined choices).
     const stepIds = Object.keys(adventureSteps);
     console.log("Step IDs:", stepIds);
     for (let i = 0; i < stepIds.length; i++) {
         const currentId = stepIds[i];
-        const nextId = stepIds[(i + 1) % stepIds.length]; // cyclical
-        const prevId = stepIds[(i - 1 + stepIds.length) % stepIds.length];
-        adventureSteps[currentId].choices = { left: prevId, right: nextId };
-        console.log("Linking steps:", currentId, "->", nextId, "and", prevId);
+        if (!adventureSteps[currentId].choices) {
+            const nextId = stepIds[(i + 1) % stepIds.length]; // cyclical
+            const prevId = stepIds[(i - 1 + stepIds.length) % stepIds.length];
+            adventureSteps[currentId].choices = { left: prevId, right: nextId };
+            console.log("Linking steps:", currentId, "->", nextId, "and", prevId);
+        }
     }
 
     return {adventureSteps, allPhotoEntries};
@@ -195,7 +198,8 @@ function drawAdventure(scene, data, threejsDrawing) {
     threejsDrawing.data.allPhotoEntries = allPhotoEntries;
     threejsDrawing.data.otherItems = otherItems;
 
-    threejsDrawing.data.currentStepId = `view_${data.sceneItems[0].id}`;
+    //threejsDrawing.data.currentStepId = `view_${data.sceneItems[0].id}`;
+    threejsDrawing.data.currentStepId = data.sceneItems[0].id;
 
     // Draw ambient light...
     const ambientLight = new AmbientLight(0xffffff, 0.5);
@@ -225,8 +229,11 @@ const adventureDrawing = {
             // Not super important, though.
             // NOTE ON THE ABOVE: I've started using `data` as both so for the sake of decluttering, we are now getting rid of `uiState` altogether.
 
+            event.preventDefault();
+
             // COMMENT OUT FOLLOWING LINE FOR DEBUG VIA CLICK CONTROL HELPER...
             const nextStepId = onAdventureKeyDown(camera, e, adventureSteps, controls, currentStepId);
+            if (!nextStepId) return;
             data.currentStepId = nextStepId;
         },
         'click': (e, other) => {
