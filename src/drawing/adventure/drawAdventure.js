@@ -87,7 +87,7 @@ function vantagePointForItem(item) {
 
 
 
-function buildSceneItems(scene, sceneItems, worldWidth = 4, worldHeight = 3) {
+function buildSceneItems(scene, sceneItems, worldWidth = 4, worldHeight = 3, css3DRenderer = null) {
     // Where allPhotoEntries is your array of { mesh, labelEl, item } returned from createCaptionedPhoto.
 
     const allPhotoEntries = [];
@@ -96,8 +96,14 @@ function buildSceneItems(scene, sceneItems, worldWidth = 4, worldHeight = 3) {
     sceneItems.forEach((item) => {
         let entry;
         const isVideo = item.video && item.video !== "";
-        entry = createCaptionedItem(scene, item, isVideo, worldWidth, worldHeight);
-        scene.add(entry.mesh);
+        const use3dRenderer = true;
+        entry = createCaptionedItem(scene, item, isVideo, worldWidth, worldHeight, use3dRenderer);
+        if (entry.mesh) scene.add(entry.mesh);
+        if (css3DRenderer) {
+            css3DRenderer.scene.add(entry.labelObject);
+        } else {
+            scene.add(entry.labelObject);
+        }
         allPhotoEntries.push(entry);
     });
 
@@ -163,22 +169,31 @@ function constructElement(document, tagName, id, attrs) {
 
 
 function drawAdventure(scene, data, threejsDrawing) {
-    const {adventureSteps, allPhotoEntries} = buildSceneItems(scene, data.sceneItems, threejsDrawing.data.worldWidth, threejsDrawing.data.worldHeight);
+    const use3dRenderer = true;
+    const css3DRenderer = use3dRenderer ? threejsDrawing.data.css3DRenderer : null;
+    const {adventureSteps, allPhotoEntries} = buildSceneItems(scene, data.sceneItems, threejsDrawing.data.worldWidth, threejsDrawing.data.worldHeight, css3DRenderer);
 
     // build data.otherItems...
     const otherItems = data.otherItems.map((item) => {
         console.log('creating other item', item);
         const isVideo = item.video && item.video !== "";
-        const use3dRenderer = true;
-        const { mesh, labelEl } = createCaptionedItem(scene, item, isVideo, threejsDrawing.data.worldWidth, threejsDrawing.data.worldHeight, use3dRenderer);
-        scene.add(mesh);
-        return { mesh, labelEl, item };
+        //const use3dRenderer = false;
+        const { mesh, labelObject } = createCaptionedItem(scene, item, isVideo, threejsDrawing.data.worldWidth, threejsDrawing.data.worldHeight, use3dRenderer);
+        console.log('other item', mesh, labelObject);
+        // Mesh gets added inside of function: scene.add(mesh);
+        if (use3dRenderer) {
+            threejsDrawing.data.css3DRenderer.scene.add(labelObject);
+        } else {
+            scene.add(labelObject);
+        }
+        return { mesh, labelObject, item };
     });
 
     // TODO: draw data.otherItems...
 
     threejsDrawing.data.adventureSteps = adventureSteps;
     threejsDrawing.data.allPhotoEntries = allPhotoEntries;
+    threejsDrawing.data.otherItems = otherItems;
 
     threejsDrawing.data.currentStepId = `view_${data.sceneItems[0].id}`;
 
@@ -249,13 +264,17 @@ const adventureDrawing = {
     'data': {
         'adventureSteps': null,
         'allPhotoEntries': null,
+        'otherItems': null,
         'currentStepId': null,
+        'use3DRenderer': true,
     },
     'sceneConfig': {
-        //'controller': 'none'
+        //'controller': 'none',
         // when debugging...
         'controller': 'orbital',
-        'cssRenderer': true,
+        //'cssRenderer': '3D'
+        //'cssRendererEnabled': '3D',
+        'cssRendererEnabled': 'DUAL',
     }
 }
 

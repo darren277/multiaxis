@@ -117,13 +117,15 @@ function createCaptionedItem(scene, item, isVideo, worldWidth = null, worldHeigh
     let mesh = null;
 
     // 1. Create Mesh
-    if (!item.image || item.image !== 'NO_IMAGE') {
+    if ((item.image || item.video) && item.image !== 'NO_IMAGE') {
         if (isVideo) {
             mesh = createVideoMesh(item, worldWidth, worldHeight);
         } else {
             mesh = createPhotoMesh(item);
         }
         scene.add(mesh);
+    } else {
+        console.warn('No image or video provided for item:', item);
     }
 
     // 2) Build the caption
@@ -153,8 +155,6 @@ function createCaptionedItem(scene, item, isVideo, worldWidth = null, worldHeigh
         // Alternatively, if you want it to follow the mesh exactly:
         // labelObject.position.copy(mesh.position).add(new Vector3(0, offsetY, 0));
 
-        scene.add(labelObject);
-
         return { mesh, labelObject, item }; // return the CSS3DObject
     } else {
         // -- 2D DOM Overlay --
@@ -170,7 +170,7 @@ function createCaptionedItem(scene, item, isVideo, worldWidth = null, worldHeigh
         // You probably have a container for 2D overlays
         document.getElementById('labelContainer2d').appendChild(labelEl);
 
-        return { mesh, labelEl, item }; // return the DOM element
+        return { mesh, labelObject: labelEl, item }; // return the DOM element
     }
 }
 
