@@ -183,6 +183,17 @@ function walkingAnimationCallback(scene, controls, player, worldMeshes, obstacle
         velocity.y -= GRAVITY * delta;
         yawObject.position.y += velocity.y * delta;
 
+        /* -------------------------------------------------
+           TEMPORARY HARD‑FLOOR CLAMP
+           ------------------------------------------------- */
+//        const FLOOR_Y = 0;          // street level after you lifted the city
+//        if (yawObject.position.y < FLOOR_Y + 1) {   // “soles” ~1m above asphalt
+//            yawObject.position.y = FLOOR_Y + 1;
+//            velocity.y = 0;
+//            canJump    = true;
+//        }
+        /* ------------------------------------------------- */
+
         // ───── New: raycast straight down for ground ────────────────
         const halfHeight = playerSize;      // soles‑to‑eyes
         const footPos    = yawObject.position.clone().subScalar(halfHeight - 0.01);
@@ -252,6 +263,15 @@ function walkingAnimationCallback(scene, controls, player, worldMeshes, obstacle
             } else {
                 player.userData.currentGround = null;
             }
+
+//            const bestY = simpleBoxClamp(yawObject, obstacleBoxes);
+//
+//            if (bestY > -Infinity) {
+//                const halfH = playerSize;   // eye-to-sole
+//                yawObject.position.y = bestY + halfH;
+//                velocity.y = 0;
+//                canJump    = true;
+//            }
         }
     }
 };
