@@ -178,6 +178,8 @@ function drawAdventure(scene, data, threejsDrawing) {
 
     // build data.otherItems...
     const otherItems = data.otherItems.map((item) => {
+        // TODO: Add a mechanism to render the other items with relative positions, and toggle their visibility so that only when they are in the viewport, they are rendered...
+        // This means that if `item.visibleOn` == `['allSlides']`, then you will have to iterate over every regular slide and define the position of the item relative to the slide.
         console.log('creating other item', item);
         const isVideo = item.video && item.video !== "";
         //const use3dRenderer = false;
