@@ -71,10 +71,17 @@ const complexDrawing = {
             console.warn('No static boxes, moving meshes, or world meshes found.');
             return;
         }
+
+        if (threejsDrawing.data.tv && !threejsDrawing.data.tv.rotated) {
+            threejsDrawing.data.tv.rotated = true;
+            threejsDrawing.data.tv.rotation.set(0, Math.PI, 0);
+        }
+
         animateRoom(renderer, timestamp, threejsDrawing, camera);
         tvAnimation(renderer, timestamp, threejsDrawing, camera);
     },
     'data': {
+        'tv': null,
         'tvX': 0, 'tvY': 0, 'tvZ': -30,
         'tvScale': 10,
         'movingMeshes': [], 'staticBoxes': [], 'worldMeshes': [], 'obstacleBoxes': [],
