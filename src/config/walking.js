@@ -215,12 +215,10 @@ function walkingAnimationCallback(scene, controls, player, worldMeshes, obstacle
         /* ---------- boot strap ---------- */
         if (player.userData.lastGroundY === undefined) {
             // we have never stood on anything yet → cast long
-            //groundRay.set(footPos, DOWN);
             groundRay.far = 50;             // long enough for any reasonable spawn
         } else {
             /* ---------- adaptive length ---------- */
             const maxPossibleDrop = Math.max(player.userData.lastGroundY - footPos.y, 0);
-            //groundRay.set(footPos, DOWN);
             groundRay.far = STEP_DOWN + maxPossibleDrop;   // 0.4 m + drop since last frame
         }
         /* ----------------------------------------- */
@@ -239,6 +237,7 @@ function walkingAnimationCallback(scene, controls, player, worldMeshes, obstacle
             if (hit) {
                 const gap = footPos.y - hit.point.y;
                 if (velocity.y <= 0 && gap <= STEP_DOWN + 0.01) { // land **only** when close
+                //if (velocity.y <= 0) {
                     // stand exactly on the hit point
                     yawObject.position.y = hit.point.y + halfHeight;
                     velocity.y = 0;
@@ -247,6 +246,8 @@ function walkingAnimationCallback(scene, controls, player, worldMeshes, obstacle
                     player.userData.lastGroundY = hit.point.y;
                     // store the mesh we’re standing on
                     player.userData.currentGround = hit.object;
+                } else {
+                    console.log('falling', hit, gap, velocity.y);
                 }
             } else {
                 player.userData.currentGround = null;
