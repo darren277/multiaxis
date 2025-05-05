@@ -68,7 +68,7 @@ const FULL_MAP = [
 const FULL_MAP_TEST = [
     ['farm', 'forest', 'mountain'],
     ['town', 'racetrack', 'desert'],
-    ['library', 'kitchen', 'bathroom'],
+    ['complex', 'kitchen', 'bathroom'],
     ['livingroom', 'diningroom', 'office'],
     ['bedroom', null, null],
 ]
