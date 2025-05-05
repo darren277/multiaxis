@@ -83,6 +83,7 @@ function drawRoom(scene, threejsDrawing) {
     threejsDrawing.data.worldMeshes.push(west);
     threejsDrawing.data.worldMeshes.push(north);
     threejsDrawing.data.worldMeshes.push(south);
+    [east, west, north, south].forEach(mesh => {mesh.userData.isGround = true; mesh.userData.isPlatform = true;});
 
     const elevator = drawElevator(scene, woodMat, {size: 20, thick: 0.4, floorY: 2.0, targetY: 90, rimClear: 50});
     threejsDrawing.data.elevator = elevator;
