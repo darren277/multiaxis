@@ -46,13 +46,15 @@ const complexDrawing = {
         },
         //'mousemove': (event) => {},
         'keydown': (event, data) => {
-            onKeyDownWalking(event);
+            const keyManager = data.data.keyManager;
+            onKeyDownWalking(event, keyManager);
             const screen = data.data.screenMesh;
             const cssObj = data.data.screenCss;
             onKeyScreen(event, screen, cssObj)
         },
-        'keyup': (event) => {
-            onKeyUpWalking(event);
+        'keyup': (event, data) => {
+            const keyManager = data.data.keyManager;
+            onKeyUpWalking(event, keyManager);
         },
         'pointerdown': (event, data) => {
             // onClickScreen(ev, dom, screen, camera)
