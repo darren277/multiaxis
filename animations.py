@@ -309,7 +309,7 @@ ANIMATIONS_DICT = {
     'adventure':
         {
             'name': 'Adventure',
-            'data_sources': ['adventure1', 'adventure2'],
+            'data_sources': ['adventure1', 'adventure2', 'forest'],
             'custom_overlays': [ADVENTURE_NAVIGATION_OVERLAY],
             'custom_meta': dict(),
         },

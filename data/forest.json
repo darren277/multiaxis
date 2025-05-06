@@ -1,0 +1,303 @@
+{
+    "sceneItems": [
+        {
+            "id": "n0",
+            "position": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": -10
+            },
+            "image": "textures/start.jpg",
+            "caption": "START",
+            "customClasses": "",
+            "choices": {
+                "left": "n16",
+                "right": "n10"
+            }
+        },
+        {
+            "id": "n1",
+            "position": {
+                "x": -180.5,
+                "y": 242.0,
+                "z": -10
+            },
+            "image": "textures/forest_3.jpg",
+            "caption": "FOREST 3",
+            "customClasses": "",
+            "choices": {
+                "left": "n3",
+                "right": "n4",
+                "up": "n15"
+            }
+        },
+        {
+            "id": "n2",
+            "position": {
+                "x": 180.5,
+                "y": 362.0,
+                "z": -10
+            },
+            "image": "textures/fork.jpg",
+            "caption": "FORK",
+            "customClasses": "",
+            "choices": {
+                "left": "n5",
+                "right": "n6",
+                "up": "n12"
+            }
+        },
+        {
+            "id": "n3",
+            "position": {
+                "x": -361.0,
+                "y": 242.0,
+                "z": -10
+            },
+            "image": "textures/river.jpg",
+            "caption": "RIVER",
+            "customClasses": "",
+            "choices": {
+                "right": "n1",
+                "down": "n7"
+            }
+        },
+        {
+            "id": "n4",
+            "position": {
+                "x": 0.0,
+                "y": 242.0,
+                "z": -10
+            },
+            "image": "textures/cottage.jpg",
+            "caption": "COTTAGE",
+            "customClasses": "",
+            "choices": {
+                "left": "n1"
+            }
+        },
+        {
+            "id": "n5",
+            "position": {
+                "x": 0.0,
+                "y": 362.0,
+                "z": -10
+            },
+            "image": "textures/cliff.jpg",
+            "caption": "CLIFF",
+            "customClasses": "",
+            "choices": {
+                "right": "n2"
+            }
+        },
+        {
+            "id": "n6",
+            "position": {
+                "x": 361.0,
+                "y": 362.0,
+                "z": -10
+            },
+            "image": "textures/climb_3.jpg",
+            "caption": "CLIMB 3",
+            "customClasses": "",
+            "choices": {
+                "left": "n2",
+                "down": "n14"
+            }
+        },
+        {
+            "id": "n7",
+            "position": {
+                "x": -361.0,
+                "y": 359.0,
+                "z": -10
+            },
+            "image": "textures/river_2.jpg",
+            "caption": "RIVER 2",
+            "customClasses": "",
+            "choices": {
+                "up": "n3",
+                "down": "n8"
+            }
+        },
+        {
+            "id": "n8",
+            "position": {
+                "x": -361.0,
+                "y": 482.0,
+                "z": -10
+            },
+            "image": "textures/river_3.jpg",
+            "caption": "RIVER 3",
+            "customClasses": "",
+            "choices": {
+                "up": "n7",
+                "down": "n9"
+            }
+        },
+        {
+            "id": "n9",
+            "position": {
+                "x": -361.0,
+                "y": 605.0,
+                "z": -10
+            },
+            "image": "textures/lake.jpg",
+            "caption": "LAKE",
+            "customClasses": "",
+            "choices": {
+                "up": "n8"
+            }
+        },
+        {
+            "id": "n10",
+            "position": {
+                "x": 180.5,
+                "y": 0.0,
+                "z": -10
+            },
+            "image": "textures/mountain.jpg",
+            "caption": "MOUNTAIN",
+            "customClasses": "",
+            "choices": {
+                "left": "n0",
+                "down": "n11"
+            }
+        },
+        {
+            "id": "n11",
+            "position": {
+                "x": 180.5,
+                "y": 121.0,
+                "z": -10
+            },
+            "image": "textures/climb.jpg",
+            "caption": "CLIMB",
+            "customClasses": "",
+            "choices": {
+                "up": "n10",
+                "down": "n12"
+            }
+        },
+        {
+            "id": "n12",
+            "position": {
+                "x": 180.5,
+                "y": 236.0,
+                "z": -10
+            },
+            "image": "textures/climb_2.jpg",
+            "caption": "CLIMB 2",
+            "customClasses": "",
+            "choices": {
+                "up": "n11",
+                "down": "n2"
+            }
+        },
+        {
+            "id": "n13",
+            "position": {
+                "x": 361.0,
+                "y": 602.0,
+                "z": -10
+            },
+            "image": "textures/peak.jpg",
+            "caption": "PEAK",
+            "customClasses": "",
+            "choices": {
+                "up": "n14"
+            }
+        },
+        {
+            "id": "n14",
+            "position": {
+                "x": 361.0,
+                "y": 482.0,
+                "z": -10
+            },
+            "image": "textures/climb_4.jpg",
+            "caption": "CLIMB 4",
+            "customClasses": "",
+            "choices": {
+                "up": "n6",
+                "down": "n13"
+            }
+        },
+        {
+            "id": "n15",
+            "position": {
+                "x": -180.5,
+                "y": 121.0,
+                "z": -10
+            },
+            "image": "textures/forest_2.jpg",
+            "caption": "FOREST 2",
+            "customClasses": "",
+            "choices": {
+                "down": "n1",
+                "up": "n16"
+            }
+        },
+        {
+            "id": "n16",
+            "position": {
+                "x": -180.5,
+                "y": 0.0,
+                "z": -10
+            },
+            "image": "textures/forest.jpg",
+            "caption": "FOREST",
+            "customClasses": "",
+            "choices": {
+                "right": "n0",
+                "down": "n15"
+            }
+        }
+    ],
+    "otherItems": [
+        {
+            "id": "slide1_center",
+            "position": { "x": 0, "y": 5, "z": -10 },
+            "image": "textures/slide1_main.jpg",
+            "caption": "<h2>Welcome - Adventure 2</h2><p>This is the central vantage point.</p><p>OTHER ITEMS</p>",
+            "customClasses": " bounce-pulse",
+            "visibleOn": ["allSlides"]
+        },
+        {
+            "id": "slide1_backArrow",
+            "position": { "x": 0, "y": -5, "z": -9 },
+            "image": "textures/arrow_back.jpg",
+            "caption": "<h1>⬇️</h1><h3>Back Arrow</h3><p>Click me to return.</p>",
+            "customClasses": " bounce-pulse",
+            "visibleOn": ["allSlides"]
+        },
+        {
+            "id": "slide1_leftBanner",
+            "position": { "x": -5, "y": 2, "z": -10 },
+            "image": "NO_IMAGE",
+            "caption": "<h3>Left Banner</h3><p>Click me to go left.</p>",
+            "visibleOn": ["slide1_center"]
+        },
+        {
+            "id": "slide1_topBanner",
+            "position": { "x": 0, "y": 6, "z": -10 },
+            "image": "NO_IMAGE",
+            "caption": "<h3>Top Banner</h3><p>Click me to go up.</p>",
+            "visibleOn": ["slide1_center"]
+        },
+        {
+            "id": "slide1_rightBanner",
+            "position": { "x": 5, "y": 2, "z": -10 },
+            "image": "NO_IMAGE",
+            "caption": "<h3>Right Banner</h3><p>Click me to go right.</p>",
+            "visibleOn": ["slide1_center"]
+        },
+        {
+            "id":"slide2_video",
+            "position": { "x": 0, "y": 5, "z": -15 },
+            "video": "https://www.youtube.com/embed/aumbcJSyA7w?rel=0&autoplay=0&mute=1",
+            "caption": "<h2>Video</h2><p>Click to play video.</p>",
+            "visibleOn": ["slide1_left2"]
+        }
+    ]
+}
