@@ -493,10 +493,14 @@ const buildingsDrawing = {
         'geojson': exampleGeoJson,
         'globe': null,
         'mapGroup': null,
-        'buildingGroupPosX': 290,
-        'buildingGroupPosZ': 80,
-        'buildingGroupScaleX': 0.8,
-        'buildingGroupScaleZ': 1.2,
+//        'buildingGroupPosX': 290,
+//        'buildingGroupPosZ': 80,
+//        'buildingGroupScaleX': 0.8,
+//        'buildingGroupScaleZ': 1.2,
+        'buildingGroupPosX': -300,
+        'buildingGroupPosZ': -80,
+        'buildingGroupScaleX': 1.57,
+        'buildingGroupScaleZ': 3.0
     },
     'sceneConfig': {
         //'startPosition': camera.position.set(0, 500, 1000);
