@@ -1,6 +1,9 @@
 *venv*
 .idea/
 
+# For locally hosted or experimental animations.
+animations_local.py
+
 data/experimental*.json
 EXPERIMENTS.md
 

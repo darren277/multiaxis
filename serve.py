@@ -3,6 +3,16 @@ import json
 
 from animations import ANIMATIONS_DICT, FULLSCREEN_CSS, EMBEDDED_CSS, SMALL_HEADER_CSS
 
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
+env = os.environ.get('ENV')
+
+if env == 'local':
+    from animations_local import LOCAL_ANIMATIONS_DICT
+    ANIMATIONS_DICT.update(LOCAL_ANIMATIONS_DICT)
+
 HOST = 'localhost'
 PORT = 8000
 

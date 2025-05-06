@@ -352,7 +352,7 @@ ANIMATIONS_DICT = {
     'svg':
         {
             'name': 'SVG',
-            'data_sources': ['OpenProject', 'Knowledge'],
+            'data_sources': ['OpenProject'],
             'custom_meta': dict(),
         },
     'multisvg':
