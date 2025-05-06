@@ -91,8 +91,6 @@ s3-glb:
 	aws s3 cp src/imagery/humanoid.glb s3://$(BUCKET_NAME)/imagery/humanoid.glb
 
 
-#SVG_NAME=OpenProject
-SVG_NAME=Knowledge
 
 # $env:PATH += ";C:\Program Files\Inkscape\bin"
 convert-svg:
