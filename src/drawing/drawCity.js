@@ -91,7 +91,6 @@ function drawCity(scene, threejsDrawing) {
 
                 child.userData.isGround = true;
                 threejsDrawing.data.worldMeshes.push(child);
-                addObstacle(threejsDrawing.data.staticBoxes, child);
             }
         });
 
@@ -113,7 +112,6 @@ function drawCity(scene, threejsDrawing) {
 
         // now register it exactly like any other obstacle:
         threejsDrawing.data.worldMeshes.push(cityFloorCollider);
-        addObstacle(threejsDrawing.data.staticBoxes, cityFloorCollider);
 
 
 
@@ -123,7 +121,6 @@ function drawCity(scene, threejsDrawing) {
         scene.add(collider);
         collider.userData.isGround = true;
         threejsDrawing.data.worldMeshes.push(collider);
-        addObstacle(threejsDrawing.data.staticBoxes, collider);
 
 
 
