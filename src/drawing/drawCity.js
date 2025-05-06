@@ -4,6 +4,7 @@ import { drawSun } from './drawLights.js';
 import { onKeyDownWalking, onKeyUpWalking, addObstacle, updateObstacleBoxes, walkingAnimationCallback } from '../config/walking.js';
 import { mergeGeometries } from 'buffer-geometry-utils';
 import { instantiateCollision } from '../config/instantiateCollision.js';
+import { extractPerTriangle, spatialHashStaticBoxes } from '../config/collisionManager.js';
 
 const gltfLoader = new GLTFLoader();
 

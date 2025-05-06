@@ -1,4 +1,5 @@
-import { Vector3, Raycaster, Clock, Quaternion, Box3 } from 'three';
+import { Vector3, Raycaster, Clock, Quaternion, Box3, Matrix3 } from 'three';
+import { addObstacle } from './walking.js';
 
 export const WORLD_Y   = new Vector3(0, 1, 0);
 export const WORLD_X   = new Vector3(1, 0, 0);
@@ -23,14 +24,73 @@ class KeyManager {
     }
 }
 
+export function extractPerTriangle(staticBoxes, mesh) {
+    const tmpBox = new Box3();
+    const a = new Vector3(), b = new Vector3(), c = new Vector3();
+
+    mesh.geometry = mesh.geometry.toNonIndexed();   // ensure positions are flat
+
+    const pos = mesh.geometry.attributes.position;
+    for (let i = 0; i < pos.count; i += 3) {
+        a.fromBufferAttribute(pos, i    ).applyMatrix4(mesh.matrixWorld);
+        b.fromBufferAttribute(pos, i + 1).applyMatrix4(mesh.matrixWorld);
+        c.fromBufferAttribute(pos, i + 2).applyMatrix4(mesh.matrixWorld);
+
+        tmpBox.setFromPoints([a, b, c]);
+        if (tmpBox.max.y - tmpBox.min.y > 3) continue; // skip tall walls
+
+        addObstacle(staticBoxes, tmpBox.clone());       // push a tiny box
+        spatialHashStaticBoxes([tmpBox.clone()]);
+    }
+}
+
+/*
+Spatial hash keeps just 9 tiny lists
+Store every obstacle in a hashed grid keyed by 2m tiles
+*/
+
+const tileSize = 2;
+const spatial = new Map();
+// Map<"x,z" , Box3[]>
+
+export function spatialHashStaticBoxes(staticBoxes) {
+    staticBoxes.forEach(box => {
+        const minX = Math.floor(box.min.x / tileSize);
+        const maxX = Math.floor(box.max.x / tileSize);
+        const minZ = Math.floor(box.min.z / tileSize);
+        const maxZ = Math.floor(box.max.z / tileSize);
+
+        for (let gx = minX; gx <= maxX; gx++) {
+            for (let gz = minZ; gz <= maxZ; gz++) {
+                const key = `${gx},${gz}`;
+                (spatial.get(key) || spatial.set(key, []).get(key)).push(box);
+            }
+        }
+    });
+}
+
+function nearbyBoxes(px, pz) {
+    const gx = Math.floor(px / tileSize);
+    const gz = Math.floor(pz / tileSize);
+    const out = [];
+    for (let dx = -1; dx <= 1; dx++) {
+        for (let dz = -1; dz <= 1; dz++) {
+            const cell = spatial.get(`${gx+dx},${gz+dz}`);
+            if (cell) out.push(...cell);
+        }
+    }
+    return out;
+}
+
+
 function checkCollision(playerSize, position, obstacleBoxes = [], ignore = null) {
     tempBox.setFromCenterAndSize(position, new Vector3(playerSize, playerSize * 2, playerSize));
 
-    for (const box of obstacleBoxes) {
+    const boxes = nearbyBoxes(position.x, position.z);
+
+    for (const box of boxes) {
         if (box === ignore) continue;
-        if (box.intersectsBox(tempBox)) {
-            return true; // collision detected
-        }
+        if (box.intersectsBox(tempBox)) return true;
     }
 
     return false; // no collision
