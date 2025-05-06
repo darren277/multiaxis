@@ -246,7 +246,11 @@ export class CollisionManager {
         pos.y           += this.velocity.y * dt;
 
         // set up the down-ray
-        const footPos = pos.clone().subScalar(halfHeight - 0.01);
+        //const footPos = pos.clone().subScalar(halfHeight - 0.01);
+        const footPos = yawObject.position.clone();
+        //footPos.y -= this.playerSize - 0.01;   // 1cm below soles
+        footPos.set(yawObject.position.x, yawObject.position.y - (this.playerSize - 0.01), yawObject.position.z);
+
         const footBox = new Box3().setFromCenterAndSize(footPos, new Vector3(this.playerSize * 0.6, 0.1, this.playerSize * 0.6));
 
         // DETACH from a moving platform if you walked off it
@@ -272,14 +276,19 @@ export class CollisionManager {
             // first frame: look far down
             this.ray.far = 50;
         } else {
-            this.ray.far = this.stepDown + Math.max(this.lastGroundY - footPos.y, 0);
+            //this.ray.far = this.stepDown + Math.max(this.lastGroundY - footPos.y, 0);
+            //this.ray.far = this.stepDown + 0.1;  // 0.5 m reach is enough for gentle slopes
+            this.ray.far = this.stepDown + 1.5;
         }
 
         // raycast
-        //const hits = this.ray.intersectObjects(this.worldMeshes, true);
         const rayTargets = this.player.userData.currentPlatform ? [...this.worldMeshes, this.player.userData.currentPlatform] : this.worldMeshes;
         const hits = this.ray.intersectObjects(rayTargets, true);
-        const hit = hits[0]; // first hit
+        const hit = hits.find(i => {
+            if (!i.face) return false;             // safety for points/lines
+            const n = i.face.normal.clone().applyMatrix3(new Matrix3().getNormalMatrix(i.object.matrixWorld)).normalize();
+            return n.y > 0.01;                     // ignore vertical walls
+        });
         if (hit && this.velocity.y <= 0) {
             const floorY = hit.point.y;
             const mesh   = hit.object;
@@ -306,6 +315,8 @@ export class CollisionManager {
             }
 
             // — SNAP ON ANY GROUND MESH —
+            console.log('hit?', hit && hit.object.name, hit && hit.object.userData.isGround);
+
             //if (isGroundHit(hit) || gap <= this.stepDown + 0.01) {
             if (isGroundHit(hit)) {
                 // you’re on the floor plane → always clamp

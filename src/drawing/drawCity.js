@@ -109,10 +109,11 @@ function drawCity(scene, threejsDrawing) {
         const floorMat = new MeshBasicMaterial({visible: false});
         const cityFloorCollider = new Mesh(floorGeo, floorMat);
         scene.add(cityFloorCollider);
-        cityFloorCollider.userData.isGround = true;
+        //cityFloorCollider.userData.isGround = true;
+        cityFloorCollider.name = 'cityFloorCollider';
 
         // now register it exactly like any other obstacle:
-        threejsDrawing.data.worldMeshes.push(cityFloorCollider);
+        //threejsDrawing.data.worldMeshes.push(cityFloorCollider);
 
 
 
@@ -120,8 +121,9 @@ function drawCity(scene, threejsDrawing) {
         const collider = new Mesh(merged, new MeshBasicMaterial({visible: false}));
 
         scene.add(collider);
-        collider.userData.isGround = true;
-        threejsDrawing.data.worldMeshes.push(collider);
+        //collider.userData.isGround = true;
+        collider.name = 'cityCollider';
+        //threejsDrawing.data.worldMeshes.push(collider);
 
 
 
