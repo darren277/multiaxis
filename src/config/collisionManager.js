@@ -107,7 +107,7 @@ export class CollisionManager {
         this.obstacleBoxes = obstacleBoxes;
 
         // unpack your tuning constants
-        ({ playerSize: this.playerSize, stepDown: this.stepDown, gravity: this.gravity, speed: this.speed} = params);
+        ({playerSize: this.playerSize, stepDown: this.stepDown, gravity: this.gravity, speed: this.speed, jumpVelocity: this.jumpVelocity} = params);
 
         this.velocity   = new Vector3();
         this.direction  = new Vector3();
@@ -116,7 +116,6 @@ export class CollisionManager {
         this.clock      = new Clock();
         this.quatTmp    = new Quaternion();
         this.keyManager = new KeyManager();
-        this.jumpVelocity = 50;
 
         // prime clock...
         this.clock.getDelta();
