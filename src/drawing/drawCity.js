@@ -30,6 +30,12 @@ const SIDEWALKS = [
     'Object_232',
 ]
 
+const OBSTACLES = [
+    'Object_59',
+    'Object_124',
+    'Object_205',
+]
+
 function drawCity(scene, threejsDrawing) {
     threejsDrawing.data.cityReady = false;
 
@@ -92,6 +98,9 @@ function drawCity(scene, threejsDrawing) {
 
                 child.userData.isGround = true;
                 threejsDrawing.data.worldMeshes.push(child);
+            }
+            if (child.isMesh && OBSTACLES.includes(child.name)) {
+                extractPerTriangle(threejsDrawing.data.staticBoxes, child);
             }
         });
 
