@@ -8,7 +8,9 @@ import { drawBasicLights } from './drawLights.js';
 const HOUSE_TO_HIGHLIGHT = '<REPLACE_WITH_BUILDING_ID>';
 const DEFAULT_HOUSE_COLOR = 0xf0f0f0;
 
-async function loadAndRenderGeoJSON(scene) {
+async function loadAndRenderGeoJSON(scene, buildingGroupParams) {
+    const { buildingGroupPosX, buildingGroupPosZ, buildingGroupScaleX, buildingGroupScaleZ } = buildingGroupParams;
+
     const response = await fetch('./data/buildings.geojson');
     const geojson = await response.json();
 
@@ -97,14 +99,14 @@ async function loadAndRenderGeoJSON(scene) {
 
     // shift the whole group up along the y-axis
     // and to the right along the x-axis
-    buildingGroup.position.x += 290;
+    buildingGroup.position.x += buildingGroupPosX;
 
-    buildingGroup.position.z -= 80;
+    buildingGroup.position.z -= buildingGroupPosZ;
 
     // scale on the Z axis...
     //buildingGroup.scale.set(1, 1, 1.45);
     // and compress a bit along the X axis...
-    buildingGroup.scale.set(0.8, 1, 1.2);
+    buildingGroup.scale.set(buildingGroupScaleX, 1, buildingGroupScaleZ);
 
     // Use `size.x` and `size.z` for ground plane size
     // Then use size.x and size.z for your PlaneGeometry(width, height) and position it at mesh.position.set(center.x, -0.1, center.z).
@@ -140,8 +142,15 @@ function drawBuildings(scene, threejsDrawing) {
     light.position.set(100, 200, 100).normalize();
     scene.add(light);
 
+    const buildingGroupParams = {
+        buildingGroupPosX: threejsDrawing.data.buildingGroupPosX,
+        buildingGroupPosZ: threejsDrawing.data.buildingGroupPosZ,
+        buildingGroupScaleX: threejsDrawing.data.buildingGroupScaleX,
+        buildingGroupScaleZ: threejsDrawing.data.buildingGroupScaleZ
+    }
+
     drawMap(scene).then(() => {
-        loadAndRenderGeoJSON(scene).then(() => {
+        loadAndRenderGeoJSON(scene, buildingGroupParams).then(() => {
             console.log("Buildings loaded and rendered.");
         }).catch((error) => {
             console.error("Error loading buildings:", error);
@@ -483,7 +492,15 @@ const buildingsDrawing = {
     'data': {
         'geojson': exampleGeoJson,
         'globe': null,
-        'mapGroup': null
+        'mapGroup': null,
+//        'buildingGroupPosX': 290,
+//        'buildingGroupPosZ': 80,
+//        'buildingGroupScaleX': 0.8,
+//        'buildingGroupScaleZ': 1.2,
+        'buildingGroupPosX': -300,
+        'buildingGroupPosZ': -80,
+        'buildingGroupScaleX': 1.57,
+        'buildingGroupScaleZ': 3.0
     },
     'sceneConfig': {
         //'startPosition': camera.position.set(0, 500, 1000);

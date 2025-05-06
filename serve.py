@@ -3,6 +3,16 @@ import json
 
 from animations import ANIMATIONS_DICT, FULLSCREEN_CSS, EMBEDDED_CSS, SMALL_HEADER_CSS
 
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
+env = os.environ.get('ENV')
+
+if env == 'local':
+    from animations_local import LOCAL_ANIMATIONS_DICT
+    ANIMATIONS_DICT.update(LOCAL_ANIMATIONS_DICT)
+
 HOST = 'localhost'
 PORT = 8000
 
@@ -89,6 +99,8 @@ def serve_threejs(animation):
         "outline-effect": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/effects/OutlineEffect.js",
 
         "d3-hierarchy": "https://cdn.jsdelivr.net/npm/d3-hierarchy@3/+esm",
+
+        "buffer-geometry-utils": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/utils/BufferGeometryUtils.js",
     }
 
     # Force3d importmap:
@@ -97,6 +109,7 @@ def serve_threejs(animation):
         "3d-force-graph": "https://esm.sh/3d-force-graph@1.77.0?bundle&deps=three@0.175.0",
         "three-spritetext": "https://esm.sh/three-spritetext@1.9.6?bundle&deps=three@0.175.0",
         "tween": "https://unpkg.com/@tweenjs/tween.js@23.1.3/dist/tween.esm.js",
+        "outline-effect": "https://cdn.jsdelivr.net/npm/three@0.175.0/examples/jsm/effects/OutlineEffect.js",
     }
 
     importmap = force3d_importmap if animation == 'force3d' else default_importmap

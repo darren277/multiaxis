@@ -10,27 +10,61 @@ let currentViewIndex = 0;
 
 const vector = new Vector3(); // reuse this
 
-function updateLabelPosition(mesh, labelEl, camera, renderer, yOffset = -1.8) {
-    const pos = mesh.position.clone();
-    pos.y += yOffset; // shift downward
+/**
+ * Re‑positions a DOM label so it sits under a mesh **or** an arbitrary
+ * world‑space point.
+ *
+ * @param {THREE.Object3D|THREE.Vector3|{x:number,y:number,z:number}} anchor
+ *        Either the object you want to track, OR just its position.
+ * @param {HTMLElement} labelEl   The DOM element to move.
+ * @param {THREE.Camera} camera   Scene camera.
+ * @param {THREE.WebGLRenderer} renderer
+ * @param {number} yOffset        How far (world units) below the anchor to show
+ *                                the label.  Negative = downward.
+ */
+function updateLabelPosition(anchor, labelEl, camera, renderer, yOffset = -1.8) {
+    /* ---------------------------------------------------------------
+    * 1.  Resolve a Vector3
+    * ------------------------------------------------------------- */
+    let pos;
+    if (anchor && anchor.isObject3D) {
+        // Real Three.js object
+        pos = anchor.position.clone();
+    } else if (anchor && anchor.isVector3) {
+        // Already a Vector3
+        pos = anchor.clone();
+    } else if (anchor && 'x' in anchor && 'y' in anchor && 'z' in anchor) {
+        // Plain {x,y,z}
+        pos = new Vector3(anchor.x, anchor.y, anchor.z);
+    } else {
+        console.warn('updateLabelPosition: invalid anchor', anchor);
+        return;
+    }
 
-    // Project to normalized device coordinates
+    pos.y += yOffset;                 // vertical offset (world units)
+
+    /* ---------------------------------------------------------------
+    * 2.  Project to NDC and then to screen space
+    * ------------------------------------------------------------- */
     const projected = pos.project(camera);
 
-    // Convert to screen space within the renderer canvas
-    const width = renderer.domElement.clientWidth;
-    const height = renderer.domElement.clientHeight;
+    const w  = renderer.domElement.clientWidth;
+    const h  = renderer.domElement.clientHeight;
 
-    const x = (projected.x * 0.5 + 0.5) * width;
-    const y = (1 - (projected.y * 0.5 + 0.5)) * height;
+    const screenX =  (projected.x * 0.5 + 0.5) * w;
+    const screenY =  (1 - (projected.y * 0.5 + 0.5)) * h;
 
-    // Position the label
-    labelEl.style.left = `${x}px`;
-    labelEl.style.top = `${y}px`;
-
-    // Optional: hide if behind camera
+    /* ---------------------------------------------------------------
+    * 3.  Move / toggle the label element
+    * ------------------------------------------------------------- */
+    //const visible = projected.z < 1 && projected.z > -1;   // in front of camera
     const isVisible = projected.z < 1;
-    labelEl.style.display = isVisible ? "block" : "none";
+
+    labelEl.style.left = `${screenX}px`;
+    labelEl.style.top = `${screenY}px`;
+
+    //labelEl.style.transform = `translate(-50%, -50%) translate(${screenX}px,${screenY}px)`;
+    labelEl.style.display   = isVisible ? 'block' : 'none';
 }
 
 
@@ -53,7 +87,7 @@ function vantagePointForItem(item) {
 
 
 
-function buildSceneItems(scene, sceneItems, worldWidth = 4, worldHeight = 3) {
+function buildSceneItems(scene, sceneItems, worldWidth = 4, worldHeight = 3, css3DRenderer = null) {
     // Where allPhotoEntries is your array of { mesh, labelEl, item } returned from createCaptionedPhoto.
 
     const allPhotoEntries = [];
@@ -62,8 +96,14 @@ function buildSceneItems(scene, sceneItems, worldWidth = 4, worldHeight = 3) {
     sceneItems.forEach((item) => {
         let entry;
         const isVideo = item.video && item.video !== "";
-        entry = createCaptionedItem(scene, item, isVideo, worldWidth, worldHeight);
-        scene.add(entry.mesh);
+        const use3dRenderer = true;
+        entry = createCaptionedItem(scene, item, isVideo, worldWidth, worldHeight, use3dRenderer);
+        if (entry.mesh) scene.add(entry.mesh);
+        if (css3DRenderer) {
+            css3DRenderer.scene.add(entry.labelObject);
+        } else {
+            scene.add(entry.labelObject);
+        }
         allPhotoEntries.push(entry);
     });
 
@@ -71,7 +111,8 @@ function buildSceneItems(scene, sceneItems, worldWidth = 4, worldHeight = 3) {
     const adventureSteps = {};
     sceneItems.forEach((item, index) => {
         const vantage = vantagePointForItem(item);
-        const stepId = `view_${item.id}`;
+        //const stepId = `view_${item.id}`;
+        const stepId = item.id;
 
         adventureSteps[stepId] = {
             id: stepId,
@@ -80,19 +121,21 @@ function buildSceneItems(scene, sceneItems, worldWidth = 4, worldHeight = 3) {
                 lookAt: vantage.lookAt,
             },
             text: item.caption,
-            choices: {},
+            choices: item.choices || null, // Use item.choices if it exists
         };
     });
 
-    // Link them in a linear chain
+    // Link them in a linear chain (but only IF the step doesn't already have predefined choices).
     const stepIds = Object.keys(adventureSteps);
     console.log("Step IDs:", stepIds);
     for (let i = 0; i < stepIds.length; i++) {
         const currentId = stepIds[i];
-        const nextId = stepIds[(i + 1) % stepIds.length]; // cyclical
-        const prevId = stepIds[(i - 1 + stepIds.length) % stepIds.length];
-        adventureSteps[currentId].choices = { left: prevId, right: nextId };
-        console.log("Linking steps:", currentId, "->", nextId, "and", prevId);
+        if (!adventureSteps[currentId].choices) {
+            const nextId = stepIds[(i + 1) % stepIds.length]; // cyclical
+            const prevId = stepIds[(i - 1 + stepIds.length) % stepIds.length];
+            adventureSteps[currentId].choices = { left: prevId, right: nextId };
+            console.log("Linking steps:", currentId, "->", nextId, "and", prevId);
+        }
     }
 
     return {adventureSteps, allPhotoEntries};
@@ -129,24 +172,36 @@ function constructElement(document, tagName, id, attrs) {
 
 
 function drawAdventure(scene, data, threejsDrawing) {
-    const {adventureSteps, allPhotoEntries} = buildSceneItems(scene, data.sceneItems, threejsDrawing.data.worldWidth, threejsDrawing.data.worldHeight);
+    const use3dRenderer = true;
+    const css3DRenderer = use3dRenderer ? threejsDrawing.data.css3DRenderer : null;
+    const {adventureSteps, allPhotoEntries} = buildSceneItems(scene, data.sceneItems, threejsDrawing.data.worldWidth, threejsDrawing.data.worldHeight, css3DRenderer);
 
     // build data.otherItems...
     const otherItems = data.otherItems.map((item) => {
+        // TODO: Add a mechanism to render the other items with relative positions, and toggle their visibility so that only when they are in the viewport, they are rendered...
+        // This means that if `item.visibleOn` == `['allSlides']`, then you will have to iterate over every regular slide and define the position of the item relative to the slide.
         console.log('creating other item', item);
         const isVideo = item.video && item.video !== "";
-        const use3dRenderer = true;
-        const { mesh, labelEl } = createCaptionedItem(scene, item, isVideo, threejsDrawing.data.worldWidth, threejsDrawing.data.worldHeight, use3dRenderer);
-        scene.add(mesh);
-        return { mesh, labelEl, item };
+        //const use3dRenderer = false;
+        const { mesh, labelObject } = createCaptionedItem(scene, item, isVideo, threejsDrawing.data.worldWidth, threejsDrawing.data.worldHeight, use3dRenderer);
+        console.log('other item', mesh, labelObject);
+        // Mesh gets added inside of function: scene.add(mesh);
+        if (use3dRenderer) {
+            threejsDrawing.data.css3DRenderer.scene.add(labelObject);
+        } else {
+            scene.add(labelObject);
+        }
+        return { mesh, labelObject, item };
     });
 
     // TODO: draw data.otherItems...
 
     threejsDrawing.data.adventureSteps = adventureSteps;
     threejsDrawing.data.allPhotoEntries = allPhotoEntries;
+    threejsDrawing.data.otherItems = otherItems;
 
-    threejsDrawing.data.currentStepId = `view_${data.sceneItems[0].id}`;
+    //threejsDrawing.data.currentStepId = `view_${data.sceneItems[0].id}`;
+    threejsDrawing.data.currentStepId = data.sceneItems[0].id;
 
     // Draw ambient light...
     const ambientLight = new AmbientLight(0xffffff, 0.5);
@@ -176,8 +231,11 @@ const adventureDrawing = {
             // Not super important, though.
             // NOTE ON THE ABOVE: I've started using `data` as both so for the sake of decluttering, we are now getting rid of `uiState` altogether.
 
+            event.preventDefault();
+
             // COMMENT OUT FOLLOWING LINE FOR DEBUG VIA CLICK CONTROL HELPER...
             const nextStepId = onAdventureKeyDown(camera, e, adventureSteps, controls, currentStepId);
+            if (!nextStepId) return;
             data.currentStepId = nextStepId;
         },
         'click': (e, other) => {
@@ -188,20 +246,44 @@ const adventureDrawing = {
     'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
         // Update label positions
         if (!threejsDrawing.data.allPhotoEntries) return;
-        threejsDrawing.data.allPhotoEntries.forEach(({ mesh, labelEl }) => {
-            updateLabelPosition(mesh, labelEl, camera, renderer);
+        if (threejsDrawing.data.use3DRenderer) return;
+        threejsDrawing.data.allPhotoEntries.forEach(({ mesh, labelObject, item }) => {
+            let anchor, labelEl;
+            anchor = mesh || item.position;
+            if (labelObject.element) {
+                labelEl = labelObject.element;
+            } else {
+                labelEl = labelObject;
+            }
+            updateLabelPosition(anchor, labelEl, camera, renderer);
+        });
+        // Update other items
+        if (!threejsDrawing.data.otherItems) return;
+        threejsDrawing.data.otherItems.forEach(({ mesh, labelObject, item }) => {
+            let anchor, labelEl;
+            anchor = mesh || item.position;
+            if (labelObject.element) {
+                labelEl = labelObject.element;
+            } else {
+                labelEl = labelObject;
+            }
+            updateLabelPosition(anchor, labelEl, camera, renderer);
         });
     },
     'data': {
         'adventureSteps': null,
         'allPhotoEntries': null,
+        'otherItems': null,
         'currentStepId': null,
+        'use3DRenderer': true,
     },
     'sceneConfig': {
-        //'controller': 'none'
+        //'controller': 'none',
         // when debugging...
         'controller': 'orbital',
-        'cssRenderer': true,
+        //'cssRenderer': '3D'
+        //'cssRendererEnabled': '3D',
+        'cssRendererEnabled': 'DUAL',
     }
 }
 

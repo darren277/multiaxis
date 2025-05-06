@@ -9,6 +9,7 @@ const THREEJS_DRAWINGS = {
     'geo3d': () => import('./drawing/drawGeo.js').then(m => m.geoDrawing3d),
     'quantum': () => import('./drawing/drawQuantum.js').then(m => m.quantumDrawing),
     'svg': () => import('./drawing/drawSvg.js').then(m => m.svgDrawing),
+    'multisvg': () => import('./drawing/drawSvg.js').then(m => m.multiSvgDrawing),
     'library': () => import('./drawing/library/drawLibrary.js').then(m => m.libraryDrawing),
     'plot': () => import('./drawing/drawPlotFunction.js').then(m => m.plotFunctionDrawing),
     'rubiks': () => import('./drawing/drawRubiksCube.js').then(m => m.rubiksCubeDrawing),
@@ -35,6 +36,9 @@ const THREEJS_DRAWINGS = {
     'network': () => import('./drawing/drawNetwork.js').then(m => m.networkDrawing),
     'smoke': () => import('./drawing/drawSmoke.js').then(m => m.smokeDrawing),
     'buildings': () => import('./drawing/drawGeo.js').then(m => m.buildingsDrawing),
+    'town': () => import('./drawing/drawTown.js').then(m => m.townDrawing),
+    'complex': () => import('./drawing/drawComplex.js').then(m => m.complexDrawing),
+    'city': () => import('./drawing/drawCity.js').then(m => m.cityDrawing),
 };
 
 export { THREEJS_DRAWINGS };

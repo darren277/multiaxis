@@ -18,6 +18,48 @@ ADVENTURE_NAVIGATION_OVERLAY = """
 </div>
 """
 
+LIBRARY_CUSTOM_CSS = """
+    #resourceOverlay {
+        position: fixed;
+        bottom:  20px;
+        right:   20px;
+        max-width: 300px;
+        max-height: 60vh;
+        overflow: auto;
+        padding: 16px;
+        border-radius: 8px;
+        background: #222;
+        color: #fff;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        display: none;                /* hidden by default */
+    }
+    
+    #resourceOverlay h2 { margin-top: 0; font-size: 1.1rem; }
+    
+    #resourceOverlay .close {
+        float: right; cursor: pointer; font-weight: bold; margin-left: 8px;
+    }
+    
+    .label {
+        background: rgba(255,0,0,0.7);   /* bright red for debugging */
+        padding: 2px 4px;
+        border-radius: 3px;
+        color: #fff;
+        font-size: 12px;
+        white-space: nowrap;             /* prevent wrap‑around */
+        pointer-events: none;
+    }
+"""
+
+LIBRARY_RESOURCE_OVERLAYS = """
+<div id="resourceOverlay">
+    <span class="close" onclick="() => {document.getElementById('resourceOverlay').style.display = 'none';}">✕</span>
+    <h2 id="overlayTitle"></h2>
+    <p id="overlayAuthorYear"></p>
+    <div id="overlayBody"></div>
+</div>
+"""
+
 CSS3D_PREIODIC_TABLE_CSS = """
 a {
     color: #8ff;
@@ -267,7 +309,7 @@ ANIMATIONS_DICT = {
     'adventure':
         {
             'name': 'Adventure',
-            'data_sources': ['adventure1', 'adventure2'],
+            'data_sources': ['adventure1', 'adventure2', 'forest'],
             'custom_overlays': [ADVENTURE_NAVIGATION_OVERLAY],
             'custom_meta': dict(),
         },
@@ -310,6 +352,12 @@ ANIMATIONS_DICT = {
     'svg':
         {
             'name': 'SVG',
+            'data_sources': ['OpenProject'],
+            'custom_meta': dict(),
+        },
+    'multisvg':
+        {
+            'name': 'MultiSVG',
             'data_sources': ['OpenProject', 'Knowledge'],
             'custom_meta': dict(),
         },
@@ -318,46 +366,8 @@ ANIMATIONS_DICT = {
             'name': 'Library',
             'data_sources': ['library'],
             'custom_meta': dict(),
-            'custom_css': """
-    #resourceOverlay {
-        position: fixed;
-        bottom:  20px;
-        right:   20px;
-        max-width: 300px;
-        max-height: 60vh;
-        overflow: auto;
-        padding: 16px;
-        border-radius: 8px;
-        background: #222;
-        color: #fff;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-        display: none;                /* hidden by default */
-    }
-    
-    #resourceOverlay h2 { margin-top: 0; font-size: 1.1rem; }
-    
-    #resourceOverlay .close {
-        float: right; cursor: pointer; font-weight: bold; margin-left: 8px;
-    }
-    
-    .label {
-        background: rgba(255,0,0,0.7);   /* bright red for debugging */
-        padding: 2px 4px;
-        border-radius: 3px;
-        color: #fff;
-        font-size: 12px;
-        white-space: nowrap;             /* prevent wrap‑around */
-        pointer-events: none;
-    }
-""",
-            'custom_overlays': ["""
-<div id="resourceOverlay">
-    <span class="close" onclick="() => {document.getElementById('resourceOverlay').style.display = 'none';}">✕</span>
-    <h2 id="overlayTitle"></h2>
-    <p id="overlayAuthorYear"></p>
-    <div id="overlayBody"></div>
-</div>
-            """],
+            'custom_css': LIBRARY_CUSTOM_CSS,
+            'custom_overlays': [LIBRARY_RESOURCE_OVERLAYS],
             'custom_js': """
 """
         },
@@ -530,6 +540,28 @@ ANIMATIONS_DICT = {
         {
             'name': 'Buildings',
             'data_sources': ['buildings'],
+            'custom_meta': dict(),
+        },
+    'town':
+        {
+            'name': 'Town',
+            'data_sources': ['town'],
+            'custom_meta': dict(),
+        },
+    'complex':
+        {
+            'name': 'Complex',
+            'data_sources': ['complex'],
+            'custom_meta': dict(),
+            'custom_css': LIBRARY_CUSTOM_CSS,
+            'custom_overlays': [LIBRARY_RESOURCE_OVERLAYS],
+            'custom_js': """
+"""
+        },
+    'city':
+        {
+            'name': 'City',
+            'data_sources': ['city'],
             'custom_meta': dict(),
         },
 }

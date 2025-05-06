@@ -2,7 +2,8 @@ import { TextureLoader, BoxGeometry, PlaneGeometry, SphereGeometry, Mesh, MeshBa
 import { CSS2DObject } from 'css2drenderer';
 import { sortAlphabeticallyByName } from './sortResources.js';
 import { calculatePositionOfResource, casePitchX, rowPitchZ, worldX, worldZ } from './calculatePosition.js';
-import { onKeyDownWalking, onKeyUpWalking, walkingAnimationCallback } from '../../config/walking.js';
+import { onKeyDownWalking, onKeyUpWalking, walkingAnimationCallback, addObstacle } from '../../config/walking.js';
+import { drawRoom, animateRoom } from '../drawRoom.js';
 
 function drawFloor(scene) {
     const floorGeometry = new PlaneGeometry(200, 200);
@@ -19,15 +20,24 @@ function drawFloor(scene) {
 
 const textureLoader = new TextureLoader();
 
+const BOOK_CASE_TEXTURES = {
+    'bookcase1': textureLoader.load('textures/bookcase1.png'),
+    'bookcase2': textureLoader.load('textures/bookcase2.png'),
+    'bookcase3': textureLoader.load('textures/bookcase3.png'),
+    'bookcase4': textureLoader.load('textures/bookcase4.png'),
+    'bookcase5': textureLoader.load('textures/bookcase5.png'),
+    'bookcase6': textureLoader.load('textures/bookcase6.png'),
+};
 
-function createBookCaseMesh(scene,
+function createBookCaseMesh(scene, staticBoxes,
 {
-    name, texturePath,
+    name, textureName,
     width = 10, height = 10, depth = 0.5,
-    position = new Vector3(), rotation = new Vector3()
+    position = new Vector3(), rotation = new Vector3(),
 }) {
     // Load the bookcase texture
-    const bookCaseTexture = textureLoader.load(texturePath);
+    const bookCaseTexture = BOOK_CASE_TEXTURES[textureName];
+    console.log(`Loading texture: ${textureName}`, bookCaseTexture);
 
     // Option A: Just a plane (front face)
     // const geometry = new PlaneGeometry(width, height);
@@ -59,6 +69,7 @@ function createBookCaseMesh(scene,
     bookCaseMesh.rotation.set(rotation.x, rotation.y, rotation.z);
 
     scene.add(bookCaseMesh);
+    addObstacle(staticBoxes, bookCaseMesh); // add to collision detection
     return bookCaseMesh;
 }
 
@@ -66,10 +77,7 @@ function createBookCaseMesh(scene,
 // Now we can create multiple shelves, labeling them book_case_1a, book_case_1b, etc. Suppose we have two bookcases in “Row 1”, spaced out along the x axis.
 
 
-function createBookCases(scene, width, height, depth, row1StartX, spaceBetween, caseCount = 3, z_pos = 5) {
-    // Example usage:
-    const y_pos = 5;
-
+function createBookCases(scene, staticBoxes, width, height, depth, row1StartX, spaceBetween, caseCount = 3, y_pos = 5, z_pos = 5) {
     let bookCaseI = 0;
 
     for (let i = 0; i < caseCount; i++) {
@@ -77,10 +85,10 @@ function createBookCases(scene, width, height, depth, row1StartX, spaceBetween, 
         const x_pos = row1StartX + i * spaceBetween;   // now 18 per case
 
         createBookCaseMesh(
-        scene,
+        scene, staticBoxes,
         {
             name: `book_case_1${String.fromCharCode(97 + i)}`, // e.g., 1a, 1b, 1c
-            texturePath: `textures/bookcase${bookCaseI+1}.png`,
+            textureName: `bookcase${bookCaseI+1}`,
             width: width,
             height: height,
             depth: depth,
@@ -93,10 +101,10 @@ function createBookCases(scene, width, height, depth, row1StartX, spaceBetween, 
         const rotation = new Vector3(0, Math.PI, 0);
 
         createBookCaseMesh(
-        scene,
+        scene, staticBoxes,
         {
             name: `book_case_1${String.fromCharCode(97 + i)}_back`, // e.g., 1a, 1b, 1c
-            texturePath: `textures/bookcase${bookCaseI+1}.png`,
+            textureName: `bookcase${bookCaseI+1}`,
             width: width,
             height: height,
             depth: depth,
@@ -148,7 +156,7 @@ const DATA = {
             'depth': 0.5
         },
         'numberOfRows': 10,
-        'numberOfCases': 20,
+        'numberOfCases': 15,
         'spaceBetweenRows': 10,
         'spaceBetweenCases': 0,
         'numberOfFloors': 1,
@@ -167,14 +175,19 @@ const DATA = {
 
 function drawLibrary(scene, threejsDrawing) {
     // Draw the floor
-    drawFloor(scene);
+    //drawFloor(scene);
+    drawRoom(scene, threejsDrawing);
 
     const resources = DATA.resources;
     const library = DATA.library;
 
     // row1StartX matches the hard‑coded −20 you used earlier.
-    const row1StartX = -20;                        // CHANGE in one place if you move the aisle.
-    const row0StartZ = library.spaceBetweenCases - 100; // mirrors   zPos - 100   in your loop
+    //const row1StartX = -20;
+    const row1StartX = -70;
+    //const zStart = 100;
+    const zStart = 0;
+
+    const row0StartZ = library.spaceBetweenCases - zStart; // mirrors   zPos - 100   in your loop
 
     const { width, height, depth } = DATA.library.bookcase;
     const rowCount = DATA.library.numberOfRows;
@@ -184,18 +197,22 @@ function drawLibrary(scene, threejsDrawing) {
     const caseSpacing = casePitchX(DATA.library);  // 18
     const rowSpacing  = rowPitchZ(DATA.library);  // 10.5
 
+    const yPos = 5;
+
     // Create the bookcases
     for (let i = 0; i < rowCount; i++) {
         //const zPos = (i+1)*spaceBetweenCases;   // 8 → wrong
         const zPos = row0StartZ + i * rowSpacing;   // –92, –81.5, …
         createBookCases(
             scene,
+            threejsDrawing.data.staticBoxes,
             width, height, depth,
             row1StartX,
             //spaceBetweenRows,                       // 10 → wrong
             caseSpacing,                            // 18 → matches placer
             caseCount,
             //zPos - 100                              // –92, –84, …
+            yPos,
             zPos                                     // already absolute
         );
     }
@@ -208,6 +225,8 @@ function drawLibrary(scene, threejsDrawing) {
     const renderer = threejsDrawing.data.renderer;
 
     drawResources(scene, library, resources, row1StartX, row0StartZ, camera, renderer);
+
+    scene.updateMatrixWorld(true);
 }
 
 
@@ -289,7 +308,6 @@ function drawResources(scene, library, resources, row1StartX, row0StartZ, camera
     window.addEventListener('click', onClick, false);
 
     function onClick(event) {
-        console.log('onClick', event);
         // normalised device coords
         const rect = renderer.domElement.getBoundingClientRect();   // ← key line
         mouse.x =  ( (event.clientX - rect.left) / rect.width  ) * 2 - 1;
@@ -297,13 +315,11 @@ function drawResources(scene, library, resources, row1StartX, row0StartZ, camera
 
         raycaster.setFromCamera(mouse, camera);
         const hit = raycaster.intersectObjects(resourceMeshes, /* recursive = */ false)[0];
-        console.log('resourceMeshes', resourceMeshes);
         if (hit) showOverlay(hit.object.userData.resource);
     }
 }
 
 function showOverlay(resource) {
-    console.log('showOverlay', resource);
     document.getElementById('overlayTitle'     ).textContent = resource.name;
     document.getElementById('overlayAuthorYear').textContent = `${resource.author} • ${resource.year}`;
     document.getElementById('overlayBody'      ).innerHTML   = resource.description || '<em>No description yet.</em>';
@@ -313,38 +329,47 @@ function showOverlay(resource) {
 // document.addEventListener('keydown', onKeyDownWalking);
 // document.addEventListener('keyup', onKeyUpWalking);
 
+function drawLibraryRoom(scene, threejsDrawing) {
+    threejsDrawing.data.movingMeshes = [];
+    threejsDrawing.data.worldMeshes = [];
+    threejsDrawing.data.staticBoxes = [];
+    threejsDrawing.data.obstacleBoxes = [];
+
+    drawLibrary(scene, threejsDrawing);
+}
+
 const libraryDrawing = {
     'sceneElements': [],
     'drawFuncs': [
-        {'func': drawLibrary, 'dataSrc': null}
+        {'func': drawLibraryRoom, 'dataSrc': null}
     ],
     'eventListeners': {
         //'click': (event) => {},
         //'mousemove': (event) => {},
-        'keydown': (event) => {
-            // Handle key down events here
-            console.log('Key pressed:', event);
-            onKeyDownWalking(event);
+        'keydown': (event, stuff) => {
+            const keyManager = stuff.data.keyManager;
+            onKeyDownWalking(event, keyManager);
         },
-        'keyup': (event) => {
-            // Handle key up events here
-            console.log('Key released:', event);
-            onKeyUpWalking(event);
+        'keyup': (event, stuff) => {
+            const keyManager = stuff.data.keyManager;
+            onKeyUpWalking(event, keyManager);
         },
     },
     'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
-        const scene = threejsDrawing.data.scene;
-        const controls = threejsDrawing.data.controls;
-        if (!controls) {
-            console.warn('No controls found.');
+        if (!threejsDrawing.data.staticBoxes || !threejsDrawing.data.movingMeshes || !threejsDrawing.data.worldMeshes) {
+            console.warn('No static boxes, moving meshes, or world meshes found.');
             return;
         }
-        walkingAnimationCallback(scene, controls);
+        animateRoom(renderer, timestamp, threejsDrawing, camera);
     },
     'data': {
+        'collision': null,
+        'keyManager': null,
     },
     'sceneConfig': {
         'cssRenderer': '2D',
+        'startPosition': { x: 0, y: 10, z: 0 },
+        'lookAt': { x: 0, y: 10, z: 10 },
     }
 }
 
@@ -352,4 +377,4 @@ const libraryDrawing = {
 // TODO: Add a function for determining position based off of specific shelf attribute...
 // For example, if you use a library inventory system that corresponds with actual physical bookshelves (or even boxes), you can specify which shelf each book (or other resource) is in...
 
-export { libraryDrawing };
+export { libraryDrawing, drawLibrary };

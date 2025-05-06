@@ -225,7 +225,7 @@ function drawTV(scene, data, threejsDrawing) {
         video.play();
         //threejsDrawing.data = { video, texture, plane, material };
         if (!threejsDrawing.data || !threejsDrawing.data.videoPlaylist) {
-            threejsDrawing.data = {
+            threejsDrawing.data = {...threejsDrawing.data,
                 video,
                 texture,
                 material,
@@ -247,6 +247,12 @@ function drawTV(scene, data, threejsDrawing) {
 
     const ambientLight = new AmbientLight(0x404040); // soft white light
     scene.add(ambientLight);
+
+    // position TV...
+    gltfScene.position.set(threejsDrawing.data.tvX, threejsDrawing.data.tvY, threejsDrawing.data.tvZ);
+    gltfScene.scale.set(threejsDrawing.data.tvScale, threejsDrawing.data.tvScale, threejsDrawing.data.tvScale);
+
+    threejsDrawing.data.tv = gltfScene;
 }
 
 function animationCallback(data) {
@@ -360,4 +366,4 @@ const tvDrawing = {
     }
 }
 
-export { tvDrawing };
+export { tvDrawing, drawTV, animationCallback, onClick };

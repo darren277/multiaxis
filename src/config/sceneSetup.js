@@ -22,13 +22,14 @@ export async function setupScene(
     ) {
     let controls;
     let stats;
-    let cssRenderer;
+    let css2DRenderer;
+    let css3DRenderer;
 
     // fill in any missing sceneConfig values with defaults
     const {startPosition, lookAt, clippingPlane, background, controller, cssRendererEnabled, statsEnabled, vrEnabled} = {...defaultSceneConfig, ...sceneConfig};
 
-    const css3DRendererEnabled = cssRendererEnabled && cssRendererEnabled === '3D';
-    const css2DRendererEnabled = cssRendererEnabled && cssRendererEnabled === '2D';
+    const css3DRendererEnabled = cssRendererEnabled && (cssRendererEnabled === '3D' || cssRendererEnabled === 'DUAL');
+    const css2DRendererEnabled = cssRendererEnabled && (cssRendererEnabled === '2D' || cssRendererEnabled === 'DUAL');
 
     const container = document.getElementById(containerId);
     const width = container.clientWidth;
@@ -56,34 +57,38 @@ export async function setupScene(
     if (css2DRendererEnabled) {
         console.log('CSS2DRenderer enabled');
         importCSS2DRenderer().then(CSS2DRenderer => {
-            cssRenderer = new CSS2DRenderer();
-            cssRenderer.setSize(container.clientWidth, container.clientHeight);
-            cssRenderer.domElement.style.position = 'absolute';
-            cssRenderer.domElement.style.top = container.offsetTop + 'px';
-            cssRenderer.domElement.style.left = container.offsetLeft + 'px';
-            cssRenderer.domElement.style.pointerEvents = 'none';
-            cssRenderer.domElement.style.zIndex        = '10';   // ⟵ new
+            const css2DScene = new Scene();
+            css2DRenderer = new CSS2DRenderer();
+            css2DRenderer.scene = css2DScene;
+            css2DRenderer.setSize(container.clientWidth, container.clientHeight);
+            css2DRenderer.domElement.style.position = 'absolute';
+            css2DRenderer.domElement.style.top = container.offsetTop + 'px';
+            css2DRenderer.domElement.style.left = container.offsetLeft + 'px';
+            css2DRenderer.domElement.style.pointerEvents = 'none';
+            css2DRenderer.domElement.style.zIndex        = '10';   // ⟵ new
 
             // place it *on top of* the existing WebGL canvas
-            container.appendChild(cssRenderer.domElement);
+            container.appendChild(css2DRenderer.domElement);
         });
     }
 
     if (css3DRendererEnabled) {
         console.log('CSS3DRenderer enabled');
         importCSS3DRenderer().then(CSS3DRenderer => {
-            cssRenderer = new CSS3DRenderer();
+            const css3DScene = new Scene();
+            css3DRenderer = new CSS3DRenderer();
+            css3DRenderer.scene = css3DScene;
             //cssRenderer.setSize(window.innerWidth, window.innerHeight);
-            cssRenderer.setSize(container.clientWidth, container.clientHeight);
-            cssRenderer.domElement.style.position = 'absolute';
-            cssRenderer.domElement.style.top = container.offsetTop + 'px';
-            cssRenderer.domElement.style.left = container.offsetLeft + 'px';
+            css3DRenderer.setSize(container.clientWidth, container.clientHeight);
+            css3DRenderer.domElement.style.position = 'absolute';
+            css3DRenderer.domElement.style.top = container.offsetTop + 'px';
+            css3DRenderer.domElement.style.left = container.offsetLeft + 'px';
 
-            cssRenderer.domElement.style.pointerEvents = 'none';
+            css3DRenderer.domElement.style.pointerEvents = 'none';
 
             // place it *on top of* the existing WebGL canvas
             //document.body.appendChild(cssRenderer.domElement);
-            container.appendChild(cssRenderer.domElement);
+            container.appendChild(css3DRenderer.domElement);
             //cssRenderer.domElement.style.zIndex = 1;
         });
     }
@@ -132,13 +137,12 @@ export async function setupScene(
         //controls.target.set(0, 0, 0); // set the target to the origin
         controls.target.set(lookAt.x, lookAt.y, lookAt.z); // set the target to the origin
         controls.update();
-    } else if (controller === 'walking') {
-        // TODO...
-        controls = null;
-    } else if (controller === 'pointerlock') {
+    } else if (controller === 'walking' || controller === 'pointerlock') {
+        console.log('PointerLockControls enabled');
         const PointerLockControls = await importPointerLockControls();
         controls = new PointerLockControls(camera, renderer.domElement);
         document.body.addEventListener('click', () => controls.lock());
+        controls.name = 'PointerLockControls';
         scene.add(controls.object);
     } else if (controller === 'trackball') {
         const TrackballControls = await importTrackballControls();
@@ -149,5 +153,5 @@ export async function setupScene(
         controls = null;
     }
 
-    return { scene, camera, renderer, controls, stats, cssRenderer };
+    return { scene, camera, renderer, controls, stats, css2DRenderer, css3DRenderer };
 }

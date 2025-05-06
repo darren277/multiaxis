@@ -1,6 +1,11 @@
 *venv*
 .idea/
 
+# For locally hosted or experimental animations.
+animations_local.py
+src/textures/*_local*
+data/*_local*
+
 data/experimental*.json
 EXPERIMENTS.md
 
@@ -12,6 +17,8 @@ NeonCityCompletePack/
 # This file is ubiquitously available online so no need to commit it.
 BigBuckBunny.mp4
 
+# A particularly large GLTK bin file.
+src/imagery/city/scene.bin
 
 # Assorted.
 CleanSocialVideoSalesLetter.mp4
@@ -28,4 +35,6 @@ thinkpak.json
 
 # Copyright protected content.
 src/imagery/Crystal Method - Vapor Trail.mp3
+
+src/imagery/custom_svg/
 

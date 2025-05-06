@@ -1,4 +1,5 @@
 import { pixelToWorldUnits, loadDataSource } from './utils.js';
+import { FloatType } from 'three';
 
 function loadThenDraw(scene, func, dataSrc, dataType, camera, threejsDrawing, dataSelected) {
     const data_src = dataSelected ? dataSelected : dataSrc;

@@ -90,6 +90,7 @@ class ClickAndKeyControls {
     }
 
     moveTarget(target, arrowKey) {
+        console.log(`Moving ${target.name || '(unnamed mesh)'} with key: ${arrowKey}`);
         // We'll interpret: Up => +Y, Down => -Y, Left => -X, Right => +X
         switch (arrowKey) {
             case 'ArrowUp':

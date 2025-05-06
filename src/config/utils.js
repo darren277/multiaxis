@@ -1,4 +1,4 @@
-import { BoxGeometry, Mesh, MeshBasicMaterial } from 'three';
+import { BoxGeometry, Mesh, MeshBasicMaterial, MeshNormalMaterial, GridHelper } from 'three';
 import { FileLoader } from 'three'; // for texture loading
 
 function drawTestCube(scene) {
@@ -61,15 +61,56 @@ function pixelToWorldUnits(pixelSize, distance, camera) {
     return pixelSize * pixelHeightInWorld;
 }
 
-async function prepareDrawingContext(threejsDrawing, scene, camera, renderer, controls, cssRenderer) {
+async function prepareDrawingContext(threejsDrawing, scene, camera, renderer, controls, css2DRenderer = null, css3DRenderer = null, queryOptions = {}) {
     Object.assign(threejsDrawing.data, {
         scene,
         camera,
         renderer,
         controls,
-        cssRenderer,
+        css2DRenderer,
+        css3DRenderer,
+        queryOptions,
     });
     return threejsDrawing;
 }
 
-export { drawTestCube, determineLabelCoordinates, loadDataSource, pixelToWorldUnits, prepareDrawingContext, drawHelpers };
+function parseQueryParams(queryString) {
+    const urlParams = new URLSearchParams(queryString);
+    const queryParams = {};
+    for (const [key, value] of urlParams.entries()) {
+        if (key === 'nav') {
+            if (value === 'true') {
+                queryParams[key] = true;
+            } else if (value === 'false') {
+                queryParams[key] = false;
+            } else {
+                console.warn(`Invalid value for ${key}: ${value}. Expected 'true' or 'false'.`);
+            }
+            queryParams[key] = value;
+        } else if (key === 'controls') {
+            if (value === 'walking') {
+                queryParams[key] = value;
+            } else if (value === 'orbit') {
+                queryParams[key] = value;
+            } else {
+                console.warn(`Invalid value for ${key}: ${value}. Expected 'walking' or 'orbit'.`);
+            }
+        } else if (key === 'debug') {
+            if (value === 'true') {
+                queryParams[key] = true;
+            } else if (value === 'false') {
+                queryParams[key] = false;
+            } else {
+                console.warn(`Invalid value for ${key}: ${value}. Expected 'true' or 'false'.`);
+            }
+        } else if (key === 'prev') {
+            queryParams[key] = value;
+        } else {
+            console.warn(`Unknown query parameter: ${key}`);
+        }
+    }
+    console.log(`Query params: ${JSON.stringify(queryParams)}`);
+    return queryParams;
+}
+
+export { drawTestCube, determineLabelCoordinates, loadDataSource, pixelToWorldUnits, prepareDrawingContext, drawHelpers, parseQueryParams };

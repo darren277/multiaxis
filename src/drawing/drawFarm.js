@@ -1,9 +1,11 @@
-import { MeshStandardMaterial, PlaneGeometry, Mesh, Group, ShaderMaterial, CanvasTexture, RepeatWrapping, Raycaster, Vector2, MathUtils, Clock } from 'three';
+import {
+    MeshStandardMaterial, PlaneGeometry, Mesh, Group, ShaderMaterial, CanvasTexture, RepeatWrapping, Raycaster,
+    Vector2, Vector3, MathUtils, Clock, Box3
+} from 'three';
 import { drawBasicLights, drawSun } from './drawLights.js';
 import { GLTFLoader } from 'gltfloader'
-import perlin from 'perlin-noise';
+import { createPerlinGrassTexture, createGroundFromLayout, groundLayout, animateWater } from './drawGround.js';
 
-import { drawHouses } from './drawHouse.js';
 
 const raycaster = new Raycaster();
 const mouse = new Vector2();
@@ -11,82 +13,19 @@ const clock = new Clock();
 const clickableDoors = [];
 const doorAnimations = new Map();
 
-function createPerlinGrassTexture() {
-    const size = 512;
-    const canvas = document.createElement('canvas');
-    canvas.width = canvas.height = size;
-    const ctx = canvas.getContext('2d');
-
-    const noise = perlin.generatePerlinNoise(size, size);
-
-    for (let y = 0; y < size; y++) {
-        for (let x = 0; x < size; x++) {
-            const val = noise[y * size + x];
-            const g = 60 + val * 100;
-            ctx.fillStyle = `rgb(${g * 0.4}, ${g}, ${g * 0.4})`;
-            ctx.fillRect(x, y, 1, 1);
-        }
-    }
-
-    const texture = new CanvasTexture(canvas);
-    texture.wrapS = texture.wrapT = RepeatWrapping;
-    texture.repeat.set(10, 10);
-    return texture;
-}
-
 const gltfLoader = new GLTFLoader();
-
-const grassMaterial = new ShaderMaterial({
-    vertexShader: `
-        varying vec2 vUv;
-        void main() {
-            vUv = uv;
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-        }
-    `,
-    fragmentShader: `
-        varying vec2 vUv;
-        void main() {
-            float stripes = step(0.5, fract(vUv.x * 40.0)) * 0.2;
-            float noise = fract(sin(dot(vUv.xy ,vec2(12.9898,78.233))) * 43758.5453);
-            float green = 0.3 + 0.3 * noise + stripes;
-            gl_FragColor = vec4(0.1, green, 0.1, 1.0);
-        }
-    `
-});
-
-function createGrassTexture() {
-    const size = 512;
-    const canvas = document.createElement('canvas');
-    canvas.width = canvas.height = size;
-
-    const ctx = canvas.getContext('2d');
-
-    for (let y = 0; y < size; y++) {
-        for (let x = 0; x < size; x++) {
-            const noise = Math.random() * 50;
-            const r = 20 + noise;
-            const g = 100 + noise * 2;
-            const b = 20 + noise;
-            ctx.fillStyle = `rgb(${r},${g},${b})`;
-            ctx.fillRect(x, y, 1, 1);
-        }
-    }
-
-    const texture = new CanvasTexture(canvas);
-    texture.wrapS = texture.wrapT = RepeatWrapping;
-    texture.repeat.set(10, 10);
-    return texture;
-}
-
 
 async function loadGltfModel(data_src) {
     const gltf = await gltfLoader.loadAsync(`./imagery/farm/${data_src}.glb`);
     return gltf;
 }
 
+// Alternative:
+// "Barn":          { position: tileToPosition(3, 2), rotation: [0, 0, 0], scale: [1, 5, 1] },
+// "Big Barn":      { position: tileToPosition(7, 1), rotation: [0, Math.PI/2, 0], scale: [1, 1, 1] },
+
 const modelLayout = {
-    "Barn":          { position: [0, 0, 0],     rotation: [0, 0, 0], scale: [1, 1, 1] },
+    "Barn":          { position: [0, 0, 0],     rotation: [0, 0, 0], scale: [1, 5, 1] },
     "Big Barn":      { position: [20, 0, 10],   rotation: [0, Math.PI / 2, 0], scale: [1, 1, 1] },
     "ChickenCoop":   { position: [-10, 0, 5],   rotation: [0, 0, 0], scale: [1.2, 1.2, 1.2] },
     "Fence":         { position: [5, 0, -15],   rotation: [0, Math.PI / 4, 0], scale: [1, 1, 1] },
@@ -110,6 +49,25 @@ const farmModels = [
     'Tower Windmill',
 ]
 
+function makeDoorClickable(doorMesh) {
+    // --- find door size so we can offset it by half the width ----------
+    const bbox  = new Box3().setFromObject(doorMesh);
+    const size  = new Vector3();
+    bbox.getSize(size);      // size.x is the door width
+
+    // --- build pivot at the hinge edge ---------------------------------
+    const pivot = new Group();
+    pivot.position.copy(doorMesh.position);           // stay where door was
+    doorMesh.parent.add(pivot);                       // insert pivot
+    doorMesh.position.set(-size.x * 0.5, 0, 0);       // move mesh so left edge is on pivot
+    pivot.add(doorMesh);                              // child of pivot now
+    doorMesh.userData.pivot = pivot;
+
+    // --- save references for click & animation handling ----------------
+    clickableDoors.push(pivot);                       // pivot is what we click/animate
+    doorAnimations.set(pivot, { state: 'closed', tween: null });
+}
+
 function reparentToHinge(doorMesh, hingeOffsetX = -0.5) {
     const parent = new Group();
     doorMesh.parent.add(parent); // insert into scene
@@ -120,20 +78,22 @@ function reparentToHinge(doorMesh, hingeOffsetX = -0.5) {
     return parent;
 }
 
+function easeOutCubic(t) {
+    // alternative (or Tween): gsap.to(pivot.rotation, { y: end, duration: 1, ease: 'power2.out' });
+    return 1 - Math.pow(1 - t, 3);
+}
 
 function animateDoors(delta) {
-    doorAnimations.forEach((anim, door) => {
-        if (anim.progress < 1) {
-            anim.progress += delta; // speed modifier here
-            const t = Math.min(anim.progress, 1);
+    doorAnimations.forEach((record, pivot) => {
+        if (!record.tween) return;          // idle door
 
-            // Animate a 90-degree (π/2) swing
-            const swingAngle = anim.isOpening ? Math.PI / 2 : 0;
+        record.tween.elapsed += delta;
+        const t  = Math.min(record.tween.elapsed / record.tween.duration, 1);
+        const te = easeOutCubic(t);      // nice easing curve 0→1
 
-            const parent = reparentToHinge(door);
+        pivot.rotation.y = MathUtils.lerp(record.tween.start, record.tween.end, te);
 
-            parent.rotation.y = MathUtils.lerp(anim.originRotation, swingAngle, t);
-        }
+        if (t === 1) record.tween = null;   // finished
     });
 }
 
@@ -152,7 +112,8 @@ function drawFarm(scene, threejsDrawing) {
                     console.log(`Mesh name: ${child.name}`);
                     if (child.name.includes("Door")) {
                         clickableDoors.push(child);
-                        child.userData.originalRotationY = child.rotation.y;
+                        makeDoorClickable(child);
+                        //child.userData.originalRotationY = child.rotation.y;
                         // Optionally: set pivot for rotation (see advanced tip below)
                     }
                 }
@@ -174,21 +135,15 @@ function drawFarm(scene, threejsDrawing) {
         });
     }
 
-    const floorGeometry = new PlaneGeometry(200, 200);
-    //const floor = new Mesh(floorGeometry, grassMaterial);
-    //const floor = new Mesh(floorGeometry, new MeshStandardMaterial({map: createGrassTexture()}));
-    const floor = new Mesh(floorGeometry, new MeshStandardMaterial({map: createPerlinGrassTexture()}));
+    //const floorGeometry = new PlaneGeometry(200, 200);
+    //const floor = new Mesh(floorGeometry, new MeshStandardMaterial({map: createPerlinGrassTexture()}));
+    const tileSize = 5;
+    const terrain = createGroundFromLayout(groundLayout, tileSize);
+    //terrain.rotation.x = -Math.PI / 2;
+    //terrain.receiveShadow = true;
+    scene.add(terrain);
 
-    floor.rotation.x = -Math.PI / 2;
-    floor.receiveShadow = true;
-
-    scene.add(floor);
-
-    // Add basic lights
-    //drawBasicLights(scene);
     drawSun(scene);
-
-    drawHouses(scene);
 }
 
 function onDoorClick(event, renderer, camera) {
@@ -198,14 +153,26 @@ function onDoorClick(event, renderer, camera) {
 
     raycaster.setFromCamera(mouse, camera);
 
-    const intersects = raycaster.intersectObjects(clickableDoors, true);
-    if (intersects.length > 0) {
-        const clickedDoor = intersects[0].object;
+    const hit = raycaster.intersectObjects(clickableDoors, true)[0];
+    if (!hit) return;
 
-        if (!doorAnimations.has(clickedDoor)) {
-            doorAnimations.set(clickedDoor, {progress: 0, isOpening: true, originRotation: clickedDoor.rotation.y});
-        }
+    let pivot = hit.object.userData.pivot || hit.object;
+    while (pivot && !doorAnimations.has(pivot)) {
+        pivot = pivot.parent;
     }
+
+    if (!pivot) return;
+
+    const record = doorAnimations.get(pivot);
+
+    if (record.tween) return;                // already animating
+
+    const isOpening = record.state === 'closed';
+    const start     = pivot.rotation.y;
+    const end       = start + (isOpening ? Math.PI / 2 : -Math.PI / 2);
+
+    record.tween = { elapsed: 0, duration: 1.0, start, end };
+    record.state = isOpening ? 'open' : 'closed';
 }
 
 const farmDrawing = {
@@ -224,8 +191,23 @@ const farmDrawing = {
     'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
         const delta = clock.getDelta();
         animateDoors(delta);
+        animateWater(renderer, timestamp, threejsDrawing, camera)
     },
     'data': {
+    },
+    'sceneConfig': {
+        'startPosition': {
+            'x': 0,
+            // height above ground
+            'y': 10,
+            // groundHeight/2 + 5 // a little past the top edge
+            'z': 10
+        },
+        'lookAt': {
+            'x': 0,
+            'y': 0,
+            'z': 0
+        }
     }
 }
 

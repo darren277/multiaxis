@@ -1,4 +1,4 @@
-import { TextureLoader, PlaneGeometry, Mesh, MeshBasicMaterial, DoubleSide, VideoTexture, LinearFilter } from 'three'; // for any references you still need
+import { TextureLoader, PlaneGeometry, Mesh, MeshBasicMaterial, DoubleSide, VideoTexture, LinearFilter, Vector3 } from 'three'; // for any references you still need
 import { CSS3DObject } from 'css3drenderer';
 
 
@@ -112,18 +112,18 @@ function create3DLabelWithAnimation(captionText, className) {
 
 
 function createCaptionedItem(scene, item, isVideo, worldWidth = null, worldHeight = null, use3dRenderer = false) {
-    console.log('item', item);
-
     let mesh = null;
 
     // 1. Create Mesh
-    if (!item.image || item.image !== 'NO_IMAGE') {
+    if ((item.image || item.video) && item.image !== 'NO_IMAGE') {
         if (isVideo) {
             mesh = createVideoMesh(item, worldWidth, worldHeight);
         } else {
             mesh = createPhotoMesh(item);
         }
         scene.add(mesh);
+    } else {
+        console.warn('No image or video provided for item:', item);
     }
 
     // 2) Build the caption
@@ -145,15 +145,22 @@ function createCaptionedItem(scene, item, isVideo, worldWidth = null, worldHeigh
         // Use the nested approach so animations don't conflict
         const labelObject = create3DLabelWithAnimation(captionText, customClasses);
 
-        // Position the label slightly below the mesh (optional)
-        const offsetY = -0.5;
-        const position = item.position || { x: 0, y: 0, z: 0 };
-        labelObject.position.set(position.x, position.y + offsetY, position.z);
+        // 1) figure out the mesh center in world‐space
+        const basePos = mesh ? mesh.position.clone() : new Vector3(item.position.x, item.position.y, item.position.z);
+
+        // 2) compute half the mesh height + a small margin (world‐units)
+        let halfHeight = 0;
+        if (mesh && mesh.geometry?.parameters?.height) {
+            halfHeight = mesh.geometry.parameters.height / 2;
+        }
+        const margin = 0.2;                // tweak this if you want more/less gap
+        const offsetY = -(halfHeight + margin);
+
+        // 3) position the labelObject under the mesh
+        labelObject.position.copy(basePos).add(new Vector3(0, offsetY, 0));
 
         // Alternatively, if you want it to follow the mesh exactly:
         // labelObject.position.copy(mesh.position).add(new Vector3(0, offsetY, 0));
-
-        scene.add(labelObject);
 
         return { mesh, labelObject, item }; // return the CSS3DObject
     } else {
@@ -170,7 +177,7 @@ function createCaptionedItem(scene, item, isVideo, worldWidth = null, worldHeigh
         // You probably have a container for 2D overlays
         document.getElementById('labelContainer2d').appendChild(labelEl);
 
-        return { mesh, labelEl, item }; // return the DOM element
+        return { mesh, labelObject: labelEl, item }; // return the DOM element
     }
 }
 
