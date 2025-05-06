@@ -83,10 +83,23 @@ function nearbyBoxes(px, pz) {
 }
 
 
-function checkCollision(playerSize, position, obstacleBoxes = [], ignore = null) {
+export function checkCollisionSpatialHashes(playerSize, position, obstacleBoxes = [], ignore = null) {
     tempBox.setFromCenterAndSize(position, new Vector3(playerSize, playerSize * 2, playerSize));
 
     const boxes = nearbyBoxes(position.x, position.z);
+
+    for (const box of boxes) {
+        if (box === ignore) continue;
+        if (box.intersectsBox(tempBox)) return true;
+    }
+
+    return false; // no collision
+}
+
+export function checkCollision(playerSize, position, obstacleBoxes = [], ignore = null) {
+    tempBox.setFromCenterAndSize(position, new Vector3(playerSize, playerSize * 2, playerSize));
+
+    const boxes = obstacleBoxes;
 
     for (const box of boxes) {
         if (box === ignore) continue;
@@ -167,7 +180,14 @@ export class CollisionManager {
         this.obstacleBoxes = obstacleBoxes;
 
         // unpack your tuning constants
-        ({playerSize: this.playerSize, stepDown: this.stepDown, gravity: this.gravity, speed: this.speed, jumpVelocity: this.jumpVelocity} = params);
+        ({
+            playerSize: this.playerSize,
+            stepDown: this.stepDown,
+            gravity: this.gravity,
+            speed: this.speed,
+            jumpVelocity: this.jumpVelocity,
+            checkCollisionFunc: this.checkCollisionFunc,
+        } = params);
 
         this.velocity   = new Vector3();
         this.direction  = new Vector3();
@@ -228,12 +248,12 @@ export class CollisionManager {
         const temp = new Vector3();
         // try X
         temp.copy(yawObject.position).addScaledVector(new Vector3(this.velocity.x,0,0), dt);
-        if (!checkCollision(this.playerSize, temp, this.obstacleBoxes, ignore)) {
+        if (!this.checkCollisionFunc(this.playerSize, temp, this.obstacleBoxes, ignore)) {
             yawObject.position.x = temp.x;
         }
         // try Z
         temp.copy(yawObject.position).addScaledVector(new Vector3(0,0,this.velocity.z), dt);
-        if (!checkCollision(this.playerSize, temp, this.obstacleBoxes, ignore)) {
+        if (!this.checkCollisionFunc(this.playerSize, temp, this.obstacleBoxes, ignore)) {
             yawObject.position.z = temp.z;
         }
     }

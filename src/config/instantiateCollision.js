@@ -1,4 +1,4 @@
-import { CollisionManager } from '../config/collisionManager.js';
+import { CollisionManager, checkCollision } from '../config/collisionManager.js';
 
 export function instantiateCollision(threejsDrawing) {
     const collision = new CollisionManager({
@@ -13,6 +13,7 @@ export function instantiateCollision(threejsDrawing) {
             gravity: threejsDrawing.sceneConfig.gravity || 9.8 * 10,
             speed: threejsDrawing.sceneConfig.speed || 20.0,
             jumpVelocity: threejsDrawing.sceneConfig.jumpVelocity || 50.0,
+            checkCollisionFunc: threejsDrawing.sceneConfig.checkCollisionFunc || checkCollision,
         }
     });
 
