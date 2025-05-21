@@ -564,4 +564,10 @@ ANIMATIONS_DICT = {
             'data_sources': ['city'],
             'custom_meta': dict(),
         },
+    'familytree':
+        {
+            'name': 'FamilyTree',
+            'data_sources': ['familytree'],
+            'custom_meta': dict(),
+        },
 }
