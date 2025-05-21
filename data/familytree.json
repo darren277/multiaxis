@@ -1,0 +1,76 @@
+{
+  "nodes":
+    [
+      {"id": 1, "name": "Myself", "birthYear": 1984, "imageUrl": "https://avatar.iran.liara.run/public/18"},
+
+      {"id": 2, "name": "Father", "birthYear": 1955, "imageUrl": "https://avatar.iran.liara.run/public/18"},
+      {"id": 3, "name": "Mother", "birthYear": 1955, "imageUrl": "https://avatar.iran.liara.run/public/18"},
+
+      {"id": 4, "name": "Paternal Grand Father", "birthYear": 1930, "imageUrl": "https://avatar.iran.liara.run/public/18"},
+      {"id": 5, "name": "Paternal Grand Mother", "birthYear": 1930, "imageUrl": "https://avatar.iran.liara.run/public/18"},
+      {"id": 6, "name": "Maternal Grand Father", "birthYear": 1930, "imageUrl": "https://avatar.iran.liara.run/public/18"},
+      {"id": 7, "name": "Maternal Grand Mother", "birthYear": 1930, "imageUrl": "https://avatar.iran.liara.run/public/18"},
+
+      {"id": 8, "name":  "Paternal Paternal Great Grand Father", "birthYear": 1900},
+      {"id": 9, "name":  "Paternal Paternal Great Grand Mother", "birthYear": 1900},
+      {"id": 10, "name":  "Paternal Maternal Great Grand Father", "birthYear": 1900},
+      {"id": 11, "name":  "Paternal Maternal Great Grand Mother", "birthYear": 1900},
+      {"id": 12, "name":  "Maternal Paternal Great Grand Father", "birthYear": 1900},
+      {"id": 13, "name":  "Maternal Paternal Great Grand Mother", "birthYear": 1900},
+      {"id": 14, "name":  "Maternal Maternal Great Grand Father", "birthYear": 1900},
+      {"id": 15, "name":  "Maternal Maternal Great Grand Mother", "birthYear": 1900},
+
+      {"id": 16, "name":  "Paternal Paternal Paternal Great Great Grand Father", "birthYear": 1870},
+      {"id": 17, "name":  "Paternal Paternal Paternal Great Great Grand Mother", "birthYear": 1870},
+      {"id": 18, "name":  "Paternal Paternal Maternal Great Great Grand Father", "birthYear": 1870},
+      {"id": 19, "name":  "Paternal Paternal Maternal Great Great Grand Mother", "birthYear": 1870},
+      {"id": 20, "name":  "Paternal Maternal Paternal Great Great Grand Father", "birthYear": 1870},
+      {"id": 21, "name":  "Paternal Maternal Paternal Great Great Grand Mother", "birthYear": 1870},
+      {"id": 22, "name":  "Paternal Maternal Maternal Great Great Grand Father", "birthYear": 1870},
+      {"id": 23, "name":  "Paternal Maternal Maternal Great Great Grand Mother", "birthYear": 1870},
+      {"id": 24, "name":  "Maternal Paternal Paternal Great Great Grand Father", "birthYear": 1870},
+      {"id": 25, "name":  "Maternal Paternal Paternal Great Great Grand Mother", "birthYear": 1870},
+      {"id": 26, "name":  "Maternal Paternal Maternal Great Great Grand Father", "birthYear": 1870},
+      {"id": 27, "name":  "Maternal Paternal Maternal Great Great Grand Mother", "birthYear": 1870},
+      {"id": 28, "name":  "Maternal Maternal Paternal Great Great Grand Father", "birthYear": 1870},
+      {"id": 29, "name":  "Maternal Maternal Paternal Great Great Grand Mother", "birthYear": 1870},
+      {"id": 30, "name":  "Maternal Maternal Maternal Great Great Grand Father", "birthYear": 1870},
+      {"id": 31, "name":  "Maternal Maternal Maternal Great Great Grand Mother", "birthYear": 1870}
+    ],
+  "links":
+    [
+      {"source": 1, "target": 2, "type": "parent"},
+      {"source": 1, "target": 3, "type": "parent"},
+
+      {"source": 2, "target": 4, "type": "parent"},
+      {"source": 2, "target": 5, "type": "parent"},
+      {"source": 3, "target": 6, "type": "parent"},
+      {"source": 3, "target": 7, "type": "parent"},
+
+      {"source": 4, "target": 8, "type": "parent"},
+      {"source": 4, "target": 9, "type": "parent"},
+      {"source": 5, "target": 10, "type": "parent"},
+      {"source": 5, "target": 11, "type": "parent"},
+      {"source": 6, "target": 12, "type": "parent"},
+      {"source": 6, "target": 13, "type": "parent"},
+      {"source": 7, "target": 14, "type": "parent"},
+      {"source": 7, "target": 15, "type": "parent"},
+
+      {"source": 8, "target": 16, "type": "parent"},
+      {"source": 8, "target": 17, "type": "parent"},
+      {"source": 9, "target": 18, "type": "parent"},
+      {"source": 9, "target": 19, "type": "parent"},
+      {"source": 10, "target": 20, "type": "parent"},
+      {"source": 10, "target": 21, "type": "parent"},
+      {"source": 11, "target": 22, "type": "parent"},
+      {"source": 11, "target": 23, "type": "parent"},
+      {"source": 12, "target": 24, "type": "parent"},
+      {"source": 12, "target": 25, "type": "parent"},
+      {"source": 13, "target": 26, "type": "parent"},
+      {"source": 13, "target": 27, "type": "parent"},
+      {"source": 14, "target": 28, "type": "parent"},
+      {"source": 14, "target": 29, "type": "parent"},
+      {"source": 15, "target": 30, "type": "parent"},
+      {"source": 15, "target": 31, "type": "parent"}
+    ]
+}
