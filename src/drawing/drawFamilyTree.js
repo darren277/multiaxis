@@ -1,4 +1,4 @@
-import { Sprite, SpriteMaterial, CanvasTexture, Line, LineBasicMaterial, Vector3, BufferGeometry } from 'three';
+import { Sprite, SpriteMaterial, CanvasTexture, Line, LineBasicMaterial, Vector3, BufferGeometry, AmbientLight } from 'three';
 import * as d3 from "d3-hierarchy";
 
 /*
@@ -145,8 +145,8 @@ function layoutFamilyWithSpread(graph, rootId) {
 
 
 function layoutWithD3(graph, rootId) {
-    const X_STEP   = 12;   // tweak to taste (horizontal separation)
-    const GEN_STEP =  6;   // vertical gap between generations
+    const X_STEP   = 4;   // tweak to taste (horizontal separation)
+    const GEN_STEP =  4;   // vertical gap between generations
 
     // Build a lookup from node ID → node object
     const byId = new Map(graph.nodes.map(n => [n.id, n]));
@@ -215,37 +215,61 @@ function labelSpriteWithImage(name, imageUrl = null) {
         const fontSize = 24;
         ctx.font       = `${fontSize}px sans-serif`;
 
+        const MAX_TEXT_WIDTH = 150;     // ← tweak this to control wrap width
+
         const padding  = 10;
-        const labelW   = ctx.measureText(name).width + padding * 2;
-        const labelH   = fontSize + padding * 2;
+        // measure text but cap at our max, so wrapping kicks in
+        const rawTextW = Math.min(ctx.measureText(name).width, MAX_TEXT_WIDTH);
+        const imgSize  = imageUrl ? fontSize + padding : 0;
+        // content height = image + gap + one line of text
+        const contentH = imgSize + padding + fontSize;
+        // square side = max(text + paddings, content height + padding)
+        const side     = Math.max(rawTextW + padding*2, contentH + padding);
+        canvas.width   = side;
+        canvas.height  = side;
 
-        const imgSize  = imageUrl ? labelH : 0;
-        const totalW   = imgSize + (imageUrl ? padding : 0) + labelW;
-        const totalH   = labelH;
-
-        canvas.width   = totalW;
-        canvas.height  = totalH;
+        // precompute for draw
+        const imageX = (side - imgSize) / 2;
+        const textY  = imgSize + padding;
 
         // Background
         ctx.fillStyle = "#ffffff";
-        ctx.fillRect(0, 0, totalW, totalH);
+        ctx.fillRect(0, 0, side, side);
 
         const texture  = new CanvasTexture(canvas);
         const material = new SpriteMaterial({map: texture, transparent: true});
         const sprite   = new Sprite(material);
 
         // Scale canvas pixels → world units
-        sprite.scale.set(totalW * 0.01, totalH * 0.01, 1);
+        sprite.scale.set(side * 0.01, side * 0.01, 1);
 
         let img = null;
         function drawLabel() {
             if (imageUrl && img && img.complete) {
-                ctx.drawImage(img, 0, 0, imgSize, imgSize);
+                ctx.drawImage(img, imageX, padding, imgSize, imgSize);
             }
             ctx.fillStyle = "#000000";
             ctx.font = `${fontSize}px sans-serif`;
             ctx.textBaseline = "middle";
-            ctx.fillText(name, imgSize + (imageUrl ? padding : 0), totalH / 2);
+            // word-wrap & center text under the image
+            ctx.textBaseline = "top";
+            const maxTextW = side - padding*2;
+            const words    = name.split(" ");
+            let line       = "";
+            let yPos       = textY;
+            for (const w of words) {
+                const test = line ? line + " " + w : w;
+                if (ctx.measureText(test).width <= maxTextW) {
+                    line = test;
+                } else {
+                    ctx.fillText(line, (side - ctx.measureText(line).width) / 2, yPos);
+                    line = w;
+                    yPos += fontSize + 2;
+                }
+            }
+            if (line) {
+              ctx.fillText(line, (side - ctx.measureText(line).width) / 2, yPos);
+            }
             texture.needsUpdate = true;
         }
 
@@ -294,6 +318,10 @@ async function drawFamilyTree(scene, data, threejsDrawing) {
         ]);
         scene.add(new Line(g, material));
     });
+
+    // draw ambient light...
+    const light = new AmbientLight(0x404040, 1);
+    scene.add(light);
 }
 
 const familyTreeDrawing = {
