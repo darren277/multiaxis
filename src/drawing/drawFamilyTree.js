@@ -207,7 +207,68 @@ function labelSprite(text) {
     return sprite;
 }
 
-function drawFamilyTree(scene, data, threejsDrawing) {
+function labelSpriteWithImage(name, imageUrl = null) {
+    return new Promise(resolve => {
+        const canvas   = document.createElement("canvas");
+        const ctx      = canvas.getContext("2d");
+
+        const fontSize = 24;
+        ctx.font       = `${fontSize}px sans-serif`;
+
+        const padding  = 10;
+        const labelW   = ctx.measureText(name).width + padding * 2;
+        const labelH   = fontSize + padding * 2;
+
+        const imgSize  = imageUrl ? labelH : 0;
+        const totalW   = imgSize + (imageUrl ? padding : 0) + labelW;
+        const totalH   = labelH;
+
+        canvas.width   = totalW;
+        canvas.height  = totalH;
+
+        // Background
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, totalW, totalH);
+
+        const texture  = new CanvasTexture(canvas);
+        const material = new SpriteMaterial({map: texture, transparent: true});
+        const sprite   = new Sprite(material);
+
+        // Scale canvas pixels → world units
+        sprite.scale.set(totalW * 0.01, totalH * 0.01, 1);
+
+        let img = null;
+        function drawLabel() {
+            if (imageUrl && img && img.complete) {
+                ctx.drawImage(img, 0, 0, imgSize, imgSize);
+            }
+            ctx.fillStyle = "#000000";
+            ctx.font = `${fontSize}px sans-serif`;
+            ctx.textBaseline = "middle";
+            ctx.fillText(name, imgSize + (imageUrl ? padding : 0), totalH / 2);
+            texture.needsUpdate = true;
+        }
+
+        // Optional image (asynchronously)
+        if (imageUrl) {
+            img = new Image();
+            img.crossOrigin = "anonymous"; // Required if loading from another domain
+            img.onload = () => {
+                drawLabel();  // call after image loads
+                resolve(sprite);
+            };
+            img.src = imageUrl;
+        } else {
+            drawLabel();
+            resolve(sprite);
+        }
+
+        return sprite;
+    });
+}
+
+
+async function drawFamilyTree(scene, data, threejsDrawing) {
     // --- draw nodes ------------------------------------------------------
     const nodes = data.nodes;
     const links = data.links;
@@ -215,8 +276,9 @@ function drawFamilyTree(scene, data, threejsDrawing) {
     //const graph = layoutFamily(data, /*rootId=*/1);
     //const graph = layoutFamilyWithSpread(data, /*rootId=*/1);
     const graph = layoutWithD3(data, /*rootId=*/1);
-    graph.nodes.forEach(n => {
-        const sprite = labelSprite(n.name);
+    graph.nodes.forEach(async n => {
+        //const sprite = labelSprite(n.name);
+        const sprite = await labelSpriteWithImage(n.name, n.imageUrl || null);
         sprite.position.set(n.x, n.y, 0);
         scene.add(sprite);
     });
