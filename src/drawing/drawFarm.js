@@ -5,6 +5,8 @@ import {
 import { drawBasicLights, drawSun } from './drawLights.js';
 import { GLTFLoader } from 'gltfloader'
 import { createPerlinGrassTexture, createGroundFromLayout, groundLayout, animateWater } from './drawGround.js';
+import { onKeyDownWalking, onKeyUpWalking, updateObstacleBoxes, walkingAnimationCallback } from '../config/walking.js';
+import { instantiateCollision } from '../config/instantiateCollision.js';
 
 
 const raycaster = new Raycaster();
@@ -143,7 +145,16 @@ function drawFarm(scene, threejsDrawing) {
     //terrain.receiveShadow = true;
     scene.add(terrain);
 
+    threejsDrawing.data.floor = terrain;
+
+    threejsDrawing.data.floor.userData.isGround = true;
+    threejsDrawing.data.worldMeshes.push(threejsDrawing.data.floor);
+
     drawSun(scene);
+
+    scene.updateMatrixWorld(true);
+
+    instantiateCollision(threejsDrawing);
 }
 
 function onDoorClick(event, renderer, camera) {
@@ -175,6 +186,36 @@ function onDoorClick(event, renderer, camera) {
     record.state = isOpening ? 'open' : 'closed';
 }
 
+let lastTime = 0;
+
+function animateFarm(renderer, timestamp, threejsDrawing, camera) {
+    const scene = threejsDrawing.data.scene;
+    const controls = threejsDrawing.data.controls;
+    if (!controls) {
+        console.warn('No controls found.');
+        return;
+    }
+
+    if (!threejsDrawing.data.ready) return;
+
+    const lift     = threejsDrawing.data.elevator;
+    const player   = controls.object;
+
+    //const elapsed = threejsDrawing.data.collision.clock.getDelta();
+    const elapsed = Math.min((timestamp - lastTime) / 1000, 0.1);
+    lastTime = timestamp;
+
+    scene.updateMatrixWorld(true);
+
+    if (lift) {
+        animateElevator(lift, player, elapsed);
+    }
+
+    updateObstacleBoxes(threejsDrawing.data.staticBoxes, threejsDrawing.data.movingMeshes, threejsDrawing.data.obstacleBoxes);
+
+    walkingAnimationCallback(scene, controls, threejsDrawing.data.collision, elapsed, true);
+}
+
 const farmDrawing = {
     'sceneElements': [],
     'drawFuncs': [
@@ -187,21 +228,36 @@ const farmDrawing = {
             const camera = data.camera;
             onDoorClick(event, renderer, camera);
         },
+        'keydown': (event, stuff) => {
+            const keyManager = stuff.data.keyManager;
+            onKeyDownWalking(event, keyManager);
+        },
+        'keyup': (event, stuff) => {
+            const keyManager = stuff.data.keyManager;
+            onKeyUpWalking(event, keyManager);
+        },
     },
     'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
-        const delta = clock.getDelta();
+        const delta = Math.min((timestamp - lastTime) / 1000, 0.1);
         animateDoors(delta);
         animateWater(renderer, timestamp, threejsDrawing, camera)
+        animateFarm(renderer, timestamp, threejsDrawing, camera);
     },
     'data': {
+        'staticBoxes': [],
+        'movingMeshes': [],
+        'obstacleBoxes': [],
+        'worldMeshes': [],
+        'collision': null,
+        'keyManager': null,
     },
     'sceneConfig': {
         'startPosition': {
             'x': 0,
             // height above ground
-            'y': 10,
+            'y': 2,
             // groundHeight/2 + 5 // a little past the top edge
-            'z': 10
+            'z': -30
         },
         'lookAt': {
             'x': 0,
