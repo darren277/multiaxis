@@ -258,7 +258,7 @@ export class CollisionManager {
         }
     }
 
-    _applyGravityAndGroundClamp(yawObject, pos, halfHeight, dt) {
+    _applyGravityAndGroundClampOld(yawObject, pos, halfHeight, dt) {
         let plat;
 
         // apply gravity
@@ -366,6 +366,150 @@ export class CollisionManager {
             this.lastGroundY        = GROUND_Y;
             this.player.userData.currentGround = null;
             this.player.userData.currentPlatform = null;
+        }
+    }
+
+    _applyGravityAndGroundClamp(yawObject, pos, halfHeight, dt) {
+        // Apply gravity (pos.y is updated)
+        this.velocity.y -= this.gravity * dt;
+        pos.y += this.velocity.y * dt;
+
+        // Set up the down-ray from player's feet
+        const footPos = yawObject.position.clone();
+        // Assuming 'this.playerSize' is the distance from player center to feet (half total height)
+        footPos.y -= (this.playerSize - 0.01); // Ray starts 0.01 units above the player's base
+
+        console.log("--- Frame Update ---");
+        console.log("Initial pos.y:", yawObject.position.y.toFixed(3), "vel.y:", this.velocity.y.toFixed(3));
+        // After gravity:
+        console.log("After gravity pos.y:", pos.y.toFixed(3), "vel.y:", this.velocity.y.toFixed(3));
+        console.log("footPos.y for raycast:", footPos.y.toFixed(3));
+
+        // DETACH from a moving platform if you walked off it (keep this logic)
+        let plat;
+        if (this.player.userData.currentPlatform) {
+            plat = this.player.userData.currentPlatform;
+            if (plat.userData.boxNeedsRefresh) { /* ... */ }
+            const footBox = new Box3().setFromCenterAndSize(footPos, new Vector3(this.playerSize * 0.6, 0.1, this.playerSize * 0.6));
+            if (!footBox.intersectsBox(plat.userData.box)) {
+                this.player.userData.currentPlatform = null;
+                if (plat.userData) plat.userData.rider = null; // Check if plat.userData exists
+            }
+        }
+
+        this.ray.set(footPos, this.DOWN);
+        if (this.lastGroundY === undefined) {
+            this.ray.far = 50;
+        } else {
+            this.ray.far = this.stepDown + 1.5; // Should be sufficient for continuous surfaces
+        }
+
+        this.debugRayHelper.setDirection(this.ray.ray.direction);
+        this.debugRayHelper.position.copy(this.ray.ray.origin); // ArrowHelper origin is position
+        this.debugRayHelper.setLength(this.ray.far, 0.2, 0.1); // headLength, headWidth
+        this.debugRayHelper.setColor(0xff0000); // Red
+
+        //const rayTargets = this.player.userData.currentPlatform ? [...this.worldMeshes, this.player.userData.currentPlatform] : this.worldMeshes;
+        //const hits = this.ray.intersectObjects(rayTargets, true);
+
+        console.log('--- Frame Raycast ---');
+        console.log('Player velocity.y:', this.velocity.y.toFixed(3));
+        const currentWorldMeshes = this.worldMeshes.map(m => m.name || m.uuid);
+        const currentPlatform = this.player.userData.currentPlatform ? (this.player.userData.currentPlatform.name || this.player.userData.currentPlatform.uuid) : 'None';
+        console.log('Current worldMeshes:', currentWorldMeshes);
+        console.log('Current platform:', currentPlatform);
+
+        const rayTargets = this.player.userData.currentPlatform ? [...this.worldMeshes, this.player.userData.currentPlatform] : this.worldMeshes;
+        console.log('Raycasting against:', rayTargets.map(m => m.name || m.uuid));
+
+        const hits = this.ray.intersectObjects(rayTargets, true);
+        console.log('Raw hits found:', hits.length);
+        hits.forEach((h, index) => {
+            const normalY = h.face ? h.face.normal.clone().applyMatrix3(new Matrix3().getNormalMatrix(h.object.matrixWorld)).normalize().y : null;
+            console.log(`  Raw Hit <span class="math-inline">\{index\}\: obj\=</span>{h.object.name}, dist=<span class="math-inline">\{h\.distance\.toFixed\(3\)\}, pointY\=</span>{h.point.y.toFixed(3)}, normalY=${normalY ? normalY.toFixed(3) : 'N/A'}`);
+        });
+
+        const walkableHit = hits.find(i => {
+            if (!i.face) return false;
+            const n = i.face.normal.clone().applyMatrix3(new Matrix3().getNormalMatrix(i.object.matrixWorld)).normalize();
+            return n.y > 0.01; // Consider a surface walkable if its normal is mostly upward
+        });
+
+        if (walkableHit) {
+            console.log('Walkable hit found on:', walkableHit.object.name);
+        } else if (hits.length > 0) {
+            console.log('Hits occurred, but none were deemed walkable.');
+        } else {
+            console.log('No hits occurred at all.');
+        }
+        console.log('Condition (walkableHit && this.velocity.y <= 0):', (walkableHit && this.velocity.y <= 0));
+
+        if (!walkableHit) {
+            console.log("No walkable ground hit.");
+        }
+
+        if (walkableHit && this.velocity.y <= 0) {
+            const floorY = walkableHit.point.y;
+            const eyeY = floorY + halfHeight; // halfHeight is this.playerSize
+
+            console.log("Hit object:", walkableHit.object.name, "isGround:", walkableHit.object.userData.isGround);
+            console.log("Hit point.y:", walkableHit.point.y.toFixed(3));
+            console.log("Calculated eyeY:", eyeY.toFixed(3));
+            // Log yawObject.position.y right after it's set
+
+            // --- Moving Platform Logic ---
+            // Check if the hit object is a designated platform
+            if (walkableHit.object.userData.isPlatform) {
+                const currentHitPlatform = walkableHit.object;
+                if (this.player.userData.currentPlatform !== currentHitPlatform) {
+                    // Player has landed on a new platform
+                    currentHitPlatform.userData.offsetY = (footPos.y - floorY); // Original calculation, check if still valid
+                                                                             // Or, more simply: currentHitPlatform.userData.offsetY = yawObject.position.y - currentHitPlatform.position.y;
+                    this.player.userData.currentPlatform = currentHitPlatform;
+                    currentHitPlatform.userData.rider = this.player;
+                }
+                // If it's a moving platform, its own animation/movement should handle its base position.
+                // Player's Y might need to be relative to platform's Y + offset.
+                // For simplicity now, we'll snap to hit point, but true moving platform might need:
+                // yawObject.position.y = currentHitPlatform.position.y + currentHitPlatform.userData.offsetY + halfHeight;
+                // For a static curved mesh or one whose Y is directly raycast, eyeY is fine:
+                yawObject.position.y = eyeY;
+
+            } else {
+                // Not a special platform, just regular ground (could be your curved mesh)
+                this.player.userData.currentPlatform = null; // Ensure not attached to a platform if now on regular ground
+                yawObject.position.y = eyeY;
+            }
+
+            this.velocity.y = 0;
+            this.keyManager.canJump = true;
+            this.lastGroundY = floorY;
+            this.player.userData.currentGround = walkableHit.object;
+
+        } else {
+            // Player is in the air (no walkable hit below or moving upwards)
+            this.player.userData.currentGround = null;
+            // If not on a platform due to no hit, ensure platform is also cleared
+            if (!walkableHit || walkableHit.object !== this.player.userData.currentPlatform) {
+                 // this.player.userData.currentPlatform = null; // Already handled if hit non-platform
+            }
+            // canJump remains false if jump was initiated, or becomes false after leaving ground.
+            // If player walks off edge, canJump would be true then become false once airborne for a bit.
+            // The original jump logic handles setting canJump to false.
+        }
+
+        // Fallback ground plane (e.g., if player falls out of the world)
+        const minY = GROUND_Y + halfHeight; // GROUND_Y is your absolute minimum floor
+        if (yawObject.position.y < minY) {
+            // Only snap to minY if not currently grounded on something else higher up
+            if (!this.player.userData.currentGround || yawObject.position.y < (this.lastGroundY + halfHeight) ) {
+                 yawObject.position.y = minY;
+                 this.velocity.y = 0;
+                 this.keyManager.canJump = true;
+                 this.lastGroundY = GROUND_Y;
+                 this.player.userData.currentGround = null; // Or a conceptual "fallback ground" object
+                 this.player.userData.currentPlatform = null;
+            }
         }
     }
 

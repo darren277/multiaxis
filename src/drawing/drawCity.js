@@ -98,6 +98,9 @@ function drawCity(scene, threejsDrawing) {
 
                 child.userData.isGround = true;
                 threejsDrawing.data.worldMeshes.push(child);
+
+                console.log('child', child);
+                console.log('child.geometry', child.geometry);
             }
             if (child.isMesh && OBSTACLES.includes(child.name)) {
                 extractPerTriangle(threejsDrawing.data.staticBoxes, child);
