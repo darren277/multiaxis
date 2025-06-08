@@ -95,12 +95,12 @@ function drawRoom(scene, threejsDrawing) {
 
     // ~~~~~~~~~~~~~~~~~~
     // GUI
-    const gui = new GUI();
-    gui.add(lightingParams, 'hemiIrradiance', Object.keys(hemiLuminousIrradiances));
-    gui.add(lightingParams, 'bulbPower', Object.keys(bulbLuminousPowers));
-    gui.add(lightingParams, 'exposure', 0, 1);
-    gui.add(lightingParams, 'shadows');
-    gui.open();
+//    const gui = new GUI();
+//    gui.add(lightingParams, 'hemiIrradiance', Object.keys(hemiLuminousIrradiances));
+//    gui.add(lightingParams, 'bulbPower', Object.keys(bulbLuminousPowers));
+//    gui.add(lightingParams, 'exposure', 0, 1);
+//    gui.add(lightingParams, 'shadows');
+//    gui.open();
 
     instantiateCollision(threejsDrawing);
 }

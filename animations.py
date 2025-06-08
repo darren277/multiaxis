@@ -312,7 +312,6 @@ ANIMATIONS_DICT = {
         {
             'name': 'Adventure',
             'data_sources': ['adventure1', 'adventure2', 'forest'],
-            'custom_overlays': [ADVENTURE_NAVIGATION_OVERLAY],
             'custom_meta': dict(),
             'category': 'Special'
         },
@@ -379,7 +378,7 @@ ANIMATIONS_DICT = {
             'data_sources': ['library'],
             'custom_meta': dict(),
             'custom_css': LIBRARY_CUSTOM_CSS,
-            'custom_overlays': [LIBRARY_RESOURCE_OVERLAYS],
+            #'custom_overlays': [LIBRARY_RESOURCE_OVERLAYS],
             'custom_js': """""",
             'category': 'Component'
         },
@@ -595,7 +594,7 @@ ANIMATIONS_DICT = {
             'data_sources': ['complex'],
             'custom_meta': dict(),
             'custom_css': LIBRARY_CUSTOM_CSS,
-            'custom_overlays': [LIBRARY_RESOURCE_OVERLAYS],
+            #'custom_overlays': [LIBRARY_RESOURCE_OVERLAYS],
             'custom_js': """""",
             'category': 'Special'
         },

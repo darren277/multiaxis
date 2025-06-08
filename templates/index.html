@@ -88,11 +88,20 @@
         <!-- UI container (floating overlay) -->
         <div id="ui-container" style="position: absolute; top: 1em; right: 1em; z-index: 9999; background-color: rgba(255, 255, 255, 0.2); padding: 0.5em;">
             <!-- Orbit Toggle Button -->
-            <button id="orbit-toggle-btn" style="display: block; width: 120px; margin-bottom: 0.5em; cursor: pointer;">Orbit: ON</button>
+            {% if threejs_drawings.orbit_controls %}
+                <button id="orbit-toggle-btn" style="display: block; width: 120px; margin-bottom: 0.5em; cursor: pointer;">Orbit: ON</button>
+            {% endif %}
+
+            <!-- Walking Controls Toggle Button -->
+            {% if threejs_drawings.walking_controls %}
+                <button id="walking-toggle-btn" style="display: block; width: 120px; margin-bottom: 0.5em; cursor: pointer;">Walking: OFF</button>
+            {% endif %}
 
             <!-- Zoom Slider -->
-            <label for="zoom-slider" style="margin-right: 0.5em;">Zoom:</label>
-            <input type="range" id="zoom-slider" min="1" max="100" value="5" step="1" style="width: 100px;" />
+            {% if threejs_drawings.zoom_controls %}
+                <label for="zoom-slider" style="margin-right: 0.5em;">Zoom:</label>
+                <input type="range" id="zoom-slider" min="1" max="100" value="5" step="1" style="width: 100px;" />
+            {% endif %}
 
             {% if threejs_drawings.custom_overlays %}
                 {% for overlay in threejs_drawings.custom_overlays %}
