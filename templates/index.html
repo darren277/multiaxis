@@ -50,8 +50,14 @@
     <h2>{{ threejs_drawings.name }}</h2>
     <label for="scene-select" style="margin-right: 0.5em;">Choose animation:</label>
     <select id="scene-select">
-        {% for nav_item in nav_items %}
-            <option value="{{ nav_item }}" {% if nav_item == threejs_drawings.name.lower() %}selected{% endif %}>{{ nav_item }}</option>
+        {% for category, items in grouped_nav_items.items() %}
+            <optgroup label="{{ category }}">
+                {% for item in items %}
+                    <option value="{{ item.name }}" {% if item.name == threejs_drawings.name.lower() %}selected{% endif %}>
+                        {{ item.name }}
+                    </option>
+                {% endfor %}
+            </optgroup>
         {% endfor %}
     </select>
     {% if threejs_drawings.data_sources %}

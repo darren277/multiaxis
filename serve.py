@@ -2,6 +2,7 @@
 import json
 
 from animations import ANIMATIONS_DICT, FULLSCREEN_CSS, EMBEDDED_CSS, SMALL_HEADER_CSS
+from collections import defaultdict
 
 import os
 from dotenv import load_dotenv
@@ -114,6 +115,21 @@ def serve_threejs(animation):
 
     importmap = force3d_importmap if animation == 'force3d' else default_importmap
 
+    nav_item_ordering = ['Special', 'Educational', 'Quantitative', 'Spatial', 'World Building', 'Experimental', 'Component', 'Attribution', 'Work in Progress', 'Local']
+
+    grouped_nav_items = defaultdict(list)
+
+    nav_items = [{'name': key, 'category': val['category']} for key, val in ANIMATIONS_DICT.items()]
+
+    for item in nav_items:
+        grouped_nav_items[item['category']].append(item)
+
+    # Reorder grouped_nav_items using nav_item_ordering
+    ordered_grouped_nav_items = {}
+    for cat in nav_item_ordering:
+        if cat in grouped_nav_items:
+            ordered_grouped_nav_items[cat] = grouped_nav_items[cat]
+
     return render_template(
         'index.html',
         fullscreen=fullscreen,
@@ -122,7 +138,7 @@ def serve_threejs(animation):
         threejs_css=SMALL_HEADER_CSS,
         threejs_version=THREEJS_VERSION,
         threejs_drawings=viz,
-        nav_items=ANIMATIONS_DICT.keys(),
+        grouped_nav_items=ordered_grouped_nav_items,
         #main_js_path='./src/main.js',
         main_js_path = '/src/main.js',
         data_selected=data_selected,
