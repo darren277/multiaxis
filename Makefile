@@ -11,7 +11,7 @@ s3-config:
 	aws s3 cp src/config/collisionManager.js s3://$(BUCKET_NAME)/scripts/threejs/config/collisionManager.js
 	aws s3 cp src/config/dynamicImports.js s3://$(BUCKET_NAME)/scripts/threejs/config/dynamicImports.js
 	aws s3 cp src/config/instantiateCollision.js s3://$(BUCKET_NAME)/scripts/threejs/config/instantiateCollision.js
-	aws s3 co src/config/loadThenDraw.js s3://$(BUCKET_NAME)/scripts/threejs/config/loadThenDraw.js
+	aws s3 cp src/config/loadThenDraw.js s3://$(BUCKET_NAME)/scripts/threejs/config/loadThenDraw.js
 	aws s3 cp src/config/navigation.js s3://$(BUCKET_NAME)/scripts/threejs/config/navigation.js
 	aws s3 cp src/config/sceneSetup.js s3://$(BUCKET_NAME)/scripts/threejs/config/sceneSetup.js
 	aws s3 cp src/config/uiPanelConfig.js s3://$(BUCKET_NAME)/scripts/threejs/config/uiPanelConfig.js
@@ -95,6 +95,12 @@ s3-data:
 	aws s3 cp data/periodic.json s3://$(BUCKET_NAME)/data/periodic.json
 	aws s3 cp data/philpapers.json s3://$(BUCKET_NAME)/data/philpapers.json
 
+
+s3-all: s3 s3-config s3-drawing s3-data s3-textures
+
+
+# Sync sparingly
+
 s3-textures:
 	aws s3 cp src/textures/2k_neptune.jpg s3://$(BUCKET_NAME)/textures/2k_neptune.jpg
 	aws s3 cp src/textures/2k_uranus.jpg s3://$(BUCKET_NAME)/textures/2k_uranus.jpg
@@ -124,6 +130,8 @@ s3-textures:
 	aws s3 cp src/textures/sun_temple_stripe.jpg s3://$(BUCKET_NAME)/textures/sun_temple_stripe.jpg
 
 
+# Sync sparingly
+
 s3-short-vids:
 	aws s3 cp src/textures/seagull.mp4 s3://$(BUCKET_NAME)/textures/seagull.mp4
 	aws s3 cp src/textures/seagulls.mp4 s3://$(BUCKET_NAME)/textures/seagulls.mp4
@@ -137,9 +145,6 @@ s3-short-vids:
 s3-bbb:
 	aws s3 cp src/textures/BigBuckBunny.mp4 s3://$(BUCKET_NAME)/textures/BigBuckBunny.mp4
 
-s3-csvsl:
-	aws s3 cp src/textures/CleanSocialVideoSalesLetter.mp4 s3://$(BUCKET_NAME)/textures/CleanSocialVideoSalesLetter.mp4
-
 s3-brain:
 	aws s3 sync src/imagery/brain/obj/ s3://$(BUCKET_NAME)/imagery/brain/obj/ --exclude "*" --include "*.obj"
 	aws s3 sync src/imagery/brain/ply/ s3://$(BUCKET_NAME)/imagery/brain/ply/ --exclude "*" --include "*.ply"
@@ -151,7 +156,7 @@ s3-pdb:
 	aws s3 sync src/imagery/pdb/ s3://$(BUCKET_NAME)/imagery/pdb/ --exclude "*" --include "*.pdb"
 
 s3-piano:
-	aws s3 sync src/imagery/piano/ s3://$(BUCKET_NAME)/imagery/piano/ --recursive
+	aws s3 sync src/imagery/piano/ s3://$(BUCKET_NAME)/imagery/piano/
 
 s3-skibidi:
 	aws s3 sync src/imagery/skibidi/ s3://$(BUCKET_NAME)/imagery/skibidi/
@@ -161,9 +166,6 @@ s3-skibidi:
 
 s3-svg:
 	aws s3 cp src/imagery/OpenProject_out_annotated.svg s3://$(BUCKET_NAME)/imagery/OpenProject_out_annotated.svg
-
-s3-all: s3 s3-config s3-drawing s3-data s3-textures s3-svg
-
 
 s3-cards:
 	aws s3 cp src/textures/cards/back_texture.png s3://$(BUCKET_NAME)/textures/cards/back_texture.png
