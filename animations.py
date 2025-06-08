@@ -293,6 +293,7 @@ ANIMATIONS_DICT = {
             'name': 'Multiaxis',
             'data_sources': ['data', 'experimental', 'experimental_1'],
             'custom_meta': dict(),
+            'category': 'Quantitative'
         },
     'music':
         {
@@ -304,7 +305,8 @@ ANIMATIONS_DICT = {
 <label for="tempo-slider">Tempo:</label>
 <input id="tempo-slider" type="range" min="0.25" max="2.0" value="1" step="0.01"/>
 <span id="tempo-value">1.00x</span>
-            """]
+            """],
+            'category': 'Work in Progress'
         },
     'adventure':
         {
@@ -312,54 +314,64 @@ ANIMATIONS_DICT = {
             'data_sources': ['adventure1', 'adventure2', 'forest'],
             'custom_overlays': [ADVENTURE_NAVIGATION_OVERLAY],
             'custom_meta': dict(),
+            'category': 'Special'
         },
     'room':
         {
             'name': 'Room',
             'data_sources': [],
             'custom_meta': dict(),
+            'category': 'Component'
         },
     'cayley':
         {
             'name': 'Cayley',
             'data_sources': ['cayley'],
             'custom_meta': dict(),
+            'category': 'Quantitative'
         },
     'force':
         {
             'name': 'Force',
             'data_sources': [],
             'custom_meta': dict(),
+            'category': 'Quantitative'
         },
     'geo':
         {
             'name': 'Geo',
             'data_sources': ['geo'],
             'custom_meta': dict(),
+            'category': 'Spatial'
         },
     'geo3d':
         {
             'name': 'Geo3D',
             'data_sources': ['geo3d'],
             'custom_meta': dict(),
+            'category': 'Spatial'
         },
     'quantum':
         {
             'name': 'Quantum',
             'data_sources': [],
             'custom_meta': dict(),
+            #'category': 'Educational'
+            'category': 'Work in Progress',
         },
     'svg':
         {
             'name': 'SVG',
             'data_sources': ['OpenProject'],
             'custom_meta': dict(),
+            'category': 'Component'
         },
     'multisvg':
         {
             'name': 'MultiSVG',
             'data_sources': ['OpenProject', 'Knowledge'],
             'custom_meta': dict(),
+            'category': 'Work in Progress'
         },
     'library':
         {
@@ -368,62 +380,72 @@ ANIMATIONS_DICT = {
             'custom_meta': dict(),
             'custom_css': LIBRARY_CUSTOM_CSS,
             'custom_overlays': [LIBRARY_RESOURCE_OVERLAYS],
-            'custom_js': """
-"""
+            'custom_js': """""",
+            'category': 'Component'
         },
     'plot':
         {
             'name': 'Plot',
             'data_sources': ['plot'],
             'custom_meta': dict(),
+            'category': 'Quantitative'
         },
     'rubiks':
         {
             'name': 'Rubiks',
             'data_sources': ['rubiks'],
             'custom_meta': dict(),
+            'category': 'Work in Progress'
         },
     'chess':
         {
             'name': 'Chess',
             'data_sources': ['chess'],
             'custom_meta': dict(),
+            'category': 'Work in Progress'
         },
     'clustering':
         {
             'name': 'Clustering',
             'data_sources': ['clustering'],
             'custom_meta': dict(),
+            'category': 'Quantitative',
         },
     'orbits':
         {
             'name': 'Orbits',
             'data_sources': [],
             'custom_meta': dict(),
+            'category': 'Educational',
         },
     'force3d':
         {
             'name': 'Force3D',
             'data_sources': ['force3d', 'philpapers', 'math'],
             'custom_meta': dict(),
+            'category': 'Quantitative'
         },
     'cards':
         {
             'name': 'Cards',
             'data_sources': ['cards', 'thinkpak'],
             'custom_meta': dict(),
+            'category': 'Special'
         },
     'gltf':
         {
             'name': 'GLTF',
             'data_sources': ['humanoid', 'dynamic_fighters'],
             'custom_meta': dict(),
+            'category': 'Experimental'
         },
     'synapse':
         {
             'name': 'Synapse',
             'data_sources': [],
             'custom_meta': dict(),
+            #'category': 'Educational',
+            'category': 'Work in Progress',
         },
     'brain':
         {
@@ -440,25 +462,29 @@ ANIMATIONS_DICT = {
     font-size: 12px;
     pointer-events: none;
 }
-            """
+            """,
+            'category': 'Educational',
         },
     'chemistry':
         {
             'name': 'Chemistry',
             'data_sources': ['chemistry'],
             'custom_meta': dict(),
+            'category': 'Educational',
         },
     'game':
         {
             'name': 'Game',
             'data_sources': ['game'],
             'custom_meta': dict(),
+            'category': 'Work in Progress',
         },
     'ammo':
         {
             'name': 'Ammo',
             'data_sources': ['ammo'],
             'custom_meta': dict(),
+            'category': 'Attribution'
         },
     'periodic':
         {
@@ -474,79 +500,94 @@ ANIMATIONS_DICT = {
                     <button id="grid">GRID</button>
                     <button id="cube">CUBE</button>
                 </div>
-            """]
+            """],
+            'category': 'Attribution'
         },
     'drive':
         {
             'name': 'Drive',
             'data_sources': ['drive'],
             'custom_meta': dict(),
+            'category': 'Work in Progress'
         },
-    'tv':
-        {
-            'name': 'TV',
-            'data_sources': ['tv_sony_trinitron'],
-            'custom_meta': dict(),
-        },
+    # Currently not working??
+    # 'tv':
+    #     {
+    #         'name': 'TV',
+    #         'data_sources': ['tv_sony_trinitron'],
+    #         'custom_meta': dict(),
+    #     },
     'monitor':
         {
             'name': 'Monitor',
             'data_sources': ['monitor'],
             'custom_meta': dict(),
+            #'category': 'Attribution'
+            'category': 'Work in Progress'
         },
     'farm':
         {
             'name': 'Farm',
             'data_sources': ['farm'],
             'custom_meta': dict(),
+            'category': 'World Building'
         },
     'exr':
         {
             'name': 'EXR',
             'data_sources': ['golden_gate_hills_1k', 'OTHER_abandoned_workshop_02_4k'],
             'custom_meta': dict(),
+            'category': 'Attribution',
         },
     'skibidi':
         {
             'name': 'Skibidi',
             'data_sources': ['skibidi'],
             'custom_meta': dict(),
+            'category': 'Experimental'
         },
     'physics':
         {
             'name': 'Physics',
             'data_sources': ['physics'],
             'custom_meta': dict(),
+            #'category': 'Educational',
+            'category': 'Work in Progress',
         },
-    'audioviz':
-        {
-            'name': 'AudioViz',
-            'data_sources': ['audioviz'],
-            'custom_meta': dict(),
-        },
+    # TODO: Find a copyright free song or audio sample...
+    # 'audioviz':
+    #     {
+    #         'name': 'AudioViz',
+    #         'data_sources': ['audioviz'],
+    #         'custom_meta': dict(),
+    #     },
     'network':
         {
             'name': 'Network',
             'data_sources': ['network'],
             'custom_meta': dict(),
+            'category': 'Work in Progress'
         },
-    'smoke':
-        {
-            'name': 'Smoke',
-            'data_sources': ['smoke'],
-            'custom_meta': dict(),
-        },
+    # Very early WIP:
+    # 'smoke':
+    #     {
+    #         'name': 'Smoke',
+    #         'data_sources': ['smoke'],
+    #         'custom_meta': dict(),
+    #     },
     'buildings':
         {
             'name': 'Buildings',
             'data_sources': ['buildings'],
             'custom_meta': dict(),
+            'category': 'Spatial'
         },
     'town':
         {
             'name': 'Town',
             'data_sources': ['town'],
             'custom_meta': dict(),
+            'category': 'World Building'
         },
     'complex':
         {
@@ -555,19 +596,24 @@ ANIMATIONS_DICT = {
             'custom_meta': dict(),
             'custom_css': LIBRARY_CUSTOM_CSS,
             'custom_overlays': [LIBRARY_RESOURCE_OVERLAYS],
-            'custom_js': """
-"""
+            'custom_js': """""",
+            'category': 'Special'
         },
-    'city':
-        {
-            'name': 'City',
-            'data_sources': ['city'],
-            'custom_meta': dict(),
-        },
+    # VERY EARLY WIP...
+    # 'city':
+    #     {
+    #         'name': 'City',
+    #         'data_sources': ['city'],
+    #         'custom_meta': dict(),
+    #         #'wip': True,
+    #         #'attribution': 'TBD'
+    #     },
     'familytree':
         {
             'name': 'FamilyTree',
             'data_sources': ['familytree'],
             'custom_meta': dict(),
+            #'category': 'Special'
+            'category': 'Work in Progress'
         },
 }
