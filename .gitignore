@@ -5,6 +5,7 @@
 animations_local.py
 src/textures/*_local*
 data/*_local*
+src/drawings_local.js
 
 data/experimental*.json
 EXPERIMENTS.md

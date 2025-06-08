@@ -3,6 +3,8 @@ import { GLTFLoader } from 'gltfloader';
 import { drawSun } from './drawLights.js';
 import { onKeyDownWalking, onKeyUpWalking, addObstacle, updateObstacleBoxes, walkingAnimationCallback } from '../config/walking.js';
 import { mergeGeometries } from 'buffer-geometry-utils';
+import { instantiateCollision } from '../config/instantiateCollision.js';
+import { extractPerTriangle, spatialHashStaticBoxes, checkCollisionSpatialHashes } from '../config/collisionManager.js';
 
 const gltfLoader = new GLTFLoader();
 
@@ -26,6 +28,12 @@ const SIDEWALKS = [
     'Object_227',
     'Object_231',
     'Object_232',
+]
+
+const OBSTACLES = [
+    'Object_59',
+    'Object_124',
+    'Object_205',
 ]
 
 function drawCity(scene, threejsDrawing) {
@@ -88,8 +96,14 @@ function drawCity(scene, threejsDrawing) {
 
                 console.log(child.name, Object.keys(child.geometry.attributes));
 
+                child.userData.isGround = true;
                 threejsDrawing.data.worldMeshes.push(child);
-                addObstacle(threejsDrawing.data.staticBoxes, child);
+
+                console.log('child', child);
+                console.log('child.geometry', child.geometry);
+            }
+            if (child.isMesh && OBSTACLES.includes(child.name)) {
+                extractPerTriangle(threejsDrawing.data.staticBoxes, child);
             }
         });
 
@@ -107,10 +121,11 @@ function drawCity(scene, threejsDrawing) {
         const floorMat = new MeshBasicMaterial({visible: false});
         const cityFloorCollider = new Mesh(floorGeo, floorMat);
         scene.add(cityFloorCollider);
+        //cityFloorCollider.userData.isGround = true;
+        cityFloorCollider.name = 'cityFloorCollider';
 
         // now register it exactly like any other obstacle:
-        threejsDrawing.data.worldMeshes.push(cityFloorCollider);
-        addObstacle(threejsDrawing.data.staticBoxes, cityFloorCollider);
+        //threejsDrawing.data.worldMeshes.push(cityFloorCollider);
 
 
 
@@ -118,8 +133,9 @@ function drawCity(scene, threejsDrawing) {
         const collider = new Mesh(merged, new MeshBasicMaterial({visible: false}));
 
         scene.add(collider);
-        threejsDrawing.data.worldMeshes.push(collider);
-        addObstacle(threejsDrawing.data.staticBoxes, collider);
+        //collider.userData.isGround = true;
+        collider.name = 'cityCollider';
+        //threejsDrawing.data.worldMeshes.push(collider);
 
 
 
@@ -142,7 +158,13 @@ function drawCity(scene, threejsDrawing) {
 
     // Draw the sun
     const sun = drawSun(scene, threejsDrawing);
+
+    scene.updateMatrixWorld(true);
+
+    instantiateCollision(threejsDrawing);
 }
+
+let lastTime = 0;
 
 const cityDrawing = {
     'sceneElements': [],
@@ -155,11 +177,13 @@ const cityDrawing = {
             const threejsDrawing = data.threejsDrawing;
             const camera = data.camera;
         },
-        'keydown': (event, data) => {
-            onKeyDownWalking(event);
+        'keydown': (event, stuff) => {
+            const keyManager = stuff.data.keyManager;
+            onKeyDownWalking(event, keyManager);
         },
-        'keyup': (event) => {
-            onKeyUpWalking(event);
+        'keyup': (event, stuff) => {
+            const keyManager = stuff.data.keyManager;
+            onKeyUpWalking(event, keyManager);
         },
     },
     'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
@@ -181,15 +205,22 @@ const cityDrawing = {
 
         const player   = controls.object;
 
+        const elapsed = Math.min((timestamp - lastTime) / 1000, 0.1);
+        lastTime = timestamp;
+
+        scene.updateMatrixWorld(true);
+
         updateObstacleBoxes(threejsDrawing.data.staticBoxes, threejsDrawing.data.movingMeshes, threejsDrawing.data.obstacleBoxes);
 
-        walkingAnimationCallback(scene, controls, player, threejsDrawing.data.worldMeshes, threejsDrawing.data.obstacleBoxes, true);
+        walkingAnimationCallback(scene, controls, threejsDrawing.data.collision, elapsed, true);
     },
     'data': {
         'staticBoxes': [],
         'movingMeshes': [],
         'obstacleBoxes': [],
         'worldMeshes': [],
+        'collision': null,
+        'keyManager': null,
     },
     'sceneConfig': {
         'startPosition': {
@@ -203,7 +234,10 @@ const cityDrawing = {
             'x': 0,
             'y': 0.5,
             'z': 0
-        }
+        },
+        'speed': 10,
+        'jumpVelocity': 25,
+        'checkCollisionFunc': checkCollisionSpatialHashes
     }
 }
 

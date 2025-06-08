@@ -39,6 +39,7 @@ const THREEJS_DRAWINGS = {
     'town': () => import('./drawing/drawTown.js').then(m => m.townDrawing),
     'complex': () => import('./drawing/drawComplex.js').then(m => m.complexDrawing),
     'city': () => import('./drawing/drawCity.js').then(m => m.cityDrawing),
+    'familytree': () => import('./drawing/drawFamilyTree.js').then(m => m.familyTreeDrawing),
 };
 
 export { THREEJS_DRAWINGS };

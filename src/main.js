@@ -22,9 +22,25 @@ const textureLoader = new TextureLoader();
 document.addEventListener('DOMContentLoaded', () => {
     const drawingName = document.querySelector('meta[name="threejs_drawing_name"]').content;
 
-    THREEJS_DRAWINGS[drawingName]().then(threejsDrawing => {
-        contentLoadedCallback(drawingName, threejsDrawing);
-    })
+    try {
+        THREEJS_DRAWINGS[drawingName]().then(threejsDrawing => {
+            contentLoadedCallback(drawingName, threejsDrawing);
+        })
+    } catch (error) {
+        console.warn(`Error loading drawing ${drawingName}:`, error);
+        console.log('Trying local drawings...');
+        import('./drawings_local.js').then(({ LOCAL_THREEJS_DRAWINGS }) => {
+            if (LOCAL_THREEJS_DRAWINGS[drawingName]) {
+                LOCAL_THREEJS_DRAWINGS[drawingName]().then(threejsDrawing => {
+                    contentLoadedCallback(drawingName, threejsDrawing);
+                });
+            } else {
+                console.error(`No drawing found for ${drawingName}`);
+            }
+        }).catch(error => {
+            console.error('Error loading local drawings:', error);
+        });
+    }
 })
 
 

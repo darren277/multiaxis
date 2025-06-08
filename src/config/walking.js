@@ -221,10 +221,16 @@ function walkingAnimationCallback(scene, controls, collision, elapsed, override 
     }
 }
 
-function addObstacle(staticBoxes, mesh) {
-    const box = new Box3().setFromObject(mesh);
-    box.object = mesh;
-    mesh.userData.box = box;
+function addObstacle(staticBoxes, source) {
+    if (source.isBox3) {            // already a Box3, just store it
+        staticBoxes.push(source);
+        return;
+    }
+
+    // otherwise expect an Object3D mesh
+    const box = new Box3().setFromObject(source);
+    box.object = source;
+    source.userData.box = box;
     staticBoxes.push(box);
 }
 

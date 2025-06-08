@@ -6,7 +6,7 @@ import { drawLights, updateLights, lightingParams, bulbLuminousPowers, hemiLumin
 import { drawFloor, loadWoodTextures, makeWoodMaterial, drawPerimeterWalkway, drawElevator, playerOnPlatform } from './drawFloor.js';
 import { drawWalls } from './drawWalls.js';
 import { walkingAnimationCallback, addObstacle, onKeyDownWalking, onKeyUpWalking, updateObstacleBoxes } from '../config/walking.js';
-import { CollisionManager } from '../config/collisionManager.js';
+import { instantiateCollision } from '../config/instantiateCollision.js';
 
 let previousShadowMap = false;
 
@@ -95,32 +95,14 @@ function drawRoom(scene, threejsDrawing) {
 
     // ~~~~~~~~~~~~~~~~~~
     // GUI
-    const gui = new GUI();
-    gui.add(lightingParams, 'hemiIrradiance', Object.keys(hemiLuminousIrradiances));
-    gui.add(lightingParams, 'bulbPower', Object.keys(bulbLuminousPowers));
-    gui.add(lightingParams, 'exposure', 0, 1);
-    gui.add(lightingParams, 'shadows');
-    gui.open();
+//    const gui = new GUI();
+//    gui.add(lightingParams, 'hemiIrradiance', Object.keys(hemiLuminousIrradiances));
+//    gui.add(lightingParams, 'bulbPower', Object.keys(bulbLuminousPowers));
+//    gui.add(lightingParams, 'exposure', 0, 1);
+//    gui.add(lightingParams, 'shadows');
+//    gui.open();
 
-    const collision = new CollisionManager({
-        player:        threejsDrawing.data.controls.object,
-        worldMeshes:   threejsDrawing.data.worldMeshes,
-        staticBoxes:   threejsDrawing.data.staticBoxes,
-        movingMeshes:  threejsDrawing.data.movingMeshes,
-        obstacleBoxes: threejsDrawing.data.obstacleBoxes,
-        params: {playerSize:  1.0, stepDown: 1.0, gravity: 9.8 * 10, speed: 20.0}
-    });
-
-    collision.lastGroundY         = undefined;
-    collision.keyManager.canJump  = true;
-    collision.velocity.set(0, 0, 0);
-
-    threejsDrawing.data.collision = collision;
-    threejsDrawing.data.keyManager = collision.keyManager;
-
-    threejsDrawing.data.controls.object.position.set(threejsDrawing.sceneConfig.startPosition.x, threejsDrawing.sceneConfig.startPosition.y, threejsDrawing.sceneConfig.startPosition.z)
-
-    threejsDrawing.data.ready = true;
+    instantiateCollision(threejsDrawing);
 }
 
 function animateElevator(lift, player, elapsed) {

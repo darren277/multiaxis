@@ -4,6 +4,7 @@ import { CSS3DObject } from 'css3drenderer';
 import {onAdventureKeyDown, onClick} from './interactions.js';
 import {createCaptionedItem} from './createItems.js';
 import {drawAdventureElements} from './styleDefs.js';
+import { precomputeBackgroundPlanes } from './helpers.js';
 
 let currentViewIndex = 0;
 
@@ -210,6 +211,8 @@ function drawAdventure(scene, data, threejsDrawing) {
     const directionalLight = new DirectionalLight(0xffffff, 0.5);
     directionalLight.position.set(0, 1, 0);
     scene.add(directionalLight);
+
+    precomputeBackgroundPlanes(scene, threejsDrawing, threejsDrawing.data.renderer);
 }
 
 const adventureDrawing = {
@@ -244,6 +247,14 @@ const adventureDrawing = {
         },
     },
     'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
+        const { bgMeshes, currentStepId } = threejsDrawing.data;
+        if (bgMeshes) {
+            // show only the current slide’s background
+            Object.entries(bgMeshes).forEach(([slideId, mesh]) => {
+                mesh.visible = (slideId === currentStepId);
+            });
+        }
+
         // Update label positions
         if (!threejsDrawing.data.allPhotoEntries) return;
         if (threejsDrawing.data.use3DRenderer) return;
