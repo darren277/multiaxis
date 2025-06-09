@@ -46,23 +46,7 @@ def serve_index():
         main_js_path='./src/main.js'
     )
 
-@app.route('/threejs/<animation>')
-def serve_threejs(animation):
-    """
-    Serve the three.js library.
-    Example: /threejs/animation -> /threejs/animation on disk
-    """
-    print('animation nav:', animation)
-    css = FULLSCREEN_CSS
-    fullscreen = True
-
-    viz = ANIMATIONS_DICT.get(animation, ANIMATIONS_DICT['multiaxis'])
-    data_selected_query_param = request.args.get('data_selected')
-    data_selected = data_selected_query_param if data_selected_query_param else viz.get('data_sources', [None])[0] if len(viz.get('data_sources', [])) > 0 else None
-    print('data_selected:', data_selected)
-
-    threejs_version = viz.get('threejs_version', THREEJS_VERSION)
-
+def populate_importmaps(animation: str, threejs_version: str):
     default_importmap = {
         "three": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/build/three.module.js",
         "textgeometry": f"https://cdn.jsdelivr.net/npm/three@{threejs_version}/examples/jsm/geometries/TextGeometry.js",
@@ -113,7 +97,26 @@ def serve_threejs(animation):
         "outline-effect": "https://cdn.jsdelivr.net/npm/three@0.175.0/examples/jsm/effects/OutlineEffect.js",
     }
 
-    importmap = force3d_importmap if animation == 'force3d' else default_importmap
+    return force3d_importmap if animation == 'force3d' else default_importmap
+
+@app.route('/threejs/<animation>')
+def serve_threejs(animation):
+    """
+    Serve the three.js library.
+    Example: /threejs/animation -> /threejs/animation on disk
+    """
+    print('animation nav:', animation)
+    css = FULLSCREEN_CSS
+    fullscreen = True
+
+    viz = ANIMATIONS_DICT.get(animation, ANIMATIONS_DICT['multiaxis'])
+    data_selected_query_param = request.args.get('data_selected')
+    data_selected = data_selected_query_param if data_selected_query_param else viz.get('data_sources', [None])[0] if len(viz.get('data_sources', [])) > 0 else None
+    print('data_selected:', data_selected)
+
+    threejs_version = viz.get('threejs_version', THREEJS_VERSION)
+
+    importmap = populate_importmaps(animation, threejs_version)
 
     nav_item_ordering = ['Special', 'Educational', 'Quantitative', 'Spatial', 'World Building', 'Experimental', 'Component', 'Attribution', 'Work in Progress', 'Local']
 
