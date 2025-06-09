@@ -99,6 +99,23 @@ def populate_importmaps(animation: str, threejs_version: str):
 
     return force3d_importmap if animation == 'force3d' else default_importmap
 
+
+def grouped_nav_items(nav_item_ordering):
+    grouped_nav_items = defaultdict(list)
+
+    nav_items = [{'name': key, 'category': val['category']} for key, val in ANIMATIONS_DICT.items()]
+
+    for item in nav_items:
+        grouped_nav_items[item['category']].append(item)
+
+    # Reorder grouped_nav_items using nav_item_ordering
+    ordered_grouped_nav_items = {}
+    for cat in nav_item_ordering:
+        if cat in grouped_nav_items:
+            ordered_grouped_nav_items[cat] = grouped_nav_items[cat]
+
+    return ordered_grouped_nav_items
+
 @app.route('/threejs/<animation>')
 def serve_threejs(animation):
     """
@@ -120,18 +137,7 @@ def serve_threejs(animation):
 
     nav_item_ordering = ['Special', 'Educational', 'Quantitative', 'Spatial', 'World Building', 'Experimental', 'Component', 'Attribution', 'Work in Progress', 'Local']
 
-    grouped_nav_items = defaultdict(list)
-
-    nav_items = [{'name': key, 'category': val['category']} for key, val in ANIMATIONS_DICT.items()]
-
-    for item in nav_items:
-        grouped_nav_items[item['category']].append(item)
-
-    # Reorder grouped_nav_items using nav_item_ordering
-    ordered_grouped_nav_items = {}
-    for cat in nav_item_ordering:
-        if cat in grouped_nav_items:
-            ordered_grouped_nav_items[cat] = grouped_nav_items[cat]
+    ordered_grouped_nav_items = grouped_nav_items(nav_item_ordering)
 
     return render_template(
         'index.html',
