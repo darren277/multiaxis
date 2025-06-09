@@ -4,6 +4,7 @@ INKSCAPE_PATH=C:/Program Files/Inkscape/bin/inkscape.exe
 
 s3:
 	aws s3 cp src/main.js s3://$(BUCKET_NAME)/scripts/threejs/main.js
+	aws s3 cp src/drawings.js s3://$(BUCKET_NAME)/scripts/threejs/drawings.js
 
 s3-config:
 	aws s3 cp src/config/attachUIListeners.js s3://$(BUCKET_NAME)/scripts/threejs/config/attachUIListeners.js
@@ -79,6 +80,7 @@ s3-drawing:
 s3-data:
 	aws s3 cp data/adventure1.json s3://$(BUCKET_NAME)/data/adventure1.json
 	aws s3 cp data/adventure2.json s3://$(BUCKET_NAME)/data/adventure2.json
+	aws s3 cp data/buildings.geojson s3://$(BUCKET_NAME)/data/buildings.geojson
 	aws s3 cp data/cards.json s3://$(BUCKET_NAME)/data/cards.json
 	aws s3 cp data/cayley.json s3://$(BUCKET_NAME)/data/cayley.json
 	aws s3 cp data/clustering.json s3://$(BUCKET_NAME)/data/clustering.json
@@ -127,6 +129,7 @@ s3-textures:
 	aws s3 cp src/textures/hardwood2_bump.jpg s3://$(BUCKET_NAME)/textures/hardwood2_bump.jpg
 	aws s3 cp src/textures/hardwood2_diffuse.jpg s3://$(BUCKET_NAME)/textures/hardwood2_diffuse.jpg
 	aws s3 cp src/textures/hardwood2_roughness.jpg s3://$(BUCKET_NAME)/textures/hardwood2_roughness.jpg
+	aws s3 cp src/textures/neighourhood.png s3://$(BUCKET_NAME)/scripts/threejs/textures/neighourhood.png
 	aws s3 cp src/textures/sun_temple_stripe.jpg s3://$(BUCKET_NAME)/textures/sun_temple_stripe.jpg
 
 
