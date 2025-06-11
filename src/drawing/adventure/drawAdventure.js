@@ -12,16 +12,14 @@ let currentViewIndex = 0;
 const vector = new Vector3(); // reuse this
 
 /**
- * Re‑positions a DOM label so it sits under a mesh **or** an arbitrary
- * world‑space point.
+ * Re‑positions a DOM label so it sits under a mesh **or** an arbitrary world‑space point.
  *
  * @param {THREE.Object3D|THREE.Vector3|{x:number,y:number,z:number}} anchor
  *        Either the object you want to track, OR just its position.
  * @param {HTMLElement} labelEl   The DOM element to move.
  * @param {THREE.Camera} camera   Scene camera.
  * @param {THREE.WebGLRenderer} renderer
- * @param {number} yOffset        How far (world units) below the anchor to show
- *                                the label.  Negative = downward.
+ * @param {number} yOffset        How far (world units) below the anchor to show the label.  Negative = downward.
  */
 function updateLabelPosition(anchor, labelEl, camera, renderer, yOffset = -1.8) {
     /* ---------------------------------------------------------------
@@ -203,9 +201,9 @@ function constructElement(document, tagName, id, attrs) {
 }
 
 
-function drawAdventure(scene, data, threejsDrawing) {
-    const use3dRenderer = true;
-    const css3DRenderer = use3dRenderer ? threejsDrawing.data.css3DRenderer : null;
+async function drawAdventure(scene, data, threejsDrawing) {
+    const use3DRenderer = !!threejsDrawing.data.use3DRenderer;
+    const css3DRenderer = use3DRenderer ? threejsDrawing.data.css3DRenderer : null;
     const {adventureSteps, allPhotoEntries} = buildSceneItems(scene, data.sceneItems, threejsDrawing.data.worldWidth, threejsDrawing.data.worldHeight, css3DRenderer);
 
     // build data.otherItems...
@@ -215,10 +213,11 @@ function drawAdventure(scene, data, threejsDrawing) {
         console.log('creating other item', item);
         const isVideo = item.video && item.video !== "";
         //const use3dRenderer = false;
-        const { mesh, labelObject } = createCaptionedItem(scene, item, isVideo, threejsDrawing.data.worldWidth, threejsDrawing.data.worldHeight, use3dRenderer);
+        const { mesh, labelObject } = createCaptionedItem(scene, item, isVideo, threejsDrawing.data.worldWidth, threejsDrawing.data.worldHeight, use3DRenderer);
         console.log('other item', mesh, labelObject);
         // Mesh gets added inside of function: scene.add(mesh);
-        if (use3dRenderer) {
+        if (use3DRenderer && css3DRenderer) {
+            console.log('-------- Adding labelObject to CSS3DRenderer scene');
             threejsDrawing.data.css3DRenderer.scene.add(labelObject);
         } else {
             scene.add(labelObject);
