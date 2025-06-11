@@ -5,7 +5,7 @@ import { BoxGeometry, MeshBasicMaterial, SphereGeometry } from 'three';
  */
 
 export default {
-    fontUrl: 'scripts/helvetiker_regular.typeface.json',
+    fontUrl: '/threejs/drawing/helvetiker_regular.typeface.json',
 
     surroundingBox: {
         geometry: (xSize, ySize, zSize) => new BoxGeometry(xSize, ySize, zSize),

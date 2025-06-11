@@ -148,7 +148,7 @@ function drawQuantumCallback(scene, threejsDrawing, font) {
 
 
 function drawQuantum(scene, threejsDrawing) {
-    const fontUrl = 'scripts/helvetiker_regular.typeface.json';
+    const fontUrl = 'scripts/threejs/helvetiker_regular.typeface.json';
     loadFont(fontUrl, (font) => {
         drawQuantumCallback(scene, threejsDrawing, font);
     });

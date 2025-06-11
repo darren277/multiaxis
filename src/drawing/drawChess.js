@@ -166,7 +166,7 @@ function drawChessCallback(scene, threejsDrawing, font) {
 
 function drawChess(scene, threejsDrawing) {
     const fontLoader = new FontLoader();
-    fontLoader.load('scripts/helvetiker_regular.typeface.json', (font) => {
+    fontLoader.load('scripts/threejs/helvetiker_regular.typeface.json', (font) => {
         drawChessCallback(scene, threejsDrawing, font);
     });
 }
