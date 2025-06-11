@@ -266,6 +266,7 @@ def serve_helvetiker():
 
 @app.route('/data/<path:filename>.<ext>')
 @app.route('/threejs/<path:filename>.<ext>')
+@app.route('/threejs/data/<path:filename>.<ext>')
 def serve_json(filename, ext):
     """
     Serve any .json file from the current directory or subdirs,
