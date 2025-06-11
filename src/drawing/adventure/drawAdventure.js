@@ -323,11 +323,9 @@ const adventureDrawing = {
         'use3DRenderer': true,
     },
     'sceneConfig': {
-        //'controller': 'none',
+        'controller': 'none',
         // when debugging...
-        'controller': 'orbital',
-        //'cssRenderer': '3D'
-        //'cssRendererEnabled': '3D',
+        //'controller': 'orbital','
         'cssRendererEnabled': 'DUAL',
         // looking slightly higher up...
         'lookAt': new Vector3(0, 1.5, 0),
