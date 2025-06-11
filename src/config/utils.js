@@ -19,7 +19,15 @@ const fileLoader = new FileLoader();
 
 
 const loadDataSource = (scene, dataSrc, drawFunc, state) => {
-    const jsonPath = `./data/${dataSrc}.json`;
+    let jsonPath;
+
+    // if dataSrc starts with 'home_', then replace it with 'threejs/'
+    if (dataSrc.startsWith('home_')) {
+        dataSrc = dataSrc.replace('home_', 'threejs/data/');
+        jsonPath = `./${dataSrc}.json`;
+    } else {
+        jsonPath = `./data/${dataSrc}.json`;
+    }
 
     fileLoader.load(
         jsonPath,
