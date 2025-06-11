@@ -12,6 +12,8 @@
     box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.5);
     text-shadow: 0.5px 0.5px 1px black;
     text-align: center;
+
+    transition: transform 1.5s ease-in-out;
 }
 
 .caption-label-3d {
@@ -178,7 +180,36 @@
     animation: bouncePulseCombo3d 4s ease-in-out infinite;
 }
 
+/*
 .caption-label-3d:hover {
     animation-play-state: paused;
     transform: translateY(-20px) scale(1.3) translateX(-50%);
+}
+*/
+
+.caption-label-3d {
+    transform: translate3d(-50%, 0, 0);
+    will-change: transform;
+    transition: transform 1.5s ease-in-out;
+}
+
+.caption-label-3d:hover {
+    animation-play-state: paused;
+    /* default hover transform, if needed */
+    transform: translate3d(-50%, -20px, 0) scale3d(1.3, 1.3, 1);
+}
+
+.caption-label-3d.left-banner:hover {
+    animation-play-state: paused;
+    transform: translate3d(-50%, -20px, 0) scale3d(1.3, 1.3, 1);
+}
+
+.caption-label-3d.right-banner:hover {
+    animation-play-state: paused;
+    transform: translate3d(-50%, 20px, 0) scale3d(1.3, 1.3, 1);
+}
+
+/* change on hover mouse cursor */
+.caption-label-3d:hover {
+    cursor: pointer;
 }
