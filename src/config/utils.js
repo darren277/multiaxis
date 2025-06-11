@@ -18,28 +18,14 @@ function determineLabelCoordinates(p1, p2, p3, radius) {
 const fileLoader = new FileLoader();
 
 
-const loadDataSource = (scene, dataSrc, drawFunc, state) => {
-    let jsonPath;
+async function loadDataSource(dataSrc) {
+    let path = dataSrc.startsWith('home_') ? dataSrc.replace('home_', 'threejs/data/') : `data/${dataSrc}`;
+    path = `./${path}.json`;
 
-    // if dataSrc starts with 'home_', then replace it with 'threejs/'
-    if (dataSrc.startsWith('home_')) {
-        dataSrc = dataSrc.replace('home_', 'threejs/data/');
-        jsonPath = `./${dataSrc}.json`;
-    } else {
-        jsonPath = `./data/${dataSrc}.json`;
-    }
-
-    fileLoader.load(
-        jsonPath,
-        (dataString) => {
-            const data = JSON.parse(dataString);
-            drawFunc(scene, data, state);
-        },
-        undefined, // onProgress
-        (err) => {
-            console.error(`Error loading ${jsonPath}`, err);
-        }
-    );
+    // FileLoader has a .loadAsync() that returns a Promise<string>
+    const loader = new FileLoader();
+    const raw = await loader.loadAsync(path);
+    return JSON.parse(raw);
 }
 
 function drawHelpers(scene, threejsDrawing) {

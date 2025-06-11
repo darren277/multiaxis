@@ -79,13 +79,7 @@ async function contentLoadedCallback(drawingName, threejsDrawing) {
 
     await prepareDrawingContext(threejsDrawing, scene, camera, renderer, controls, css2DRenderer, css3DRenderer, queryOptions);
 
-    for (const {func, dataSrc, dataType} of threejsDrawing.drawFuncs) {
-        if (dataSrc) {
-            loadThenDraw(scene, func, dataSrc, dataType, camera, threejsDrawing, dataSelected);
-        } else {
-            await func(scene, threejsDrawing);
-        }
-    }
+    await Promise.all(threejsDrawing.drawFuncs.map(({func, dataSrc, dataType}) => dataSrc ? loadThenDraw(scene, func, dataSrc, dataType, camera, threejsDrawing, dataSelected) : func(scene, threejsDrawing)));
 
     if (debugMode) {
         console.log('Debug mode enabled');
