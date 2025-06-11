@@ -56,41 +56,39 @@ export async function setupScene(
 
     if (css2DRendererEnabled) {
         console.log('CSS2DRenderer enabled');
-        importCSS2DRenderer().then(CSS2DRenderer => {
-            const css2DScene = new Scene();
-            css2DRenderer = new CSS2DRenderer();
-            css2DRenderer.scene = css2DScene;
-            css2DRenderer.setSize(container.clientWidth, container.clientHeight);
-            css2DRenderer.domElement.style.position = 'absolute';
-            css2DRenderer.domElement.style.top = container.offsetTop + 'px';
-            css2DRenderer.domElement.style.left = container.offsetLeft + 'px';
-            css2DRenderer.domElement.style.pointerEvents = 'none';
-            css2DRenderer.domElement.style.zIndex        = '10';   // ⟵ new
+        const CSS2DRenderer = await importCSS2DRenderer();
+        const css2DScene = new Scene();
+        css2DRenderer = new CSS2DRenderer();
+        css2DRenderer.scene = css2DScene;
+        css2DRenderer.setSize(container.clientWidth, container.clientHeight);
+        css2DRenderer.domElement.style.position = 'absolute';
+        css2DRenderer.domElement.style.top = container.offsetTop + 'px';
+        css2DRenderer.domElement.style.left = container.offsetLeft + 'px';
+        css2DRenderer.domElement.style.pointerEvents = 'none';
+        css2DRenderer.domElement.style.zIndex        = '10';   // ⟵ new
 
-            // place it *on top of* the existing WebGL canvas
-            container.appendChild(css2DRenderer.domElement);
-        });
+        // place it *on top of* the existing WebGL canvas
+        container.appendChild(css2DRenderer.domElement);
     }
 
     if (css3DRendererEnabled) {
         console.log('CSS3DRenderer enabled');
-        importCSS3DRenderer().then(CSS3DRenderer => {
-            const css3DScene = new Scene();
-            css3DRenderer = new CSS3DRenderer();
-            css3DRenderer.scene = css3DScene;
-            //cssRenderer.setSize(window.innerWidth, window.innerHeight);
-            css3DRenderer.setSize(container.clientWidth, container.clientHeight);
-            css3DRenderer.domElement.style.position = 'absolute';
-            css3DRenderer.domElement.style.top = container.offsetTop + 'px';
-            css3DRenderer.domElement.style.left = container.offsetLeft + 'px';
+        const CSS3DRenderer = await importCSS3DRenderer();
+        const css3DScene = new Scene();
+        css3DRenderer = new CSS3DRenderer();
+        css3DRenderer.scene = css3DScene;
+        //cssRenderer.setSize(window.innerWidth, window.innerHeight);
+        css3DRenderer.setSize(container.clientWidth, container.clientHeight);
+        css3DRenderer.domElement.style.position = 'absolute';
+        css3DRenderer.domElement.style.top = container.offsetTop + 'px';
+        css3DRenderer.domElement.style.left = container.offsetLeft + 'px';
 
-            css3DRenderer.domElement.style.pointerEvents = 'none';
+        css3DRenderer.domElement.style.pointerEvents = 'none';
 
-            // place it *on top of* the existing WebGL canvas
-            //document.body.appendChild(cssRenderer.domElement);
-            container.appendChild(css3DRenderer.domElement);
-            //cssRenderer.domElement.style.zIndex = 1;
-        });
+        // place it *on top of* the existing WebGL canvas
+        //document.body.appendChild(cssRenderer.domElement);
+        container.appendChild(css3DRenderer.domElement);
+        //cssRenderer.domElement.style.zIndex = 1;
     }
 
 
