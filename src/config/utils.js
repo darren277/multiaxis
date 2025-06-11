@@ -19,6 +19,9 @@ const fileLoader = new FileLoader();
 
 
 async function loadDataSource(dataSrc) {
+    if (!dataSrc || typeof dataSrc !== 'string') {
+        throw new Error(`Invalid data source provided. It must be a non-empty string. Received: ${dataSrc}`);
+    }
     let path = dataSrc.startsWith('home_') ? dataSrc.replace('home_', 'threejs/data/') : `data/${dataSrc}`;
     path = `./${path}.json`;
 
