@@ -4,7 +4,7 @@ import { CSS3DObject } from 'css3drenderer';
 import {onAdventureKeyDown, onClick} from './interactions.js';
 import {createCaptionedItem} from './createItems.js';
 import {drawAdventureElements} from './styleDefs.js';
-import { precomputeBackgroundPlanes } from './helpers.js';
+import { precomputeBackgroundPlanes, goToStep } from './helpers.js';
 
 let currentViewIndex = 0;
 
@@ -276,8 +276,28 @@ const adventureDrawing = {
             data.currentStepId = nextStepId;
         },
         'click': (e, other) => {
-            const {renderer, camera, scene} = other;
+            const {renderer, camera, scene, data, controls} = other;
             onClick(scene, renderer, camera, e);
+
+            const label = e.target.closest('.caption-label-3d, .label-child');
+
+            if (!label) return; // clicked outside of a label
+
+            // Always resolve the root label (in case we clicked on child)
+            const rootLabel = label.classList.contains('caption-label-3d') ? label : label.closest('.caption-label-3d');
+
+            if (!rootLabel || !rootLabel.dataset.direction) return;
+
+            const direction = rootLabel.dataset.direction;
+
+            const stepData = data.adventureSteps[data.currentStepId];
+            if (!stepData || !stepData.choices) return;
+
+            const nextStepId = stepData.choices[direction];
+            if (!nextStepId) return;
+
+            data.currentStepId = nextStepId;
+            goToStep(camera, nextStepId, data.adventureSteps, controls);
         },
     },
     'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {

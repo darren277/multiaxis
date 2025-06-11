@@ -86,7 +86,7 @@ function createVideoMeshOLD(item, worldWidth, worldHeight) {
     return object;
 }
 
-function create3DLabelWithAnimation(captionText, className) {
+function create3DLabelWithAnimation(captionText, className, dataAttributes = {}) {
     // Outer DIV that CSS3DRenderer will transform in 3D space
     const outerDiv = document.createElement('div');
     // No special styles here; let Three.js apply its inline transform
@@ -97,6 +97,16 @@ function create3DLabelWithAnimation(captionText, className) {
     labelEl.className = 'caption-label-3d ' + className; // for example
     //labelEl.textContent = captionText;
     labelEl.innerHTML = captionText;
+
+    // traverse tree and add `label-child` class to each child element
+    const children = labelEl.querySelectorAll('*');
+    children.forEach(child => {
+        child.classList.add('label-child');
+    });
+
+    for (const [key, value] of Object.entries(dataAttributes)) {
+        labelEl.setAttribute(key, value);
+    }
 
     // Put the animated label inside the outer container
     outerDiv.appendChild(labelEl);
@@ -139,11 +149,13 @@ function createCaptionedItem(scene, item, isVideo, worldWidth = null, worldHeigh
     labelEl.style.background = 'white';
     labelEl.style.fontFamily = 'sans-serif';
 
+    const dataAttributes = item.dataAttributes || {};
+
      if (use3dRenderer) {
         // -- 3D Caption with CSS3DRenderer --
 
         // Use the nested approach so animations don't conflict
-        const labelObject = create3DLabelWithAnimation(captionText, customClasses);
+        const labelObject = create3DLabelWithAnimation(captionText, customClasses, dataAttributes);
 
         // 1) figure out the mesh center in world‐space
         const basePos = mesh ? mesh.position.clone() : new Vector3(item.position.x, item.position.y, item.position.z);
@@ -165,6 +177,9 @@ function createCaptionedItem(scene, item, isVideo, worldWidth = null, worldHeigh
         return { mesh, labelObject, item }; // return the CSS3DObject
     } else {
         // -- 2D DOM Overlay --
+        if (dataAttributes.length > 0) {
+            labelEl.setAttribute('data-direction', value);
+        }
 
         const labelEl = document.createElement('div');
         labelEl.className = 'caption-label ' + customClasses;
