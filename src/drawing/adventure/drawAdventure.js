@@ -1,4 +1,4 @@
-import { Vector3, AmbientLight, DirectionalLight } from 'three'; // for any references you still need
+import { Vector3, AmbientLight, DirectionalLight, PlaneGeometry, Mesh, MeshBasicMaterial, TextureLoader } from 'three'; // for any references you still need
 import { CSS3DObject } from 'css3drenderer';
 
 import {onAdventureKeyDown, onClick} from './interactions.js';
@@ -169,6 +169,25 @@ Summary & Extensions
 */
 
 
+function drawMassiveBackdrop(scene) {
+    const bgLoader = new TextureLoader();
+
+    const position = [0.0, 0.0, -20.0];
+
+    const geo  = new PlaneGeometry(500, 500);
+    const mat  = new MeshBasicMaterial({
+        map: bgLoader.load("textures/8k_stars.jpg"),
+        depthWrite: false,    // so it never occludes your slides
+    });
+    const mesh = new Mesh(geo, mat);
+    mesh.position.set(position[0], position[1], position[2]);
+
+    // initially invisible
+    mesh.visible = false;
+
+    scene.add(mesh);
+}
+
 
 // labelContainerAttrs = {position: 'absolute', top: '0', left: '0', width: '100%', height: '100%', pointerEvents: 'none', zIndex: '1'};
 // labelContainerId = 'labelContainer'
@@ -225,6 +244,9 @@ function drawAdventure(scene, data, threejsDrawing) {
     scene.add(directionalLight);
 
     precomputeBackgroundPlanes(scene, threejsDrawing, threejsDrawing.data.renderer);
+
+    // Draw a massive backdrop
+    drawMassiveBackdrop(scene);
 }
 
 const adventureDrawing = {
