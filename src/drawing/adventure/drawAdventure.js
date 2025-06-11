@@ -69,14 +69,26 @@ function updateLabelPosition(anchor, labelEl, camera, renderer, yOffset = -1.8) 
 }
 
 
+const X = 0;
+//const X = 12;
+
+const Y = 0;
+//const Y = -12;
+
+//const Z = 6;
+const Z = 6; // 6 units in front of the item, along the negative Z axis
+
+const Y_FACTOR = 0; // Adjust this factor to position the camera above the item
 
 function vantagePointForItem(item) {
     // Where the item is
-    const itemPos = new Vector3(item.position.x, item.position.y, item.position.z);
+    const itemPos = new Vector3(item.position.x, item.position.y + Y_FACTOR, item.position.z);
+
+    console.log("Vantage point for item:", item.id, "at position", itemPos);
 
     // Define a small offset so the camera is in front of the plane
     // For example, 6 units “in front” along the negative Z axis
-    const offset = new Vector3(0, 0, 6);
+    const offset = new Vector3(X, Y, Z);
 
     // We'll assume the plane faces the camera’s negative Z by default
     // So the camera is itemPos + offset
@@ -295,6 +307,8 @@ const adventureDrawing = {
         //'cssRenderer': '3D'
         //'cssRendererEnabled': '3D',
         'cssRendererEnabled': 'DUAL',
+        // looking slightly higher up...
+        'lookAt': new Vector3(0, 1.5, 0),
     }
 }
 

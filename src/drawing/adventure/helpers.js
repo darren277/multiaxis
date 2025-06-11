@@ -2,10 +2,21 @@ import {Tween, Easing} from 'tween'
 import { PlaneGeometry, Mesh, MeshBasicMaterial, TextureLoader } from 'three';
 
 
-function tweenCameraToView(camera, view, duration = 2000) {
+function tweenCameraToView(camera, view, lookAt, duration = 2000) {
     new Tween(camera.position)
         .to({ x: view.position.x, y: view.position.y, z: view.position.z }, duration)
         .easing(Easing.Quadratic.Out)
+        .onUpdate(() => {
+            // continuously update aim as we move
+            camera.lookAt(lookAt);
+            camera.up.set(0,1,0);
+
+            // if you're using OrbitControls (or similar):
+//            if (controls) {
+//                controls.target.copy(lookAt);
+//                controls.update();
+//            }
+        })
         .start();
 
     // For lookAt, you could keep a separate vector and tween that,
@@ -30,7 +41,7 @@ function goToStep(camera, stepId, adventureSteps, controls) {
     }
 
     // Move camera
-    tweenCameraToView(camera, stepData.camera);
+    tweenCameraToView(camera, stepData.camera, stepData.camera.lookAt);
     camera.lookAt(stepData.camera.lookAt);
 
     // If using OrbitControls
