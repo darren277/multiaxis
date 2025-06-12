@@ -11,7 +11,8 @@
     "noEmit": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "lib": ["dom", "es2017", "dom.iterable", "scripthost"]
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]

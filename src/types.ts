@@ -19,11 +19,32 @@ type SceneConfig = {
     vrEnabled?: boolean
 };
 
+// TODO: Define a few of these more precisely.
+// Some drawings share the same attributes while some other do not.
+type DrawingData = {
+    staticBoxes?: any[];
+    movingMeshes?: any[];
+    obstacleBoxes?: any[];
+    worldMeshes?: any[];
+    collision?: any;
+    keyManager?: any;
+    [key: string]: any;
+};
+
+export interface ThreeJSDrawingEventContext {
+    camera: any;
+    data: DrawingData;
+    controls?: any;
+    renderer: any;
+    scene: any;
+}
+
 export {
-    ThreeJSDrawing
+    ThreeJSDrawing,
 };
 
 export type {
     QueryOptions,
-    SceneConfig
+    SceneConfig,
+    DrawingData,
 };

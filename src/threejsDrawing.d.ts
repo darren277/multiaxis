@@ -15,6 +15,7 @@ export interface DrawingEventMap {
     [eventType: string]: ((event: Event, stuff: { data: DrawingData }) => void) | undefined;
 }
 
+// animationCallback?: (renderer: any, timestamp: number, drawing: ThreeJSDrawing, camera: any) => void;
 export interface AnimationCallback {
     (renderer: THREE.Renderer, timestamp: number, drawing: ThreeJSDrawing, camera: THREE.Camera): void;
 }
@@ -38,8 +39,10 @@ export interface SceneConfig {
 export interface ThreeJSDrawing {
     sceneElements: SceneElement[];
     drawFuncs: DrawFunc[];
-    eventListeners: DrawingEventMap;
+    //eventListeners: DrawingEventMap;
     animationCallback: AnimationCallback;
     data: DrawingData;
     sceneConfig?: SceneConfig;
+    //drawFuncs: Array<{ func: Function, dataSrc?: string, dataType?: string }>;
+    eventListeners?: { [eventName: string]: (e: Event, context: { data: DrawingData, controls?: any, renderer?: any, scene?: any }) => void };
 }

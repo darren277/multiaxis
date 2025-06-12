@@ -153,10 +153,11 @@ async function contentLoadedCallback(drawingName: String, threejsDrawing: ThreeJ
 
     // Add any event listeners from the threejsDrawing
     if (threejsDrawing.eventListeners) {
-        // @ts-ignore-next-line
         for (const [eventName, eventFunc] of Object.entries(threejsDrawing.eventListeners)) {
             window.addEventListener(eventName, (e) => {
-                eventFunc(e, {camera, data: threejsDrawing.data, controls, renderer, scene});
+                if (typeof eventFunc === 'function') {
+                    eventFunc(e, {data: threejsDrawing.data, controls, renderer, scene});
+                }
             });
         }
     }
