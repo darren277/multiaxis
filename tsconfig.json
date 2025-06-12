@@ -4,6 +4,7 @@
     "module": "esnext",
     "moduleResolution": "node",
     "outDir": "dist",
+    "allowJs": true,
     "isolatedModules": true,
     "esModuleInterop": true,
     "strict": true,
