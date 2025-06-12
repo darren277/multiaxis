@@ -1,6 +1,7 @@
 import { drawHouses } from './drawHouse.js';
 import { drawSun } from './drawLights.js';
 import { createPerlinGrassTexture } from './drawGround.js';
+// @ts-ignore-next-line
 import * as THREE from 'three';
 import { onKeyDownWalking, onKeyUpWalking, updateObstacleBoxes, walkingAnimationCallback } from '../config/walking.js';
 import { instantiateCollision } from '../config/instantiateCollision.js';
@@ -13,11 +14,14 @@ function drawTown(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
     //const floor = new Mesh(floorGeometry, grassMaterial);
     //const floor = new Mesh(floorGeometry, new MeshStandardMaterial({map: createGrassTexture()}));
     threejsDrawing.data.floor = new THREE.Mesh(floorGeometry, new THREE.MeshStandardMaterial({map: createPerlinGrassTexture()}));
-    threejsDrawing.data.floor.userData.isGround = true;
+    (threejsDrawing.data.floor as THREE.Mesh).userData.isGround = true;
+    if (!threejsDrawing.data.worldMeshes) {
+        threejsDrawing.data.worldMeshes = [];
+    }
     threejsDrawing.data.worldMeshes.push(threejsDrawing.data.floor);
 
-    threejsDrawing.data.floor.rotation.x = -Math.PI / 2;
-    threejsDrawing.data.floor.receiveShadow = true;
+    (threejsDrawing.data.floor as THREE.Mesh).rotation.x = -Math.PI / 2;
+    (threejsDrawing.data.floor as THREE.Mesh).receiveShadow = true;
 
     scene.add(threejsDrawing.data.floor);
 
@@ -40,8 +44,8 @@ function animateTown(
     threejsDrawing: ThreeJSDrawing,
     camera: THREE.Camera
 ) {
-    const scene = threejsDrawing.data.scene;
-    const controls = threejsDrawing.data.controls;
+    const scene = threejsDrawing.data.scene as THREE.Scene;
+    const controls = threejsDrawing.data.controls as { object: THREE.Object3D };
     if (!controls) {
         console.warn('No controls found.');
         return;
@@ -67,29 +71,39 @@ function animateTown(
     walkingAnimationCallback(scene, controls, threejsDrawing.data.collision, elapsed, true);
 }
 
+function animationCallback(
+    renderer: THREE.Renderer,
+    timestamp: number,
+    threejsDrawing: ThreeJSDrawing,
+    camera: THREE.Camera
+) {
+    if (!threejsDrawing.data.ready) return;
+    if (!threejsDrawing.data.staticBoxes || !threejsDrawing.data.movingMeshes || !threejsDrawing.data.worldMeshes) {
+        console.warn('No static boxes, moving meshes, or world meshes found.');
+        return;
+    }
+    animateTown(renderer, timestamp, threejsDrawing, camera);
+}
 
 const townDrawing: { [key: string]: () => Promise<ThreeJSDrawing> } = {
-    'sceneElements': [],
+    'sceneElements': async () => Promise.resolve({} as ThreeJSDrawing),
     'drawFuncs': [
         {'func': drawTown, 'dataSrc': null}
     ],
     'eventListeners': {
-        'keydown': (event, stuff) => {
+        'keydown': (
+            event: KeyboardEvent,
+            stuff: { data: { keyManager: any } }
+        ) => {
             const keyManager = stuff.data.keyManager;
             onKeyDownWalking(event, keyManager);
         },
-        'keyup': (event, stuff) => {
+        'keyup': (event: KeyboardEvent, stuff: { data: { keyManager: any } }) => {
             const keyManager = stuff.data.keyManager;
             onKeyUpWalking(event, keyManager);
         },
     },
-    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
-        if (!threejsDrawing.data.staticBoxes || !threejsDrawing.data.movingMeshes || !threejsDrawing.data.worldMeshes) {
-            console.warn('No static boxes, moving meshes, or world meshes found.');
-            return;
-        }
-        animateTown(renderer, timestamp, threejsDrawing, camera);
-    },
+    'animationCallback': animationCallback,
     'data': {
         'staticBoxes': [],
         'movingMeshes': [],
