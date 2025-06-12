@@ -1,4 +1,4 @@
-import { setupScene } from './config/sceneSetup.js';
+import { defaultSceneConfig, setupScene } from './config/sceneSetup.js';
 import { ClickAndKeyControls } from './config/clickControlHelper.js';
 import { prepareDrawingContext, drawHelpers, parseQueryParams } from './config/utils.js';
 import { loadThenDraw } from './config/loadThenDraw.js';
@@ -79,7 +79,10 @@ async function contentLoadedCallback(drawingName: String, threejsDrawing: ThreeJ
 
     const debugMode: Boolean = (DEBUG) || queryOptions.debug === true;
 
-    const sceneConfig = threejsDrawing.sceneConfig || {};
+    // Define the default scene config with all required properties
+
+    // Merge threejsDrawing.sceneConfig with defaults
+    let sceneConfig = { ...defaultSceneConfig, ...(threejsDrawing.sceneConfig || {}) };
 
     if (queryOptions) {
         if (queryOptions.controls && queryOptions.controls === 'walking') {
@@ -101,13 +104,20 @@ async function contentLoadedCallback(drawingName: String, threejsDrawing: ThreeJ
 
     const outlineEffectEnabled = sceneConfig && sceneConfig.outlineEffect || false;
 
-    // @ts-ignore-next-line
-    let { scene, camera, renderer, controls, stats, css2DRenderer, css3DRenderer } = await setupScene('c', threejsDrawing.sceneElements, sceneConfig);
+    let { scene, camera, renderer, controls, stats, css2DRenderer, css3DRenderer } = await setupScene('c', threejsDrawing.sceneElements, sceneConfig) as {
+        scene: any,
+        camera: any,
+        renderer: any,
+        controls?: any,
+        stats?: { update: () => void },
+        css2DRenderer?: any,
+        css3DRenderer?: any
+    };
 
     await prepareDrawingContext(threejsDrawing, scene, camera, renderer, controls, css2DRenderer, css3DRenderer, queryOptions);
 
     // @ts-ignore-next-line
-    await Promise.all(threejsDrawing.drawFuncs.map(({func, dataSrc, dataType}) => dataSrc ? loadThenDraw(scene, func, dataSrc, dataType, camera, threejsDrawing, dataSelected) : func(scene, threejsDrawing)));
+    await Promise.all(threejsDrawing.drawFuncs.map(({func, dataSrc, dataType}) => dataSrc ? loadThenDraw(scene, func, dataSrc, dataType ?? undefined, camera, threejsDrawing, dataSelected) : func(scene, threejsDrawing)));
 
     if (debugMode) {
         console.log('Debug mode enabled');
@@ -151,8 +161,9 @@ async function contentLoadedCallback(drawingName: String, threejsDrawing: ThreeJ
         }
     }
 
+    let effect: OutlineEffect | undefined = undefined;
     if (outlineEffectEnabled) {
-        const effect = new OutlineEffect(renderer);
+        effect = new OutlineEffect(renderer);
     }
 
     renderer.setAnimationLoop((
@@ -174,7 +185,6 @@ async function contentLoadedCallback(drawingName: String, threejsDrawing: ThreeJ
         tweenUpdate();
 
         if (stats) {
-            // @ts-ignore-next-line
             stats.update();
         }
 
@@ -188,8 +198,7 @@ async function contentLoadedCallback(drawingName: String, threejsDrawing: ThreeJ
             css3DRenderer.render(css3DRenderer.scene, camera);
         }
 
-        if (outlineEffectEnabled) {
-            // @ts-ignore-next-line
+        if (outlineEffectEnabled && effect) {
             effect.render(scene, camera);
         }
     });

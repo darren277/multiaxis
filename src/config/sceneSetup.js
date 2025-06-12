@@ -4,7 +4,7 @@ import {
     importVRButton, importStats
 } from './dynamicImports.js';
 
-const defaultSceneConfig = {
+export const defaultSceneConfig = {
     startPosition: { x: 0, y: 2, z: 5 },
     lookAt: { x: 0, y: 0, z: 0 },
     clippingPlane: 1000,
@@ -12,7 +12,8 @@ const defaultSceneConfig = {
     controller: 'orbital',
     cssRendererEnabled: false,
     statsEnabled: false,
-    vrEnabled: false
+    vrEnabled: false,
+    outlineEffect: false
 }
 
 export async function setupScene(
