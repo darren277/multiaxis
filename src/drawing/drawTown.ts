@@ -1,16 +1,18 @@
 import { drawHouses } from './drawHouse.js';
 import { drawSun } from './drawLights.js';
 import { createPerlinGrassTexture } from './drawGround.js';
-import { PlaneGeometry, Mesh, MeshStandardMaterial } from 'three';
+import * as THREE from 'three';
 import { onKeyDownWalking, onKeyUpWalking, updateObstacleBoxes, walkingAnimationCallback } from '../config/walking.js';
 import { instantiateCollision } from '../config/instantiateCollision.js';
+import { ThreeJSDrawing } from '../types.js';
+import { animateElevator } from './drawRoom.js';
 
 
-function drawTown(scene, threejsDrawing) {
-    const floorGeometry = new PlaneGeometry(200, 200);
+function drawTown(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
+    const floorGeometry = new THREE.PlaneGeometry(200, 200);
     //const floor = new Mesh(floorGeometry, grassMaterial);
     //const floor = new Mesh(floorGeometry, new MeshStandardMaterial({map: createGrassTexture()}));
-    threejsDrawing.data.floor = new Mesh(floorGeometry, new MeshStandardMaterial({map: createPerlinGrassTexture()}));
+    threejsDrawing.data.floor = new THREE.Mesh(floorGeometry, new THREE.MeshStandardMaterial({map: createPerlinGrassTexture()}));
     threejsDrawing.data.floor.userData.isGround = true;
     threejsDrawing.data.worldMeshes.push(threejsDrawing.data.floor);
 
@@ -32,7 +34,12 @@ function drawTown(scene, threejsDrawing) {
 
 let lastTime = 0;
 
-function animateTown(renderer, timestamp, threejsDrawing, camera) {
+function animateTown(
+    renderer: THREE.Renderer,
+    timestamp: number,
+    threejsDrawing: ThreeJSDrawing,
+    camera: THREE.Camera
+) {
     const scene = threejsDrawing.data.scene;
     const controls = threejsDrawing.data.controls;
     if (!controls) {
@@ -61,7 +68,7 @@ function animateTown(renderer, timestamp, threejsDrawing, camera) {
 }
 
 
-const townDrawing = {
+const townDrawing: { [key: string]: () => Promise<ThreeJSDrawing> } = {
     'sceneElements': [],
     'drawFuncs': [
         {'func': drawTown, 'dataSrc': null}
