@@ -1,6 +1,8 @@
 *venv*
 .idea/
 
+node_modules/
+
 # For locally hosted or experimental animations.
 animations_local.py
 src/textures/*_local*
