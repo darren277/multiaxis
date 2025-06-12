@@ -1,15 +1,9 @@
 import { setupScene } from './config/sceneSetup.js';
-import { attachUIListeners } from './config/attachUIListeners.js';
 import { ClickAndKeyControls } from './config/clickControlHelper.js';
-import { drawImage } from './drawing/drawImage.js';
-import { loadDataSource, pixelToWorldUnits, prepareDrawingContext, drawHelpers, parseQueryParams } from './config/utils.js';
+import { prepareDrawingContext, drawHelpers, parseQueryParams } from './config/utils.js';
 import { loadThenDraw } from './config/loadThenDraw.js';
 import { OutlineEffect } from 'outline-effect';
-import { usePanoramicCubeBackground, useProceduralBackground, usePanoramicCubeBackgroundSixFaces } from './drawing/drawBackground.js';
-import uiPanelConfig from './config/uiPanelConfig.js';
 import { drawNavCubes, onClickNav, ALL_CUBE_DEFS } from './config/navigation.js';
-import { TextureLoader, FileLoader } from 'three';
-import { BoxGeometry, Mesh, MeshNormalMaterial, GridHelper, FloatType } from 'three';
 import {update as tweenUpdate} from 'tween'
 
 import { REVISION } from 'three';
@@ -17,7 +11,6 @@ console.log('Three.js version (main):', REVISION);
 import { THREEJS_DRAWINGS } from './drawings.js';
 
 const DEBUG = false;
-const textureLoader = new TextureLoader();
 
 document.addEventListener('DOMContentLoaded', () => {
     const drawingName = document.querySelector('meta[name="threejs_drawing_name"]').content;
