@@ -85,7 +85,7 @@ function animationCallback(
     animateTown(renderer, timestamp, threejsDrawing, camera);
 }
 
-const townDrawing: { [key: string]: () => Promise<ThreeJSDrawing> } = {
+const townDrawing = {
     'sceneElements': async () => Promise.resolve({} as ThreeJSDrawing),
     'drawFuncs': [
         {'func': drawTown, 'dataSrc': null}

@@ -8,7 +8,7 @@ import { drawNavCubes, onClickNav, ALL_CUBE_DEFS } from './config/navigation.js'
 // @ts-ignore-next-line
 import {update as tweenUpdate} from 'tween'
 
-import { QueryOptions, ThreeJSDrawing } from './types';
+import { QueryOptions, ThreeJSDrawing, ALL_CUBE_DEFS as ALL_CUBE_DEFS_TYPE } from './types';
 // @ts-ignore-next-line
 import { REVISION } from 'three';
 console.log('Three.js version (main):', REVISION);
@@ -42,8 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.warn(`Error loading drawing ${drawingName}:`, error);
         console.log('Trying local drawings...');
         import('./drawings_local.js').then(({ LOCAL_THREEJS_DRAWINGS }) => {
-            // @ts-ignore-next-line
-            const localDrawing: () => Promise<ThreeJSDrawing> = LOCAL_THREEJS_DRAWINGS[drawingName];
+            const localDrawing: (() => Promise<ThreeJSDrawing>) | undefined = (LOCAL_THREEJS_DRAWINGS as unknown as Record<string, () => Promise<ThreeJSDrawing>>)[drawingName];
             if (!localDrawing) {
                 console.error(`No local drawing found for ${drawingName}`);
                 return;
@@ -61,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 })
 
-async function contentLoadedCallback(drawingName: String, threejsDrawing: ThreeJSDrawing) {
+async function contentLoadedCallback(drawingName: string, threejsDrawing: ThreeJSDrawing) {
     const dataSelectedMeta = document.querySelector('meta[name="data_selected"]');
     if (!dataSelectedMeta) {
         console.error('Meta tag "data_selected" not found.');
@@ -77,7 +76,7 @@ async function contentLoadedCallback(drawingName: String, threejsDrawing: ThreeJ
 
     const queryOptions: QueryOptions = parseQueryParams(window.location.search);
 
-    const debugMode: Boolean = (DEBUG) || queryOptions.debug === true;
+    const debugMode: boolean = (DEBUG) || queryOptions.debug === true;
 
     // Define the default scene config with all required properties
 
@@ -135,9 +134,8 @@ async function contentLoadedCallback(drawingName: String, threejsDrawing: ThreeJ
     // NAV CUBE //
     //drawNavCubes(scene, threejsDrawing, CUBE_DEFS);
     if (queryOptions.nav) {
-        // @ts-ignore-next-line
-        const cubeDefs = ALL_CUBE_DEFS[drawingName];
-        // @ts-ignore-next-line
+        const allCubeDefs = ALL_CUBE_DEFS as ALL_CUBE_DEFS_TYPE
+        const cubeDefs = allCubeDefs[drawingName];
         drawNavCubes(scene, threejsDrawing, cubeDefs, debugMode);
     }
 

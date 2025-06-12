@@ -1,4 +1,5 @@
 import type { ThreeJSDrawing } from './threejsDrawing.d.ts';
+import type { ALL_CUBE_DEFS } from './config/navigation.js';
 
 type QueryOptions = {
     debug?: boolean;
@@ -48,3 +49,5 @@ export type {
     SceneConfig,
     DrawingData,
 };
+
+export type ALL_CUBE_DEFS = { [key: string]: any };
