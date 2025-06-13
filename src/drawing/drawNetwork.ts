@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { forceSimulation, forceManyBody, forceLink, forceCenter, forceX, forceY, forceZ } from 'd3-force-3d';
 import { hierarchy, tree } from 'd3-hierarchy';
-import { Tween, Easing } from 'tween';
+import TWEEN from '@tweenjs/tween.js'
 
 
 const FLOOR_Y = 0.5; // height of the ground plane
@@ -17,7 +17,7 @@ type TweenFunctionParams = {
 function tweenCamera(camera: THREE.Camera, { controls, toPos, lookAt, duration = 3000 }: TweenFunctionParams, p0: { x: number | undefined; y: number; z: number | undefined; }, p1: null) {
     const from = {x: camera.position.x, y: camera.position.y, z: camera.position.z};
 
-    new Tween(from).to(toPos, duration).easing(Easing.Quadratic.InOut)
+    new TWEEN.Tween(from).to(toPos, duration).easing(TWEEN.Easing.Quadratic.InOut)
         .onUpdate(() => {
             camera.position.set(from.x, from.y, from.z);
             controls?.update();

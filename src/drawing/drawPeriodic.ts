@@ -1,7 +1,7 @@
 /* Adapted from https://github.com/mrdoob/three.js/blob/master/examples/css3d_periodictable.html */
 
 import * as THREE from 'three';
-import { Tween, Easing, removeAll } from 'tween';
+import TWEEN from '@tweenjs/tween.js'
 import { CSS3DRenderer, CSS3DObject } from 'three/examples/jsm/renderers/CSS3DRenderer.js';
 
 const vector = new THREE.Vector3();
@@ -186,19 +186,19 @@ function drawButtons(scene: THREE.Scene, objects: any[], targets: any) {
 }
 
 function transform(targets: any[], objects: any[], duration: number) {
-    removeAll();
+    TWEEN.removeAll();
 
     for (let i = 0; i < objects.length; i++) {
         const object = objects[i];
         const target = targets[i];
 
-        new Tween(object.position)
+        new TWEEN.Tween(object.position)
             .to({x: target.position.x, y: target.position.y, z: target.position.z}, Math.random() * duration + duration)
-            .easing(Easing.Exponential.InOut).start();
+            .easing(TWEEN.Easing.Exponential.InOut).start();
 
-        new Tween(object.rotation)
+        new TWEEN.Tween(object.rotation)
             .to({x: target.rotation.x, y: target.rotation.y, z: target.rotation.z}, Math.random() * duration + duration)
-            .easing(Easing.Exponential.InOut).start();
+            .easing(TWEEN.Easing.Exponential.InOut).start();
     }
 }
 

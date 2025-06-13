@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { Tween, Easing } from 'tween';
+import TWEEN from '@tweenjs/tween.js'
 import { ThreeJSDrawing } from "../threejsDrawing";
 
 const cardWidth = 2.5;
@@ -278,13 +278,13 @@ function animateCardSwap(card: THREE.Mesh, targetPos: THREE.Vector3, onComplete?
     const liftHeight = 0.5; // how high to lift the card
 
     // 1) Lift up
-    const liftTween = new Tween(card.position).to({ y: card.position.y + liftHeight }, 300).easing(Easing.Cubic.Out);
+    const liftTween = new TWEEN.Tween(card.position).to({ y: card.position.y + liftHeight }, 300).easing(TWEEN.Easing.Cubic.Out);
 
     // 2) Move horizontally
-    const moveTween = new Tween(card.position).to({ x: targetPos.x, z: targetPos.z }, 600).easing(Easing.Cubic.InOut);
+    const moveTween = new TWEEN.Tween(card.position).to({ x: targetPos.x, z: targetPos.z }, 600).easing(TWEEN.Easing.Cubic.InOut);
 
     // 3) Drop down
-    const dropTween = new Tween(card.position).to({ y: targetPos.y }, 300).easing(Easing.Cubic.In);
+    const dropTween = new TWEEN.Tween(card.position).to({ y: targetPos.y }, 300).easing(TWEEN.Easing.Cubic.In);
 
     // Chain them together: lift -> move -> drop
     liftTween.chain(moveTween);
@@ -408,10 +408,10 @@ function dealOneCard(cards: THREE.Mesh[], cfg: any) {
     // rotate another 90 degrees around Y
 
     // Animate position
-    new Tween(card.position).to({ x: 0, y: 0, z: newZPos}, 1000).easing(Easing.Quadratic.InOut).start();
+    new TWEEN.Tween(card.position).to({ x: 0, y: 0, z: newZPos}, 1000).easing(TWEEN.Easing.Quadratic.InOut).start();
 
     // Animate rotation (Y only)
-    new Tween(card.rotation).to({ x: newRot.x, y: newRot.y, z: newRot.z }, 1000).easing(Easing.Quadratic.InOut).start();
+    new TWEEN.Tween(card.rotation).to({ x: newRot.x, y: newRot.y, z: newRot.z }, 1000).easing(TWEEN.Easing.Quadratic.InOut).start();
 }
 
 

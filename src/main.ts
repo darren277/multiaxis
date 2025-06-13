@@ -6,7 +6,7 @@ import { loadThenDraw } from './config/loadThenDraw.js';
 import { OutlineEffect } from 'outline-effect';
 import { drawNavCubes, onClickNav, ALL_CUBE_DEFS } from './config/navigation.js';
 // @ts-ignore-next-line
-import {update as tweenUpdate} from 'tween'
+import {update as tweenUpdate} from '@tweenjs/tween.js'
 
 import { QueryOptions, ThreeJSDrawing, ALL_CUBE_DEFS as ALL_CUBE_DEFS_TYPE } from './types';
 // @ts-ignore-next-line

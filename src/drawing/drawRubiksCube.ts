@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { Tween, Easing } from 'tween';
+import TWEEN from '@tweenjs/tween.js'
 import { ThreeJSDrawing } from "../types";
 
 type ColorKey = 'white' | 'yellow' | 'red' | 'orange' | 'green' | 'blue' | 'black';
@@ -82,11 +82,11 @@ function rotateFace(scene: THREE.Scene, cubelets: THREE.Mesh[], axis: 'x' | 'y' 
     );
 
     // Animate rotation (optional)
-    new Tween(faceGroup.rotation)
+    new TWEEN.Tween(faceGroup.rotation)
         .to({
             [axis]: faceGroup.rotation[axis] + angle
         }, 300)
-        .easing(Easing.Quadratic.InOut)
+        .easing(TWEEN.Easing.Quadratic.InOut)
         .onComplete(() => {
             // Unparent cubelets
             faceCubelets.forEach(cubelet => {

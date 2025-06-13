@@ -1,12 +1,12 @@
-import {Tween, Easing} from 'tween'
+import TWEEN from '@tweenjs/tween.js'
 import * as THREE from 'three';
 import { ThreeJSDrawing } from '../../threejsDrawing';
 
 
 function tweenCameraToView(camera: THREE.Camera, view: { position: THREE.Vector3 }, lookAt: THREE.Vector3, duration = 2000) {
-    new Tween(camera.position)
+    new TWEEN.Tween(camera.position)
         .to({ x: view.position.x, y: view.position.y, z: view.position.z }, duration)
-        .easing(Easing.Quadratic.Out)
+        .easing(TWEEN.Easing.Quadratic.Out)
         .onUpdate(() => {
             // continuously update aim as we move
             camera.lookAt(lookAt);

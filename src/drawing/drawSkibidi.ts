@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { drawBasicLights, drawSun } from './reusables/drawLights';
-import { Tween, Easing } from 'tween';
+import TWEEN from '@tweenjs/tween.js'
 import { ThreeJSDrawing } from "../types";
 
 
@@ -11,7 +11,7 @@ const loader = new THREE.TextureLoader();
 
 // angryMouth.position.set(0, 0.1, 0.25); // front of face
 // yourHeadMesh.add(angryMouth); // stick it to the head
-// new Tween(angryMouth.scale).to({ y: 1.5 }, 300).yoyo(true).repeat(1).start();
+// new TWEEN.Tween(angryMouth.scale).to({ y: 1.5 }, 300).yoyo(true).repeat(1).start();
 
 
 // Alternatively:
@@ -211,7 +211,7 @@ function animateMeshes(meshes: THREE.Mesh[]) {
     const proxy = { z: 0, ry: 0, s: 1 };
 
     // Forward tween: move out, spin, grow
-    const forward = new Tween(proxy).to({ z: 0.5, ry: Math.PI * 2, s: 1.5 }, duration).easing(Easing.Quadratic.InOut).onUpdate(() => {
+    const forward = new TWEEN.Tween(proxy).to({ z: 0.5, ry: Math.PI * 2, s: 1.5 }, duration).easing(TWEEN.Easing.Quadratic.InOut).onUpdate(() => {
         meshes.forEach(m => {
             m.position.z = proxy.z;
             m.rotation.y = proxy.ry;
@@ -220,7 +220,7 @@ function animateMeshes(meshes: THREE.Mesh[]) {
     }).onComplete(() => backward.start()).start();
 
     // Backward tween: return to identity
-    const backward = new Tween(proxy).to({ z: 0, ry: 0, s: 1 }, duration).easing(Easing.Quadratic.InOut).onUpdate(() => {
+    const backward = new TWEEN.Tween(proxy).to({ z: 0, ry: 0, s: 1 }, duration).easing(TWEEN.Easing.Quadratic.InOut).onUpdate(() => {
         meshes.forEach(m => {
             m.position.z = proxy.z;
             m.rotation.y = proxy.ry;
@@ -242,7 +242,7 @@ function animateStretchingMeshes(camera: THREE.Camera, meshes: THREE.Mesh[]) {
 
     const proxy = { stretch: 1 };
 
-    new Tween(proxy).to({ stretch: 2.0 }, 3000).easing(Easing.Quadratic.InOut).onUpdate(() => {
+    new TWEEN.Tween(proxy).to({ stretch: 2.0 }, 3000).easing(TWEEN.Easing.Quadratic.InOut).onUpdate(() => {
         for (let i = 0; i < position.count; i++) {
             const z = originalZ[i];
             // only affect the neck (e.g., vertices below Z=0.3)
@@ -257,31 +257,31 @@ function animateStretchingMeshes(camera: THREE.Camera, meshes: THREE.Mesh[]) {
       }).start();
 
     // also increase vertical scale...
-    new Tween(mesh.scale).to({ z: 2.0 }, 3000).easing(Easing.Quadratic.InOut).start();
+    new TWEEN.Tween(mesh.scale).to({ z: 2.0 }, 3000).easing(TWEEN.Easing.Quadratic.InOut).start();
     // ...and return to normal
-    new Tween(mesh.scale).to({ z: 1 }, 3000).delay(3000).easing(Easing.Quadratic.InOut).start();
+    new TWEEN.Tween(mesh.scale).to({ z: 1 }, 3000).delay(3000).easing(TWEEN.Easing.Quadratic.InOut).start();
     // ...and return to normal
 
     // decrease vertical position...
-    new Tween(mesh.position).to({ z: -1.0 }, 3000).easing(Easing.Quadratic.InOut).start();
+    new TWEEN.Tween(mesh.position).to({ z: -1.0 }, 3000).easing(TWEEN.Easing.Quadratic.InOut).start();
     // ...and return to normal
-    new Tween(mesh.position).to({ z: 0 }, 3000).delay(3000).easing(Easing.Quadratic.InOut).start();
+    new TWEEN.Tween(mesh.position).to({ z: 0 }, 3000).delay(3000).easing(TWEEN.Easing.Quadratic.InOut).start();
 
     // Head wobble...
     const proxy1 = { ry: 0 };
-    new Tween(proxy1).to({ ry: Math.PI / 64 }, 400).yoyo(true).repeat(2).onUpdate(() => mesh.rotation.y = proxy1.ry).start();
+    new TWEEN.Tween(proxy1).to({ ry: Math.PI / 64 }, 400).yoyo(true).repeat(2).onUpdate(() => mesh.rotation.y = proxy1.ry).start();
 
     // Sudden camera zoom...
-    //new Tween(camera.position).to({ z: 2 }, 300).easing(Easing.Back.Out).yoyo(true).repeat(1).start();
+    //new TWEEN.Tween(camera.position).to({ z: 2 }, 300).easing(TWEEN.Easing.Back.Out).yoyo(true).repeat(1).start();
 }
 
 function animateMouth(mouthPlane: THREE.Mesh) {
     // Animate the expression
-    //new Tween(mouthPlane.scale).to({ y: 1.5 }, 300).yoyo(true).repeat(2).start();
+    //new TWEEN.Tween(mouthPlane.scale).to({ y: 1.5 }, 300).yoyo(true).repeat(2).start();
 
     // Or animate it mouth-opening-style:
     // squash
-    new Tween(mouthPlane.scale).to({ y: 0.01 }, 200).yoyo(true).repeat(1).start();
+    new TWEEN.Tween(mouthPlane.scale).to({ y: 0.01 }, 200).yoyo(true).repeat(1).start();
 }
 
 const clock = new THREE.Clock();

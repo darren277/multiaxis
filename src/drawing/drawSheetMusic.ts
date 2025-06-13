@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 import { drawBasicLights } from './reusables/drawLights';
-import { Tween, Easing } from 'tween';
+import TWEEN from '@tweenjs/tween.js'
 
 import { AudioListener, Audio, AudioLoader } from 'three';
 import { ThreeJSDrawing } from "../types";
@@ -213,14 +213,14 @@ function onKeyClick(keyMesh: THREE.Mesh) {
     const originalZ = keyMesh.position.z;
 
     // Animate down
-    new Tween(keyMesh.position)
+    new TWEEN.Tween(keyMesh.position)
         .to({ z: originalZ - keyZdelta }, 100)
-        .easing(Easing.Quadratic.Out)
+        .easing(TWEEN.Easing.Quadratic.Out)
         .onComplete(() => {
             // Animate up
-            new Tween(keyMesh.position)
+            new TWEEN.Tween(keyMesh.position)
                 .to({ z: originalZ }, 100)
-                .easing(Easing.Quadratic.In)
+                .easing(TWEEN.Easing.Quadratic.In)
                 .start();
         })
         .start();
