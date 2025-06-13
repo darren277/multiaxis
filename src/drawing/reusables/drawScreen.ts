@@ -1,9 +1,23 @@
-import {
-    PlaneGeometry, Mesh, MeshBasicMaterial, MeshNormalMaterial, DoubleSide, Vector2, Vector3, Quaternion, Euler,
-    Raycaster, TextureLoader, Frustum, Matrix4, Box3
-} from 'three';
+import * as THREE from "three";
 
 import { CSS3DObject } from 'css3drenderer';
+
+type Screen = {
+    mesh: THREE.Mesh;
+    css: CSS3DObject;
+    pickPlane: THREE.Mesh;
+};
+
+type ScreenParams = {
+    webglScene: THREE.Scene;
+    cssScene: THREE.Scene;
+    url: string;
+    thumbnail: string;
+    width?: number;
+    height?: number;
+    position?: THREE.Vector3;
+    rotation?: THREE.Euler;
+};
 
 /**
  * Adds a black WebGL plane *and* a CSS3D iframe that rides on top of it.
@@ -27,16 +41,16 @@ function drawScreen(
     thumbnail,
     width = 25,
     height = 15,
-    position = new Vector3(0, 5, -98),
-    rotation = new Euler(0, 0, 0)
+    position = new THREE.Vector3(0, 5, -98),
+    rotation = new THREE.Euler(0, 0, 0)
 ) {
-    const texLoader = new TextureLoader();
+    const texLoader = new THREE.TextureLoader();
     const tex       = texLoader.load(thumbnail);
 
     /* ---------- 1. WebGL “screen” for lighting & occlusion ---------- */
-    const geom = new PlaneGeometry(width, height);
-    const mat  = new MeshBasicMaterial({ map: tex, side: DoubleSide });
-    const mesh = new Mesh(geom, mat);
+    const geom = new THREE.PlaneGeometry(width, height);
+    const mat  = new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide });
+    const mesh = new THREE.Mesh(geom, mat);
     mesh.position.copy(position);
     mesh.rotation.copy(rotation);
     webglScene.add(mesh);
@@ -71,9 +85,9 @@ function drawScreen(
 //        iframe.style.visibility = (hit && hit.object === mesh) ? 'visible' : 'hidden';
 //    }
 
-    const pickPlane = new Mesh(
-        new PlaneGeometry(width * 1.4, height * 1.4), // 40% margin
-        new MeshBasicMaterial({ visible: false })
+    const pickPlane = new THREE.Mesh(
+        new THREE.PlaneGeometry(width * 1.4, height * 1.4), // 40% margin
+        new THREE.MeshBasicMaterial({ visible: false })
     );
     pickPlane.position.copy(mesh.position);
     pickPlane.rotation.copy(mesh.rotation);
@@ -84,10 +98,10 @@ function drawScreen(
 
 
 
-const raycaster = new Raycaster();
-const mouse = new Vector2();
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
 
-function onClickScreen(ev, dom, screen, camera, cssObj, cssDom, pickPlane) {
+function onClickScreen(ev: MouseEvent, dom: HTMLElement, screen: THREE.Mesh, camera: THREE.Camera, cssObj: CSS3DObject, cssDom: HTMLElement, pickPlane: THREE.Mesh) {
     if (document.pointerLockElement === dom) {
         // pointer is locked → centre of the screen
         mouse.set(0, 0);
@@ -115,8 +129,8 @@ function onClickScreen(ev, dom, screen, camera, cssObj, cssDom, pickPlane) {
     console.log('2. screen.layers.mask     ', screen.layers.mask.toString(2));
     console.log('3. camera layers mask     ', camera.layers.mask.toString(2));
     console.log('4. raycaster far / near   ', raycaster.near, raycaster.far);
-    console.log('5. camera → screen dist   ', camera.position.distanceTo(screen.getWorldPosition(new Vector3())));
-    console.log('6. point is inside frustum', (new Frustum()).setFromProjectionMatrix(new Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse)).containsPoint(screen.getWorldPosition(new Vector3())));
+    console.log('5. camera → screen dist   ', camera.position.distanceTo(screen.getWorldPosition(new THREE.Vector3())));
+    console.log('6. point is inside frustum', (new THREE.Frustum()).setFromProjectionMatrix(new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse)).containsPoint(screen.getWorldPosition(new THREE.Vector3())));
     console.log('7. ray origin', raycaster.ray.origin);
     console.log('8. ray direction', raycaster.ray.direction);
     console.groupEnd();
@@ -135,7 +149,7 @@ function onClickScreen(ev, dom, screen, camera, cssObj, cssDom, pickPlane) {
     screen.visible   = !showIframe;
 }
 
-function onKeyScreen(ev, screen, cssObj) {
+function onKeyScreen(ev: KeyboardEvent, screen: THREE.Mesh, cssObj: CSS3DObject) {
     if (ev.code === 'Escape' && cssObj.visible) {
         cssObj.visible = false;
         screen.visible = true;

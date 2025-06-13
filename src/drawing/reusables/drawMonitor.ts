@@ -1,11 +1,9 @@
 /* Adapted from https://github.com/henryjeff/portfolio-website/blob/master/src/Application/World/MonitorScreen.ts */
 
-import {
-    Vector2, Vector3, Euler, MathUtils, Mesh, MeshBasicMaterial, MeshLambertMaterial, PlaneGeometry, DoubleSide, SRGBColorSpace, DirectionalLight,
-    Texture, VideoTexture, NoBlending, NormalBlending, AdditiveBlending, Scene, TextureLoader, CubeTextureLoader, AudioLoader, Box3, Sphere,
-} from 'three';
+import * as THREE from "three";
 import { GLTFLoader } from 'gltfloader';
 import { CSS3DObject } from 'css3drenderer';
+import { ThreeJSDrawing } from "../../types";
 
 let instance = null;
 
@@ -21,15 +19,14 @@ const sources = [
 /* EVENT EMITTER */
 
 class EventEmitter {
-    //callbacks: { [key in string]: { [key in string]: (() => any)[] } };
+    callbacks: { [key in string]: { [key in string]: (() => any)[] } };
 
     constructor() {
         this.callbacks = {};
         this.callbacks.base = {};
     }
 
-    //on(_names: string, callback: (...args: any[]) => any) {
-    on(_names, callback) {
+    on(_names: string, callback: (...args: any[]) => any) {
         // Errors
         if (typeof _names === 'undefined' || _names === '') {
             console.warn('wrong names');
@@ -45,7 +42,7 @@ class EventEmitter {
         const names = this.resolveNames(_names);
 
         // Each name
-        names.forEach((_name) => {
+        names.forEach((_name: string) => {
             // Resolve name
             const name = this.resolveName(_name);
 
@@ -64,7 +61,7 @@ class EventEmitter {
         return this;
     }
 
-    off(_names) {
+    off(_names: string) {
         // Errors
         if (typeof _names === 'undefined' || _names === '') {
             console.warn('wrong name');
@@ -75,7 +72,7 @@ class EventEmitter {
         const names = this.resolveNames(_names);
 
         // Each name
-        names.forEach((_name) => {
+        names.forEach((_name: string) => {
             // Resolve name
             const name = this.resolveName(_name);
 
@@ -119,7 +116,7 @@ class EventEmitter {
         return this;
     }
 
-    trigger(_name, _args) {
+    trigger(_name: string, _args: any[]) {
         // Errors
         if (typeof _name === 'undefined' || _name === '') {
             console.warn('wrong name');
@@ -127,11 +124,11 @@ class EventEmitter {
         }
 
         const that = this;
-        let finalResult = null;
+        let finalResult: any = null;
         let result = null;
 
         // Default args
-        const args = [];
+        const args: any[] = [];
 
         // Resolve names (should on have one event)
         let _names = this.resolveNames(_name);
@@ -179,14 +176,14 @@ class EventEmitter {
         return finalResult;
     }
 
-    resolveNames(_names) {
+    resolveNames(_names: string) {
         let names = _names;
         names = names.replace(/[^a-zA-Z0-9 ,/.]/g, '');
         names = names.replace(/[,/]+/g, ' ');
         return names.split(' ');
     }
 
-    resolveName(name) {
+    resolveName(name: string) {
         const parts = name.split('.');
         // : { original: string; value: string; namespace: string }
         const newName =
@@ -206,10 +203,10 @@ class EventEmitter {
 }
 
 class Time extends EventEmitter {
-//    start: number;
-//    current: number;
-//    elapsed: number;
-//    delta: number;
+   start: number;
+   current: number;
+   elapsed: number;
+   delta: number;
 
     constructor() {
         super();
@@ -244,29 +241,26 @@ class Time extends EventEmitter {
 }
 
 const UIEventBus = {
-    //on(event: string, callback: (...args: any[]) => any) {
-    on(event, callback) {
+    on(event: string, callback: (...args: any[]) => any) {
         document.addEventListener(event, (e) => callback(e.detail));
     },
-    //dispatch(event: string, data: any) {
-    dispatch(event, data) {
+    dispatch(event: string, data: any) {
         document.dispatchEvent(new CustomEvent(event, { detail: data }));
     },
-    //remove(event: string, callback: (...args: any[]) => any) {
-    remove(event, callback) {
+    remove(event: string, callback: (...args: any[]) => any) {
         document.removeEventListener(event, callback);
     },
 };
 
 
-function destroy(scene, renderer) {
+function destroy(scene: THREE.Scene, renderer: THREE.WebGLRenderer) {
     //this.sizes.off('resize');
     //this.time.off('tick');
 
     // Traverse the whole scene
-    scene.traverse((child) => {
+    scene.traverse((child: THREE.Object3D) => {
         // Test if it's a mesh
-        if (child instanceof Mesh) {
+        if (child instanceof THREE.Mesh) {
             child.geometry.dispose();
 
             // Loop through the material properties
@@ -285,10 +279,10 @@ function destroy(scene, renderer) {
 }
 
 export class Mouse extends EventEmitter {
-//    x: number;
-//    y: number;
-//    inComputer: boolean;
-//    application: Application;
+   x: number;
+   y: number;
+   inComputer: boolean;
+   application: Application;
 
     constructor() {
         super();
@@ -319,27 +313,25 @@ const IFRAME_SIZE = {
 };
 
 export default class MonitorScreen extends EventEmitter {
-    /*
-    application: Application;
-    scene: Scene;
-    cssScene: Scene;
+    application: THREE.Application;
+    scene: THREE.Scene;
+    cssScene: THREE.Scene;
     resources: Resources;
     debug: Debug;
     sizes: Sizes;
     debugFolder: GUI;
-    screenSize: Vector2;
-    position: Vector3;
-    rotation: Euler;
-    camera: Camera;
+    screenSize: THREE.Vector2;
+    position: THREE.Vector3;
+    rotation: THREE.Euler;
+    camera: THREE.Camera;
     prevInComputer: boolean;
     shouldLeaveMonitor: boolean;
     inComputer: boolean;
     mouseClickInProgress: boolean;
-    dimmingPlane: Mesh;
-    videoTextures: { [key in string]: VideoTexture };
-    */
+    dimmingPlane: THREE.Mesh;
+    videoTextures: { [key in string]: THREE.VideoTexture };
 
-    constructor(url) {
+    constructor(url: string) {
         super();
         this.url = url;
 
@@ -348,10 +340,10 @@ export default class MonitorScreen extends EventEmitter {
         this.sizes = null;
         this.items = { texture: {}, cubeTexture: {}, gltfModel: {}, audio: {} };
         this.sources = [];
-        this.screenSize = new Vector2(SCREEN_SIZE.w, SCREEN_SIZE.h);
+        this.screenSize = new THREE.Vector2(SCREEN_SIZE.w, SCREEN_SIZE.h);
         this.camera = null;
-        this.position = new Vector3(0, 950, 255);
-        this.rotation = new Euler(-3 * MathUtils.DEG2RAD, 0, 0);
+        this.position = new THREE.Vector3(0, 950, 255);
+        this.rotation = new THREE.Euler(-3 * THREE.MathUtils.DEG2RAD, 0, 0);
         this.videoTextures = {};
         this.mouseClickInProgress = false;
         this.shouldLeaveMonitor = false;
@@ -372,12 +364,12 @@ export default class MonitorScreen extends EventEmitter {
      * Load all assets listed in `sources`.
      * Returns a Promise that resolves when every asset is ready.
      */
-    async loadItems (sources) {
+    async loadItems (sources: Array<{ type: string; name: string; path: string }>) {
 
-        const gltfLoader       = new GLTFLoader();
-        const textureLoader    = new TextureLoader();
-        const cubeTextureLoader= new CubeTextureLoader();
-        const audioLoader      = new AudioLoader();
+        const gltfLoader       = new THREE.GLTFLoader();
+        const textureLoader    = new THREE.TextureLoader();
+        const cubeTextureLoader= new THREE.CubeTextureLoader();
+        const audioLoader      = new THREE.AudioLoader();
 
         // build one promise per source
         const jobs = sources.map(src => {
@@ -391,7 +383,7 @@ export default class MonitorScreen extends EventEmitter {
                 case 'texture':
                     return textureLoader.loadAsync(src.path)
                         .then(file => {
-                            file.colorSpace = SRGBColorSpace;
+                            file.colorSpace = THREE.SRGBColorSpace;
                             this.items.texture[src.name] = file;
                         });
 
@@ -417,7 +409,7 @@ export default class MonitorScreen extends EventEmitter {
         console.log('All monitor assets loaded ✅');
     }
 
-    sourceLoaded(source, file) {
+    sourceLoaded(source: { type: string; name: string }, file: any) {
         this.items[source.type][source.name] = file;
 
         //this.loading.trigger('loadedSource', [source.name, this.loaded, this.toLoad]);
@@ -427,7 +419,7 @@ export default class MonitorScreen extends EventEmitter {
     initializeScreenEvents() {
         document.addEventListener(
             'mousemove',
-            (event) => {
+            (event: MouseEvent) => {
                 const id = event.target.id;
                 if (id === 'computer-screen') {
                     event.inComputer = true;
@@ -465,7 +457,7 @@ export default class MonitorScreen extends EventEmitter {
         );
         document.addEventListener(
             'mousedown',
-            (event) => {
+            (event: MouseEvent) => {
                 this.inComputer = event.inComputer;
                 this.mouse.trigger('mousedown', [event]);
 
@@ -476,7 +468,7 @@ export default class MonitorScreen extends EventEmitter {
         );
         document.addEventListener(
             'mouseup',
-            (event) => {
+            (event: MouseEvent) => {
                 this.inComputer = event.inComputer;
                 this.mouse.trigger('mouseup', [event]);
 
@@ -495,7 +487,7 @@ export default class MonitorScreen extends EventEmitter {
     /**
      * Creates the iframe for the computer screen
      */
-    createIframe(url) {
+    createIframe(url: string) {
         // Create container
         const container = document.createElement('div');
         container.style.width = this.screenSize.width + 'px';
@@ -564,8 +556,7 @@ export default class MonitorScreen extends EventEmitter {
      * Creates a CSS plane and GL plane to properly occlude the CSS plane
      * @param element the element to create the css plane for
      */
-    //createCssPlane(element: HTMLElement) {
-    createCssPlane(element) {
+    createCssPlane(element: HTMLElement) {
         // Create CSS3D object
         const object = new CSS3DObject(element);
 
@@ -577,15 +568,15 @@ export default class MonitorScreen extends EventEmitter {
         this.cssScene.add(object);
 
         // Create GL plane
-        const material = new MeshLambertMaterial();
-        material.side = DoubleSide;
+        const material = new THREE.MeshLambertMaterial();
+        material.side = THREE.DoubleSide;
         material.opacity = 0;
         material.transparent = true;
         // NoBlending allows the GL plane to occlude the CSS plane
-        material.blending = NoBlending;
+        material.blending = THREE.NoBlending;
 
         // Create plane geometry
-        const geometry = new PlaneGeometry(this.screenSize.width, this.screenSize.height);
+        const geometry = new THREE.PlaneGeometry(this.screenSize.width, this.screenSize.height);
 
         // Create the GL plane mesh
         const mesh = new Mesh(geometry, material);
@@ -616,25 +607,25 @@ export default class MonitorScreen extends EventEmitter {
         const layers = {
             smudge: {
                 texture: textures.monitorSmudgeTexture,
-                blending: AdditiveBlending,
+                blending: THREE.AdditiveBlending,
                 opacity: 0.12,
                 offset: 24,
             },
             innerShadow: {
                 texture: textures.monitorShadowTexture,
-                blending: NormalBlending,
+                blending: THREE.NormalBlending,
                 opacity: 1,
                 offset: 5,
             },
             video: {
                 texture: this.videoTextures['video-1'],
-                blending: AdditiveBlending,
+                blending: THREE.AdditiveBlending,
                 opacity: 0.5,
                 offset: 10,
             },
             video2: {
                 texture: this.videoTextures['video-2'],
-                blending: AdditiveBlending,
+                blending: THREE.AdditiveBlending,
                 opacity: 0.1,
                 offset: 15,
             },
@@ -655,13 +646,13 @@ export default class MonitorScreen extends EventEmitter {
         return maxOffset;
     }
 
-    getVideoTextures(videoId) {
+    getVideoTextures(videoId: string) {
         const video = document.getElementById(videoId);
         if (!video) {
             setTimeout(() => {this.getVideoTextures(videoId);}, 100);
         } else {
             // video as HTMLVideoElement
-            this.videoTextures[videoId] = new VideoTexture(video);
+            this.videoTextures[videoId] = new THREE.VideoTexture(video);
         }
     }
 
@@ -672,18 +663,18 @@ export default class MonitorScreen extends EventEmitter {
      * @param opacity the opacity of the texture [number]
      * @param offset the offset of the texture, higher values are further from the screen [number]
      */
-    addTextureLayer(texture, blendingMode, opacity, offset) {
+    addTextureLayer(texture: THREE.Texture, blendingMode: THREE.Blending, opacity: number, offset: number) {
         // Create material
-        const material = new MeshBasicMaterial({map: texture, blending: blendingMode, side: DoubleSide, opacity, transparent: true});
+        const material = new THREE.MeshBasicMaterial({map: texture, blending: blendingMode, side: THREE.DoubleSide, opacity, transparent: true});
 
         // Create geometry
-        const geometry = new PlaneGeometry(this.screenSize.width, this.screenSize.height);
+        const geometry = new THREE.PlaneGeometry(this.screenSize.width, this.screenSize.height);
 
         // Create mesh
-        const mesh = new Mesh(geometry, material);
+        const mesh = new THREE.Mesh(geometry, material);
 
         // Copy position and apply the depth offset
-        mesh.position.copy(this.offsetPosition(this.position, new Vector3(0, 0, offset)));
+        mesh.position.copy(this.offsetPosition(this.position, new THREE.Vector3(0, 0, offset)));
 
         // Copy rotation
         mesh.rotation.copy(this.rotation);
@@ -695,23 +686,23 @@ export default class MonitorScreen extends EventEmitter {
      * Creates enclosing planes for the computer screen
      * @param maxOffset the maximum offset of the texture layers
      */
-    createEnclosingPlanes(maxOffset) {
+    createEnclosingPlanes(maxOffset: number) {
         // Create planes, lots of boiler plate code here because I'm lazy
         const planes = {
             left: {
-                size: new Vector2(maxOffset, this.screenSize.height),
-                position: this.offsetPosition(this.position, new Vector3(-this.screenSize.width / 2, 0, maxOffset / 2)),
-                rotation: new Euler(0, 90 * MathUtils.DEG2RAD, 0),
+                size: new THREE.Vector2(maxOffset, this.screenSize.height),
+                position: this.offsetPosition(this.position, new THREE.Vector3(-this.screenSize.width / 2, 0, maxOffset / 2)),
+                rotation: new THREE.Euler(0, 90 * THREE.MathUtils.DEG2RAD, 0),
             },
             right: {
-                size: new Vector2(maxOffset, this.screenSize.height),
-                position: this.offsetPosition(this.position, new Vector3(this.screenSize.width / 2, 0, maxOffset / 2)),
-                rotation: new Euler(0, 90 * MathUtils.DEG2RAD, 0),
+                size: new THREE.Vector2(maxOffset, this.screenSize.height),
+                position: this.offsetPosition(this.position, new THREE.Vector3(this.screenSize.width / 2, 0, maxOffset / 2)),
+                rotation: new THREE.Euler(0, 90 * THREE.MathUtils.DEG2RAD, 0),
             },
             top: {
-                size: new Vector2(this.screenSize.width, maxOffset),
-                position: this.offsetPosition(this.position, new Vector3(0, this.screenSize.height / 2, maxOffset / 2)),
-                rotation: new Euler(90 * MathUtils.DEG2RAD, 0, 0),
+                size: new THREE.Vector2(this.screenSize.width, maxOffset),
+                position: this.offsetPosition(this.position, new THREE.Vector3(0, this.screenSize.height / 2, maxOffset / 2)),
+                rotation: new THREE.Euler(90 * THREE.MathUtils.DEG2RAD, 0, 0),
             },
             bottom: {
                 size: new Vector2(this.screenSize.width, maxOffset),
@@ -731,11 +722,11 @@ export default class MonitorScreen extends EventEmitter {
      * @param plane the plane to create
      */
     //createEnclosingPlane(plane: EnclosingPlane) {
-    createEnclosingPlane(plane) {
-        const material = new MeshBasicMaterial({side: DoubleSide, color: 0x48493f});
+    createEnclosingPlane(plane: any) {
+        const material = new THREE.MeshBasicMaterial({side: THREE.DoubleSide, color: 0x48493f});
 
-        const geometry = new PlaneGeometry(plane.size.x, plane.size.y);
-        const mesh = new Mesh(geometry, material);
+        const geometry = new THREE.PlaneGeometry(plane.size.x, plane.size.y);
+        const mesh = new THREE.Mesh(geometry, material);
 
         mesh.position.copy(plane.position);
         mesh.rotation.copy(plane.rotation);
@@ -743,14 +734,14 @@ export default class MonitorScreen extends EventEmitter {
         this.scene.add(mesh);
     }
 
-    createPerspectiveDimmer(maxOffset) {
-        const material = new MeshBasicMaterial({side: DoubleSide, color: 0x000000, transparent: true, blending: AdditiveBlending});
+    createPerspectiveDimmer(maxOffset: number) {
+        const material = new THREE.MeshBasicMaterial({side: THREE.DoubleSide, color: 0x000000, transparent: true, blending: THREE.AdditiveBlending});
 
-        const plane = new PlaneGeometry(this.screenSize.width, this.screenSize.height);
+        const plane = new THREE.PlaneGeometry(this.screenSize.width, this.screenSize.height);
 
-        const mesh = new Mesh(plane, material);
+        const mesh = new THREE.Mesh(plane, material);
 
-        mesh.position.copy(this.offsetPosition(this.position, new Vector3(0, 0, maxOffset - 5)));
+        mesh.position.copy(this.offsetPosition(this.position, new THREE.Vector3(0, 0, maxOffset - 5)));
 
         mesh.rotation.copy(this.rotation);
 
@@ -766,8 +757,8 @@ export default class MonitorScreen extends EventEmitter {
      * @returns the new offset position
      */
     //offsetPosition(position: Vector3, offset: Vector3) {
-    offsetPosition(position, offset) {
-        const newPosition = new Vector3();
+    offsetPosition(position: THREE.Vector3, offset: THREE.Vector3) {
+        const newPosition = new THREE.Vector3();
         newPosition.copy(position);
         newPosition.add(offset);
         return newPosition;
@@ -775,8 +766,8 @@ export default class MonitorScreen extends EventEmitter {
 
     update() {
         if (this.dimmingPlane) {
-            const planeNormal = new Vector3(0, 0, 1);
-            const viewVector = new Vector3();
+            const planeNormal = new THREE.Vector3(0, 0, 1);
+            const viewVector = new THREE.Vector3();
             viewVector.copy(this.camera.instance.position);
             viewVector.sub(this.position);
             viewVector.normalize();
@@ -799,19 +790,23 @@ export default class MonitorScreen extends EventEmitter {
 }
 
 class BakedModel {
-    constructor(model, texture, scale) {
+    model: any;
+    texture: any;
+    material: THREE.MeshBasicMaterial;
+
+    constructor(model: any, texture: any, scale: number) {
         this.model = model;
         this.texture = texture;
 
         this.texture.flipY = false;
-        this.texture.colorSpace = SRGBColorSpace;
+        this.texture.colorSpace = THREE.SRGBColorSpace;
 
-        this.material = new MeshBasicMaterial({
+        this.material = new THREE.MeshBasicMaterial({
             map: this.texture,
         });
 
-        this.model.scene.traverse((child) => {
-            if (child instanceof Mesh) {
+        this.model.scene.traverse((child: any) => {
+            if (child instanceof THREE.Mesh) {
                 if (scale) child.scale.set(scale, scale, scale);
                 child.material.map = this.texture;
                 child.material = this.material;
@@ -828,7 +823,12 @@ class BakedModel {
 }
 
 class Computer {
-    constructor(scene, gltfModel, texture) {
+    scene: THREE.Scene;
+    gltfModel: any;
+    texture: any;
+    bakedModel: BakedModel;
+
+    constructor(scene: THREE.Scene, gltfModel: any, texture: any) {
         this.scene = scene;
         this.gltfModel = gltfModel;
         this.texture = texture;
@@ -853,7 +853,7 @@ class Computer {
     }
 }
 
-async function attachSceneComponentsToMonitor(monitor, threejsDrawing, cssScene) {
+async function attachSceneComponentsToMonitor(monitor: any, threejsDrawing: ThreeJSDrawing, cssScene: THREE.Scene) {
     Object.assign(monitor, {
         scene: threejsDrawing.data.scene,
         cssScene: cssScene,
@@ -861,8 +861,8 @@ async function attachSceneComponentsToMonitor(monitor, threejsDrawing, cssScene)
     })
 }
 
-async function drawMonitor(scene, threejsDrawing) {
-    const cssScene = new Scene();
+async function drawMonitor(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
+    const cssScene = new THREE.Scene();
     threejsDrawing.data.cssScene = cssScene;
 
     // Provide a data bucket if not present
@@ -883,9 +883,9 @@ async function drawMonitor(scene, threejsDrawing) {
 
     // after you add the computer to the scene
     const root      = computer.bakedModel.getModel();      // the Group you added
-    const box       = new Box3().setFromObject(root);
-    const center    = new Vector3();
-    const sphere = new Sphere();
+    const box       = new THREE.Box3().setFromObject(root);
+    const center    = new THREE.Vector3();
+    const sphere = new THREE.Sphere();
     const radius    = box.getBoundingSphere(sphere).radius;
 
     // put target in the logical centre of the computer setup
@@ -916,13 +916,13 @@ async function drawMonitor(scene, threejsDrawing) {
     data.monitorScreen.camera.rotation.copy(data.monitorScreen.rotation);
 
     // Add some lights...
-    const light = new DirectionalLight(0xffffff, 1);
+    const light = new THREE.DirectionalLight(0xffffff, 1);
     light.position.set(0, 10, 0);
     light.castShadow = true;
     light.shadow.mapSize.width = 1024;
 }
 
-function animationCallback(renderer, timestamp, threejsDrawing, camera) {
+function animationCallback(renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawing: ThreeJSDrawing, camera: THREE.Camera) {
     const cssScene = threejsDrawing.data.cssScene;
     const cssRenderer = threejsDrawing.data.cssRenderer;
 

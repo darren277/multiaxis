@@ -1,6 +1,7 @@
-import { CanvasTexture, RepeatWrapping, ShaderMaterial, Group, Mesh, MeshStandardMaterial, PlaneGeometry, Clock } from 'three';
+import * as THREE from "three";
 import perlin from 'perlin-noise';
 import { generatePerlinNoise } from 'perlin-noise';
+import { ThreeJSDrawing } from "../../threejsDrawing";
 
 
 function createPerlinGrassTexture() {
@@ -20,13 +21,13 @@ function createPerlinGrassTexture() {
         }
     }
 
-    const texture = new CanvasTexture(canvas);
-    texture.wrapS = texture.wrapT = RepeatWrapping;
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
     texture.repeat.set(10, 10);
     return texture;
 }
 
-const grassMaterial = new ShaderMaterial({
+const grassMaterial = new THREE.ShaderMaterial({
     vertexShader: `
         varying vec2 vUv;
         void main() {
@@ -45,9 +46,9 @@ const grassMaterial = new ShaderMaterial({
     `
 });
 
-const clock = new Clock();
+const clock = new THREE.Clock();
 
-const waterMaterial = new ShaderMaterial({
+const waterMaterial = new THREE.ShaderMaterial({
     uniforms: {
         time: { value: 0.0 },
     },
@@ -114,8 +115,8 @@ function createGrassTexture() {
         }
     }
 
-    const texture = new CanvasTexture(canvas);
-    texture.wrapS = texture.wrapT = RepeatWrapping;
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
     texture.repeat.set(10, 10);
     return texture;
 }
@@ -135,8 +136,8 @@ function createRoadTexture() {
         }
     }
 
-    const texture = new CanvasTexture(canvas);
-    texture.wrapS = texture.wrapT = RepeatWrapping;
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
     texture.repeat.set(6, 6);
     return texture;
 }
@@ -158,8 +159,8 @@ function createWaterTexture() {
         }
     }
 
-    const texture = new CanvasTexture(canvas);
-    texture.wrapS = texture.wrapT = RepeatWrapping;
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
     texture.repeat.set(4, 4);
     return texture;
 }
@@ -181,8 +182,8 @@ function createSandTexture() {
         }
     }
 
-    const texture = new CanvasTexture(canvas);
-    texture.wrapS = texture.wrapT = RepeatWrapping;
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
     texture.repeat.set(8, 8);
     return texture;
 }
@@ -214,8 +215,8 @@ function createDirtRoadTexture() {
         }
     }
 
-    const texture = new CanvasTexture(canvas);
-    texture.wrapS = texture.wrapT = RepeatWrapping;
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
     texture.repeat.set(10, 10); // Make it tile nicely
     return texture;
 }
@@ -226,12 +227,12 @@ function createGrassDirtComboTexture() {
     canvas.width = canvas.height = size;
     const ctx = canvas.getContext('2d');
 
-    const grassColor = (n) => {
+    const grassColor = (n: number) => {
         const g = 100 + n * 50;
         return `rgb(${g * 0.4}, ${g}, ${g * 0.4})`;
     };
 
-    const dirtColor = (n) => {
+    const dirtColor = (n: number) => {
         const base = 120 + n * 80;
         const r = base + Math.random() * 10;
         const g = base * 0.7 + Math.random() * 5;
@@ -253,15 +254,15 @@ function createGrassDirtComboTexture() {
         }
     }
 
-    const texture = new CanvasTexture(canvas);
-    texture.wrapS = texture.wrapT = RepeatWrapping;
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
     texture.repeat.set(10, 10);
     return texture;
 }
 
-function drawWater(scene) {
-    const waterGeometry = new PlaneGeometry(100, 100, 128, 128); // Higher segment count = smoother waves
-    const water = new Mesh(waterGeometry, waterMaterial);
+function drawWater(scene: THREE.Scene) {
+    const waterGeometry = new THREE.PlaneGeometry(100, 100, 128, 128); // Higher segment count = smoother waves
+    const water = new THREE.Mesh(waterGeometry, waterMaterial);
     water.rotation.x = -Math.PI / 2;
     water.position.y = 0.1; // Slightly above ground
     water.receiveShadow = false; // Water usually doesn't cast/receive shadow
@@ -269,7 +270,7 @@ function drawWater(scene) {
     scene.add(water);
 }
 
-function animateWater(renderer, timestamp, threejsDrawing, camera) {
+function animateWater(renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawing: ThreeJSDrawing, camera: THREE.Camera) {
     const deltaTime = clock.getDelta();
     waterMaterial.uniforms.time.value += deltaTime;
 
@@ -288,8 +289,8 @@ const groundLayout = [
     ['grass', 'grass', 'grass', 'grass', 'grass', 'dirt', 'grass', 'grass', 'grass', 'road', 'road'],
 ];
 
-function createGroundFromLayout(layout, tileSize = 10) {
-    const group = new Group();
+function createGroundFromLayout(layout: string[][], tileSize = 10) {
+    const group = new THREE.Group();
 
     const textures = {
         'grass': createGrassTexture(),
@@ -312,9 +313,9 @@ function createGroundFromLayout(layout, tileSize = 10) {
             const tex = textures[type];
             if (!tex) continue;
 
-            const material = new MeshStandardMaterial({ map: tex });
+            const material = new THREE.MeshStandardMaterial({ map: tex });
 
-            const tile = new Mesh(new PlaneGeometry(tileSize, tileSize), material);
+            const tile = new THREE.Mesh(new THREE.PlaneGeometry(tileSize, tileSize), material);
             tile.rotation.x = -Math.PI / 2;
 
             // Subtract offset to center the grid around (0,0,0)
@@ -333,7 +334,7 @@ function createGroundFromLayout(layout, tileSize = 10) {
     return group;
 }
 
-function tileToPosition(col, row, tileSize = 10, layout = groundLayout) {
+function tileToPosition(col: number, row: number, tileSize = 10, layout = groundLayout) {
     const numRows = layout.length;
     const numCols = layout[0].length;
 

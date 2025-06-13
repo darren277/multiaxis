@@ -1,25 +1,26 @@
-import { Clock, SkeletonHelper, AnimationMixer, GridHelper } from 'three';
+import * as THREE from 'three';
 
 import { BVHLoader } from 'bvhloader';
+import { ThreeJSDrawing } from '../../threejsDrawing';
 
-const clock = new Clock();
+const clock = new THREE.Clock();
 
-let mixer;
+let mixer: THREE.AnimationMixer | null = null;
 
 const loader = new BVHLoader();
 
 
-function drawBvh(scene, threejsDrawing) {
-    loader.load('models/bvh/pirouette.bvh', function (result) {
-        const skeletonHelper = new SkeletonHelper(result.skeleton.bones[0]);
+function drawBvh(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing, renderer: THREE.WebGLRenderer) {
+    loader.load('models/bvh/pirouette.bvh', function (result: { skeleton: THREE.Skeleton; clip: THREE.AnimationClip }) {
+        const skeletonHelper = new THREE.SkeletonHelper(result.skeleton.bones[0]);
 
         scene.add(result.skeleton.bones[0]);
         scene.add(skeletonHelper);
 
-        mixer = new AnimationMixer(result.skeleton.bones[0]);
+        mixer = new THREE.AnimationMixer(result.skeleton.bones[0]);
         mixer.clipAction(result.clip).play();
     });
-    scene.add(new GridHelper(400, 10));
+    scene.add(new THREE.GridHelper(400, 10));
 }
 
 function animate() {

@@ -1,9 +1,7 @@
-import {
-    LinearFilter, RGBFormat, VideoTexture, Mesh, MeshBasicMaterial, PlaneGeometry, DirectionalLight, AmbientLight,
-    ClampToEdgeWrapping, Box3, Vector2, Vector3, DoubleSide, FrontSide, Raycaster
-} from 'three';
+import * as THREE from "three";
+import { ThreeJSDrawing } from "../../threejsDrawing";
 
-function renderVideoTexture(video, texture) {
+function renderVideoTexture(video: HTMLVideoElement, texture: THREE.VideoTexture) {
     // This function will be called to render the video texture
     if (video.readyState >= 2) {
         texture.needsUpdate = true;
@@ -11,26 +9,26 @@ function renderVideoTexture(video, texture) {
     }
 }
 
-function onVideoLoadedOld(screenMesh, video, gltfScene) {
+function onVideoLoadedOld(screenMesh: THREE.Mesh, video: HTMLVideoElement, gltfScene: THREE.Scene) {
     const videoAspect = video.videoWidth / video.videoHeight;
     console.log('Video aspect ratio:', videoAspect);
     // 1.7777 = 16:9
 
-    const box = new Box3().setFromObject(screenMesh);
-    const size = new Vector3();
+    const box = new THREE.Box3().setFromObject(screenMesh);
+    const size = new THREE.Vector3();
     box.getSize(size);
     const screenAspect = size.x / size.y;
 
     console.log('Screen aspect ratio:', screenAspect);
     // 1.222 = 16:13
 
-    const texture = new VideoTexture(video);
-    texture.minFilter = LinearFilter;
-    texture.magFilter = LinearFilter;
-    texture.format = RGBFormat;
+    const texture = new THREE.VideoTexture(video);
+    texture.minFilter = THREE.LinearFilter;
+    texture.magFilter = THREE.LinearFilter;
+    texture.format = THREE.RGBFormat;
 
-    texture.wrapS = ClampToEdgeWrapping;
-    texture.wrapT = ClampToEdgeWrapping;
+    texture.wrapS = THREE.ClampToEdgeWrapping;
+    texture.wrapT = THREE.ClampToEdgeWrapping;
 
     //texture.repeat.set(1, 1);
     //texture.offset.set(0, 0);
@@ -55,11 +53,11 @@ function onVideoLoadedOld(screenMesh, video, gltfScene) {
 
     video.play();
 
-    const material = new MeshBasicMaterial({ map: texture });
+    const material = new THREE.MeshBasicMaterial({ map: texture });
     const height = 0.5;  // Adjust based on how big the screen is
     const width = height * videoAspect;
 
-    const screenPlane = new Mesh(new PlaneGeometry(width, height), material);
+    const screenPlane = new THREE.Mesh(new THREE.PlaneGeometry(width, height), material);
 
     if (screenMesh) {
         //screenMesh.material = material;
@@ -69,13 +67,13 @@ function onVideoLoadedOld(screenMesh, video, gltfScene) {
         ///screenMesh.visible = false;
 
         // Position plane to overlap screen
-        const box = new Box3().setFromObject(screenMesh);
-        const center = new Vector3();
+        const box = new THREE.Box3().setFromObject(screenMesh);
+        const center = new THREE.Vector3();
         box.getCenter(center);
         screenPlane.position.copy(center);
 
         // Orient plane the same way (assumes front-facing z)
-        screenPlane.lookAt(screenPlane.position.clone().add(new Vector3(0, 0, -1)));
+        screenPlane.lookAt(screenPlane.position.clone().add(new THREE.Vector3(0, 0, -1)));
         scene.add(screenPlane);
     }
 
@@ -84,14 +82,14 @@ function onVideoLoadedOld(screenMesh, video, gltfScene) {
     //threejsDrawing.data.camera.lookAt(0, 1, 0);
 }
 
-function onVideoLoadedOld2(screenMesh, video, gltfScene) {
+function onVideoLoadedOld2(screenMesh: THREE.Mesh, video: HTMLVideoElement, gltfScene: THREE.Scene) {
     const padding = 0.60; // 95% of bounding box
 
     const videoAR   = video.videoWidth / video.videoHeight;   // 1.777…
 
     // ---------- 3.  screen’s true width/height ----------
-    const box  = new Box3().setFromObject(screenMesh);
-    const size = new Vector3();
+    const box  = new THREE.Box3().setFromObject(screenMesh);
+    const size = new THREE.Vector3();
     box.getSize(size);                       // world‑space extent of the mesh
     const screenAR = size.x / size.y;        // 1.22 in your model
 
@@ -114,22 +112,22 @@ function onVideoLoadedOld2(screenMesh, video, gltfScene) {
         w = h * videoAR;
     }
 
-    const texture = new VideoTexture(video);
-    texture.minFilter = LinearFilter;
-    texture.magFilter = LinearFilter;
-    texture.format    = RGBFormat;
-    texture.wrapS = texture.wrapT = ClampToEdgeWrapping;
+    const texture = new THREE.VideoTexture(video);
+    texture.minFilter = THREE.LinearFilter;
+    texture.magFilter = THREE.LinearFilter;
+    texture.format    = THREE.RGBFormat;
+    texture.wrapS = texture.wrapT = THREE.ClampToEdgeWrapping;
 
-    const material = new MeshBasicMaterial({map : texture, side: DoubleSide});
+    const material = new THREE.MeshBasicMaterial({map : texture, side: THREE.DoubleSide});
 
-    const plane = new Mesh(new PlaneGeometry(w, h), material);
+    const plane = new THREE.Mesh(new THREE.PlaneGeometry(w, h), material);
 
     // ---------- 5.  copy pose from real screen ----------
     screenMesh.getWorldPosition(plane.position);
     screenMesh.getWorldQuaternion(plane.quaternion);
 
     // ---------- 6.  push it a hair forward (0.5 mm) ----------
-    const normal = new Vector3(0, 0, 1).applyQuaternion(plane.quaternion);
+    const normal = new THREE.Vector3(0, 0, 1).applyQuaternion(plane.quaternion);
     plane.position.add(normal.multiplyScalar(0.0005));
 
     // If the TV was modelled “inside‑out”, flip once:
@@ -138,19 +136,19 @@ function onVideoLoadedOld2(screenMesh, video, gltfScene) {
     return {texture, plane, material};
 }
 
-function onVideoLoaded(screenMesh, video, gltfScene) {
+function onVideoLoaded(screenMesh: THREE.Mesh, video: HTMLVideoElement, gltfScene: THREE.Scene) {
     // In this version, we modify the UVs directly...
 
-    const texture = new VideoTexture(video);
-    texture.minFilter = LinearFilter;
-    texture.magFilter = LinearFilter;
-    texture.format = RGBFormat;
-    texture.wrapS = ClampToEdgeWrapping;
-    texture.wrapT = ClampToEdgeWrapping;
+    const texture = new THREE.VideoTexture(video);
+    texture.minFilter = THREE.LinearFilter;
+    texture.magFilter = THREE.LinearFilter;
+    texture.format = THREE.RGBFormat;
+    texture.wrapS = THREE.ClampToEdgeWrapping;
+    texture.wrapT = THREE.ClampToEdgeWrapping;
 
-    const material = new MeshBasicMaterial({
-    map: texture,
-        side: FrontSide // Default; change to DoubleSide only if needed
+    const material = new THREE.MeshBasicMaterial({
+        map: texture,
+        side: THREE.FrontSide // Default; change to DoubleSide only if needed
     });
 
     screenMesh.material = material;
@@ -190,13 +188,13 @@ function onVideoLoaded(screenMesh, video, gltfScene) {
     return {texture, material};
 }
 
-function drawTV(scene, data, threejsDrawing) {
+function drawTV(scene: THREE.Scene, data: any, threejsDrawing: ThreeJSDrawing) {
     const gltfScene = data.scene; // assuming you store it like this
 
     // Add the loaded TV model to the scene
     scene.add(gltfScene);
 
-    gltfScene.traverse(child => {
+    gltfScene.traverse((child: THREE.Object3D) => {
         if (child.isMesh && child.name.startsWith('Screen_')) {
             console.log('Found screen mesh:', child.name);
             // Screen_1_low_Material001_0
@@ -241,11 +239,11 @@ function drawTV(scene, data, threejsDrawing) {
     });
 
     // draw basic lights...
-    const light = new DirectionalLight(0xffffff, 1);
+    const light = new THREE.DirectionalLight(0xffffff, 1);
     light.position.set(5, 5, 5).normalize();
     scene.add(light);
 
-    const ambientLight = new AmbientLight(0x404040); // soft white light
+    const ambientLight = new THREE.AmbientLight(0x404040); // soft white light
     scene.add(ambientLight);
 
     // position TV...
@@ -255,7 +253,7 @@ function drawTV(scene, data, threejsDrawing) {
     threejsDrawing.data.tv = gltfScene;
 }
 
-function animationCallback(data) {
+function animationCallback(data: any) {
     const video = data.video;
     const texture = data.texture;
 
@@ -264,8 +262,8 @@ function animationCallback(data) {
     }
 }
 
-const raycaster = new Raycaster();
-const mouse = new Vector2();
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
 
 const videos = [
     'textures/monitor/real.mp4',
@@ -287,7 +285,7 @@ const videos = [
 ];
 
 
-function handleVideoChange(data) {
+function handleVideoChange(data: any) {
     console.log('handleVideoChange', data.videoIndex, data.videoPlaylist, data.video, data.texture);
     if (!data.video || !data.videoPlaylist || data.videoPlaylist.length === 0) return;
 
@@ -307,7 +305,7 @@ function handleVideoChange(data) {
 }
 
 
-function onClick(event, scene, camera, renderer, data) {
+function onClick(event: MouseEvent, scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.WebGLRenderer, data: any) {
     // Convert mouse click position to normalized device coordinates (-1 to +1)
     const canvas = renderer.domElement;
     const rect = canvas.getBoundingClientRect();
@@ -350,11 +348,11 @@ const tvDrawing = {
 //        keyup:   (e, data) => onKey(e, data)
 //    },
     eventListeners: {
-        click: (e, data) => {
+        click: (e: MouseEvent, data: any) => {
             onClick(e, data.scene, data.camera, data.renderer, data.data);
         }
     },
-    animationCallback: (renderer, timestamp, threejsDrawing, camera) => {
+    animationCallback: (renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawing: ThreeJSDrawing, camera: THREE.Camera) => {
         const data = threejsDrawing.data;
         if (data) {
             animationCallback(data);

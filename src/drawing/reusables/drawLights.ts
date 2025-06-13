@@ -1,29 +1,36 @@
-import { SphereGeometry, Mesh, MeshStandardMaterial, PointLight, HemisphereLight, DirectionalLight, AmbientLight, DirectionalLightHelper } from 'three';
+import * as THREE from "three";
+import { ThreeJSDrawing } from "../../threejsDrawing";
 
-export function drawLights(scene, lightingParams, bulbLuminousPowers, hemiLuminousIrradiances) {
+export function drawLights(scene: THREE.Scene, lightingParams: any, bulbLuminousPowers: any, hemiLuminousIrradiances: any) {
     // Create the bulb light
-    const bulbGeometry = new SphereGeometry(0.02, 16, 8);
-    const bulbMat = new MeshStandardMaterial({
+    const bulbGeometry = new THREE.SphereGeometry(0.02, 16, 8);
+    const bulbMat = new THREE.MeshStandardMaterial({
         emissive: 0xffffee,
         emissiveIntensity: 1,
         color: 0x000000
     });
-    const bulbLight = new PointLight(0xffee88, 1, 100, 2);
-    bulbLight.add(new Mesh(bulbGeometry, bulbMat));
+    const bulbLight = new THREE.PointLight(0xffee88, 1, 100, 2);
+    bulbLight.add(new THREE.Mesh(bulbGeometry, bulbMat));
     bulbLight.position.set(0, 2, 0);
     bulbLight.castShadow = true;
     scene.add(bulbLight);
 
     // Create the hemisphere light
-    const hemiLight = new HemisphereLight(0xddeeff, 0x0f0e0d, 0.02);
+    const hemiLight = new THREE.HemisphereLight(0xddeeff, 0x0f0e0d, 0.02);
     scene.add(hemiLight);
 
     // Return references so we can update them in animate()
     return { bulbLight, bulbMat, hemiLight };
 }
 
+type Light = {
+    bulbLight: THREE.PointLight;
+    bulbMat: THREE.MeshStandardMaterial;
+    hemiLight: THREE.HemisphereLight;
+};
+
 // Optional: a helper function to update lights in animate()
-export function updateLights({bulbLight, bulbMat, hemiLight, lightingParams, bulbLuminousPowers, hemiLuminousIrradiances}) {
+export function updateLights({bulbLight, bulbMat, hemiLight, lightingParams, bulbLuminousPowers, hemiLuminousIrradiances}: Light & { lightingParams: any, bulbLuminousPowers: any, hemiLuminousIrradiances: any }) {
     // e.g., update intensities based on GUI
     bulbLight.power = bulbLuminousPowers[lightingParams.bulbPower];
     bulbMat.emissiveIntensity = bulbLight.intensity / Math.pow(0.02, 2.0);
@@ -66,22 +73,22 @@ export const lightingParams = {
 };
 
 
-export function drawBasicLights(scene, threejsDrawing) {
-    const light = new DirectionalLight(0xffffff, 1);
+export function drawBasicLights(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
+    const light = new THREE.DirectionalLight(0xffffff, 1);
     light.position.set(5, 5, 5);
     scene.add(light);
 
-    const ambient = new AmbientLight(0x404040);
+    const ambient = new THREE.AmbientLight(0x404040);
     scene.add(ambient);
 }
 
 
-export function drawSun(scene) {
-    const sunLight = new DirectionalLight(0xffffff, 10.0); // color, intensity
+export function drawSun(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
+    const sunLight = new THREE.DirectionalLight(0xffffff, 10.0); // color, intensity
     sunLight.position.set(100, 300, 100); // x, y, z — higher Y for "sun above"
 
     // Optional: Add helper to visualize the direction
-    const helper = new DirectionalLightHelper(sunLight, 10);
+    const helper = new THREE.DirectionalLightHelper(sunLight, 10);
     scene.add(helper);
 
     // Optional: Enable shadows

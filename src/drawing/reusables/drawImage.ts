@@ -1,4 +1,4 @@
-import { CanvasTexture, SRGBColorSpace, RepeatWrapping, PlaneGeometry, Mesh, MeshBasicMaterial, TextureLoader, UVMapping, LinearFilter } from 'three';
+import * as THREE from "three";
 
 const SCREEN_WIDTH = window.innerWidth;
 const SCREEN_HEIGHT = window.innerHeight;
@@ -7,9 +7,9 @@ let container;
 
 
 //imgPath = 'textures/758px-Canestra_di_frutta_(Caravaggio).jpg'
-function drawImage(scene, imgPath) {
-    //scene.background = new Color( 0x000000 );
-    //scene.fog = new Fog( 0x000000, 1500, 4000 );
+function drawImage(scene: THREE.Scene, imgPath: string) {
+    //scene.background = new THREE.Color( 0x000000 );
+    //scene.fog = new THREE.Fog( 0x000000, 1500, 4000 );
 
     // GROUND
 
@@ -25,17 +25,17 @@ function drawImage(scene, imgPath) {
     context.fillRect( 0, 0, 64, 64 );
     context.fillRect( 64, 64, 64, 64 );
 
-    const textureCanvas = new CanvasTexture( imageCanvas );
-    textureCanvas.colorSpace = SRGBColorSpace;
+    const textureCanvas = new THREE.CanvasTexture( imageCanvas );
+    textureCanvas.colorSpace = THREE.SRGBColorSpace;
     textureCanvas.repeat.set( 1000, 1000 );
-    textureCanvas.wrapS = RepeatWrapping;
-    textureCanvas.wrapT = RepeatWrapping;
+    textureCanvas.wrapS = THREE.RepeatWrapping;
+    textureCanvas.wrapT = THREE.RepeatWrapping;
 
-    const materialCanvas = new MeshBasicMaterial( { map: textureCanvas } );
+    const materialCanvas = new THREE.MeshBasicMaterial( { map: textureCanvas } );
 
-    const geometry = new PlaneGeometry( 100, 100 );
+    const geometry = new THREE.PlaneGeometry( 100, 100 );
 
-    const meshCanvas = new Mesh( geometry, materialCanvas );
+    const meshCanvas = new THREE.Mesh( geometry, materialCanvas );
     meshCanvas.rotation.x = - Math.PI / 2;
     meshCanvas.scale.set( 1000, 1000, 1000 );
 
@@ -48,25 +48,25 @@ function drawImage(scene, imgPath) {
 
         scene.add( meshCanvas );
 
-        const geometry = new PlaneGeometry( 100, 100 );
-        const mesh = new Mesh( geometry, materialPainting );
+        const geometry = new THREE.PlaneGeometry( 100, 100 );
+        const mesh = new THREE.Mesh( geometry, materialPainting );
 
         addPainting( scene, mesh );
 
-        function addPainting( zscene, zmesh ) {
+        function addPainting( zscene: THREE.Scene, zmesh: THREE.Mesh ) {
 
             zmesh.scale.x = image.width / 100;
             zmesh.scale.y = image.height / 100;
 
             zscene.add( zmesh );
 
-            const meshFrame = new Mesh( geometry, new MeshBasicMaterial( { color: 0x000000 } ) );
+            const meshFrame = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( { color: 0x000000 } ) );
             meshFrame.position.z = - 10.0;
             meshFrame.scale.x = 1.1 * image.width / 100;
             meshFrame.scale.y = 1.1 * image.height / 100;
             zscene.add( meshFrame );
 
-            const meshShadow = new Mesh( geometry, new MeshBasicMaterial( { color: 0x000000, opacity: 0.75, transparent: true } ) );
+            const meshShadow = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( { color: 0x000000, opacity: 0.75, transparent: true } ) );
             meshShadow.position.y = - 1.1 * image.height / 2;
             meshShadow.position.z = - 1.1 * image.height / 2;
             meshShadow.rotation.x = - Math.PI / 2;
@@ -82,13 +82,13 @@ function drawImage(scene, imgPath) {
 
     };
 
-    const texturePainting = new TextureLoader().load( imgPath, callbackPainting );
+    const texturePainting = new THREE.TextureLoader().load( imgPath, callbackPainting );
 
-    const materialPainting = new MeshBasicMaterial( { color: 0xffffff, map: texturePainting } );
+    const materialPainting = new THREE.MeshBasicMaterial( { color: 0xffffff, map: texturePainting } );
 
-    texturePainting.colorSpace = SRGBColorSpace;
-    texturePainting.minFilter = texturePainting.magFilter = LinearFilter;
-    texturePainting.mapping = UVMapping;
+    texturePainting.colorSpace = THREE.SRGBColorSpace;
+    texturePainting.minFilter = texturePainting.magFilter = THREE.LinearFilter;
+    texturePainting.mapping = THREE.UVMapping;
 }
 
 

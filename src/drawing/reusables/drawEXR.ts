@@ -1,10 +1,11 @@
-import { SphereGeometry, Mesh, MeshBasicMaterial, MeshStandardMaterial, PMREMGenerator, EquirectangularReflectionMapping } from 'three';
+import * as THREE from 'three';
+import { ThreeJSDrawing } from '../../threejsDrawing';
 
 
 
-function drawExrPMREM(scene, texture, threejsDrawing) {
+function drawExrPMREM(scene: THREE.Scene, texture: THREE.Texture, threejsDrawing: ThreeJSDrawing) {
     const { renderer } = threejsDrawing.data;
-    const pmremGenerator = new PMREMGenerator(renderer);
+    const pmremGenerator = new THREE.PMREMGenerator(renderer);
     pmremGenerator.compileEquirectangularShader();
 
     const envMap = pmremGenerator.fromEquirectangular(texture).texture;
@@ -16,19 +17,19 @@ function drawExrPMREM(scene, texture, threejsDrawing) {
     pmremGenerator.dispose();
 }
 
-function drawExprEquirectangular(scene, texture, threejsDrawing) {
-    texture.mapping = EquirectangularReflectionMapping;
+function drawExprEquirectangular(scene: THREE.Scene, texture: THREE.Texture, threejsDrawing: ThreeJSDrawing) {
+    texture.mapping = THREE.EquirectangularReflectionMapping;
 
-    const geometry = new SphereGeometry(50, 64, 64);
+    const geometry = new THREE.SphereGeometry(50, 64, 64);
     geometry.scale(-1, 1, 1); // Flip normals to render inside
 
-    const material = new MeshBasicMaterial({ map: texture });
-    const mesh = new Mesh(geometry, material);
+    const material = new THREE.MeshBasicMaterial({ map: texture });
+    const mesh = new THREE.Mesh(geometry, material);
     scene.add(mesh);
 }
 
 
-function drawExr(scene, texture, threejsDrawing) {
+function drawExr(scene: THREE.Scene, texture: THREE.Texture, threejsDrawing: ThreeJSDrawing) {
     const { drawingMode } = threejsDrawing.data;
 
     if (drawingMode === 'PMREM') {
@@ -37,9 +38,9 @@ function drawExr(scene, texture, threejsDrawing) {
         drawExprEquirectangular(scene, texture, threejsDrawing);
     }
 
-    const geometry = new SphereGeometry(1, 64, 64);
-    const material = new MeshStandardMaterial({ metalness: 1, roughness: 0 });
-    const sphere = new Mesh(geometry, material);
+    const geometry = new THREE.SphereGeometry(1, 64, 64);
+    const material = new THREE.MeshStandardMaterial({ metalness: 1, roughness: 0 });
+    const sphere = new THREE.Mesh(geometry, material);
     //scene.add(sphere);
 
     //camera.position.z = 3;
@@ -53,7 +54,7 @@ const exrDrawing = {
     // domElement.addEventListener('click', (e) => onMouseClick(e, camera, domElement));
     'eventListeners': {
     },
-    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
+    'animationCallback': (renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawing: ThreeJSDrawing, camera: THREE.Camera) => {
     },
     'data': {
         //'drawingMode': 'PMREM',

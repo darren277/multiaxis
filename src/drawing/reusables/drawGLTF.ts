@@ -1,8 +1,20 @@
-import { MeshStandardMaterial, PlaneGeometry, Mesh } from 'three';
+import * as THREE from 'three';
 import { drawBasicLights } from './drawLights.js';
+import { ThreeJSDrawing } from '../../threejsDrawing.js';
 
+type GLTF = {
+    scene: THREE.Scene;
+    animations: THREE.AnimationClip[];
+    asset: {
+        version: string;
+        generator: string;
+    };
+    userData: {
+        [key: string]: any;
+    };
+}
 
-function animateParts(gltf, time) {
+function animateParts(gltf: GLTF, time: number) {
     const leftArm = gltf.scene.getObjectByName("UpperArm_L");
 
     if (leftArm) {
@@ -16,16 +28,16 @@ function animateParts(gltf, time) {
     }
 }
 
-function drawGLTF(scene, data, threejsDrawing) {
+function drawGLTF(scene: THREE.Scene, data: GLTF, threejsDrawing: ThreeJSDrawing) {
     const gltf = data;
     scene.add(gltf.scene);
 
-    const floorGeometry = new PlaneGeometry(200, 200);
-    const floorMaterial = new MeshStandardMaterial({
+    const floorGeometry = new THREE.PlaneGeometry(200, 200);
+    const floorMaterial = new THREE.MeshStandardMaterial({
         color: 0x888888,
     });
 
-    const floor = new Mesh(floorGeometry, floorMaterial);
+    const floor = new THREE.Mesh(floorGeometry, floorMaterial);
     floor.rotation.x = -Math.PI / 2; // make it horizontal
     floor.position.y = 0;
     floor.receiveShadow = true;
@@ -58,7 +70,7 @@ const gltfDrawing = {
         {'func': drawGLTF, 'dataSrc': 'humanoid', 'dataType': 'gltf'}
     ],
     'eventListeners': null,
-    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
+    'animationCallback': (renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawing: ThreeJSDrawing, camera: THREE.Camera) => {
         const gltf = threejsDrawing.data.gltf;
         const scene = threejsDrawing.data.scene;
         if (!gltf) {

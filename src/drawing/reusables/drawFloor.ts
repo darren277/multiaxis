@@ -1,7 +1,4 @@
-import {
-    Mesh, MeshStandardMaterial, PlaneGeometry, RepeatWrapping, SRGBColorSpace, DoubleSide, TextureLoader,
-    BoxGeometry, Box3, Vector3, Raycaster
-} from 'three';
+import * as THREE from 'three';
 
 /*
 Some notes:
@@ -21,7 +18,7 @@ wallMat.map = wallTex;
 */
 
 export function loadWoodTextures(path = 'textures/') {
-    const loader = new TextureLoader();
+    const loader = new THREE.TextureLoader();
 
     const diffuse  = loader.load(path + 'hardwood2_diffuse.jpg');
     const bump     = loader.load(path + 'hardwood2_bump.jpg');
@@ -29,8 +26,8 @@ export function loadWoodTextures(path = 'textures/') {
 
     // configure once, re‑used everywhere
     [diffuse, bump, rough].forEach(t => {
-        t.wrapS = t.wrapT = RepeatWrapping;
-        t.colorSpace = SRGBColorSpace;          // only needed on the color map
+        t.wrapS = t.wrapT = THREE.RepeatWrapping;
+        t.colorSpace = THREE.SRGBColorSpace;          // only needed on the color map
         t.anisotropy = 4;                       // or renderer.capabilities.getMaxAnisotropy()
         t.repeat.set(10, 24);
     });
@@ -38,13 +35,13 @@ export function loadWoodTextures(path = 'textures/') {
     return { diffuse, bump, rough };
 }
 
-export function makeWoodMaterial(tex) {
-    return new MeshStandardMaterial({map: tex.diffuse, bumpMap: tex.bump, roughnessMap: tex.rough, roughness: 0.8, metalness: 0.2, side: DoubleSide});
+export function makeWoodMaterial(tex:{ diffuse: THREE.Texture, bump: THREE.Texture, rough: THREE.Texture }) {
+    return new THREE.MeshStandardMaterial({map: tex.diffuse, bumpMap: tex.bump, roughnessMap: tex.rough, roughness: 0.8, metalness: 0.2, side: THREE.DoubleSide});
 }
 
-export function drawFloor(scene, woodMat, size = 20) {
-    const floorGeometry = new PlaneGeometry(size, size);
-    const floorMesh = new Mesh(floorGeometry, woodMat);
+export function drawFloor(scene: THREE.Scene, woodMat: THREE.Material, size = 20) {
+    const floorGeometry = new THREE.PlaneGeometry(size, size);
+    const floorMesh = new THREE.Mesh(floorGeometry, woodMat);
     floorMesh.receiveShadow = true;
     floorMesh.rotation.x = -Math.PI / 2;
     scene.add(floorMesh);
@@ -54,8 +51,8 @@ export function drawFloor(scene, woodMat, size = 20) {
 }
 
 export function drawPerimeterWalkway(
-    scene,
-    mat,
+    scene: THREE.Scene,
+    mat: THREE.Material,
     roomSize = 200,     // matches your floor
     rimWidth = 25,      // width of the walkway
     height = 90         // Y position (second storey)
@@ -63,13 +60,13 @@ export function drawPerimeterWalkway(
     const half = roomSize / 2;
     //const gLong  = new PlaneGeometry(roomSize - 2 * rimWidth, rimWidth); // north & south
     //const gShort = new PlaneGeometry(rimWidth, roomSize);                 // east & west
-    const gLong = new BoxGeometry(roomSize - 2*rimWidth, rimWidth, 1.0);
+    const gLong = new THREE.BoxGeometry(roomSize - 2*rimWidth, rimWidth, 1.0);
     gLong.translate(0, -0.25, 0);   // bottom flush with Y=0 of the ring
-    const gShort = new BoxGeometry(rimWidth, roomSize, 1.0);
+    const gShort = new THREE.BoxGeometry(rimWidth, roomSize, 1.0);
     gShort.translate(0, -0.25, 0);   // bottom flush with Y=0 of the ring
 
     // south (‑Z)
-    const south = new Mesh(gLong, mat);
+    const south = new THREE.Mesh(gLong, mat);
     south.rotation.x = -Math.PI / 2;
     south.position.set(0, height, -half + rimWidth / 2);
     scene.add(south);
@@ -80,7 +77,7 @@ export function drawPerimeterWalkway(
     scene.add(north);
 
     // west (‑X)
-    const west = new Mesh(gShort, mat);
+    const west = new THREE.Mesh(gShort, mat);
     west.rotation.x = -Math.PI / 2;
     west.position.set(-half + rimWidth / 2, height, 0);
     scene.add(west);
@@ -93,7 +90,7 @@ export function drawPerimeterWalkway(
     return {south, north, east, west};   // handy for collision boxes
 }
 
-export function drawElevator(scene, material, {
+export function drawElevator(scene: THREE.Scene, material: THREE.Material, {
     size      = 20,     // X–Z footprint
     thick     = 0.4,    // elevator slab thickness
     floorY    = 0.2,    // start height (just above ground floor)
@@ -101,11 +98,11 @@ export function drawElevator(scene, material, {
     rimClear  = 25      // distance you want to stop from the wall
 } = {}) {
 
-    const geo = new BoxGeometry(size, thick, size);
+    const geo = new THREE.BoxGeometry(size, thick, size);
     // move geometry so its top sits at geo origin (easier math)
     geo.translate(0, thick / 2, 0);
 
-    const lift = new Mesh(geo, material);
+    const lift = new THREE.Mesh(geo, material);
     lift.castShadow = lift.receiveShadow = true;
     lift.position.set(0, floorY, -(rimClear + size/2));   // centred front of room
     scene.add(lift);
@@ -114,7 +111,7 @@ export function drawElevator(scene, material, {
         floorY,
         targetY,
         state : 'down',   // 'down' | 'moving' | 'up'
-        box   : new Box3().setFromObject(lift),
+        box   : new THREE.Box3().setFromObject(lift),
         rider: null,
         offsetY: 0, // offset from lift to player
         isPlatform: true,
@@ -124,12 +121,12 @@ export function drawElevator(scene, material, {
     return lift;
 }
 
-const downRay = new Raycaster();
-const DOWN    = new Vector3(0, -1, 0);
+const downRay = new THREE.Raycaster();
+const DOWN    = new THREE.Vector3(0, -1, 0);
 const STEP_FAR = 2.0;           // enough to hit a 0.2m slab
 // (If you later allow crouching, compute STEP_FAR from player height.)
 
-export function playerOnPlatform(platform, player) {
+export function playerOnPlatform(platform: THREE.Object3D, player: THREE.Object3D) {
     downRay.set(player.position, DOWN);
     downRay.far = STEP_FAR;
     return downRay.intersectObject(platform, false).length > 0;

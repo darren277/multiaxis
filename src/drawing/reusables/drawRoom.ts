@@ -1,4 +1,4 @@
-import { TextureLoader, Clock, Vector3, Box3 } from 'three';
+import * as THREE from "three";
 import { GUI } from 'lil-gui';
 
 // Import our modular “draw” functions
@@ -7,12 +7,13 @@ import { drawFloor, loadWoodTextures, makeWoodMaterial, drawPerimeterWalkway, dr
 import { drawWalls } from './drawWalls.js';
 import { walkingAnimationCallback, addObstacle, onKeyDownWalking, onKeyUpWalking, updateObstacleBoxes } from '../config/walking.js';
 import { instantiateCollision } from '../config/instantiateCollision.js';
+import { ThreeJSDrawing } from "../../threejsDrawing.js";
 
 let previousShadowMap = false;
 
-const textureLoader = new TextureLoader();
+const textureLoader = new THREE.TextureLoader();
 
-function drawRoom(scene, threejsDrawing) {
+function drawRoom(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
     // ~~~~~~~~~~~~~~~~~~
     // Draw lights
     const lights = drawLights(scene, lightingParams, bulbLuminousPowers, hemiLuminousIrradiances);
@@ -105,7 +106,7 @@ function drawRoom(scene, threejsDrawing) {
     instantiateCollision(threejsDrawing);
 }
 
-function animateElevator(lift, player, elapsed) {
+function animateElevator(lift: THREE.Mesh, player: THREE.Object3D, elapsed: number) {
     if (lift.userData.state === 'down') {
         if (playerOnPlatform(lift, player)) {
             lift.userData.state = 'moving';
@@ -144,12 +145,12 @@ function animateElevator(lift, player, elapsed) {
 
         lift.updateMatrixWorld();
         lift.userData.box.setFromObject(lift);
-        lift.userData.box.expandByVector(new Vector3(0, 2, 0));
+        lift.userData.box.expandByVector(new THREE.Vector3(0, 2, 0));
     }
 }
 
 
-function animateLights(renderer, threejsDrawing) {
+function animateLights(renderer: THREE.WebGLRenderer, threejsDrawing: ThreeJSDrawing) {
     // Tone Mapping
     renderer.toneMappingExposure = Math.pow(lightingParams.exposure, 5.0);
 
@@ -177,7 +178,7 @@ function animateLights(renderer, threejsDrawing) {
 
 let lastTime = 0;
 
-export function animateRoom(renderer, timestamp, threejsDrawing, camera) {
+export function animateRoom(renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawing: ThreeJSDrawing, camera: THREE.Camera) {
     animateLights(renderer, threejsDrawing);
 
     const scene = threejsDrawing.data.scene;
@@ -213,11 +214,11 @@ const roomDrawing = {
         {'func': drawRoom, 'dataSrc': null},
     ],
     'eventListeners': {
-        'keydown': (event, stuff) => {
+        'keydown': (event: KeyboardEvent, stuff: any) => {
             const keyManager = stuff.data.keyManager;
             onKeyDownWalking(event, keyManager);
         },
-        'keyup': (event, stuff) => {
+        'keyup': (event: KeyboardEvent, stuff: any) => {
             const keyManager = stuff.data.keyManager;
             onKeyUpWalking(event, keyManager);
         },

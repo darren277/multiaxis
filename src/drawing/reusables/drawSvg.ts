@@ -1,50 +1,48 @@
-import {
-    ExtrudeGeometry, Color, Mesh, MeshBasicMaterial, MeshStandardMaterial, PlaneGeometry, Group, Box3,
-    Vector2, Vector3, Raycaster, DoubleSide, ShaderMaterial, AmbientLight, CanvasTexture, MirroredRepeatWrapping, SRGBColorSpace
-} from 'three';
+import * as THREE from "three";
 import { SVGLoader } from 'svgloader';
 import { drawBasicLights } from './drawLights.js';
+import { ThreeJSDrawing } from "../../threejsDrawing.js";
 
 const svgLoader = new SVGLoader();
 const interactiveSvgGroups = [];
-const raycaster = new Raycaster();
-const pointer   = new Vector2();
+const raycaster = new THREE.Raycaster();
+const pointer   = new THREE.Vector2();
 let   hovered   = null;
 
-function cssToColor(cssString, fallback = 0x888888) {
-    const c = new Color();
+function cssToColor(cssString: string, fallback = 0x888888) {
+    const c = new THREE.Color();
     // setStyle understands rgb(), hsl(), hex, named colours … everything the <svg> can throw at you
     const ok = c.setStyle(cssString);
-    return ok ? c : new Color(fallback);
+    return ok ? c : new THREE.Color(fallback);
 }
 
-function renderLinearGradientCanvas(colA, colB, horizontal = true) {
+function renderLinearGradientCanvas(colA: THREE.Color, colB: THREE.Color, horizontal = true) {
     const size    = 128;               // tiny; will be stretched by UVs
     const canvas  = document.createElement('canvas');
     canvas.width  = canvas.height = size;
     const ctx     = canvas.getContext('2d');
 
     const grad = ctx.createLinearGradient(0, 0, horizontal ? size : 0, horizontal ? 0    : size);
-    grad.addColorStop(0, colA);
-    grad.addColorStop(1, colB);
+    grad.addColorStop(0, colA.getStyle());
+    grad.addColorStop(1, colB.getStyle());
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, size, size);
 
-    const tex = new CanvasTexture(canvas);
-    tex.wrapS = tex.wrapT = MirroredRepeatWrapping;   // ⇐ “reflect” like SVG
-    tex.colorSpace = SRGBColorSpace;
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.wrapS = tex.wrapT = THREE.MirroredRepeatWrapping;   // ⇐ “reflect” like SVG
+    tex.colorSpace = THREE.SRGBColorSpace;
     tex.needsUpdate = true;
-    return new MeshBasicMaterial({ map: tex, side: DoubleSide, toneMapped: false });
+    return new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide, toneMapped: false });
 }
 
 function renderLinearGradient(vDirValues, colorA, colorB) {
     //const vDir = new Vector2(1004.84 - 924.84, 654.9  - 614.9).normalize();
-    const vDir = new Vector2(vDirValues[0], vDirValues[1]).normalize();
+    const vDir = new THREE.Vector2(vDirValues[0], vDirValues[1]).normalize();
 
-    const material = new ShaderMaterial({
+    const material = new THREE.ShaderMaterial({
         uniforms: {
-            colorA: {value: new Color(colorA)},
-            colorB: {value: new Color(colorB)},
+            colorA: {value: new THREE.Color(colorA)},
+            colorB: {value: new THREE.Color(colorB)},
             gDir:   {value: vDir}
         },
         vertexShader: `
@@ -66,7 +64,7 @@ function renderLinearGradient(vDirValues, colorA, colorB) {
                 t = abs(fract(t * 1.0) * 2.0 - 1.0);
                 gl_FragColor = vec4(mix(colorA, colorB, t), 1.0);
             }`,
-        side: DoubleSide,
+        side: THREE.DoubleSide,
         toneMapped: false                 // keep colours pure when colour-management is on
     });
 
@@ -75,7 +73,7 @@ function renderLinearGradient(vDirValues, colorA, colorB) {
     return material;
 }
 
-function isGiantWhiteBox(path) {
+function isGiantWhiteBox(path: THREE.Path) {
     const isGiantWhiteBox = path.color === 0xffffff && path.toShapes(true).length === 1;
     if (isGiantWhiteBox) {
         console.log('Giant white box detected');
@@ -84,13 +82,13 @@ function isGiantWhiteBox(path) {
     return isGiantWhiteBox;
 }
 
-function removeSpacesRGB(rgb) {
+function removeSpacesRGB(rgb: string) {
     const rgbString = rgb.match(/\d+/g);
     return `#${rgbString.map(num => parseInt(num).toString(16).padStart(2, '0')).join('')}`;
 }
 
-function processShape(shape, depth, fillColor, isText = false, linearGradient = null) {
-    const geometry = new ExtrudeGeometry(shape, {depth, bevelEnabled: false});
+function processShape(shape: THREE.Shape, depth: number, fillColor: string, isText = false, linearGradient = null) {
+    const geometry = new THREE.ExtrudeGeometry(shape, {depth, bevelEnabled: false});
 
     let material;
     if (linearGradient) {
@@ -99,11 +97,11 @@ function processShape(shape, depth, fillColor, isText = false, linearGradient = 
     } else {
         const threeColor = cssToColor(fillColor, 0x888888);
         console.log('threeColor', threeColor, fillColor);
-        material = new MeshBasicMaterial({ color: threeColor, toneMapped: false });
+        material = new THREE.MeshBasicMaterial({ color: threeColor, toneMapped: false });
     }
-    material.side = DoubleSide;
+    material.side = THREE.DoubleSide;
 
-    const mesh = new Mesh(geometry, material);
+    const mesh = new THREE.Mesh(geometry, material);
 
     // Example transform to ensure correct orientation
     if (isText) {
@@ -118,15 +116,19 @@ function processShape(shape, depth, fillColor, isText = false, linearGradient = 
     return mesh;
 }
 
-function processPath(path) {
+function processPath(path: THREE.Path) {
     const style = path.userData?.style || {};
     const node  = path.userData?.node;  // Original SVG DOM node (if present)
     const configuration = node?.getAttribute('data-configuration') || '';
     const origType = node?.getAttribute('data-orig-type') || configuration || '';
     const fill = node?.getAttribute('data-orig-fill') || '';
     console.log('node', origType, node);
-    let linearGradient;
-    let fillColor;
+    let linearGradient: {
+        vDir: number[],
+        colorA: string,
+        colorB: string
+    } | null = null;
+    let fillColor = style.fill || style.stroke || 'none';
 
     // g: linear-gradient="80.0,40.0,rgb(232,238,247),rgb(183,201,227)"
     if (node?.getAttribute('linear-gradient')) {
@@ -140,7 +142,7 @@ function processPath(path) {
         }
     }
 
-    const pathGroup = new Group();
+    const pathGroup = new THREE.Group();
 
     if (fill === 'white') {
         // this is probably the big white box, so returning...
@@ -168,7 +170,7 @@ function processPath(path) {
 
     const isText = origType === 'text';
 
-    shapes.forEach(shape => {
+    shapes.forEach((shape: THREE.Shape) => {
         let theColor;
         console.log('fillColor', fillColor, linearGradient);
         if (fillColor === 'none' && isText) {
@@ -207,13 +209,16 @@ function processPath(path) {
 }
 
 class Path {
-    constructor(path) {
+    path: THREE.Path;
+    color: THREE.Color;
+
+    constructor(path: THREE.Path) {
         this.path = path;
         this.color = determineColor(path);
     }
 }
 
-function determineColor(path) {
+function determineColor(path: THREE.Path) {
     const style = path.userData?.style || {};
     // Some color fields might be inherited:
     //   - path.color        => usually the fill color
@@ -231,12 +236,12 @@ function determineColor(path) {
 
     if (fillColor.startsWith('rgb')) {
         const rgb = fillColor.match(/\d+/g);
-        fillColor = `#${rgb.map(num => parseInt(num).toString(16).padStart(2, '0')).join('')}`;
-        const threeColor = new Color(0xffff00);
+        fillColor = `#${rgb.map((num: string) => parseInt(num).toString(16).padStart(2, '0')).join('')}`;
+        const threeColor = new THREE.Color(0xffff00);
         return threeColor;
     }
     if (fillColor.startsWith('#')) {
-        const threeColor = new Color(fillColor);
+        const threeColor = new THREE.Color(fillColor);
         return threeColor;
     }
     if (fillColor.startsWith('none')) {
@@ -244,13 +249,13 @@ function determineColor(path) {
     }
 
     // default to black...
-    const threeColor = new Color(0x888888);
+    const threeColor = new THREE.Color(0x888888);
     return threeColor;
 }
 
-function drawSvg(scene, data, threejsDrawing) {
-    const svgGroup = new Group();
-    data.paths.forEach((path, i) => {
+function drawSvg(scene: THREE.Scene, data: any, threejsDrawing: ThreeJSDrawing) {
+    const svgGroup = new THREE.Group();
+    data.paths.forEach((path: THREE.Path, i: number) => {
         const pathGroup = processPath(path);
         svgGroup.add(pathGroup);
     });
@@ -261,12 +266,12 @@ function drawSvg(scene, data, threejsDrawing) {
 
     scene.add(svgGroup);
 
-    const floorGeometry = new PlaneGeometry(200, 200);
-    const floorMaterial = new MeshStandardMaterial({
+    const floorGeometry = new THREE.PlaneGeometry(200, 200);
+    const floorMaterial = new THREE.MeshStandardMaterial({
         color: 0x888888,
     });
 
-    const floor = new Mesh(floorGeometry, floorMaterial);
+    const floor = new THREE.Mesh(floorGeometry, floorMaterial);
     floor.rotation.x = -Math.PI / 2; // make it horizontal
     floor.position.y = 0;
     floor.receiveShadow = true;
@@ -277,7 +282,7 @@ function drawSvg(scene, data, threejsDrawing) {
     drawBasicLights(scene);
 
     // add ambient lights...
-    const ambientLight = new AmbientLight(0xffffff, 0.5);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
     scene.add(ambientLight);
 }
 
@@ -291,11 +296,11 @@ function buildSvgGroup({
     scale    = 0.1,           // uniform or [sx,sy,sz]     (optional)
     depth    = defaultDepth   // fallback extrusion depth  (optional)
 }) {
-    const group = new Group();
+    const group = new THREE.Group();
     const [sx, sy, sz] = toArray(scale, 3);
 
     /* --- iterate svg paths --- */
-    data.paths.forEach(path => {
+    data.paths.forEach((path: THREE.Path) => {
         //const pathGroup = processPath(path, depth);   // <-- now returns a Group
         const pathGroup = processPath(path);   // <-- now returns a Group
         if (pathGroup) group.add(pathGroup);
@@ -316,7 +321,7 @@ function buildSvgGroup({
 
 /* ---------- 1 SVG path → array<THREE.Mesh> ---------- */
 
-function pathToMeshes(path, fallbackDepth) {
+function pathToMeshes(path: THREE.Path, fallbackDepth: number = defaultDepth) {
     const node  = path.userData?.node;
     const type  = node?.getAttribute('data-orig-type') || '';
     const fill  = node?.getAttribute('data-orig-fill') || '';
@@ -330,23 +335,23 @@ function pathToMeshes(path, fallbackDepth) {
     const isText = type === 'text';
     const shapes = SVGLoader.createShapes(path);
 
-    return shapes.map(shape => processShape(shape, depth, fillColor, isText));
+    return shapes.map((shape: THREE.Shape) => processShape(shape, depth, fillColor, isText));
 }
 
 /* ---------- convenience: find BB center & re-pivot ---------- */
 
-function centerGroupPivot(group) {
-    const box = new Box3().setFromObject(group);
-    const center = box.getCenter(new Vector3());
+function centerGroupPivot(group: THREE.Group) {
+    const box = new THREE.Box3().setFromObject(group);
+    const center = box.getCenter(new THREE.Vector3());
     group.children.forEach(child => child.position.sub(center));
     group.position.add(center);
 }
 
-function loadSvg(url) {
+function loadSvg(url: string) {
     return new Promise((resolve, reject) => {
-        svgLoader.load(url, (data) => {
+        svgLoader.load(url, (data: any) => {
             resolve(data);
-        }, undefined, (err) => {
+        }, undefined, (err: any) => {
             console.error('Error loading SVG:', err);
             reject(err);
         });
@@ -376,7 +381,7 @@ const svgsToRender = [
 ];
 
 
-async function drawMultipleSvgs(scene, data, threejsDrawing) {
+async function drawMultipleSvgs(scene: THREE.Scene, data: any, threejsDrawing: ThreeJSDrawing) {
     // Load SVG data
     const svgPromises = svgsToRender.map(cfg => {
         return loadSvg(`./imagery/${cfg.data_src}.svg`).then(data => {
@@ -388,12 +393,12 @@ async function drawMultipleSvgs(scene, data, threejsDrawing) {
     console.log('SVG data loaded:', res);
 
     // Create a plane for the ground
-    const floorGeometry = new PlaneGeometry(200, 200);
-    const floorMaterial = new MeshStandardMaterial({
+    const floorGeometry = new THREE.PlaneGeometry(200, 200);
+    const floorMaterial = new THREE.MeshStandardMaterial({
         color: 0x888888,
     });
 
-    const floor = new Mesh(floorGeometry, floorMaterial);
+    const floor = new THREE.Mesh(floorGeometry, floorMaterial);
     floor.rotation.x = -Math.PI / 2; // make it horizontal
     floor.position.y = 0;
     floor.receiveShadow = true;
@@ -410,13 +415,13 @@ async function drawMultipleSvgs(scene, data, threejsDrawing) {
     });
 }
 
-function updatePointer(evt, renderer) {
+function updatePointer(evt: PointerEvent, renderer: THREE.WebGLRenderer) {
     const { left, top, width, height } = renderer.domElement.getBoundingClientRect();
     pointer.x =  ( (evt.clientX - left) / width  ) * 2 - 1;
     pointer.y = -( (evt.clientY - top ) / height ) * 2 + 1;
 }
 
-function onPointerMove(evt, renderer, camera) {
+function onPointerMove(evt: PointerEvent, renderer: THREE.WebGLRenderer, camera: THREE.Camera) {
     updatePointer(evt, renderer);
 
     raycaster.setFromCamera(pointer, camera);
@@ -442,7 +447,7 @@ function onPointerMove(evt, renderer, camera) {
     }
 }
 
-function findInteractiveParent(obj) {
+function findInteractiveParent(obj: THREE.Object3D) {
     while (obj) {
         if (obj.userData?.kind === 'svgPath') return obj;
         obj = obj.parent;
@@ -450,7 +455,7 @@ function findInteractiveParent(obj) {
     return null;
 }
 
-function onPointerClick(evt) {
+function onPointerClick(evt: PointerEvent) {
     if (!hovered) return;            // nothing under pointer
 
     // simple demo: log info
@@ -469,7 +474,7 @@ const svgDrawing = {
         {'func': drawSvg, 'dataSrc': 'OpenProject', 'dataType': 'svg'}
     ],
     'eventListeners': null,
-    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
+    'animationCallback': (renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawing: ThreeJSDrawing, camera: THREE.Camera) => {
     },
     'data': {
     },
@@ -485,15 +490,15 @@ const multiSvgDrawing = {
         {'func': drawMultipleSvgs, 'dataSrc': null, 'dataType': 'svg'}
     ],
     'eventListeners': {
-        'pointermove': (event, data) => {
+        'pointermove': (event: PointerEvent, data: any) => {
             onPointerMove(event, data.renderer, data.camera);
         },
-        'click': (event, data) => {
+        'click': (event: PointerEvent, data: any) => {
             console.log('click', event, data);
             onPointerClick(event, data.renderer, data.camera);
         }
     },
-    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
+    'animationCallback': (renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawing: ThreeJSDrawing, camera: THREE.Camera) => {
     },
     'data': {
     },
