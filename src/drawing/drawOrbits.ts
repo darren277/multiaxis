@@ -12,10 +12,20 @@ const planets = [
     {"name": "Neptune", "diameter": 49528, "rotation": 0.67, "revolution": 164.79, "distance_from_sun": 4495.1*(10**6), "texture": "2k_neptune.jpg"},
 ]
 
+type PlanetData = {
+    name: string;
+    diameter: number; // in km
+    rotation: number; // in Earth days
+    revolution: number; // in Earth days
+    distance_from_sun: number; // in km
+    texture: string; // texture file name
+};
+
 type Planet = {
     orbitRadius: number;
     mesh: any;
     orbitAngle: number;
+    rotationAngle: number;
     name: string;
     diameter: number; // in km
     rotation: number; // in Earth days
