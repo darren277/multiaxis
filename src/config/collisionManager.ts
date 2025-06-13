@@ -568,7 +568,10 @@ export class CollisionManager {
         const minY = GROUND_Y + halfHeight; // GROUND_Y is your absolute minimum floor
         if (yawObject.position.y < minY) {
             // Only snap to minY if not currently grounded on something else higher up
-            if (!this.player.userData.currentGround || yawObject.position.y < (this.lastGroundY + halfHeight) ) {
+            if (
+                !this.player.userData.currentGround ||
+                (this.lastGroundY !== undefined && yawObject.position.y < (this.lastGroundY + halfHeight))
+            ) {
                  yawObject.position.y = minY;
                  this.velocity.y = 0;
                  this.keyManager.canJump = true;

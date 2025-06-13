@@ -5,10 +5,22 @@ import { ThreeJSDrawing } from '../threejsDrawing';
 export function instantiateCollision(threejsDrawing: ThreeJSDrawing) {
     const collision = new CollisionManager({
         player:        (threejsDrawing.data.controls as { object: any }).object,
-        worldMeshes:   threejsDrawing.data.worldMeshes,
-        staticBoxes:   threejsDrawing.data.staticBoxes,
-        movingMeshes:  threejsDrawing.data.movingMeshes,
-        obstacleBoxes: threejsDrawing.data.obstacleBoxes,
+        worldMeshes:   (threejsDrawing.data.worldMeshes as THREE.Object3D[] | undefined)?.filter(
+            (obj): obj is THREE.Mesh => obj instanceof THREE.Mesh
+        ),
+        staticBoxes:   (threejsDrawing.data.staticBoxes as THREE.Object3D[] | undefined)?.map(obj => {
+            const box = new THREE.Box3();
+            box.setFromObject(obj);
+            return box;
+        }),
+        movingMeshes:  (threejsDrawing.data.movingMeshes as THREE.Object3D[] | undefined)?.filter(
+            (obj): obj is THREE.Mesh => obj instanceof THREE.Mesh
+        ),
+        obstacleBoxes: (threejsDrawing.data.obstacleBoxes as THREE.Object3D[] | undefined)?.map(obj => {
+            const box = new THREE.Box3();
+            box.setFromObject(obj);
+            return box;
+        }),
         params: {
             playerSize: typeof threejsDrawing.sceneConfig?.playerSize === 'number' ? threejsDrawing.sceneConfig.playerSize : 1.0,
             stepDown: typeof threejsDrawing.sceneConfig?.stepDown === 'number' ? threejsDrawing.sceneConfig.stepDown : 1.0,
@@ -31,7 +43,7 @@ export function instantiateCollision(threejsDrawing: ThreeJSDrawing) {
     threejsDrawing.data.collision = collision;
     threejsDrawing.data.keyManager = collision.keyManager;
 
-    threejsDrawing.data.controls.object.position.set(
+    (threejsDrawing.data.controls as { object: { position: THREE.Vector3 } }).object.position.set(
         threejsDrawing.sceneConfig?.startPosition?.x ?? 0,
         threejsDrawing.sceneConfig?.startPosition?.y ?? 0,
         threejsDrawing.sceneConfig?.startPosition?.z ?? 0

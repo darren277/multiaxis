@@ -103,7 +103,15 @@ async function contentLoadedCallback(drawingName: string, threejsDrawing: ThreeJ
 
     const outlineEffectEnabled = sceneConfig && sceneConfig.outlineEffect || false;
 
-    let { scene, camera, renderer, controls, stats, css2DRenderer, css3DRenderer } = await setupScene('c', threejsDrawing.sceneElements, sceneConfig) as {
+    // Convert sceneElements to OverlayElement[] if necessary
+    const overlayElements = (threejsDrawing.sceneElements ?? []).map((el: any) => ({
+        tagName: el.tagName ?? 'div',
+        className: el.className,
+        id: el.id,
+        attrs: el.attrs
+    }));
+
+    let { scene, camera, renderer, controls, stats, css2DRenderer, css3DRenderer } = await setupScene('c', overlayElements, sceneConfig) as {
         scene: any,
         camera: any,
         renderer: any,

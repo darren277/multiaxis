@@ -140,7 +140,7 @@ function createPlaceholderPiece(scene: THREE.Scene, type: string, color = 0xeeee
 }
 
 
-const pieceMap = {
+const pieceMap: { [key: number]: string[] } = {
     0: ['rook', 'knight', 'bishop', 'queen', 'king', 'bishop', 'knight', 'rook'],
     1: Array(8).fill('pawn'),
     6: Array(8).fill('pawn'),

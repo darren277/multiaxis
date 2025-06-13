@@ -107,7 +107,7 @@ function buildSceneItems(scene: THREE.Scene, sceneItems: Item[], worldWidth: num
         let entry;
         const isVideo = item.video && item.video !== "";
         const use3dRenderer = true;
-        entry = createCaptionedItem(scene, item, isVideo, worldWidth, worldHeight, !!use3dRenderer);
+        entry = createCaptionedItem(scene, item, isVideo || false, worldWidth, worldHeight, !!use3dRenderer);
         if (!entry) {
             console.warn('Failed to create entry for item:', item);
             return; // Skip this item if creation failed
@@ -216,7 +216,7 @@ async function drawAdventure(scene: THREE.Scene, data: any, threejsDrawing: any)
         console.log('creating other item', item);
         const isVideo = item.video && item.video !== "";
         //const use3dRenderer = false;
-        const entry = createCaptionedItem(scene, item, isVideo, threejsDrawing.data.worldWidth, threejsDrawing.data.worldHeight, use3DRenderer);
+        const entry = createCaptionedItem(scene, item, isVideo || false, threejsDrawing.data.worldWidth, threejsDrawing.data.worldHeight, use3DRenderer);
         if (!entry) {
             console.warn('Failed to create entry for other item:', item);
             return null; // Skip this item if creation failed

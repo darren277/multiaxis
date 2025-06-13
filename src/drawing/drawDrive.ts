@@ -182,7 +182,7 @@ function drawCar(physicsWorld: any, scene: THREE.Scene) {
 function drawDrive(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
     threejsDrawing.data.physicsWorld = null;
 
-    Ammo().then(function (AmmoLib) {
+    Ammo().then(function (AmmoLib: any) {
         Ammo = AmmoLib;
 
         threejsDrawing.data.collisionConfiguration = new Ammo.btDefaultCollisionConfiguration();

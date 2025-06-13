@@ -71,9 +71,7 @@ export async function setupScene(
     if (css2DRendererEnabled) {
         console.log('CSS2DRenderer enabled');
         const CSS2DRenderer = await importCSS2DRenderer();
-        const css2DScene = new THREE.Scene();
         css2DRenderer = new CSS2DRenderer();
-        css2DRenderer.scene = css2DScene;
         css2DRenderer.setSize(container.clientWidth, container.clientHeight);
         css2DRenderer.domElement.style.position = 'absolute';
         css2DRenderer.domElement.style.top = container.offsetTop + 'px';
@@ -90,7 +88,6 @@ export async function setupScene(
         const CSS3DRenderer = await importCSS3DRenderer();
         const css3DScene = new THREE.Scene();
         css3DRenderer = new CSS3DRenderer();
-        css3DRenderer.scene = css3DScene;
         //cssRenderer.setSize(window.innerWidth, window.innerHeight);
         css3DRenderer.setSize(container.clientWidth, container.clientHeight);
         css3DRenderer.domElement.style.position = 'absolute';

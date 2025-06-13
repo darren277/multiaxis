@@ -162,7 +162,7 @@ function drawCity(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
 
         console.log('cityBox after shift', cityBox.setFromObject(model));
 
-        console.log('streets found:', threejsDrawing.data.worldMeshes.length);
+        console.log('streets found:', threejsDrawing.data.worldMeshes?.length ?? 0);
     });
 
     // Draw the sun
@@ -223,7 +223,11 @@ const cityDrawing = {
 
         (scene as THREE.Scene).updateMatrixWorld(true);
 
-        updateObstacleBoxes(threejsDrawing.data.staticBoxes, threejsDrawing.data.movingMeshes, threejsDrawing.data.obstacleBoxes);
+        updateObstacleBoxes(
+            (threejsDrawing.data.staticBoxes as unknown as THREE.Box3[]) ?? [],
+            (threejsDrawing.data.movingMeshes as THREE.Mesh[]) ?? [],
+            (threejsDrawing.data.obstacleBoxes as unknown as THREE.Box3[]) ?? []
+        );
 
         walkingAnimationCallback(scene as THREE.Scene, controls, threejsDrawing.data.collision, elapsed, true);
     },

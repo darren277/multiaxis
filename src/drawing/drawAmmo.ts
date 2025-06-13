@@ -89,7 +89,7 @@ function initPhysics(threejsDrawing: ThreeJSDrawing) {
     tempBtVec3_1 = new Ammo.btVector3(0, 0, 0);
 }
 
-function createObject(scene: THREE.Scene, physicsWorld: Ammo.btDiscreteDynamicsWorld, mass: number, halfExtents: THREE.Vector3, pos: THREE.Vector3, quat: THREE.Quaternion, material: THREE.Material) {
+function createObject(scene: THREE.Scene, physicsWorld: any, mass: number, halfExtents: THREE.Vector3, pos: THREE.Vector3, quat: THREE.Quaternion, material: THREE.Material) {
     const object = new THREE.Mesh(new THREE.BoxGeometry(halfExtents.x * 2, halfExtents.y * 2, halfExtents.z * 2), material);
     object.position.copy(pos);
     object.quaternion.copy(quat);
@@ -97,7 +97,7 @@ function createObject(scene: THREE.Scene, physicsWorld: Ammo.btDiscreteDynamicsW
     createDebrisFromBreakableObject(scene, physicsWorld, object);
 }
 
-function createObjects(scene: THREE.Scene, physicsWorld: Ammo.btDiscreteDynamicsWorld) {
+function createObjects(scene: THREE.Scene, physicsWorld: any) {
     // Ground
     pos.set(0, - 0.5, 0);
     quat.set(0, 0, 0, 1);
@@ -108,8 +108,8 @@ function createObjects(scene: THREE.Scene, physicsWorld: Ammo.btDiscreteDynamics
         texture.wrapS = THREE.RepeatWrapping;
         texture.wrapT = THREE.RepeatWrapping;
         texture.repeat.set(40, 40);
-        ground.material.map = texture;
-        ground.material.needsUpdate = true;
+        (ground.material as THREE.MeshPhongMaterial).map = texture;
+        (ground.material as THREE.MeshPhongMaterial).needsUpdate = true;
 
     });
 
@@ -156,7 +156,7 @@ function createObjects(scene: THREE.Scene, physicsWorld: Ammo.btDiscreteDynamics
     mountainPoints.push(new THREE.Vector3(mountainHalfExtents.x, - mountainHalfExtents.y, - mountainHalfExtents.z));
     mountainPoints.push(new THREE.Vector3(- mountainHalfExtents.x, - mountainHalfExtents.y, - mountainHalfExtents.z));
     mountainPoints.push(new THREE.Vector3(0, mountainHalfExtents.y, 0));
-    const mountain = new THREE.Mesh(new THREE.ConvexGeometry(mountainPoints), createMaterial(0xB03814));
+    const mountain = new THREE.Mesh(new ConvexGeometry(mountainPoints), createMaterial(0xB03814));
     mountain.position.copy(pos);
     mountain.quaternion.copy(quat);
     convexBreaker.prepareBreakableObject(mountain, mountainMass, new THREE.Vector3(), new THREE.Vector3(), true);
@@ -170,7 +170,7 @@ function createParalellepipedWithPhysics(scene: THREE.Scene, physicsWorld: Ammo.
     shape.setMargin(margin);
 
     // createRigidBody(scene, physicsWorld, object, physicsShape, mass, pos, quat, vel, angVel)
-    createRigidBody(scene, physicsWorld, object, shape, mass, pos, quat);
+    createRigidBody(scene, physicsWorld, object, shape, mass, pos, quat, null, null);
 
     return object;
 }
@@ -207,7 +207,7 @@ function createConvexHullPhysicsShape(coords: Float32Array): Ammo.btConvexHullSh
     return shape;
 }
 
-function createRigidBody(scene: THREE.Scene, physicsWorld: Ammo.btDiscreteDynamicsWorld, object: THREE.Mesh, physicsShape: Ammo.btCollisionShape, mass: number, pos: THREE.Vector3, quat: THREE.Quaternion, vel: THREE.Vector3, angVel: THREE.Vector3) {
+function createRigidBody(scene: THREE.Scene, physicsWorld: Ammo.btDiscreteDynamicsWorld, object: THREE.Mesh, physicsShape: Ammo.btCollisionShape, mass: number, pos: THREE.Vector3, quat: THREE.Quaternion, vel: THREE.Vector3 | null, angVel: THREE.Vector3 | null) {
     if (pos) {
         object.position.copy(pos);
     } else {

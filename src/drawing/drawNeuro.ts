@@ -223,12 +223,19 @@ function animateSynapse(
             r.scale.set(scale, scale, scale);
             r.userData.pulse -= 0.3;
             if (r.userData.pulse <= 0) r.scale.set(1, 1, 1); // reset scale
-            r.material.color.set(receptorColorMap[r.userData.type]);
+            (r.material as THREE.MeshStandardMaterial).color.set(receptorColorMap[r.userData.type as ReceptorType]);
         }
     });
 
     frame++;
 }
+
+type SynapseDrawingData = {
+    particles: THREE.Mesh[];
+    vesicles: THREE.Mesh[];
+    receptors: THREE.Mesh[];
+    scene: THREE.Scene | null;
+};
 
 const synapseDrawing = {
     'sceneElements': [],
@@ -237,7 +244,7 @@ const synapseDrawing = {
     ],
     'eventListeners': null,
     'animationCallback': (renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawing: ThreeJSDrawing, camera: THREE.Camera) => {
-        const { scene, particles = [], vesicles = [], receptors = [] } = threejsDrawing.data;
+        const { scene, particles = [], vesicles = [], receptors = [] } = threejsDrawing.data as SynapseDrawingData;
 
         if (scene && vesicles.length > 0) {
             animateSynapse(scene, vesicles, particles, ['glutamate'], ['AMPA'], receptors);
@@ -247,8 +254,10 @@ const synapseDrawing = {
     },
     'data': {
         'particles': [],
+        'vesicles': [],
+        'receptors': [],
         'scene': null,
-    }
+    } as SynapseDrawingData
 }
 
 export { synapseDrawing };

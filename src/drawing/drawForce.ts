@@ -79,7 +79,10 @@ function drawForce3dGraph(scene: THREE.Scene, data: any, threejsDrawing: ThreeJS
         });
 
     // Adjust the force layout (spread nodes a bit)
-    Graph.d3Force('charge').strength(-120);
+    const chargeForce = Graph.d3Force('charge');
+    if (chargeForce) {
+        chargeForce.strength(-120);
+    }
 
     // Store this ForceGraph instance if you need it later:
     threejsDrawing.data._forceGraphInstance = Graph;

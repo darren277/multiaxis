@@ -16,6 +16,7 @@ const audioLoader = new AudioLoader();
 // create a helper function to verify these mappings from the browser console as they are played...
 
 const NOTE_MAPPING: { [key: string]: string } = {
+    // TODO: Piano needs tuning.
     'Box001_Solid_Glass_0': 'C1',
     'Box008_Solid_Glass2_0': 'Db1',
     'Object006_Solid_Glass_0': 'D1',
@@ -60,9 +61,9 @@ const NOTE_MAPPING: { [key: string]: string } = {
     'Object024_Solid_Glass_0': 'D4',
     'Box027_Solid_Glass2_0': 'Eb4',
     'Object023_Solid_Glass_0': 'E4',
-    'Object024_Solid_Glass_0': 'F4',
+    //'Object024_Solid_Glass_0': 'F4',
     'Box028_Solid_Glass2_0': 'Gb4',
-    'Object023_Solid_Glass_0': 'G4',
+    //'Object023_Solid_Glass_0': 'G4',
     'Box029_Solid_Glass2_0': 'Ab4',
     'Object022_Solid_Glass_0': 'A5',
     'Box030_Solid_Glass2_0': 'Bb4',
@@ -311,7 +312,9 @@ function drawMusic(scene: THREE.Scene, data: any, state: any) {
 
                 if (child instanceof THREE.Mesh) {
                     if (child instanceof THREE.Mesh) {
-                        clickableKeys.push(child);
+                        if (child instanceof THREE.Mesh) {
+                            clickableKeys.push(child);
+                        }
                     }
                 }
             } else {
@@ -345,7 +348,9 @@ function drawMusic(scene: THREE.Scene, data: any, state: any) {
                         child.userData.note = note;
                         console.log(`Child userData: ${child.userData}`);
 
-                        clickableKeys.push(child);
+                        if (child instanceof THREE.Mesh) {
+                            clickableKeys.push(child);
+                        }
                     }
                 }
             }

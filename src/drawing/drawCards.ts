@@ -5,7 +5,16 @@ import { ThreeJSDrawing } from "../threejsDrawing";
 const cardWidth = 2.5;
 const cardHeight = 3.5;
 const cardThickness = 0.02; // small enough but noticeable edge
-const DeckConfig = {
+type DeckConfigType = {
+    width: number;
+    height: number;
+    thickness: number;
+    faceRotationZ: number;
+    orientation: string;
+    anisotropy?: number;
+};
+
+const DeckConfig: { [key: string]: DeckConfigType } = {
     portrait: {         // classic poker cards
         width: 2.5,
         height: 3.5,
@@ -503,7 +512,7 @@ function drawCards(scene: THREE.Scene, data: any, threejsDrawing: any) {
         };
     });
 
-    const deckType = metadata.orientation || 'portrait'; // default to portrait
+    const deckType: 'portrait' | 'landscape' = (metadata.orientation === 'landscape') ? 'landscape' : 'portrait'; // default to portrait
 
     const cfg = DeckConfig[deckType];
 
@@ -555,7 +564,7 @@ function onMouseDown(e: MouseEvent, threejsDrawing: ThreeJSDrawing) {
 
     const camera = threejsDrawing.data.camera as THREE.Camera;
     if (!camera || !(camera instanceof THREE.Camera)) return;
-    const renderer = threejsDrawing.data.renderer;
+    const renderer = threejsDrawing.data.renderer as THREE.WebGLRenderer;
     if (!renderer) return;
     const controls = threejsDrawing.data.controls;
     if (!controls) {console.log('no controls'); return;}
@@ -596,8 +605,8 @@ function snapToGrid(pos: THREE.Vector3, allowedAxes = ['x', 'z']) {
 function onMouseMove(e: MouseEvent, threejsDrawing: ThreeJSDrawing) {
     if (!draggingCard) return;
 
-    const camera = threejsDrawing.data.camera;
-    if (!camera) return;
+    const camera = threejsDrawing.data.camera as THREE.Camera;
+    if (!camera || !(camera instanceof THREE.Camera)) return;
     const renderer = threejsDrawing.data.renderer;
     if (!renderer) return;
 
