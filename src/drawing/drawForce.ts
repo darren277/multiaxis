@@ -3,7 +3,7 @@ import SpriteText from 'three-spritetext';
 import ForceGraph3D from '3d-force-graph';
 import { ThreeJSDrawing } from '../types';
 
-function drawForce3dGraph(scene: THREE.Scene, data: any, threejsDrawing: ThreeJSDrawing & { data: { _forceGraphInstance: ForceGraph3D | null } }) {
+function drawForce3dGraph(scene: THREE.Scene, data: any, threejsDrawing: ThreeJSDrawing & { data: { _forceGraphInstance: InstanceType<typeof ForceGraph3D> | null } }) {
     const { renderer, camera, controls } = threejsDrawing.data;
 
     const dataSrc = threejsDrawing.data.dataSrc;
@@ -20,6 +20,11 @@ function drawForce3dGraph(scene: THREE.Scene, data: any, threejsDrawing: ThreeJS
 
     const canvas = document.getElementById('3d-graph');
     console.log('canvas', canvas);
+
+    if (!canvas) {
+        console.error("Canvas element with id '3d-graph' not found.");
+        return;
+    }
 
     // TODO: Cannot get this way to work yet...
 //    const Graph = new ForceGraph3D({
@@ -63,13 +68,14 @@ function drawForce3dGraph(scene: THREE.Scene, data: any, threejsDrawing: ThreeJS
             sprite.textHeight = 1.5;
             return sprite;
         })
-        .linkPositionUpdate((sprite: SpriteText, { start, end }: { start: THREE.Vector3; end: THREE.Vector3 }) => {
+        .linkPositionUpdate((sprite, { start, end }: { start: { x: number; y: number; z: number }; end: { x: number; y: number; z: number } }) => {
             // Move link labels to the midpoint
-            const middlePos = (['x', 'y', 'z'] as const).reduce((acc, c) => {
-                acc[c] = start[c] + (end[c] - start[c]) / 2;
-                return acc;
-            }, {} as { [key in 'x' | 'y' | 'z']?: number });
-            Object.assign(sprite.position, middlePos);
+            const middlePos = {
+                x: start.x + (end.x - start.x) / 2,
+                y: start.y + (end.y - start.y) / 2,
+                z: start.z + (end.z - start.z) / 2
+            };
+            (sprite as SpriteText).position.set(middlePos.x, middlePos.y, middlePos.z);
         });
 
     // Adjust the force layout (spread nodes a bit)
@@ -98,13 +104,13 @@ const force3dDrawing = {
         }
         if (
             threejsDrawing.data._forceGraphInstance &&
-            (threejsDrawing.data._forceGraphInstance as ForceGraph3D).tickFrame
+            (threejsDrawing.data._forceGraphInstance as InstanceType<typeof ForceGraph3D>).tickFrame
         ) {
-            (threejsDrawing.data._forceGraphInstance as ForceGraph3D).tickFrame();
+            (threejsDrawing.data._forceGraphInstance as InstanceType<typeof ForceGraph3D>).tickFrame();
         }
     },
     'data': {
-        '_forceGraphInstance': null as ForceGraph3D | null,
+        '_forceGraphInstance': null as InstanceType<typeof ForceGraph3D> | null,
     },
     'sceneConfig': {
         'isForceGraph': true,

@@ -98,7 +98,12 @@ function drawMouth() {
 // Optional: Dynamic drawing updates
 // You can redraw the canvas anytime and the texture will update live:
 function drawAngryMouth(mouthTexture: THREE.CanvasTexture) {
-    const ctx = mouthTexture.image.getContext('2d');
+    const canvas = mouthTexture.image as HTMLCanvasElement;
+    const ctx = canvas.getContext('2d');
+
+    if (!ctx) {
+        throw new Error('Failed to get canvas context');
+    }
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = '#f00';
@@ -137,7 +142,7 @@ async function drawMale07(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
                 //node.material = stretchyMaterial; // replace with custom shader
                 const originalMaterial = node.material;
 
-                originalMaterial.onBeforeCompile = (shader: Shader) => {
+                originalMaterial.onBeforeCompile = (shader: any) => {
                     // Inject your uniform
                     shader.uniforms.stretch = stretchUniform;
 
@@ -297,7 +302,7 @@ function animate(renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawin
         animateStretchingMeshes(camera, meshes);
 
         const mouthPlane = threejsDrawing.data.mouthPlane;
-        animateMouth(mouthPlane);
+        animateMouth(mouthPlane as THREE.Mesh);
     }
 }
 

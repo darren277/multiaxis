@@ -253,7 +253,7 @@ function onMouseClick(event: MouseEvent, camera: THREE.Camera, domElement: HTMLE
     const intersects = raycaster.intersectObjects(clickableKeys);
 
     if (intersects.length > 0) {
-        onKeyClick(intersects[0].object);
+        onKeyClick(intersects[0].object as THREE.Mesh);
     }
 }
 
@@ -307,9 +307,13 @@ function drawMusic(scene: THREE.Scene, data: any, state: any) {
                     child.userData = {};
                 }
                 child.userData.note = note;
-                console.log(`Child userData: ${child.userdata}`);
+                console.log(`Child userData: ${child.userData}`);
 
-                clickableKeys.push(child);
+                if (child instanceof THREE.Mesh) {
+                    if (child instanceof THREE.Mesh) {
+                        clickableKeys.push(child);
+                    }
+                }
             } else {
                 console.log(`Non-clickable child: ${child.name}`);
                 console.log('------ child', child);
@@ -339,7 +343,7 @@ function drawMusic(scene: THREE.Scene, data: any, state: any) {
                             child.userData = {};
                         }
                         child.userData.note = note;
-                        console.log(`Child userData: ${child.userdata}`);
+                        console.log(`Child userData: ${child.userData}`);
 
                         clickableKeys.push(child);
                     }

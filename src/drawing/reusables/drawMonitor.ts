@@ -3,7 +3,7 @@
 import * as THREE from "three";
 import { CSS3DObject } from 'three/examples/jsm/renderers/CSS3DRenderer.js';
 import { ThreeJSDrawing } from "../../types";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+import { GLTF, GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 
 let instance = null;
 
@@ -116,7 +116,7 @@ class EventEmitter {
         return this;
     }
 
-    trigger(_name: string, _args: any[]) {
+    trigger(_name: string, ..._args: any[]) {
         // Errors
         if (typeof _name === 'undefined' || _name === '') {
             console.warn('wrong name');
@@ -128,7 +128,7 @@ class EventEmitter {
         let result = null;
 
         // Default args
-        const args: any[] = [];
+        const args: any[] = _args;
 
         // Resolve names (should on have one event)
         let _names = this.resolveNames(_name);
@@ -381,7 +381,7 @@ export default class MonitorScreen extends EventEmitter {
 
                 case 'gltfModel':
                     return gltfLoader.loadAsync(src.path)
-                        .then((file: THREE.GLTF) => this.items.gltfModel[src.name] = file);
+                        .then((file: GLTF) => this.items.gltfModel[src.name] = file);
 
                 case 'texture':
                     return textureLoader.loadAsync(src.path)
@@ -391,7 +391,8 @@ export default class MonitorScreen extends EventEmitter {
                         });
 
                 case 'cubeTexture':
-                    return cubeTextureLoader.loadAsync(src.path)
+                    // Ensure src.path is an array of strings for cube textures
+                    return cubeTextureLoader.loadAsync(Array.isArray(src.path) ? src.path : [src.path])
                         .then((file: THREE.CubeTexture) => this.items.cubeTexture[src.name] = file);
 
                 case 'audio':
@@ -461,7 +462,7 @@ export default class MonitorScreen extends EventEmitter {
         document.addEventListener(
             'mousedown',
             (event: MouseEvent) => {
-                this.inComputer = event.inComputer;
+                this.inComputer = (event as MouseEvent & { inComputer?: boolean }).inComputer;
                 this.mouse.trigger('mousedown', [event]);
 
                 this.mouseClickInProgress = true;
@@ -472,11 +473,11 @@ export default class MonitorScreen extends EventEmitter {
         document.addEventListener(
             'mouseup',
             (event: MouseEvent) => {
-                this.inComputer = event.inComputer;
+                this.inComputer = (event as MouseEvent & { inComputer?: boolean }).inComputer;
                 this.mouse.trigger('mouseup', [event]);
 
                 if (this.shouldLeaveMonitor) {
-                    this.camera.trigger('leftMonitor');
+                    // TODO: Handle 'leftMonitor' event here if needed
                     this.shouldLeaveMonitor = false;
                 }
 

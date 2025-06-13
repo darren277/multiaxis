@@ -165,6 +165,13 @@ span.teal
             canvas.height = height;
 
             const ctx = canvas.getContext('2d');
+
+            if (!ctx) {
+                console.error('Failed to get canvas context');
+                reject(new Error('Failed to get canvas context'));
+                return;
+            }
+
             ctx.fillStyle = 'white';
             ctx.fillRect(0, 0, width, height); // fill with white background
 

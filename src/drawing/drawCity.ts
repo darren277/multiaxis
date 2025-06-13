@@ -40,6 +40,11 @@ const OBSTACLES = [
 function drawCity(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
     threejsDrawing.data.cityReady = false;
 
+    // Ensure worldMeshes is always initialized
+    if (!threejsDrawing.data.worldMeshes) {
+        threejsDrawing.data.worldMeshes = [];
+    }
+
     const controls = threejsDrawing.data.controls;
 
     loadGltfModel('city/scene').then((gltf) => {
@@ -98,6 +103,9 @@ function drawCity(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
                 console.log(child.name, Object.keys(child.geometry.attributes));
 
                 child.userData.isGround = true;
+                if (!threejsDrawing.data.worldMeshes) {
+                    threejsDrawing.data.worldMeshes = [];
+                }
                 threejsDrawing.data.worldMeshes.push(child);
 
                 console.log('child', child);
@@ -190,7 +198,7 @@ const cityDrawing = {
     'animationCallback': (renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawing: ThreeJSDrawing, camera: THREE.Camera) => {
         //const delta = clock.getDelta();
         const scene = threejsDrawing.data.scene;
-        const controls = threejsDrawing.data.controls;
+        const controls = threejsDrawing.data.controls as any;
         if (!controls) {
             console.warn('No controls found.');
             return;
@@ -200,7 +208,11 @@ const cityDrawing = {
 
         if (!threejsDrawing.data.spawned) {
             console.log('teleporting to (for realsies):', threejsDrawing.data.spawnCoords);
-            (controls.getObject?.() || controls.object || controls).position.copy(threejsDrawing.data.spawnCoords);
+            // Safely check for getObject method
+            const controlObject = typeof controls.getObject === 'function'
+                ? controls.getObject()
+                : (controls.object || controls);
+            controlObject.position.copy(threejsDrawing.data.spawnCoords);
             threejsDrawing.data.spawned = true;
         }
 
@@ -209,7 +221,7 @@ const cityDrawing = {
         const elapsed = Math.min((timestamp - lastTime) / 1000, 0.1);
         lastTime = timestamp;
 
-        scene.updateMatrixWorld(true);
+        (scene as THREE.Scene).updateMatrixWorld(true);
 
         updateObstacleBoxes(threejsDrawing.data.staticBoxes, threejsDrawing.data.movingMeshes, threejsDrawing.data.obstacleBoxes);
 

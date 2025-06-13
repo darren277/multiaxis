@@ -147,7 +147,7 @@ function releaseNeurotransmitters(scene: THREE.Scene, vesicles: THREE.Mesh[], pa
 function resetReceptors(receptorMeshes: THREE.Mesh[]) {
     receptorMeshes.forEach(r => {
         r.userData.bound = false;
-        (r.material as THREE.MeshStandardMaterial).color.set(modelRegistry.receptors.materials[r.userData.type].color);
+        (r.material as THREE.MeshStandardMaterial).color.set(modelRegistry.receptors.materials[r.userData.type as ReceptorType].color);
     });
 }
 

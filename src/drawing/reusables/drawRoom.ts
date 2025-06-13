@@ -36,6 +36,9 @@ function drawRoom(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
     threejsDrawing.data.worldMeshes.push(threejsDrawing.data.floor as THREE.Object3D);          // add once at scene setup
 
     // Ensure staticBoxes is initialized
+    if (!Array.isArray(threejsDrawing.data.staticBoxes)) {
+        threejsDrawing.data.staticBoxes = [] as THREE.Box3[];
+    }
     if (!threejsDrawing.data.staticBoxes) {
         threejsDrawing.data.staticBoxes = [] as THREE.Box3[];
     }
@@ -44,7 +47,7 @@ function drawRoom(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
     threejsDrawing.data.ceiling = drawFloor(scene, woodMat, 200);
     (threejsDrawing.data.ceiling as THREE.Mesh).rotation.x = Math.PI / 2;
     (threejsDrawing.data.ceiling as THREE.Mesh).position.y = 200;
-    addObstacle(threejsDrawing.data.staticBoxes, threejsDrawing.data.ceiling);
+    addObstacle(threejsDrawing.data.staticBoxes as THREE.Box3[], threejsDrawing.data.ceiling);
 
     // Draw walls
     threejsDrawing.data.southWall = drawFloor(scene, woodMat, 200);
@@ -97,6 +100,9 @@ function drawRoom(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
 
     const elevator = drawElevator(scene, woodMat, {size: 20, thick: 0.4, floorY: 2.0, targetY: 90, rimClear: 50});
     threejsDrawing.data.elevator = elevator;
+    if (!threejsDrawing.data.movingMeshes) {
+        threejsDrawing.data.movingMeshes = [] as THREE.Object3D[];
+    }
     threejsDrawing.data.movingMeshes.push(elevator);
     threejsDrawing.data.worldMeshes.push(elevator);
 
@@ -165,7 +171,7 @@ function animateLights(renderer: THREE.WebGLRenderer, threejsDrawing: ThreeJSDra
 
     // Shadows
     renderer.shadowMap.enabled = lightingParams.shadows;
-    threejsDrawing.data.bulbLight.castShadow = lightingParams.shadows;
+    (threejsDrawing.data.bulbLight as THREE.Light).castShadow = lightingParams.shadows;
     if (lightingParams.shadows !== previousShadowMap) {
         previousShadowMap = lightingParams.shadows;
     }
@@ -206,15 +212,15 @@ export function animateRoom(renderer: THREE.WebGLRenderer, timestamp: number, th
     const elapsed = Math.min((timestamp - lastTime) / 1000, 0.1);
     lastTime = timestamp;
 
-    scene.updateMatrixWorld(true);
+    (scene as THREE.Scene).updateMatrixWorld(true);
 
-    if (lift) {
+    if (lift && lift instanceof THREE.Mesh) {
         animateElevator(lift, player, elapsed);
     }
 
     updateObstacleBoxes(threejsDrawing.data.staticBoxes, threejsDrawing.data.movingMeshes, threejsDrawing.data.obstacleBoxes);
 
-    walkingAnimationCallback(scene, controls, threejsDrawing.data.collision, elapsed, true);
+    walkingAnimationCallback(scene as THREE.Scene, controls, threejsDrawing.data.collision, elapsed, true);
 }
 
 const roomDrawing = {

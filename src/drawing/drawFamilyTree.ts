@@ -47,7 +47,9 @@ function layoutFamilyYearScale(graph: FamilyGraph, rootId: number) {
     // BFS queue ⟨id, direction⟩ ; dir = −1left branch, +1right branch
     const q = [{id: rootId, dir: 0}];
     while (q.length) {
-        const {id, dir} = q.shift();
+        const item = q.shift();
+        if (!item) continue;
+        const {id, dir} = item;
         const child     = byId.get(id);
         const parents   = parentsOf.get(id) || [];
 
@@ -78,6 +80,9 @@ function layoutFamily(graph: FamilyGraph, rootId: number) {
     });
 
     const root        = byId.get(rootId);
+    if (!root) {
+        throw new Error(`Root node with id ${rootId} not found`);
+    }
     root.x = 0;
     root.y = 0;
 
@@ -118,6 +123,9 @@ function layoutFamilyWithSpread(graph: FamilyGraph, rootId: number) {
     });
 
     const root        = byId.get(rootId);
+    if (!root) {
+        throw new Error(`Root node with id ${rootId} not found`);
+    }
     root.x = 0;
     root.y = 0;
 
@@ -184,8 +192,10 @@ function layoutWithD3(graph: FamilyGraph, rootId: number) {
     // Copy x/y positions back to original graph nodes
     root.each((d: any) => {
         const orig = byId.get(d.data.id);
-        orig.x = d.x;
-        orig.y = d.depth * GEN_STEP;
+        if (orig) {
+            orig.x = d.x;
+            orig.y = d.depth * GEN_STEP;
+        }
     });
 
     return graph;

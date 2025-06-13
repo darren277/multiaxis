@@ -78,7 +78,21 @@ function renderLinearGradient(vDirValues: [number, number], colorA: string, colo
     return material;
 }
 
-function isGiantWhiteBox(path: THREE.Path) {
+interface Path extends THREE.Path {
+    userData?: {
+        style?: {
+            fill?: string;
+            stroke?: string;
+        };
+        node?: SVGElement; // Original SVG DOM node (if present)
+        configuration?: string; // Configuration data (if present)
+        origType?: string; // Original type of the SVG element (if present)
+    };
+    toShapes: (b?: boolean) => THREE.Shape[];
+    [key: string]: any; // Allow additional properties
+}
+
+function isGiantWhiteBox(path: Path) {
     const style = path.userData?.style || {};
     const fillColor = style.fill || style.stroke || '';
     const isGiantWhiteBox = (fillColor === '#ffffff' || fillColor === 'white' || fillColor === 'rgb(255,255,255)') && path.toShapes(true).length === 1;
@@ -193,7 +207,7 @@ function processPath(path: any) {
             const mesh = processShape(shape, 6, theColor, isText, linearGradient);
             pathGroup.add(mesh);
         } else if (linearGradient) {
-            theColor = null;
+            theColor = 'blue'; // fallback color for type safety
 
             const mesh = processShape(shape, 6, theColor, isText, linearGradient);
             pathGroup.add(mesh);
@@ -227,7 +241,7 @@ class Path {
 
     constructor(path: THREE.Path) {
         this.path = path;
-        this.color = determineColor(path);
+        this.color = determineColor(path) || new THREE.Color(0x888888);
     }
 }
 

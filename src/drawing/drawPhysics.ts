@@ -1,5 +1,7 @@
 import * as THREE from 'three';
 
+let Ammo: any;
+
 const clock = new THREE.Clock();
 
 import GUI from 'lil-gui';
@@ -68,7 +70,9 @@ function updateTrail(scene: THREE.Scene, obj: any) {
     // Limit to last 100 frames
     if (trail.length > 100) {
         const old = trail.shift();
-        scene.remove(old);
+        if (old) {
+            scene.remove(old);
+        }
     }
 }
 
@@ -250,7 +254,7 @@ function drawPhysics(scene: THREE.Scene, threejsDrawing: any) {
 
     threejsDrawing.data.rigidBodies = [];
 
-    Ammo().then(function (AmmoLib) {
+    Ammo().then(function (AmmoLib: any) {
         Ammo = AmmoLib;
 
         // Initializes the physics world and attaches it to `threejsDrawing.data`.

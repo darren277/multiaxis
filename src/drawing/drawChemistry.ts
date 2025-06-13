@@ -170,7 +170,7 @@ function drawAllEdges(scene: THREE.Scene) {
 
 function drawChemistry(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
     // Add basic lights
-    drawBasicLights(scene);
+    drawBasicLights(scene, threejsDrawing);
 
     // ambient light...
     const ambientLight = new THREE.DirectionalLight(0xffffff, 0.5);

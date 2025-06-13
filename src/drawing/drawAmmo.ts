@@ -1,10 +1,9 @@
 /* Adapted from https://github.com/mrdoob/three.js/blob/master/examples/physics_ammo_break.html */
 
 import * as THREE from "three";
-import { ConvexObjectBreaker } from "three/examples/jsm/physics/ConvexObjectBreaker.js";
-import { ConvexGeometry } from "three/examples/jsm/geometries/ConvexGeometry.js";
 import { ThreeJSDrawing } from "../threejsDrawing";
 
+let Ammo: any; // Ammo.js will be loaded asynchronously
 console.debug('Ammo.js loaded', Ammo);
 
 const clock = new THREE.Clock();
@@ -26,8 +25,8 @@ const rigidBodies: THREE.Object3D[] = [];
 
 const pos = new THREE.Vector3();
 const quat = new THREE.Quaternion();
-let transformAux1: Ammo.btTransform;
-let tempBtVec3_1: Ammo.btVector3;
+let transformAux1: any;
+let tempBtVec3_1: any;
 
 const objectsToRemove: (THREE.Object3D | null)[] = [];
 
@@ -46,7 +45,7 @@ function drawAmmo(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
         objectsToRemove[i] = null;
     }
 
-    Ammo().then(function (AmmoLib) {
+    Ammo().then(function (AmmoLib: any) {
         Ammo = AmmoLib;
 
         initGraphics(scene);
@@ -84,7 +83,7 @@ function initPhysics(threejsDrawing: ThreeJSDrawing) {
     threejsDrawing.data.broadphase = new Ammo.btDbvtBroadphase();
     threejsDrawing.data.solver = new Ammo.btSequentialImpulseConstraintSolver();
     threejsDrawing.data.physicsWorld = new Ammo.btDiscreteDynamicsWorld(threejsDrawing.data.dispatcher, threejsDrawing.data.broadphase, threejsDrawing.data.solver, threejsDrawing.data.collisionConfiguration);
-    threejsDrawing.data.physicsWorld.setGravity(new Ammo.btVector3(0, - gravityConstant, 0));
+    (threejsDrawing.data.physicsWorld as Ammo.btDiscreteDynamicsWorld).setGravity(new Ammo.btVector3(0, - gravityConstant, 0));
 
     transformAux1 = new Ammo.btTransform();
     tempBtVec3_1 = new Ammo.btVector3(0, 0, 0);
@@ -180,7 +179,7 @@ function createDebrisFromBreakableObject(scene: THREE.Scene, physicsWorld: Ammo.
     object.castShadow = true;
     object.receiveShadow = true;
 
-    const shape = createConvexHullPhysicsShape(object.geometry.attributes.position.array);
+    const shape = createConvexHullPhysicsShape(object.geometry.attributes.position.array as Float32Array);
     shape.setMargin(margin);
 
     // createRigidBody(scene, physicsWorld, object, physicsShape, mass, pos, quat, vel, angVel)
@@ -263,7 +262,7 @@ function createRandomColor() {
     return Math.floor(Math.random() * (1 << 24));
 }
 
-function createMaterial(color) {
+function createMaterial(color: number) {
     color = color || createRandomColor();
     return new THREE.MeshPhongMaterial({ color: color });
 }
@@ -377,7 +376,9 @@ function updatePhysics(scene: THREE.Scene, physicsWorld: Ammo.btDiscreteDynamics
     }
 
     for (let i = 0; i < numObjectsToRemove; i++) {
-        removeDebris(scene, physicsWorld, objectsToRemove[i]);
+        if (objectsToRemove[i]) {
+            removeDebris(scene, physicsWorld, objectsToRemove[i] as THREE.Mesh);
+        }
     }
 
     numObjectsToRemove = 0;

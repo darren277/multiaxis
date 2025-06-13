@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import { ThreeJSDrawing } from '../types';
 
+let Ammo: any;
+
 console.debug('Ammo.js loaded', Ammo);
 
 

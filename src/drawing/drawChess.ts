@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
+import { Font, FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
 import { ThreeJSDrawing } from "../types";
 
@@ -45,7 +45,7 @@ export function drawChessBoard(scene: THREE.Scene, options: ChessBoardOptions = 
 
 const fontLoader = new FontLoader();
 
-function createPlaceholderPiece(scene: THREE.Scene, type, color = 0xeeeeee, font = null) {
+function createPlaceholderPiece(scene: THREE.Scene, type: string, color = 0xeeeeee, font: Font | null = null) {
     const group = new THREE.Group();
     let mesh;
 
@@ -149,7 +149,7 @@ const pieceMap = {
 
 
 
-function drawChessCallback(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing, font) {
+function drawChessCallback(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing, font: Font) {
     // Lights
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
     const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);

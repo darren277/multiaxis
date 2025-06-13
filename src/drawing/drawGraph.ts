@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { forceSimulation, forceManyBody, forceLink, forceCenter } from 'd3-force-3d';
+import { forceSimulation, forceManyBody, forceLink, forceCenter, Simulation } from 'd3-force-3d';
 import { drawBasicLights } from './reusables/drawLights';
 import { ThreeJSDrawing } from '../threejsDrawing';
 
@@ -252,7 +252,7 @@ const forceDrawing = {
         }
     },
     'animationCallback': (renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawing: ThreeJSDrawing, camera: THREE.Camera) => {
-        (threejsDrawing.data.simulation as d3.Simulation<any, any>).tick(); // progress the simulation
+        (threejsDrawing.data.simulation as Simulation<any, any>).tick(); // progress the simulation
         updateForceGraph(
             threejsDrawing.data.graphData,
             threejsDrawing.data.nodeSpheres as { [key: string]: THREE.Mesh },

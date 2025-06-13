@@ -213,9 +213,9 @@ function animateFarm(renderer: THREE.WebGLRenderer, timestamp: number, threejsDr
     const elapsed = Math.min((timestamp - lastTime) / 1000, 0.1);
     lastTime = timestamp;
 
-    scene.updateMatrixWorld(true);
+    (scene as THREE.Scene).updateMatrixWorld(true);
 
-    if (lift) {
+    if (lift && lift instanceof THREE.Mesh) {
         animateElevator(lift, player, elapsed);
     }
 
