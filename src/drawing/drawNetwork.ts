@@ -14,7 +14,7 @@ type TweenFunctionParams = {
     duration?: number; // Duration in milliseconds
 };
 
-function tweenCamera({ camera, controls, toPos, lookAt, duration = 3000 }: TweenFunctionParams) {
+function tweenCamera({ camera, controls, toPos, lookAt, duration = 3000 }: TweenFunctionParams, controls: any, p0: { x: number | undefined; y: number; z: number | undefined; }, p1: null) {
     const from = {x: camera.position.x, y: camera.position.y, z: camera.position.z};
 
     new Tween(from).to(toPos, duration).easing(Easing.Quadratic.InOut)
@@ -64,6 +64,7 @@ function tweenCamera({ camera, controls, toPos, lookAt, duration = 3000 }: Tween
 */
 
 type GraphNode = {
+    depth: any;
     data: any;
     id: number | string;
     name?: string;
@@ -97,8 +98,11 @@ type Graph = {
  * @returns {*} A nested object with `children` arrays
  */
 function buildTreeData(nodes: GraphNode[], links: GraphLink[]) {
-    const map = new Map(nodes.map(n => [n.id, { ...n, children: [] }]));
-    const hasParent = new Set();
+    type TreeNode = GraphNode & { children: TreeNode[] };
+    const map = new Map<GraphNode['id'], TreeNode>(
+        nodes.map(n => [n.id, { ...n, children: [] } as TreeNode])
+    );
+    const hasParent = new Set<GraphNode['id']>();
 
     links.forEach(({ source, target }) => {
         const parent = map.get(source);
@@ -110,7 +114,8 @@ function buildTreeData(nodes: GraphNode[], links: GraphLink[]) {
     });
 
     // root = the one node that never appears as a link target
-    return map.get(nodes.find(n => !hasParent.has(n.id)).id);
+    const rootNode = nodes.find(n => !hasParent.has(n.id));
+    return rootNode ? map.get(rootNode.id) : undefined;
 }
 
 /**
@@ -192,7 +197,8 @@ function computeTreeLinks(root: { links: () => any; }) {
  * @param {d3.HierarchyPointNode[]} nodes2D   // with .data, .x, .y
  * @param {{source,target}[]} links2D         // with .source, .target each a node2D
  */
-function renderD3Tree(scene: THREE.Scene, nodes2D: d3.HierarchyPointNode[], links2D: { source: d3.HierarchyPointNode; target: d3.HierarchyPointNode; }[]) {
+// @ts-ignore-next-line
+function renderD3Tree(scene: THREE.Scene, nodes2D: d3.HierarchyPointNode[], links2D: { source: d3.HierarchyPointNode; target: d3.HierarchyPointNode; }[], floorY: number) {
     const FLOOR_Y = 0.5;
 
     // draw nodes
@@ -229,17 +235,18 @@ function renderD3Tree(scene: THREE.Scene, nodes2D: d3.HierarchyPointNode[], link
 function computeDepths(graph: Graph, rootId: number | string) {
     const depthMap = Object.create(null);
     depthMap[rootId] = 0;
-    const queue = [rootId];
+    const queue: (number | string)[] = [rootId];
 
     // Treat links as directed from source → target
-    const outgoing = graph.links.reduce((m, l) => {
+    const outgoing = graph.links.reduce((m: { [key: string]: any[] }, l) => {
         if (!m[l.source]) m[l.source] = [];
         m[l.source].push(l.target);
         return m;
-    }, {});
+    }, {} as { [key: string]: any[] });
 
     while (queue.length) {
         const id = queue.shift();
+        if (id === undefined) continue;
         const d  = depthMap[id];
         (outgoing[id] || []).forEach(childId => {
             if (depthMap[childId] == null) {
@@ -259,7 +266,7 @@ function computeDepths(graph: Graph, rootId: number | string) {
  * @param {number} [nNodes=nodes.length] - Total number of nodes (can be overridden if using a subset)
  * @param {number} [radius=10] - Radius of the circle layout
  */
-function layoutNodes(nodes, nNodes = nodes.length, radius = 10) {
+function layoutNodes(nodes: GraphNode[], nNodes = nodes.length, radius = 10) {
     const angleStep = (2 * Math.PI) / nNodes;
     nodes.forEach((node, i) => {
         const x = Math.cos(i * angleStep) * radius;
@@ -281,10 +288,10 @@ function layoutNodes(nodes, nNodes = nodes.length, radius = 10) {
  * @param {GraphNode} node - The node object with position and optional color
  * @returns {THREE.Mesh} - A mesh representing the node
  */
-function drawNode(node) {
-    const material = new MeshStandardMaterial({ color: node.color || "blue" });
-    const geometry = new SphereGeometry(0.5, 16, 16);
-    const mesh = new Mesh(geometry, material);
+function drawNode(node: GraphNode): THREE.Mesh {
+    const material = new THREE.MeshStandardMaterial({ color: node.color || "blue" });
+    const geometry = new THREE.SphereGeometry(0.5, 16, 16);
+    const mesh = new THREE.Mesh(geometry, material);
 
     // Use explicit position or fallback to layout-generated one
     const x = node.x ?? node.position?.x ?? 0;
@@ -303,9 +310,9 @@ function drawNode(node) {
  * @param {Graph} graph - The graph object containing nodes
  * @returns {THREE.Mesh[]} - Array of node meshes
  */
-function drawNodes(scene, graph) {
+function drawNodes(scene: THREE.Scene, graph: Graph) {
     /** @type {THREE.Mesh[]} */
-    const nodeMeshes = [];
+    const nodeMeshes: THREE.Mesh[] = [];
 
     graph.nodes.forEach(node => {
         const mesh = drawNode(node);
@@ -327,9 +334,9 @@ function drawNodes(scene, graph) {
  * @param {Graph} graph - The graph data containing nodes and links
  * @returns {THREE.Mesh[]} - An array of curved link mesh objects
  */
-function drawLinks(scene, graph) {
+function drawLinks(scene: THREE.Scene, graph: Graph) {
     /** @type {THREE.Mesh[]} */
-    const linkMeshes = [];
+    const linkMeshes: THREE.Mesh[] = [];
 
     graph.links.forEach(link => {
         // Find source and target nodes by ID
@@ -338,7 +345,15 @@ function drawLinks(scene, graph) {
         if (!source || !target) return;
 
         const thickness = link.thickness ?? 0.1;
-        const color = link.color ?? 0x8888ff;
+        // Ensure color is always a number for createCurvedLink
+        let color: number;
+        if (typeof link.color === 'string') {
+            color = new THREE.Color(link.color).getHex();
+        } else if (typeof link.color === 'number') {
+            color = link.color;
+        } else {
+            color = 0x8888ff;
+        }
 
         // Create a curved mesh link between the nodes
         const mesh = createCurvedLink(source, target, color, thickness);
@@ -359,7 +374,7 @@ function drawLinks(scene, graph) {
  * @param {number} [thickness=0.1] - Radius of the tube
  * @returns {THREE.Mesh} - A Mesh representing the curved link
  */
-function createCurvedLink(source, target, color = 0x8888ff, thickness = 0.1) {
+function createCurvedLink(source: GraphNode, target: GraphNode, color = 0x8888ff, thickness = 0.1) {
     const sx = source.x, sy = source.y ?? 0.5, sz = source.z;
     const tx = target.x, ty = target.y ?? 0.5, tz = target.z;
 
@@ -431,6 +446,10 @@ function updateThreeJSPositions(nodeMeshes: THREE.Mesh[], linkMeshes: THREE.Mesh
         const src = typeof source === 'object' ? source : graph.nodes.find(n => n.id === source);
         const tgt = typeof target === 'object' ? target : graph.nodes.find(n => n.id === target);
         console.log('about to update link', i, src, tgt);
+        if (!src || !tgt) {
+            console.warn(`Link ${i} has missing source/target`, src, tgt);
+            return;
+        }
         updateCurvedLink(mesh, src, tgt);
     });
 }
@@ -538,11 +557,19 @@ function connectTreeNodes(scene: THREE.Scene, laidOutNodes: any[], rawLinks: Gra
         if (from && to && !isInTree) {
             const p1 = new THREE.Vector3(from.x, floorY, from.y);
             const p2 = new THREE.Vector3(to.x, floorY, to.y);
-            drawLine(scene, p1, p2, color);
+            // Ensure color is a number
+            const colorNum = typeof color === 'string' ? new THREE.Color(color).getHex() : color;
+            drawLine(scene, p1, p2, colorNum);
         }
     }
 }
 
+
+type TreeLayoutOptions = {
+    dx: number;
+    dy: number;
+    floorY: number;
+};
 
 /**
  * @typedef {{ id: number|string, name?: string, color?: string, children?: any[] }} GraphNode
@@ -590,13 +617,17 @@ function drawTreeWithExtras(scene: THREE.Scene, data: Graph, options: TreeLayout
     return laidOutNodes;
 }
 
-const navState = {
-    current: null,             // currently selected node
-    path: [],                  // previously visited nodes
-    selectionIndex: 0          // which neighbor is selected
+const navState: {
+    current: GraphNode | null, // currently selected node
+    path: GraphNode[],         // previously visited nodes
+    selectionIndex: number     // which neighbor is selected
+} = {
+    current: null,
+    path: [],
+    selectionIndex: 0
 };
 
-function buildAdjacencyMap(links) {
+function buildAdjacencyMap(links: GraphLink[]): Map<number, number[]> {
     const map = new Map();
     links.forEach(({ source, target }) => {
         if (!map.has(source)) map.set(source, []);
@@ -660,14 +691,18 @@ function handleSideways(camera: THREE.Camera, controls: any, nextId: number, nex
     if (nextNode) {
         selector.position.set(nextNode.x, FLOOR_Y + 0.05, nextNode.y);
         const xyz1 = {x: nextNode.x, y: previewHeight, z: nextNode.y};
-        const xyz2 = {x: navState.current.x, y: navState.current.y, z: navState.current.y};
-        tweenCamera(camera, controls, xyz1, xyz2, 500); // shorter duration for preview
+        if (navState.current) {
+            const xyz2 = {x: navState.current.x, y: navState.current.y, z: navState.current.y};
+            // @ts-ignore-next-line
+            tweenCamera(camera, controls, xyz1, xyz2, 500); // shorter duration for preview
+        }
     }
 }
 
 function handleDown(camera: THREE.Camera, controls: any, nodeMap: Map<number, GraphNode>) {
     if (navState.path.length === 0) return;
     const prev = navState.path.pop();
+    if (!prev) return;
     navState.current = prev;
     navState.selectionIndex = 0;
 
