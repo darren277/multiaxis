@@ -1,7 +1,4 @@
-import {
-    SphereGeometry, CylinderGeometry, Mesh, MeshStandardMaterial, Vector3, HemisphereLight, TorusGeometry,
-    Quaternion, TubeGeometry, QuadraticBezierCurve3, AxesHelper, PlaneGeometry, BufferGeometry, Line, LineBasicMaterial
-} from 'three';
+import * as THREE from 'three';
 import { forceSimulation, forceManyBody, forceLink, forceCenter, forceX, forceY, forceZ } from 'd3-force-3d';
 import { hierarchy, tree } from 'd3-hierarchy';
 import { Tween, Easing } from 'tween';
@@ -9,7 +6,15 @@ import { Tween, Easing } from 'tween';
 
 const FLOOR_Y = 0.5; // height of the ground plane
 
-function tweenCamera(camera, controls, toPos, lookAt, duration = 3000) {
+type TweenFunctionParams = {
+    camera: THREE.Camera;
+    controls?: any; // Optional, if using controls like OrbitControls
+    toPos: { x: number, y: number, z: number };
+    lookAt?: { x: number, y: number, z: number }; // Optional target to look at
+    duration?: number; // Duration in milliseconds
+};
+
+function tweenCamera({ camera, controls, toPos, lookAt, duration = 3000 }: TweenFunctionParams) {
     const from = {x: camera.position.x, y: camera.position.y, z: camera.position.z};
 
     new Tween(from).to(toPos, duration).easing(Easing.Quadratic.InOut)
@@ -33,6 +38,56 @@ function tweenCamera(camera, controls, toPos, lookAt, duration = 3000) {
  * @typedef {{ nodes: GraphNode[] }} Graph
  */
 
+/*
+{
+  "nodes":
+    [
+      {"id": 1, "name": "ROOT", "color": "black"},
+      {"id": 2, "name": "Testing", "color": "yellow"},
+      {"id": 3, "name": "3rd Node", "color": "green"},
+      {"id": 4, "name": "4th Node", "color":  "red"},
+      {"id": 5, "name": "5th Node", "color": "purple"},
+      {"id": 6, "name": "6th Node (Layer 2)"},
+      {"id": 7, "name": "7th Node (Layer 2)"}
+    ],
+  "links":
+    [
+      {"source": 1, "target": 2, "label": "Link1", "color": "blue", "direction": "forward", "thickness": 0.1},
+      {"source": 1, "target": 3, "label": "Link2", "color": "orange", "direction": "forward", "thickness": 0.1},
+      {"source": 1, "target": 4},
+      {"source": 1, "target": 5},
+      {"source": 2, "target": 6},
+      {"source": 2, "target": 7},
+      {"source": 5, "target": 6}
+    ]
+}
+*/
+
+type GraphNode = {
+    data: any;
+    id: number | string;
+    name?: string;
+    color?: string;
+    position?: { x: number; y: number; z: number };
+    x?: number; // for D3 layout
+    y?: number; // for D3 layout
+    z?: number; // for D3 layout
+};
+
+type GraphLink = {
+    source: number | string;
+    target: number | string;
+    label?: string;
+    color?: string | number;
+    thickness?: number;
+    direction?: string; // e.g. "forward", "backward"
+};
+
+type Graph = {
+    nodes: GraphNode[];
+    links: GraphLink[];
+};
+
 /**
  * Turn your nodes + directed links into a nested tree structure.
  * Assumes there’s exactly one root (no incoming links).
@@ -41,7 +96,7 @@ function tweenCamera(camera, controls, toPos, lookAt, duration = 3000) {
  * @param {Array<{source: *, target: *}>} links
  * @returns {*} A nested object with `children` arrays
  */
-function buildTreeData(nodes, links) {
+function buildTreeData(nodes: GraphNode[], links: GraphLink[]) {
     const map = new Map(nodes.map(n => [n.id, { ...n, children: [] }]));
     const hasParent = new Set();
 
@@ -65,11 +120,11 @@ function buildTreeData(nodes, links) {
  * @param {Array} links - Flat array of links (source & target by ID)
  * @returns {{ root: *, treeLinks: *, extraLinks: * }}
  */
-function extractMinimalTree(nodes, links) {
+function extractMinimalTree(nodes: GraphNode[], links: GraphLink[]) {
     const nodeMap = new Map(nodes.map(n => [n.id, { ...n, children: [] }]));
     const hasParent = new Set();
-    const treeLinks = [];
-    const extraLinks = [];
+    const treeLinks: GraphLink[] = [];
+    const extraLinks: GraphLink[] = [];
 
     // Track first parent only
     const childToParent = new Map();
@@ -106,7 +161,7 @@ function extractMinimalTree(nodes, links) {
  * @param {number} dy   Horizontal spacing between siblings
  * @returns {d3.HierarchyPointNode[]}  Array of laid‑out nodes
  */
-function computeTreeLayout(rootData, dx = 50, dy = 100) {
+function computeTreeLayout(rootData: any, dx = 50, dy = 100) {
     const root = hierarchy(rootData);
 
     // total depth (Z)  = maxDepth * tightDx
@@ -127,7 +182,7 @@ function computeTreeLayout(rootData, dx = 50, dy = 100) {
 }
 
 // also get the links easily:
-function computeTreeLinks(root) {
+function computeTreeLinks(root: { links: () => any; }) {
     // root.links() gives array of { source: node, target: node }
     return root.links();
 }
@@ -137,15 +192,15 @@ function computeTreeLinks(root) {
  * @param {d3.HierarchyPointNode[]} nodes2D   // with .data, .x, .y
  * @param {{source,target}[]} links2D         // with .source, .target each a node2D
  */
-function renderD3Tree(scene, nodes2D, links2D) {
+function renderD3Tree(scene: THREE.Scene, nodes2D: d3.HierarchyPointNode[], links2D: { source: d3.HierarchyPointNode; target: d3.HierarchyPointNode; }[]) {
     const FLOOR_Y = 0.5;
 
     // draw nodes
     nodes2D.forEach(n2 => {
         const { id, color } = n2.data;
-        const mat = new MeshStandardMaterial({ color: color || 'steelblue' });
-        const geo = new SphereGeometry(2, 16, 16);
-        const mesh = new Mesh(geo, mat);
+        const mat = new THREE.MeshStandardMaterial({ color: color || 'steelblue' });
+        const geo = new THREE.SphereGeometry(2, 16, 16);
+        const mesh = new THREE.Mesh(geo, mat);
 
         // map D3:  x→Z, y→Y
         mesh.position.set(n2.x, FLOOR_Y, n2.y);
@@ -155,13 +210,13 @@ function renderD3Tree(scene, nodes2D, links2D) {
     // draw links as straight lines (or TubeGeometry if you want thickness)
     links2D.forEach(link => {
         const { source, target } = link;
-        const p1 = new Vector3(source.x, FLOOR_Y, source.y);
-        const p2 = new Vector3(target.x, FLOOR_Y, target.y);
+        const p1 = new THREE.Vector3(source.x, FLOOR_Y, source.y);
+        const p2 = new THREE.Vector3(target.x, FLOOR_Y, target.y);
         const pts = [p1, p2];
 
-        const lineGeo = new BufferGeometry().setFromPoints(pts);
-        const mat = new LineBasicMaterial({ color: 'gray' });
-        scene.add(new Line(lineGeo, mat));
+        const lineGeo = new THREE.BufferGeometry().setFromPoints(pts);
+        const mat = new THREE.LineBasicMaterial({ color: 'gray' });
+        scene.add(new THREE.Line(lineGeo, mat));
     });
 }
 
@@ -171,7 +226,7 @@ function renderD3Tree(scene, nodes2D, links2D) {
  * @param {Graph} graph
  * @param {number|string} rootId
  */
-function computeDepths(graph, rootId) {
+function computeDepths(graph: Graph, rootId: number | string) {
     const depthMap = Object.create(null);
     depthMap[rootId] = 0;
     const queue = [rootId];
@@ -308,19 +363,19 @@ function createCurvedLink(source, target, color = 0x8888ff, thickness = 0.1) {
     const sx = source.x, sy = source.y ?? 0.5, sz = source.z;
     const tx = target.x, ty = target.y ?? 0.5, tz = target.z;
 
-    const start = new Vector3(sx, sy, sz);
-    const end = new Vector3(tx, ty, tz);
+    const start = new THREE.Vector3(sx, sy, sz);
+    const end = new THREE.Vector3(tx, ty, tz);
 
     // Create a control point that lifts the curve upward
-    const mid = new Vector3().addVectors(start, end).multiplyScalar(0.5);
+    const mid = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
     const distance = start.distanceTo(end);
     mid.y += Math.min(2, distance / 2);  // arch height
 
-    const curve = new QuadraticBezierCurve3(start, mid, end);
-    const geometry = new TubeGeometry(curve, 20, thickness, 8, false);
-    const material = new MeshStandardMaterial({ color });
+    const curve = new THREE.QuadraticBezierCurve3(start, mid, end);
+    const geometry = new THREE.TubeGeometry(curve, 20, thickness, 8, false);
+    const material = new THREE.MeshStandardMaterial({ color });
 
-    return new Mesh(geometry, material);
+    return new THREE.Mesh(geometry, material);
 }
 
 
@@ -331,22 +386,22 @@ function createCurvedLink(source, target, color = 0x8888ff, thickness = 0.1) {
  * @param {GraphNode} source - The source node (must have x, y, z)
  * @param {GraphNode} target - The target node (must have x, y, z)
  */
-function updateCurvedLink(mesh, source, target) {
+function updateCurvedLink(mesh: THREE.Mesh, source: GraphNode, target: GraphNode) {
     // Remove old geometry...
     mesh.geometry.dispose();
 
-    const start = new Vector3(source.x, source.y ?? 0.5, source.z);
-    const end = new Vector3(target.x, target.y ?? 0.5, target.z);
+    const start = new THREE.Vector3(source.x, source.y ?? 0.5, source.z);
+    const end = new THREE.Vector3(target.x, target.y ?? 0.5, target.z);
 
-    const mid = new Vector3().addVectors(start, end).multiplyScalar(0.5);
+    const mid = new THREE.Vector3().addVectors(start, end).multiplyScalar(0.5);
     const distance = start.distanceTo(end);
     mid.y += Math.min(2, distance / 2);
 
-    const curve = new QuadraticBezierCurve3(start, mid, end);
+    const curve = new THREE.QuadraticBezierCurve3(start, mid, end);
 
     // Fallback in case radius is undefined
     const radius = mesh.geometry.parameters?.radius ?? 0.1;
-    const newGeometry = new TubeGeometry(curve, 20, radius, 8, false);
+    const newGeometry = new THREE.TubeGeometry(curve, 20, radius, 8, false);
 
     mesh.geometry = newGeometry;
 }
@@ -360,7 +415,7 @@ function updateCurvedLink(mesh, source, target) {
  * @param {THREE.Mesh[]} linkMeshes - Array of link meshes
  * @param {Graph} graph - The graph object containing updated node/link data
  */
-function updateThreeJSPositions(nodeMeshes, linkMeshes, graph) {
+function updateThreeJSPositions(nodeMeshes: THREE.Mesh[], linkMeshes: THREE.Mesh[], graph: Graph) {
     nodeMeshes.forEach((mesh, i) => {
         const node = graph.nodes[i];
         mesh.position.set(node.x, node.y ?? 0.5, node.z);
@@ -390,7 +445,7 @@ function updateThreeJSPositions(nodeMeshes, linkMeshes, graph) {
  * @param {THREE.Mesh[]} linkMeshes - Array of Three.js link meshes
  * @param {Graph} graph - The graph object with mutable simulation data
  */
-function applyForce(nodeMeshes, linkMeshes, graph) {
+function applyForce(nodeMeshes: THREE.Mesh[], linkMeshes: THREE.Mesh[], graph: Graph) {
     const ROOT_ID  = graph.nodes[0].id;   // assume first node is your root
     const SPACING  = 15;                   // horizontal gap per generation
     const FLOOR_Y  = 0.5;                  // vertical height of the plane
@@ -448,15 +503,15 @@ function applyForce(nodeMeshes, linkMeshes, graph) {
  * @param {number} [thickness=1] - Line width (note: ignored in most WebGL renderers)
  * @returns {THREE.Line} - The created line object (in case you want to store/remove it later)
  */
-function drawLine(scene, start, end, color = 0x000000, thickness = 1) {
-    const material = new LineBasicMaterial({
+function drawLine(scene: THREE.Scene, start: THREE.Vector3, end: THREE.Vector3, color = 0x000000, thickness = 1) {
+    const material = new THREE.LineBasicMaterial({
         color,
         linewidth: thickness  // NOTE: only works in WebGL with special support
     });
 
-    const geometry = new BufferGeometry().setFromPoints([start, end]);
+    const geometry = new THREE.BufferGeometry().setFromPoints([start, end]);
 
-    const line = new Line(geometry, material);
+    const line = new THREE.Line(geometry, material);
     scene.add(line); // assumes you’re in a global scope or pass the scene if needed
 
     return line;
@@ -471,7 +526,7 @@ function drawLine(scene, start, end, color = 0x000000, thickness = 1) {
  * @param {*} treeLinks - Links already included in the layout
  * @param {number} floorY
  */
-function connectTreeNodes(scene, laidOutNodes, rawLinks, treeLinks, floorY = 0.5) {
+function connectTreeNodes(scene: THREE.Scene, laidOutNodes: any[], rawLinks: GraphLink[], treeLinks: any[], floorY = 0.5) {
     const idToNode = new Map(laidOutNodes.map(n => [n.data.id, n]));
 
     for (const { source, target, color = 'orange' } of rawLinks) {
@@ -481,8 +536,8 @@ function connectTreeNodes(scene, laidOutNodes, rawLinks, treeLinks, floorY = 0.5
         const isInTree = treeLinks.some(l => l.source.data.id === source && l.target.data.id === target);
 
         if (from && to && !isInTree) {
-            const p1 = new Vector3(from.x, floorY, from.y);
-            const p2 = new Vector3(to.x,   floorY, to.y);
+            const p1 = new THREE.Vector3(from.x, floorY, from.y);
+            const p2 = new THREE.Vector3(to.x, floorY, to.y);
             drawLine(scene, p1, p2, color);
         }
     }
@@ -507,7 +562,7 @@ function connectTreeNodes(scene, laidOutNodes, rawLinks, treeLinks, floorY = 0.5
  * @param {GraphData} data - Graph structure with flat nodes and links
  * @param {TreeLayoutOptions} [options] - Layout spacing and floor height
  */
-function drawTreeWithExtras(scene, data, options = {}) {
+function drawTreeWithExtras(scene: THREE.Scene, data: Graph, options: TreeLayoutOptions = {}) {
     const {
         dx = 30,
         dy = 60,
@@ -550,7 +605,7 @@ function buildAdjacencyMap(links) {
     return map;
 }
 
-function handleUp(camera, controls, nodeMap, adjacencyMap) {
+function handleUp(camera: THREE.Camera, controls: any, nodeMap: Map<number, GraphNode>, adjacencyMap: Map<number, number[]>) {
     if (!navState.current) {
         // First move → go to root (lowest ID)
         const root = [...nodeMap.values()].reduce((a, b) => a.data.id < b.data.id ? a : b);
@@ -573,7 +628,7 @@ function handleUp(camera, controls, nodeMap, adjacencyMap) {
     tweenCamera(camera, controls, { ...rootPosition(next) }, null);
 }
 
-function handleLeft(camera, controls, adjacencyMap, nodeMap, selector) {
+function handleLeft(camera: THREE.Camera, controls: any, adjacencyMap: Map<number, number[]>, nodeMap: Map<number, GraphNode>, selector: any) {
     const currentId = navState.current?.data.id;
     const neighbors = adjacencyMap.get(navState.current?.data.id) || [];
     if (neighbors.length > 1) {
@@ -586,7 +641,7 @@ function handleLeft(camera, controls, adjacencyMap, nodeMap, selector) {
     }
 }
 
-function handleRight(camera, controls, adjacencyMap, nodeMap, selector) {
+function handleRight(camera: THREE.Camera, controls: any, adjacencyMap: Map<number, number[]>, nodeMap: Map<number, GraphNode>, selector: any) {
     const currentId = navState.current?.data.id;
     const neighbors = adjacencyMap.get(navState.current?.data.id) || [];
     if (neighbors.length > 1) {
@@ -599,7 +654,7 @@ function handleRight(camera, controls, adjacencyMap, nodeMap, selector) {
     }
 }
 
-function handleSideways(camera, controls, nextId, nextNode, selector) {
+function handleSideways(camera: THREE.Camera, controls: any, nextId: number, nextNode: GraphNode | undefined, selector: any) {
     const previewHeight = 5;
 
     if (nextNode) {
@@ -610,7 +665,7 @@ function handleSideways(camera, controls, nextId, nextNode, selector) {
     }
 }
 
-function handleDown(camera, controls, nodeMap) {
+function handleDown(camera: THREE.Camera, controls: any, nodeMap: Map<number, GraphNode>) {
     if (navState.path.length === 0) return;
     const prev = navState.path.pop();
     navState.current = prev;
@@ -619,12 +674,12 @@ function handleDown(camera, controls, nodeMap) {
     tweenCamera(camera, controls, { ...rootPosition(prev) }, null);
 }
 
-function rootPosition(node) {
+function rootPosition(node: GraphNode) {
     return { x: node.x, y: 5, z: node.y }; // 90° clockwise layout
 }
 
 
-function setupKeyboardNavigation(camera, controls, nodeMap, adjacencyMap, selector) {
+function setupKeyboardNavigation(camera: THREE.Camera, controls: any, nodeMap: Map<number, GraphNode>, adjacencyMap: Map<number, number[]>, selector: any) {
     document.addEventListener('keydown', (e) => {
         if (e.key === 'ArrowUp') {
             handleUp(camera, controls, nodeMap, adjacencyMap);
@@ -648,26 +703,26 @@ function setupKeyboardNavigation(camera, controls, nodeMap, adjacencyMap, select
  * @param {Graph} data - Graph structure with nodes and links
  * @param {any} threejsDrawing - Optional reference used by calling framework
  */
-function drawNetwork(scene, data, threejsDrawing) {
+function drawNetwork(scene: THREE.Scene, data: Graph, threejsDrawing: any) {
     const FLOOR_SIZE = 200;
     // or, define it in `data.metadata`...
 
     // Lighting
-    const light = new HemisphereLight(0xffffff, 0x444444, 1);
+    const light = new THREE.HemisphereLight(0xffffff, 0x444444, 1);
     light.position.set(0, 20, 0);
     scene.add(light);
 
     // Floor plane (XZ)
-    const planeGeometry = new PlaneGeometry(FLOOR_SIZE, FLOOR_SIZE);
-    const planeMaterial = new MeshStandardMaterial({ color: 0x888888 });
-    const plane = new Mesh(planeGeometry, planeMaterial);
+    const planeGeometry = new THREE.PlaneGeometry(FLOOR_SIZE, FLOOR_SIZE);
+    const planeMaterial = new THREE.MeshStandardMaterial({ color: 0x888888 });
+    const plane = new THREE.Mesh(planeGeometry, planeMaterial);
     plane.rotation.x = -Math.PI / 2; // Rotate to lie flat
     plane.position.y = 0; // Position it at y=0
     plane.position.z += FLOOR_SIZE / 2; // Center it
     scene.add(plane);
 
     // Axes helper: red (X), green (Y), blue (Z)
-    const axesHelper = new AxesHelper(5);
+    const axesHelper = new THREE.AxesHelper(5);
     scene.add(axesHelper);
 
     // GRAPH LAYOUT: Layout + render
@@ -692,7 +747,7 @@ function drawNetwork(scene, data, threejsDrawing) {
     const camera = threejsDrawing.data.camera;
     const controls = threejsDrawing.data.controls;
 
-    const selector = new Mesh(new TorusGeometry(0.7, 0.1, 8, 16), new MeshStandardMaterial({ color: 'orange' }));
+    const selector = new THREE.Mesh(new THREE.TorusGeometry(0.7, 0.1, 8, 16), new THREE.MeshStandardMaterial({ color: 'orange' }));
     selector.rotation.x = Math.PI / 2;
     scene.add(selector);
 
@@ -706,7 +761,7 @@ const networkDrawing = {
     ],
     //'eventListeners': eventListeners,
     'eventListeners': {},
-    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
+    'animationCallback': (renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawing: any, camera: THREE.Camera) => {
         // Animation logic can go here
     },
     'data': {
