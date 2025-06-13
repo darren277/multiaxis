@@ -19,7 +19,7 @@ const sources = [
 /* EVENT EMITTER */
 
 class EventEmitter {
-    callbacks: { [key in string]: { [key in string]: (() => any)[] } };
+    callbacks: {[namespace: string]: {[eventName: string]: ((...args: any[]) => any)[];};};
 
     constructor() {
         this.callbacks = {};
@@ -731,6 +731,9 @@ export default class MonitorScreen extends EventEmitter {
         const material = new THREE.MeshBasicMaterial({map: texture, blending: blendingMode, side: THREE.DoubleSide, opacity, transparent: true});
 
         // Create geometry
+        if (!this.screenSize) {
+            throw new Error("screenSize is undefined");
+        }
         const geometry = new THREE.PlaneGeometry(this.screenSize.width, this.screenSize.height);
 
         // Create mesh
@@ -849,7 +852,7 @@ export default class MonitorScreen extends EventEmitter {
     }
 
     update() {
-        if (this.dimmingPlane) {
+        if (this.dimmingPlane && this.camera && this.position) {
             const planeNormal = new THREE.Vector3(0, 0, 1);
             const viewVector = new THREE.Vector3();
             viewVector.copy(this.camera.position);
@@ -1014,14 +1017,18 @@ async function drawMonitor(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
     //data.cssScene.add(data.monitorScreen.cssScene);
 
     // Add the dimming plane to the CSS scene
-    data.monitorScreen.cssScene.add(data.monitorScreen.dimmingPlane);
+    if (data.monitorScreen.dimmingPlane) {
+        data.monitorScreen.cssScene.add(data.monitorScreen.dimmingPlane);
+    }
 
     // Set the camera to look at the monitor screen
-    data.monitorScreen.camera.lookAt(data.monitorScreen.position);
+    if (data.monitorScreen.camera && data.monitorScreen.position && data.monitorScreen.rotation) {
+        data.monitorScreen.camera.lookAt(data.monitorScreen.position);
 
-    // Set the camera to look at the monitor screen
-    data.monitorScreen.camera.position.copy(data.monitorScreen.position);
-    data.monitorScreen.camera.rotation.copy(data.monitorScreen.rotation);
+        // Set the camera to look at the monitor screen
+        data.monitorScreen.camera.position.copy(data.monitorScreen.position);
+        data.monitorScreen.camera.rotation.copy(data.monitorScreen.rotation);
+    }
 
     // Add some lights...
     const light = new THREE.DirectionalLight(0xffffff, 1);

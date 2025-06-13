@@ -55,7 +55,7 @@ function layoutFamilyYearScale(graph: FamilyGraph, rootId: number) {
 
         parents.forEach((pid: number, idx: number) => {
             const p   = byId.get(pid);
-            if (!p) return;
+            if (!p || !child || child.x === undefined) return;
             const sgn = idx === 0 ? -1 : 1;        // first parent left, second right
             p.x = child.x + sgn * X_STEP;
             p.y = (p.birthYear - refYear) * YEAR_SCALE;  // older → positive y
@@ -98,7 +98,7 @@ function layoutFamily(graph: FamilyGraph, rootId: number) {
 
         parents.forEach((pid: number, idx: number) => {
             const p   = byId.get(pid);
-            if (!p) return;
+            if (!p || !child || child.x === undefined) return;
             const sgn = idx === 0 ? -1 : 1;        // first parent left, second right
 
             const step = X_STEP / (depth + 1);     // narrower each generation

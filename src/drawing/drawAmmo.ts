@@ -1,9 +1,40 @@
 /* Adapted from https://github.com/mrdoob/three.js/blob/master/examples/physics_ammo_break.html */
 
 import * as THREE from "three";
+import { ConvexGeometry } from "three/examples/jsm/geometries/ConvexGeometry.js";
 import { ThreeJSDrawing } from "../threejsDrawing";
 
-let Ammo: any; // Ammo.js will be loaded asynchronously
+
+interface ConvexObjectBreaker {
+    prepareBreakableObject: (object: THREE.Mesh, mass: number, velocity: THREE.Vector3, angularVelocity: THREE.Vector3, isStatic: boolean) => void;
+    subdivideByImpact: (object: THREE.Mesh, impactPoint: THREE.Vector3, impactNormal: THREE.Vector3, minSize: number, maxSize: number, maxMass: number) => THREE.Mesh[];
+}
+
+interface Ammo {
+    btDefaultMotionState: any;
+    (): Promise<any>;
+    btDefaultCollisionConfiguration: any;
+    btCollisionDispatcher: any;
+    btDbvtBroadphase: any;
+    btSequentialImpulseConstraintSolver: any;
+    btDiscreteDynamicsWorld: any;
+    btVector3: any;
+    btTransform: any;
+    btQuaternion: any;
+    btBoxShape: any;
+    btSphereShape: any;
+    btConvexHullShape: any;
+    btRigidBody: any;
+    btRigidBodyConstructionInfo: any;
+    btCollisionShape: any;
+    castObject: (object: any, type: any) => any;
+    btManifoldPoint: any;
+    btCollisionObject: any;
+}
+
+let Ammo: Ammo | null = null;
+
+//let Ammo: any; // Ammo.js will be loaded asynchronously
 console.debug('Ammo.js loaded', Ammo);
 
 const clock = new THREE.Clock();
@@ -18,7 +49,21 @@ const ballMaterial = new THREE.MeshPhongMaterial({ color: 0x202020 });
 const gravityConstant = 7.8;
 const margin = 0.05;
 
-const convexBreaker = new ConvexObjectBreaker();
+// TODO: Replace this stub with a real implementation or import of ConvexObjectBreaker
+const convexBreaker: ConvexObjectBreaker = {
+    prepareBreakableObject: (object, mass, velocity, angularVelocity, isStatic) => {
+        // Stub: Add your implementation here
+        object.userData.mass = mass;
+        object.userData.velocity = velocity;
+        object.userData.angularVelocity = angularVelocity;
+        object.userData.breakable = true;
+    },
+    subdivideByImpact: (object, impactPoint, impactNormal, minSize, maxSize, maxMass) => {
+        // Stub: Add your implementation here
+        // For now, just return an empty array to avoid runtime errors
+        return [];
+    }
+};
 
 // Rigid bodies include all movable objects
 const rigidBodies: THREE.Object3D[] = [];
@@ -45,7 +90,7 @@ function drawAmmo(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
         objectsToRemove[i] = null;
     }
 
-    Ammo().then(function (AmmoLib: any) {
+    Ammo && Ammo().then(function (AmmoLib: any) {
         Ammo = AmmoLib;
 
         initGraphics(scene);
@@ -77,13 +122,17 @@ function initGraphics(scene: THREE.Scene) {
 }
 
 function initPhysics(threejsDrawing: ThreeJSDrawing) {
+    if (!Ammo) {
+        console.error('Ammo.js not loaded');
+        return;
+    }
     // Physics configuration
     threejsDrawing.data.collisionConfiguration = new Ammo.btDefaultCollisionConfiguration();
     threejsDrawing.data.dispatcher = new Ammo.btCollisionDispatcher(threejsDrawing.data.collisionConfiguration);
     threejsDrawing.data.broadphase = new Ammo.btDbvtBroadphase();
     threejsDrawing.data.solver = new Ammo.btSequentialImpulseConstraintSolver();
     threejsDrawing.data.physicsWorld = new Ammo.btDiscreteDynamicsWorld(threejsDrawing.data.dispatcher, threejsDrawing.data.broadphase, threejsDrawing.data.solver, threejsDrawing.data.collisionConfiguration);
-    (threejsDrawing.data.physicsWorld as Ammo.btDiscreteDynamicsWorld).setGravity(new Ammo.btVector3(0, - gravityConstant, 0));
+    (threejsDrawing.data.physicsWorld as Ammo["btDiscreteDynamicsWorld"]).setGravity(new Ammo.btVector3(0, - gravityConstant, 0));
 
     transformAux1 = new Ammo.btTransform();
     tempBtVec3_1 = new Ammo.btVector3(0, 0, 0);
@@ -164,8 +213,13 @@ function createObjects(scene: THREE.Scene, physicsWorld: any) {
 
 }
 
-function createParalellepipedWithPhysics(scene: THREE.Scene, physicsWorld: Ammo.btDiscreteDynamicsWorld, sx: number, sy: number, sz: number, mass: number, pos: THREE.Vector3, quat: THREE.Quaternion, material: THREE.Material) {
+function createParalellepipedWithPhysics(scene: THREE.Scene, physicsWorld: Ammo["btDiscreteDynamicsWorld"], sx: number, sy: number, sz: number, mass: number, pos: THREE.Vector3, quat: THREE.Quaternion, material: THREE.Material) {
     const object = new THREE.Mesh(new THREE.BoxGeometry(sx, sy, sz, 1, 1, 1), material);
+
+    if (!Ammo) {
+        throw new Error("Ammo.js is not loaded.");
+    }
+
     const shape = new Ammo.btBoxShape(new Ammo.btVector3(sx * 0.5, sy * 0.5, sz * 0.5));
     shape.setMargin(margin);
 
@@ -175,7 +229,11 @@ function createParalellepipedWithPhysics(scene: THREE.Scene, physicsWorld: Ammo.
     return object;
 }
 
-function createDebrisFromBreakableObject(scene: THREE.Scene, physicsWorld: Ammo.btDiscreteDynamicsWorld, object: THREE.Mesh) {
+function createDebrisFromBreakableObject(scene: THREE.Scene, physicsWorld: Ammo["btDiscreteDynamicsWorld"], object: THREE.Mesh) {
+    if (!Ammo) {
+        throw new Error("Ammo.js is not loaded.");
+    }
+
     object.castShadow = true;
     object.receiveShadow = true;
 
@@ -183,7 +241,7 @@ function createDebrisFromBreakableObject(scene: THREE.Scene, physicsWorld: Ammo.
     shape.setMargin(margin);
 
     // createRigidBody(scene, physicsWorld, object, physicsShape, mass, pos, quat, vel, angVel)
-    const body = createRigidBody(scene, physicsWorld, object, shape, object.userData.mass, null, null, object.userData.velocity, object.userData.angularVelocity);
+    const body = createRigidBody(scene, physicsWorld, object, shape, object.userData.mass, object.position, object.quaternion, object.userData.velocity, object.userData.angularVelocity);
 
     // Set pointer back to the three object only in the debris objects
     const btVecUserData = new Ammo.btVector3(0, 0, 0);
@@ -192,12 +250,16 @@ function createDebrisFromBreakableObject(scene: THREE.Scene, physicsWorld: Ammo.
 
 }
 
-function removeDebris(scene: THREE.Scene, physicsWorld: Ammo.btDiscreteDynamicsWorld, object: THREE.Mesh) {
+function removeDebris(scene: THREE.Scene, physicsWorld: Ammo["btDiscreteDynamicsWorld"], object: THREE.Mesh) {
     scene.remove(object);
     physicsWorld.removeRigidBody(object.userData.physicsBody);
 }
 
-function createConvexHullPhysicsShape(coords: Float32Array): Ammo.btConvexHullShape {
+function createConvexHullPhysicsShape(coords: Float32Array): Ammo["btConvexHullShape"] {
+    if (!Ammo) {
+        throw new Error("Ammo.js is not loaded.");
+    }
+
     const shape = new Ammo.btConvexHullShape();
     for (let i = 0, il = coords.length; i < il; i += 3) {
         tempBtVec3_1.setValue(coords[i], coords[i+1], coords[i+2]);
@@ -207,7 +269,11 @@ function createConvexHullPhysicsShape(coords: Float32Array): Ammo.btConvexHullSh
     return shape;
 }
 
-function createRigidBody(scene: THREE.Scene, physicsWorld: Ammo.btDiscreteDynamicsWorld, object: THREE.Mesh, physicsShape: Ammo.btCollisionShape, mass: number, pos: THREE.Vector3, quat: THREE.Quaternion, vel: THREE.Vector3 | null, angVel: THREE.Vector3 | null) {
+function createRigidBody(scene: THREE.Scene, physicsWorld: Ammo["btDiscreteDynamicsWorld"], object: THREE.Mesh, physicsShape: Ammo["btCollisionShape"], mass: number, pos: THREE.Vector3, quat: THREE.Quaternion, vel: THREE.Vector3 | null, angVel: THREE.Vector3 | null) {
+    if (!Ammo) {
+        throw new Error("Ammo.js is not loaded.");
+    }
+    
     if (pos) {
         object.position.copy(pos);
     } else {
@@ -268,7 +334,12 @@ function createMaterial(color: number) {
 }
 
 
-function updatePhysics(scene: THREE.Scene, physicsWorld: Ammo.btDiscreteDynamicsWorld, dispatcher: Ammo.btCollisionDispatcher, deltaTime: number, numObjectsToRemove: number) {
+function updatePhysics(scene: THREE.Scene, physicsWorld: Ammo["btDiscreteDynamicsWorld"], dispatcher: Ammo["btCollisionDispatcher"], deltaTime: number, numObjectsToRemove: number) {
+    if (!Ammo) {
+        console.error('Ammo.js not loaded');
+        return;
+    }
+
     // Step world
     physicsWorld.stepSimulation(deltaTime, 10);
 
@@ -386,6 +457,11 @@ function updatePhysics(scene: THREE.Scene, physicsWorld: Ammo.btDiscreteDynamics
 
 
 function onPointerDown(event: PointerEvent, data: any) {
+    if (!Ammo) {
+        console.error('Ammo.js not loaded');
+        return;
+    }
+
     const scene = data.scene;
     const camera = data.camera;
     const physicsWorld = data.physicsWorld;
