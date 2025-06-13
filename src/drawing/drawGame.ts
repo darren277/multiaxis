@@ -1,4 +1,5 @@
-import { HemisphereLight, Mesh, MeshBasicMaterial, BoxGeometry, PlaneGeometry, Clock, Vector3, Raycaster, Sphere, Box3, DoubleSide } from 'three';
+import * as THREE from 'three';
+import { ThreeJSDrawing } from '../types';
 
 /* PointerLock controls adapted from https://github.com/mrdoob/three.js/blob/master/examples/misc_controls_pointerlock.html */
 
@@ -23,13 +24,13 @@ const map = [
 ];
 
 // ---------- Materials ----------
-const floorMat = new MeshBasicMaterial({ color: 0x222222 });
-const wallMat  = new MeshBasicMaterial({ color: 0x8888ff });
-const enemyMat = new MeshBasicMaterial({ color: 0xff0000, side: DoubleSide });
+const floorMat = new THREE.MeshBasicMaterial({ color: 0x222222 });
+const wallMat  = new THREE.MeshBasicMaterial({ color: 0x8888ff });
+const enemyMat = new THREE.MeshBasicMaterial({ color: 0xff0000, side: THREE.DoubleSide });
 
 // ---------- Input handling ----------
 const keyState = Object.create(null);
-function onKey(evt, data) {
+function onKey(evt: KeyboardEvent, data: any) {
     console.log(evt.code, evt.type);
     if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyW','KeyA','KeyS','KeyD'].includes(evt.code)) {
         keyState[evt.code] = evt.type === 'keydown';
@@ -42,23 +43,23 @@ function onKey(evt, data) {
     }
 }
 
-const velocity  = new Vector3();
-const moveTemp = new Vector3();
-const direction = new Vector3();
+const velocity  = new THREE.Vector3();
+const moveTemp = new THREE.Vector3();
+const direction = new THREE.Vector3();
 
 let prevTime = performance.now();
 
-function collidesWithWalls(pos, walls) {
+function collidesWithWalls(pos: THREE.Vector3, walls: THREE.Object3D[]) {
     const radius = 2; // player collision radius
-    const playerBox = new Sphere(pos, radius);
+    const playerBox = new THREE.Sphere(pos, radius);
     return walls.some(wall => {
-        const wallBox = new Box3().setFromObject(wall);
+        const wallBox = new THREE.Box3().setFromObject(wall);
         return wallBox.intersectsSphere(playerBox);
     });
 }
 
 
-function updatePlayer(controls, data) {
+function updatePlayer(controls: any, data: any) {
     const time  = performance.now();
     const delta = (time - prevTime) / 1000;
     prevTime = time;
@@ -127,25 +128,25 @@ function updatePlayer(controls, data) {
 }
 
 // ---------- Enemy helpers ----------
-const raycaster = new Raycaster();
+const raycaster = new THREE.Raycaster();
 
-function enemyLOS(enemy, camera, walls) {
-    const dir = new Vector3().subVectors(camera.position, enemy.position).normalize();
+function enemyLOS(enemy: THREE.Object3D, camera: THREE.Camera, walls: THREE.Object3D[]) {
+    const dir = new THREE.Vector3().subVectors(camera.position, enemy.position).normalize();
     raycaster.set(enemy.position.clone().setY(3), dir);
     return raycaster.intersectObjects(walls, false).length === 0;
 }
 
-function playerDist(enemy, camera) { return enemy.position.distanceTo(camera.position); }
+function playerDist(enemy: THREE.Object3D, camera: THREE.Camera) { return enemy.position.distanceTo(camera.position); }
 
-function updateEnemies(delta, data, camera) {
-    data.enemies.forEach(e => {
+function updateEnemies(delta: number, data: any, camera: THREE.Camera) {
+    data.enemies.forEach((e: THREE.Object3D) => {
         switch (e.userData.state) {
             case STATE_IDLE:
                 if (playerDist(e, camera) < 60 && enemyLOS(e, camera, data.walls)) e.userData.state = STATE_CHASE;
                 break;
             case STATE_CHASE:
                 if (!enemyLOS(e, camera, data.walls)) { e.userData.state = STATE_IDLE; break; }
-                const dir = new Vector3().subVectors(camera.position, e.position);
+                const dir = new THREE.Vector3().subVectors(camera.position, e.position);
                 dir.y = 0; dir.normalize();
                 e.position.addScaledVector(dir, ENEMY_SPEED * delta);
                 break;
@@ -154,8 +155,8 @@ function updateEnemies(delta, data, camera) {
     });
 }
 
-function spawnEnemy(scene, data, gridX, gridZ) {
-    const enemy = new Mesh(new PlaneGeometry(3, 6), enemyMat);
+function spawnEnemy(scene: THREE.Scene, data: any, gridX: number, gridZ: number) {
+    const enemy = new THREE.Mesh(new THREE.PlaneGeometry(3, 6), enemyMat);
     enemy.position.set(gridX * TILE, 3, gridZ * TILE);
     enemy.userData.state = STATE_IDLE;
     scene.add(enemy);
@@ -163,7 +164,7 @@ function spawnEnemy(scene, data, gridX, gridZ) {
 }
 
 // ---------- drawGame (called once by loader) ----------
-function drawGame(scene, threejsDrawing) {
+function drawGame(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
     // Provide a data bucket if not present
     if (!threejsDrawing.data) threejsDrawing.data = {};
     const data = threejsDrawing.data;
@@ -174,13 +175,13 @@ function drawGame(scene, threejsDrawing) {
     for (let z = 0; z < map.length; z++) {
         for (let x = 0; x < map[z].length; x++) {
             // Floor
-            const floor = new Mesh(new PlaneGeometry(TILE, TILE), floorMat);
+            const floor = new THREE.Mesh(new THREE.PlaneGeometry(TILE, TILE), floorMat);
             floor.rotation.x = -Math.PI / 2;
             floor.position.set(x * TILE + TILE/2, 0, z * TILE + TILE/2);
             scene.add(floor);
 
             if (map[z][x] === 1) {
-                const wall = new Mesh(new BoxGeometry(TILE, WALL_H, TILE), wallMat);
+                const wall = new THREE.Mesh(new THREE.BoxGeometry(TILE, WALL_H, TILE), wallMat);
                 wall.position.set(x * TILE + TILE/2, WALL_H / 2, z * TILE + TILE/2);
                 scene.add(wall);
                 data.walls.push(wall);
@@ -193,8 +194,8 @@ function drawGame(scene, threejsDrawing) {
 }
 
 // ---------- animationCallback (runs every frame) ----------
-const clock = new Clock();
-function animationCallback(renderer, timestamp, threejsDrawing, camera) {
+const clock = new THREE.Clock();
+function animationCallback(renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawing: ThreeJSDrawing, camera: THREE.Camera) {
     const data     = threejsDrawing.data;
     const controls = data.controls;           // PointerLockControls comes from loader
     if (!controls) {
@@ -218,8 +219,8 @@ const gameDrawing = {
     sceneElements: [],
     drawFuncs: [ { func: drawGame, dataSrc: null } ],
     eventListeners: {
-        keydown: (e, data) => onKey(e, data),
-        keyup:   (e, data) => onKey(e, data)
+        keydown: (e: KeyboardEvent, data: any) => onKey(e, data),
+        keyup:   (e: KeyboardEvent, data: any) => onKey(e, data)
     },
     animationCallback,
     data: {},

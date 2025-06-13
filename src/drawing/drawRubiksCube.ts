@@ -1,7 +1,8 @@
-import { Mesh, MeshBasicMaterial, BoxGeometry, Group, Vector3 } from 'three';
+import * as THREE from "three";
 import { Tween, Easing } from 'tween';
+import { ThreeJSDrawing } from "../types";
 
-function getMaterials(faceColors) {
+function getMaterials(faceColors: { [key: string]: string | null }): THREE.Material[] {
     const colors = {
         white: 0xffffff,
         yellow: 0xffff00,
@@ -13,19 +14,19 @@ function getMaterials(faceColors) {
     };
 
     return [
-        new MeshBasicMaterial({ color: colors[faceColors.right] || colors.black }),  // +X
-        new MeshBasicMaterial({ color: colors[faceColors.left] || colors.black }),   // -X
-        new MeshBasicMaterial({ color: colors[faceColors.top] || colors.black }),    // +Y
-        new MeshBasicMaterial({ color: colors[faceColors.bottom] || colors.black }), // -Y
-        new MeshBasicMaterial({ color: colors[faceColors.front] || colors.black }),  // +Z
-        new MeshBasicMaterial({ color: colors[faceColors.back] || colors.black })    // -Z
+        new THREE.MeshBasicMaterial({ color: colors[faceColors.right] || colors.black }),  // +X
+        new THREE.MeshBasicMaterial({ color: colors[faceColors.left] || colors.black }),   // -X
+        new THREE.MeshBasicMaterial({ color: colors[faceColors.top] || colors.black }),    // +Y
+        new THREE.MeshBasicMaterial({ color: colors[faceColors.bottom] || colors.black }), // -Y
+        new THREE.MeshBasicMaterial({ color: colors[faceColors.front] || colors.black }),  // +Z
+        new THREE.MeshBasicMaterial({ color: colors[faceColors.back] || colors.black })    // -Z
     ];
 }
 
 
 
-function drawRubiksCube(scene, threejsDrawing) {
-    const cubelets = [];
+function drawRubiksCube(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
+    const cubelets: THREE.Mesh[] = [];
     const spacing = 1.05;
     const half = 1;
 
@@ -41,9 +42,9 @@ function drawRubiksCube(scene, threejsDrawing) {
                     back: z === -1 ? 'green' : null
                 };
 
-                const geometry = new BoxGeometry(1, 1, 1);
+                const geometry = new THREE.BoxGeometry(1, 1, 1);
                 const materials = getMaterials(faceColors);
-                const cubelet = new Mesh(geometry, materials);
+                const cubelet = new THREE.Mesh(geometry, materials);
                 cubelet.position.set(x * spacing, y * spacing, z * spacing);
 
                 scene.add(cubelet);
@@ -54,13 +55,13 @@ function drawRubiksCube(scene, threejsDrawing) {
 }
 
 
-function getFaceCubelets(cubelets, axis, value, epsilon = 0.01) {
+function getFaceCubelets(cubelets: THREE.Mesh[], axis: 'x' | 'y' | 'z', value: number, epsilon = 0.01) {
     return cubelets.filter(cubelet => Math.abs(cubelet.position[axis] - value) < epsilon);
 }
 
 
-function rotateFace(scene, cubelets, axis, value, direction = 1) {
-    const faceGroup = new Group();
+function rotateFace(scene: THREE.Scene, cubelets: THREE.Mesh[], axis: 'x' | 'y' | 'z', value: number, direction = 1) {
+    const faceGroup = new THREE.Group();
     scene.add(faceGroup);
 
     const faceCubelets = getFaceCubelets(cubelets, axis, value);
@@ -72,7 +73,7 @@ function rotateFace(scene, cubelets, axis, value, direction = 1) {
 
     // Rotate the group (direction: +1 = clockwise)
     const angle = direction * Math.PI / 2; // 90 degrees
-    const rotationAxis = new Vector3(
+    const rotationAxis = new THREE.Vector3(
         axis === 'x' ? 1 : 0,
         axis === 'y' ? 1 : 0,
         axis === 'z' ? 1 : 0
@@ -111,7 +112,7 @@ const faceMap = {
 
 
 const eventListeners = {
-    'keydown': (event, { camera, data, controls }) => {
+    'keydown': (event: KeyboardEvent, { camera, data, controls }: any) => {
         // TODO: Test threejsDrawing.data.scene...
         const key = event.key.toUpperCase();
         console.log('Key pressed:', key);
@@ -130,7 +131,7 @@ const rubiksCubeDrawing = {
         {'func': drawRubiksCube, 'dataSrc': null}
     ],
     'eventListeners': eventListeners,
-    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
+    'animationCallback': (renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawing: ThreeJSDrawing, camera: THREE.Camera) => {
     },
     'data': {
     }

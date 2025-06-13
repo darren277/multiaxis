@@ -1,46 +1,47 @@
-import { SphereGeometry, Mesh, MeshStandardMaterial, Vector2, Vector3, BufferGeometry, Line, LineBasicMaterial, Raycaster, Plane } from 'three';
+import * as THREE from 'three';
 import { forceSimulation, forceManyBody, forceLink, forceCenter } from 'd3-force-3d';
 import { drawBasicLights } from './drawLights.js';
+import { ThreeJSDrawing } from '../threejsDrawing.js';
 
-function drawGraph(scene, data, state) {
+function drawGraph(scene: THREE.Scene, data: any, state: any) {
     console.log('data', data);
-    const nodeMap = {};
+    const nodeMap: { [key: string]: THREE.Vector3 } = {};
 
     // Layout nodes in a circle
     const radius = 5;
     const angleStep = (2 * Math.PI) / data.nodes.length;
 
-    data.nodes.forEach((node, i) => {
+    data.nodes.forEach((node: any, i: number) => {
         const angle = i * angleStep;
         const x = radius * Math.cos(angle);
         const y = 0;
         const z = radius * Math.sin(angle);
 
-        const geometry = new SphereGeometry(0.2, 16, 16);
-        const material = new MeshStandardMaterial({ color: 0x00ffcc });
-        const sphere = new Mesh(geometry, material);
+        const geometry = new THREE.SphereGeometry(0.2, 16, 16);
+        const material = new THREE.MeshStandardMaterial({ color: 0x00ffcc });
+        const sphere = new THREE.Mesh(geometry, material);
 
         sphere.position.set(x, y, z);
         scene.add(sphere);
 
-        nodeMap[node] = new Vector3(x, y, z);
+        nodeMap[node] = new THREE.Vector3(x, y, z);
     });
 
     // Add edges
-    data.edges.forEach(edge => {
+    data.edges.forEach((edge: any) => {
         const start = nodeMap[edge.source];
         const end = nodeMap[edge.target];
 
         const points = [start, end];
-        const geometry = new BufferGeometry().setFromPoints(points);
-        const material = new LineBasicMaterial({ color: edge.color || 0xffffff });
+        const geometry = new THREE.BufferGeometry().setFromPoints(points);
+        const material = new THREE.LineBasicMaterial({ color: edge.color || 0xffffff });
 
-        const line = new Line(geometry, material);
+        const line = new THREE.Line(geometry, material);
         scene.add(line);
     });
 }
 
-function drawForceDirectedGraph(scene, data) {
+function drawForceDirectedGraph(scene: THREE.Scene, data: any) {
     const graphData = data;
 
     const simulation = forceSimulation(graphData.nodes)
@@ -49,11 +50,11 @@ function drawForceDirectedGraph(scene, data) {
         .force('center', forceCenter(0, 0, 0))
         .alphaDecay(0.02); // Allow some time to settle
 
-    const nodeSpheres = {};
-    graphData.nodes.forEach(node => {
-        const geometry = new SphereGeometry(1, 16, 16);
-        const material = new MeshStandardMaterial({ color: 0xffff00 });
-        const sphere = new Mesh(geometry, material);
+    const nodeSpheres: { [key: string]: THREE.Mesh } = {};
+    graphData.nodes.forEach((node: any) => {
+        const geometry = new THREE.SphereGeometry(1, 16, 16);
+        const material = new THREE.MeshStandardMaterial({ color: 0xffff00 });
+        const sphere = new THREE.Mesh(geometry, material);
         scene.add(sphere);
         nodeSpheres[node.id] = sphere;
 
@@ -65,14 +66,14 @@ function drawForceDirectedGraph(scene, data) {
         sphere.position.set(node.x, node.y, node.z);
     });
 
-    const linkLines = [];
-    graphData.links.forEach(link => {
-        const material = new LineBasicMaterial({ color: 0xcccccc });
-        const geometry = new BufferGeometry().setFromPoints([
-            new Vector3(), // placeholder
-            new Vector3()
+    const linkLines: { line: THREE.Line, link: any }[] = [];
+    graphData.links.forEach((link: any) => {
+        const material = new THREE.LineBasicMaterial({ color: 0xcccccc });
+        const geometry = new THREE.BufferGeometry().setFromPoints([
+            new THREE.Vector3(), // placeholder
+            new THREE.Vector3()
         ]);
-        const line = new Line(geometry, material);
+        const line = new THREE.Line(geometry, material);
         scene.add(line);
         linkLines.push({ line, link });
     });
@@ -85,7 +86,7 @@ function drawForceDirectedGraph(scene, data) {
 };
 
 // Update on each frame
-function updateForceGraph(graphData, nodeSpheres, linkLines) {
+function updateForceGraph(graphData: any, nodeSpheres: { [key: string]: THREE.Mesh }, linkLines: { line: THREE.Line, link: any }[]) {
     // Update node positions
     for (const node of graphData.nodes) {
         const sphere = nodeSpheres[node.id];
@@ -94,8 +95,8 @@ function updateForceGraph(graphData, nodeSpheres, linkLines) {
 
     // Update edge positions
     for (const { line, link } of linkLines) {
-        const src = graphData.nodes.find(n => n.id === link.source.id || n.id === link.source);
-        const tgt = graphData.nodes.find(n => n.id === link.target.id || n.id === link.target);
+        const src = graphData.nodes.find((n: any) => n.id === link.source.id || n.id === link.source);
+        const tgt = graphData.nodes.find((n: any) => n.id === link.target.id || n.id === link.target);
         const positions = line.geometry.attributes.position.array;
 
         positions[0] = src.x;
@@ -110,10 +111,10 @@ function updateForceGraph(graphData, nodeSpheres, linkLines) {
     }
 }
 
-const raycaster = new Raycaster();
-const mouse = new Vector2();
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
 
-function onMouseMove(camera, data, event, rect) {
+function onMouseMove(camera: THREE.Camera, data: any, event: MouseEvent, rect: DOMRect) {
     if (!data.dragging) return;
 
     // convert screen coords to normalized device coords
@@ -124,8 +125,8 @@ function onMouseMove(camera, data, event, rect) {
     raycaster.setFromCamera(mouse, camera);
 
     // project onto an invisible plane near the dragged node
-    const planeZ = new Plane(new Vector3(0, 0, 1), 0);
-    const intersection = new Vector3();
+    const planeZ = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0);
+    const intersection = new THREE.Vector3();
     raycaster.ray.intersectPlane(planeZ, intersection);
 
     const node = data.draggedNode;
@@ -136,7 +137,7 @@ function onMouseMove(camera, data, event, rect) {
     }
 }
 
-function onMouseDown(camera, data, event, rect) {
+function onMouseDown(camera: THREE.Camera, data: any, event: MouseEvent, rect: DOMRect) {
     mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
     mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
 
@@ -155,7 +156,7 @@ function onMouseDown(camera, data, event, rect) {
     }
 }
 
-function onMouseUp(state) {
+function onMouseUp(state: any) {
     if (state.draggedNode) {
         state.draggedNode.fx = null;
         state.draggedNode.fy = null;
@@ -183,7 +184,7 @@ const graphData = {
     ]
 };
 
-function drawForceGraph(scene, threejsDrawing, state) {
+function drawForceGraph(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing, state: any) {
     // Random tree
     const N = 40;
     const gData = {
@@ -219,7 +220,7 @@ const cayleyDrawing = {
         {'func': drawGraph, 'dataSrc': 'cayley', 'dataType': 'json'},
     ],
     'eventListeners': null,
-    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
+    'animationCallback': (renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawing: ThreeJSDrawing, camera: THREE.Camera) => {
     },
     'data': {
         'sheetMusic': null,
@@ -233,22 +234,22 @@ const forceDrawing = {
         {'func': drawForceGraph, 'dataSrc': null}
     ],
     'eventListeners': {
-        'mousedown': (e, other) => {
+        'mousedown': (e: MouseEvent, other: any) => {
             const {camera, data, controls, renderer} = other;
             const rect = renderer.domElement.getBoundingClientRect();
             onMouseDown(camera, data, e, rect);
         },
-        'mouseup': (e, other) => {
+        'mouseup': (e: MouseEvent, other: any) => {
             const {camera, data, controls} = other;
             onMouseUp(data);
         },
-        'mousemove': (e, other) => {
+        'mousemove': (e: MouseEvent, other: any) => {
             const {camera, data, controls, renderer} = other;
             const rect = renderer.domElement.getBoundingClientRect();
             onMouseMove(camera, data, e, rect);
         }
     },
-    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
+    'animationCallback': (renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawing: ThreeJSDrawing, camera: THREE.Camera) => {
         threejsDrawing.data.simulation.tick(); // progress the simulation
         updateForceGraph(threejsDrawing.data.graphData, threejsDrawing.data.nodeSpheres, threejsDrawing.data.linkLines); // reflect new positions
     },

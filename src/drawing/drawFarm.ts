@@ -1,23 +1,21 @@
-import {
-    MeshStandardMaterial, PlaneGeometry, Mesh, Group, ShaderMaterial, CanvasTexture, RepeatWrapping, Raycaster,
-    Vector2, Vector3, MathUtils, Clock, Box3
-} from 'three';
+import * as THREE from 'three';
 import { drawBasicLights, drawSun } from './drawLights.js';
 import { GLTFLoader } from 'gltfloader'
 import { createPerlinGrassTexture, createGroundFromLayout, groundLayout, animateWater } from './drawGround.js';
 import { onKeyDownWalking, onKeyUpWalking, updateObstacleBoxes, walkingAnimationCallback } from '../config/walking.js';
 import { instantiateCollision } from '../config/instantiateCollision.js';
+import { ThreeJSDrawing } from '../types.js';
 
 
-const raycaster = new Raycaster();
-const mouse = new Vector2();
-const clock = new Clock();
-const clickableDoors = [];
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+const clock = new THREE.Clock();
+const clickableDoors: THREE.Group[] = [];
 const doorAnimations = new Map();
 
 const gltfLoader = new GLTFLoader();
 
-async function loadGltfModel(data_src) {
+async function loadGltfModel(data_src: string) {
     const gltf = await gltfLoader.loadAsync(`./imagery/farm/${data_src}.glb`);
     return gltf;
 }
@@ -51,14 +49,14 @@ const farmModels = [
     'Tower Windmill',
 ]
 
-function makeDoorClickable(doorMesh) {
+function makeDoorClickable(doorMesh: THREE.Mesh) {
     // --- find door size so we can offset it by half the width ----------
-    const bbox  = new Box3().setFromObject(doorMesh);
-    const size  = new Vector3();
+    const bbox  = new THREE.Box3().setFromObject(doorMesh);
+    const size  = new THREE.Vector3();
     bbox.getSize(size);      // size.x is the door width
 
     // --- build pivot at the hinge edge ---------------------------------
-    const pivot = new Group();
+    const pivot = new THREE.Group();
     pivot.position.copy(doorMesh.position);           // stay where door was
     doorMesh.parent.add(pivot);                       // insert pivot
     doorMesh.position.set(-size.x * 0.5, 0, 0);       // move mesh so left edge is on pivot
@@ -70,8 +68,8 @@ function makeDoorClickable(doorMesh) {
     doorAnimations.set(pivot, { state: 'closed', tween: null });
 }
 
-function reparentToHinge(doorMesh, hingeOffsetX = -0.5) {
-    const parent = new Group();
+function reparentToHinge(doorMesh: THREE.Mesh, hingeOffsetX = -0.5) {
+    const parent = new THREE.Group();
     doorMesh.parent.add(parent); // insert into scene
     parent.position.copy(doorMesh.position);
     doorMesh.position.set(hingeOffsetX, 0, 0); // move the mesh relative to hinge
@@ -80,12 +78,12 @@ function reparentToHinge(doorMesh, hingeOffsetX = -0.5) {
     return parent;
 }
 
-function easeOutCubic(t) {
+function easeOutCubic(t: number) {
     // alternative (or Tween): gsap.to(pivot.rotation, { y: end, duration: 1, ease: 'power2.out' });
     return 1 - Math.pow(1 - t, 3);
 }
 
-function animateDoors(delta) {
+function animateDoors(delta: number) {
     doorAnimations.forEach((record, pivot) => {
         if (!record.tween) return;          // idle door
 
@@ -93,21 +91,21 @@ function animateDoors(delta) {
         const t  = Math.min(record.tween.elapsed / record.tween.duration, 1);
         const te = easeOutCubic(t);      // nice easing curve 0→1
 
-        pivot.rotation.y = MathUtils.lerp(record.tween.start, record.tween.end, te);
+        pivot.rotation.y = THREE.MathUtils.lerp(record.tween.start, record.tween.end, te);
 
         if (t === 1) record.tween = null;   // finished
     });
 }
 
-function drawFarm(scene, threejsDrawing) {
+function drawFarm(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
     threejsDrawing.data.farm = {};
-    const farmGroup = new Group();
+    const farmGroup = new THREE.Group();
     scene.add(farmGroup);
 
     for (let i = 0; i < farmModels.length; i++) {
         const modelName = farmModels[i];
         loadGltfModel(modelName).then((gltf) => {
-            gltf.scene.traverse((child) => {
+            gltf.scene.traverse((child: THREE.Object3D) => {
                 if (child.isMesh) {
                     child.castShadow = true;
                     child.receiveShadow = true;
@@ -157,7 +155,7 @@ function drawFarm(scene, threejsDrawing) {
     instantiateCollision(threejsDrawing);
 }
 
-function onDoorClick(event, renderer, camera) {
+function onDoorClick(event: MouseEvent, renderer: THREE.WebGLRenderer, camera: THREE.Camera) {
     const rect = renderer.domElement.getBoundingClientRect();
     mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
     mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
@@ -188,7 +186,7 @@ function onDoorClick(event, renderer, camera) {
 
 let lastTime = 0;
 
-function animateFarm(renderer, timestamp, threejsDrawing, camera) {
+function animateFarm(renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawing: ThreeJSDrawing, camera: THREE.Camera) {
     const scene = threejsDrawing.data.scene;
     const controls = threejsDrawing.data.controls;
     if (!controls) {
@@ -222,25 +220,25 @@ const farmDrawing = {
         {'func': drawFarm, 'dataSrc': null, 'dataType': 'gltf'}
     ],
     'eventListeners': {
-        'click': (event, data) => {
+        'click': (event: MouseEvent, data: any) => {
             const renderer = data.renderer;
             const threejsDrawing = data.threejsDrawing;
             const camera = data.camera;
             onDoorClick(event, renderer, camera);
         },
-        'keydown': (event, stuff) => {
+        'keydown': (event: KeyboardEvent, stuff: any) => {
             const keyManager = stuff.data.keyManager;
             onKeyDownWalking(event, keyManager);
         },
-        'keyup': (event, stuff) => {
+        'keyup': (event: KeyboardEvent, stuff: any) => {
             const keyManager = stuff.data.keyManager;
             onKeyUpWalking(event, keyManager);
         },
     },
-    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
+    'animationCallback': (renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawing: ThreeJSDrawing, camera: THREE.Camera) => {
         const delta = Math.min((timestamp - lastTime) / 1000, 0.1);
         animateDoors(delta);
-        animateWater(renderer, timestamp, threejsDrawing, camera)
+        animateWater(renderer, timestamp, threejsDrawing, camera);
         animateFarm(renderer, timestamp, threejsDrawing, camera);
     },
     'data': {

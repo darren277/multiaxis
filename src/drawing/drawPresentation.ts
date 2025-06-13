@@ -1,4 +1,4 @@
-import { Vector3 } from 'three'; // for any references you still need
+import * as THREE from 'three';
 import {Tween, Easing} from 'tween'
 
 let currentViewIndex = 0;
@@ -7,16 +7,16 @@ let currentViewIndex = 0;
 // Each view has a camera position (x, y, z) and a "lookAt" point
 const cameraViews = [
     {
-        position: new Vector3(30, 20, 50),
-        lookAt: new Vector3(0, 0, 0)
+        position: new THREE.Vector3(30, 20, 50),
+        lookAt: new THREE.Vector3(0, 0, 0)
     },
     {
-        position: new Vector3(-40, 10, 20),
-        lookAt: new Vector3(0, 0, 0)
+        position: new THREE.Vector3(-40, 10, 20),
+        lookAt: new THREE.Vector3(0, 0, 0)
     },
     {
-        position: new Vector3(0, 60, 0),
-        lookAt: new Vector3(0, 0, 0)
+        position: new THREE.Vector3(0, 60, 0),
+        lookAt: new THREE.Vector3(0, 0, 0)
     }
     // Add as many views as you like...
 ];
@@ -32,7 +32,7 @@ function tweenCameraToView(camera, view, duration = 2000) {
 }
 
 // Function to set camera to a particular view
-function setCameraView(camera, index) {
+function setCameraView(camera: THREE.Camera, index: number) {
     const view = cameraViews[index];
 
     // Option 1: Immediate jump
@@ -49,7 +49,7 @@ function setCameraView(camera, index) {
 }
 
 // Event listeners...
-const presentationKeyDownHandler = (camera, event) => {
+const presentationKeyDownHandler = (camera: THREE.Camera, event: KeyboardEvent) => {
     if (event.key === 'n') {
         currentViewIndex = (currentViewIndex + 1) % cameraViews.length;
         setCameraView(camera, currentViewIndex);

@@ -1,14 +1,22 @@
-import { Vector3, Line, LineBasicMaterial, BufferGeometry } from 'three';
+import * as THREE from 'three';
+import { ThreeJSDrawing } from '../threejsDrawing';
 
 function plotFunction(
-scene,
+scene: THREE.Scene,
 {
-    fn,
+    fn = (x: number) => x, // Provide a default function to avoid missing 'fn'
     xRange = [-5, 5],
     samples = 100,
-    material = new LineBasicMaterial({ color: 0xff0000 }),
+    material = new THREE.LineBasicMaterial({ color: 0xff0000 }),
     zOffset = 0
-}) {
+}: {
+    fn?: (x: number) => number,
+    xRange?: [number, number],
+    samples?: number,
+    material?: THREE.Material,
+    zOffset?: number
+} = {}
+) {
     const [xMin, xMax] = xRange;
 
     // Step 1: Sample the function
@@ -21,26 +29,26 @@ scene,
         const y = fn(x);
 
         // store as a Vector3
-        points.push(new Vector3(x, y, zOffset));
+        points.push(new THREE.Vector3(x, y, zOffset));
     }
 
     // Step 2: Create geometry and line
-    const geometry = new BufferGeometry().setFromPoints(points);
-    const line = new Line(geometry, material);
+    const geometry = new THREE.BufferGeometry().setFromPoints(points);
+    const line = new THREE.Line(geometry, material);
     scene.add(line);
 
     return line; // in case you want a reference to the line object
 }
 
 
-function plotSomeFunctions(scene) {
+function plotSomeFunctions(scene: THREE.Scene) {
     // Example 1: Linear f(x) = 2x + 1
     plotFunction(scene,
     {
         fn: (x) => 2 * x + 1,
         xRange: [-5, 5],
         samples: 200,
-        material: new LineBasicMaterial({ color: 0x0000ff }) // optional
+        material: new THREE.LineBasicMaterial({ color: 0x0000ff }) // optional
     });
 
     // Example 2: Exponential f(x) = e^x
@@ -49,7 +57,7 @@ function plotSomeFunctions(scene) {
         fn: (x) => Math.exp(x),
         xRange: [-2, 2],
         samples: 300,
-        material: new LineBasicMaterial({ color: 0x00ff00 })
+        material: new THREE.LineBasicMaterial({ color: 0x00ff00 })
     });
 
     // Example 3: Piecewise function
@@ -60,29 +68,29 @@ function plotSomeFunctions(scene) {
         fn: (x) => x < 0 ? x * x : 2 * x + 1,
         xRange: [-5, 5],
         samples: 500,
-        material: new LineBasicMaterial({ color: 0xff00ff })
+        material: new THREE.LineBasicMaterial({ color: 0xff00ff })
     });
 }
 
-function addAxes(scene, size = 10) {
+function addAxes(scene: THREE.Scene, size = 10) {
     // X axis (red)
     const xPoints = [
-        new Vector3(-size, 0, 0),
-        new Vector3(size, 0, 0),
+        new THREE.Vector3(-size, 0, 0),
+        new THREE.Vector3(size, 0, 0),
     ];
-    const xGeom = new BufferGeometry().setFromPoints(xPoints);
-    const xMat = new LineBasicMaterial({ color: 0xff0000 });
-    const xAxis = new Line(xGeom, xMat);
+    const xGeom = new THREE.BufferGeometry().setFromPoints(xPoints);
+    const xMat = new THREE.LineBasicMaterial({ color: 0xff0000 });
+    const xAxis = new THREE.Line(xGeom, xMat);
     scene.add(xAxis);
 
     // Y axis (green)
     const yPoints = [
-        new Vector3(0, -size, 0),
-        new Vector3(0, size, 0),
+        new THREE.Vector3(0, -size, 0),
+        new THREE.Vector3(0, size, 0),
     ];
-    const yGeom = new BufferGeometry().setFromPoints(yPoints);
-    const yMat = new LineBasicMaterial({ color: 0x00ff00 });
-    const yAxis = new Line(yGeom, yMat);
+    const yGeom = new THREE.BufferGeometry().setFromPoints(yPoints);
+    const yMat = new THREE.LineBasicMaterial({ color: 0x00ff00 });
+    const yAxis = new THREE.Line(yGeom, yMat);
     scene.add(yAxis);
 }
 
@@ -98,7 +106,7 @@ fn: (x) => x < 0 ? Math.pow(x, 2) : Math.log(x + 1)
 Interactivity: Let users dynamically change the function or range via a GUI (e.g., dat.GUI or a simple HTML input) and re-generate the plot in real time.
 */
 
-function drawPlotFunction(scene, threejsDrawing) {
+function drawPlotFunction(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
     // Add axes
     addAxes(scene, 5);
 
@@ -119,7 +127,7 @@ const plotFunctionDrawing = {
         {'func': drawPlotFunction, 'dataSrc': null}
     ],
     'eventListeners': null,
-    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
+    'animationCallback': (renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawing: ThreeJSDrawing, camera: THREE.PerspectiveCamera) => {
     },
     'data': {
     }

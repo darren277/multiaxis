@@ -1,12 +1,12 @@
 /* Adapted from https://github.com/mrdoob/three.js/blob/master/examples/css3d_periodictable.html */
 
-import { Vector3, Object3D, BoxGeometry, Mesh, MeshStandardMaterial } from 'three';
+import * as THREE from 'three';
 import { Tween, Easing, removeAll } from 'tween';
 import { CSS3DRenderer, CSS3DObject } from 'css3drenderer';
 
-const vector = new Vector3();
+const vector = new THREE.Vector3();
 
-function drawTable(scene, objects, targets, data) {
+function drawTable(scene: THREE.Scene, objects: any[], targets: any, data: any[]) {
     const table = data;
 
     for (let i = 0; i < table.length; i+=5) {
@@ -36,7 +36,7 @@ function drawTable(scene, objects, targets, data) {
         scene.add(objectCSS);
         objects.push(objectCSS);
 
-        const object = new Object3D();
+        const object = new THREE.Object3D();
         object.position.x = (table[i+3]*140) - 1330;
         object.position.y = -(table[i+4]*180) + 990;
 
@@ -44,12 +44,12 @@ function drawTable(scene, objects, targets, data) {
     }
 };
 
-function drawSphere(scene, objects, targets) {
+function drawSphere(scene: THREE.Scene, objects: any[], targets: any) {
     for (let i = 0, l = objects.length; i < l; i++) {
         const phi = Math.acos(-1 + (2 * i) / l);
         const theta = Math.sqrt(l * Math.PI) * phi;
 
-        const object = new Object3D();
+        const object = new THREE.Object3D();
         object.position.setFromSphericalCoords(800, phi, theta);
         vector.copy(object.position).multiplyScalar(2);
         object.lookAt(vector);
@@ -57,12 +57,12 @@ function drawSphere(scene, objects, targets) {
     }
 }
 
-function drawHelix(scene, objects, targets) {
+function drawHelix(scene: THREE.Scene, objects: any[], targets: any) {
     for (let i = 0, l = objects.length; i < l; i++) {
         const theta = i * 0.175 + Math.PI;
         const y = - (i * 8) + 450;
 
-        const object = new Object3D();
+        const object = new THREE.Object3D();
 
         object.position.setFromCylindricalCoords(900, theta, y);
 
@@ -76,9 +76,9 @@ function drawHelix(scene, objects, targets) {
     }
 }
 
-function drawGrid(scene, objects, targets) {
+function drawGrid(scene: THREE.Scene, objects: any[], targets: any) {
     for (let i = 0; i < objects.length; i++) {
-        const object = new Object3D();
+        const object = new THREE.Object3D();
 
         object.position.x = ((i % 5) * 400) - 800;
         object.position.y = (-(Math.floor(i / 5) % 5) * 400) + 800;
@@ -88,12 +88,12 @@ function drawGrid(scene, objects, targets) {
     }
 }
 
-function drawCube(scene, objects, targets) {
+function drawCube(scene: THREE.Scene, objects: any[], targets: any) {
     const boxSize = 2000;
     // Draws an invisible cube and then aligns the objects to it, all facing the center...
-    const cubeGeometry = new BoxGeometry(boxSize, boxSize, boxSize);
-    const cubeMaterial = new MeshStandardMaterial({ color: 0x00ffff, transparent: true, opacity: 0.5 });
-    const cubeMesh = new Mesh(cubeGeometry, cubeMaterial);
+    const cubeGeometry = new THREE.BoxGeometry(boxSize, boxSize, boxSize);
+    const cubeMaterial = new THREE.MeshStandardMaterial({ color: 0x00ffff, transparent: true, opacity: 0.5 });
+    const cubeMesh = new THREE.Mesh(cubeGeometry, cubeMaterial);
     cubeMesh.position.set(0, 0, 0);
 
     scene.add(cubeMesh);
@@ -111,7 +111,7 @@ function drawCube(scene, objects, targets) {
     const faceOffsetZ = 200 - (faceWidth / 2);
 
     for (let i = 0; i < objects.length; i++) {
-        const object = new Object3D();
+        const object = new THREE.Object3D();
 
         const face = Math.floor(i / objectsPerFace);
         const index = i % objectsPerFace;
@@ -136,28 +136,48 @@ function drawCube(scene, objects, targets) {
     }
 }
 
-function drawButtons(scene, objects, targets) {
+function drawButtons(scene: THREE.Scene, objects: any[], targets: any) {
     const buttonTable = document.getElementById('table');
+    if (!buttonTable) {
+        console.error('Button with id "table" not found');
+        return;
+    }
     buttonTable.addEventListener('click', function () {
         transform(targets.table, objects, 2000);
     });
 
     const buttonSphere = document.getElementById('sphere');
+    if (!buttonSphere) {
+        console.error('Button with id "sphere" not found');
+        return;
+    }
     buttonSphere.addEventListener('click', function () {
         transform(targets.sphere, objects, 2000);
     });
 
     const buttonHelix = document.getElementById('helix');
+    if (!buttonHelix) {
+        console.error('Button with id "helix" not found');
+        return;
+    }
     buttonHelix.addEventListener('click', function () {
         transform(targets.helix, objects, 2000);
     });
 
     const buttonGrid = document.getElementById('grid');
+    if (!buttonGrid) {
+        console.error('Button with id "grid" not found');
+        return;
+    }
     buttonGrid.addEventListener('click', function () {
         transform(targets.grid, objects, 2000);
     });
 
     const buttonCube = document.getElementById('cube');
+    if (!buttonCube) {
+        console.error('Button with id "cube" not found');
+        return;
+    }
     buttonCube.addEventListener('click', function () {
         transform(targets.cube, objects, 2000);
     });
@@ -165,7 +185,7 @@ function drawButtons(scene, objects, targets) {
     transform(targets.table, objects, 2000);
 }
 
-function transform(targets, objects, duration) {
+function transform(targets: any[], objects: any[], duration: number) {
     removeAll();
 
     for (let i = 0; i < objects.length; i++) {
@@ -182,8 +202,8 @@ function transform(targets, objects, duration) {
     }
 }
 
-function drawPeriodic(scene, data, threejsDrawing) {
-    const objects = [];
+function drawPeriodic(scene: THREE.Scene, data: any, threejsDrawing: any) {
+    const objects: any[] = [];
     const targets = { table: [], sphere: [], helix: [], grid: [], cube: [] };
     drawTable(scene, objects, targets, data);
     drawSphere(scene, objects, targets);
@@ -200,7 +220,7 @@ const periodicDrawing = {
         {'func': drawPeriodic, 'dataSrc': 'periodic', 'dataType': 'json'}
     ],
     'eventListeners': null,
-    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
+    'animationCallback': (renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawing: any, camera: THREE.PerspectiveCamera) => {
     },
     'data': {
     },

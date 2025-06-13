@@ -1,11 +1,9 @@
-import {
-    Mesh, MeshPhongMaterial, AxesHelper, Vector3, Line, LineBasicMaterial, LineSegments, SphereGeometry, AmbientLight,
-    DirectionalLight, Group, PointLight, PointLightHelper, DoubleSide, BufferGeometry
-} from 'three';
+import * as THREE from 'three';
 import { TextGeometry} from 'textgeometry';
 import { FontLoader } from 'fontloader';
+import { ThreeJSDrawing } from '../types';
 
-function loadFont(url, callback) {
+function loadFont(url: string, callback: (font: Font) => void) {
     const loader = new FontLoader();
     let font;
 
@@ -14,7 +12,7 @@ function loadFont(url, callback) {
     });
 }
 
-function draw_letter(font, letter, x, y, z) {
+function draw_letter(font: Font, letter: string, x: number, y: number, z: number) {
     var geometry = new TextGeometry( letter, {
             font: font,
             size: 3,
@@ -27,14 +25,14 @@ function draw_letter(font, letter, x, y, z) {
             bevelSegments: 5
         } );
 
-    var textMaterial = new MeshPhongMaterial( { color: 0xdddddd } );
-    var mesh = new Mesh( geometry, textMaterial );
+    var textMaterial = new THREE.MeshPhongMaterial( { color: 0xdddddd } );
+    var mesh = new THREE.Mesh( geometry, textMaterial );
     mesh.position.set(x, y, z);
 
     return mesh;
 };
 
-function drawQuantumCallback(scene, threejsDrawing, font) {
+function drawQuantumCallback(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing, font: THREE.Font) {
     const twoPi = Math.PI * 2;
 
     const data = {
@@ -59,7 +57,7 @@ function drawQuantumCallback(scene, threejsDrawing, font) {
 
     function generateGeometry() {
         // updateGroupGeometry( mesh,
-            var sphere = new SphereGeometry(
+            var sphere = new THREE.SphereGeometry(
                 data.radius, data.widthSegments, data.heightSegments, data.phiStart, data.phiLength, data.thetaStart, data.thetaLength
             )
         // );
@@ -67,48 +65,48 @@ function drawQuantumCallback(scene, threejsDrawing, font) {
     }
 
     //scene.add(new AmbientLight(0xffffff, 1));
-    scene.add(new AmbientLight(0x404040));
+    scene.add(new THREE.AmbientLight(0x404040));
 
-    const directionalLight = new DirectionalLight(0xffffff, 0.5);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
     directionalLight.position.set(50, 50, 50);
     scene.add(directionalLight);
 
     const lights = [];
-    lights[ 0 ] = new PointLight( 0xffffff, 1, 0 );
-    lights[ 1 ] = new PointLight( 0xffffff, 1, 0 );
-    lights[ 2 ] = new PointLight( 0xffffff, 1, 0 );
+    lights[ 0 ] = new THREE.PointLight( 0xffffff, 1, 0 );
+    lights[ 1 ] = new THREE.PointLight( 0xffffff, 1, 0 );
+    lights[ 2 ] = new THREE.PointLight( 0xffffff, 1, 0 );
 
     lights[ 0 ].position.set( 0, 200, 0 );
     lights[ 1 ].position.set( 100, 200, 100 );
     lights[ 2 ].position.set( - 100, - 200, - 100 );
 
-    const helper = new PointLightHelper(lights[0], 5);
+    const helper = new THREE.PointLightHelper(lights[0], 5);
     scene.add(helper);
 
     scene.add( lights[ 0 ] );
     scene.add( lights[ 1 ] );
     scene.add( lights[ 2 ] );
 
-    const group = new Group();
+    const group = new THREE.Group();
 
     const geometry = generateGeometry();
     // geometry.setAttribute( 'position', new Float32BufferAttribute( [], 3 ) );
 
-    const lineMaterial = new LineBasicMaterial( { color: 0xffffff, transparent: true, opacity: 0.1 } );
-    const meshMaterial = new MeshPhongMaterial( { color: 0x156289, emissive: 0x072534, emissiveIntensity: 0.1, side: DoubleSide, flatShading: true, transparent: true, opacity: 0.1 } );
+    const lineMaterial = new THREE.LineBasicMaterial( { color: 0xffffff, transparent: true, opacity: 0.1 } );
+    const meshMaterial = new THREE.MeshPhongMaterial( { color: 0x156289, emissive: 0x072534, emissiveIntensity: 0.1, side: THREE.DoubleSide, flatShading: true, transparent: true, opacity: 0.1 } );
 
-    group.add( new LineSegments( geometry, lineMaterial ) );
-    group.add( new Mesh( geometry, meshMaterial ) );
+    group.add( new THREE.LineSegments( geometry, lineMaterial ) );
+    group.add( new THREE.Mesh( geometry, meshMaterial ) );
 
     /* LINE */
-    function draw_line(x1, y1, z1, x2, y2, z2, color=0x0000ff) {
-        const line_material = new LineBasicMaterial( { color: color } );
+    function draw_line(x1: number, y1: number, z1: number, x2: number, y2: number, z2: number, color: number = 0x0000ff) {
+        const line_material = new THREE.LineBasicMaterial( { color: color } );
         const points = [];
-        points.push( new Vector3( x1, y1, z1 ) );
-        points.push( new Vector3( x2, y2, z2 ) );
+        points.push( new THREE.Vector3( x1, y1, z1 ) );
+        points.push( new THREE.Vector3( x2, y2, z2 ) );
 
-        const line_geometry = new BufferGeometry().setFromPoints( points );
-        const line = new Line( line_geometry, line_material );
+        const line_geometry = new THREE.BufferGeometry().setFromPoints( points );
+        const line = new THREE.Line( line_geometry, line_material );
 
         return line
     };
@@ -138,7 +136,7 @@ function drawQuantumCallback(scene, threejsDrawing, font) {
 
     scene.add(draw_letter(font, "X", -22, 2, 2));
 
-    const axesHelper = new AxesHelper( 100 );
+    const axesHelper = new THREE.AxesHelper( 100 );
 
     scene.add( group );
     //scene.add( axesHelper );
@@ -147,7 +145,7 @@ function drawQuantumCallback(scene, threejsDrawing, font) {
 };
 
 
-function drawQuantum(scene, threejsDrawing) {
+function drawQuantum(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
     const fontUrl = 'scripts/threejs/helvetiker_regular.typeface.json';
     loadFont(fontUrl, (font) => {
         drawQuantumCallback(scene, threejsDrawing, font);
@@ -160,7 +158,7 @@ const quantumDrawing = {
         {'func': drawQuantum, 'dataSrc': null}
     ],
     'eventListeners': null,
-    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
+    'animationCallback': (renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawing: ThreeJSDrawing, camera: THREE.Camera) => {
         if (!threejsDrawing.data.group) {
             return;
         }

@@ -1,17 +1,14 @@
-import {
-    Clock, Vector3, Plane, PlaneGeometry, Mesh, MeshPhongMaterial, IcosahedronGeometry, PerspectiveCamera,
-    MeshBasicMaterial, WebGLRenderTarget, PointLight
-} from 'three';
+import * as THREE from 'three';
 
 import * as CameraUtils from 'three/addons/utils/CameraUtils.js';
 
-let portalCam, leftPortal, rightPortal;
-let leftRT, rightRT;
-let sphere, velocity = new Vector3(0.06, 0, 0);   // constant rightward speed
-const clock = new Clock();
+let portalCam: THREE.PerspectiveCamera, leftPortal: THREE.Mesh, rightPortal: THREE.Mesh;
+let leftRT: THREE.WebGLRenderTarget, rightRT: THREE.WebGLRenderTarget;
+let sphere: THREE.Mesh, velocity = new THREE.Vector3(0.06, 0, 0);   // constant rightward speed
+const clock = new THREE.Clock();
 
 
-function init() {
+function init(renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE.PerspectiveCamera) {
     renderer.localClippingEnabled = true;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
 
@@ -19,94 +16,94 @@ function init() {
     //camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 5000 );
     //camera.position.set( 0, 75, 160 );
 
-    const planeGeo = new PlaneGeometry(100.1, 100.1);
+    const planeGeo = new THREE.PlaneGeometry(100.1, 100.1);
 
     // bouncing icosphere
-    const portalPlane = new Plane(new Vector3(0, 0, 1), 0.0);
-    const geometry = new IcosahedronGeometry(5, 0);
-    const material = new MeshPhongMaterial({color: 0xffffff, emissive: 0x333333, flatShading: true, clippingPlanes: [portalPlane], clipShadows: true});
-    smallSphereOne = new Mesh(geometry, material);
+    const portalPlane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0.0);
+    const geometry = new THREE.IcosahedronGeometry(5, 0);
+    const material = new THREE.MeshPhongMaterial({color: 0xffffff, emissive: 0x333333, flatShading: true, clippingPlanes: [portalPlane], clipShadows: true});
+    smallSphereOne = new THREE.Mesh(geometry, material);
     scene.add(smallSphereOne);
-    smallSphereTwo = new Mesh(geometry, material);
+    smallSphereTwo = new THREE.Mesh(geometry, material);
     scene.add(smallSphereTwo);
 
     // portals
-    portalCamera = new PerspectiveCamera(45, 1.0, 0.1, 500.0);
+    portalCamera = new THREE.PerspectiveCamera(45, 1.0, 0.1, 500.0);
     scene.add(portalCamera);
     //frustumHelper = new THREE.CameraHelper( portalCamera );
     //scene.add( frustumHelper );
-    bottomLeftCorner = new Vector3();
-    bottomRightCorner = new Vector3();
-    topLeftCorner = new Vector3();
-    reflectedPosition = new Vector3();
+    bottomLeftCorner = new THREE.Vector3();
+    bottomRightCorner = new THREE.Vector3();
+    topLeftCorner = new THREE.Vector3();
+    reflectedPosition = new THREE.Vector3();
 
-    leftPortalTexture = new WebGLRenderTarget(256, 256);
-    leftPortal = new Mesh(planeGeo, new MeshBasicMaterial({map: leftPortalTexture.texture}));
+    leftPortalTexture = new THREE.WebGLRenderTarget(256, 256);
+    leftPortal = new THREE.Mesh(planeGeo, new THREE.MeshBasicMaterial({map: leftPortalTexture.texture}));
     leftPortal.position.x = - 30;
     leftPortal.position.y = 20;
     leftPortal.scale.set(0.35, 0.35, 0.35);
     scene.add(leftPortal);
 
-    rightPortalTexture = new WebGLRenderTarget(256, 256);
-    rightPortal = new Mesh(planeGeo, new MeshBasicMaterial({map: rightPortalTexture.texture}));
+    rightPortalTexture = new THREE.WebGLRenderTarget(256, 256);
+    rightPortal = new THREE.Mesh(planeGeo, new THREE.MeshBasicMaterial({map: rightPortalTexture.texture}));
     rightPortal.position.x = 30;
     rightPortal.position.y = 20;
     rightPortal.scale.set(0.35, 0.35, 0.35);
     scene.add(rightPortal);
 
     // walls
-    const planeTop = new Mesh(planeGeo, new MeshPhongMaterial({color: 0xffffff}));
+    const planeTop = new THREE.Mesh(planeGeo, new THREE.MeshPhongMaterial({color: 0xffffff}));
     planeTop.position.y = 100;
     planeTop.rotateX(Math.PI / 2);
     scene.add(planeTop);
 
-    const planeBottom = new Mesh(planeGeo, new MeshPhongMaterial({color: 0xffffff}));
+    const planeBottom = new THREE.Mesh(planeGeo, new THREE.MeshPhongMaterial({color: 0xffffff}));
     planeBottom.rotateX(-Math.PI / 2);
     scene.add(planeBottom);
 
-    const planeFront = new Mesh(planeGeo, new MeshPhongMaterial({color: 0x7f7fff}));
+    const planeFront = new THREE.Mesh(planeGeo, new THREE.MeshPhongMaterial({color: 0x7f7fff}));
     planeFront.position.z = 50;
     planeFront.position.y = 50;
     planeFront.rotateY(Math.PI);
     scene.add(planeFront);
 
-    const planeBack = new Mesh(planeGeo, new MeshPhongMaterial({color: 0xff7fff}));
+    const planeBack = new THREE.Mesh(planeGeo, new THREE.MeshPhongMaterial({color: 0xff7fff}));
     planeBack.position.z = - 50;
     planeBack.position.y = 50;
     //planeBack.rotateY(Math.PI);
     scene.add(planeBack);
 
-    const planeRight = new Mesh(planeGeo, new MeshPhongMaterial({color: 0x00ff00}));
+    const planeRight = new THREE.Mesh(planeGeo, new THREE.MeshPhongMaterial({color: 0x00ff00}));
     planeRight.position.x = 50;
     planeRight.position.y = 50;
     planeRight.rotateY(-Math.PI / 2);
     scene.add(planeRight);
 
-    const planeLeft = new Mesh(planeGeo, new MeshPhongMaterial({color: 0xff0000}));
+    const planeLeft = new THREE.Mesh(planeGeo, new THREE.MeshPhongMaterial({color: 0xff0000}));
     planeLeft.position.x = - 50;
     planeLeft.position.y = 50;
     planeLeft.rotateY(Math.PI / 2);
     scene.add(planeLeft);
 
     // lights
-    const mainLight = new PointLight(0xe7e7e7, 2.5, 250, 0);
+    const mainLight = new THREE.PointLight(0xe7e7e7, 2.5, 250, 0);
     mainLight.position.y = 60;
     scene.add(mainLight);
 
-    const greenLight = new PointLight(0x00ff00, 0.5, 1000, 0);
+    const greenLight = new THREE.PointLight(0x00ff00, 0.5, 1000, 0);
     greenLight.position.set(550, 50, 0);
     scene.add(greenLight);
 
-    const redLight = new PointLight(0xff0000, 0.5, 1000, 0);
+    const redLight = new THREE.PointLight(0xff0000, 0.5, 1000, 0);
     redLight.position.set(-550, 50, 0);
     scene.add(redLight);
 
-    const blueLight = new PointLight(0xbbbbfe, 0.5, 1000, 0);
+    const blueLight = new THREE.PointLight(0xbbbbfe, 0.5, 1000, 0);
     blueLight.position.set(0, 50, 550);
     scene.add(blueLight);
 }
 
-function renderPortal( thisPortalMesh, otherPortalMesh, thisPortalTexture ) {
+function renderPortal( thisPortalMesh: THREE.Mesh, otherPortalMesh: THREE.Mesh, thisPortalTexture: THREE.WebGLRenderTarget ) {
 
     // set the portal camera position to be reflected about the portal plane
     thisPortalMesh.worldToLocal( reflectedPosition.copy( camera.position ) );
@@ -133,7 +130,7 @@ function renderPortal( thisPortalMesh, otherPortalMesh, thisPortalTexture ) {
 
 }
 
-function animate() {
+function animate( renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE.PerspectiveCamera ) {
     // move the bouncing sphere(s)
     const timerOne = Date.now() * 0.01;
     const timerTwo = timerOne + Math.PI * 10.0;

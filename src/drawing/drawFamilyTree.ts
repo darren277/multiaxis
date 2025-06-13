@@ -1,7 +1,7 @@
-import { Sprite, SpriteMaterial, CanvasTexture, Line, LineBasicMaterial, Vector3, BufferGeometry, AmbientLight } from 'three';
+import * as THREE from 'three';
 import * as d3 from "d3-hierarchy";
+import { ThreeJSDrawing } from '../types';
 
-/*
 interface Node {
     id: number;
     name: string;
@@ -20,10 +20,9 @@ interface FamilyGraph {
     nodes: Node[];
     links: Link[];
 }
-*/
 
 
-function layoutFamilyYearScale(graph, rootId) {
+function layoutFamilyYearScale(graph: FamilyGraph, rootId: number) {
     const X_STEP      = 5;    // 10 world‑units between paternal ↔ maternal
     const YEAR_SCALE  = 0.05;  // 0.05 world‑units per calendar year
 
@@ -48,7 +47,7 @@ function layoutFamilyYearScale(graph, rootId) {
         const child     = byId.get(id);
         const parents   = parentsOf.get(id) || [];
 
-        parents.forEach((pid, idx) => {
+        parents.forEach((pid: number, idx: number) => {
             const p   = byId.get(pid);
             const sgn = idx === 0 ? -1 : 1;        // first parent left, second right
             p.x = child.x + sgn * X_STEP;
@@ -61,7 +60,7 @@ function layoutFamilyYearScale(graph, rootId) {
 }
 
 
-function layoutFamily(graph, rootId) {
+function layoutFamily(graph: FamilyGraph, rootId: number) {
     const X_STEP      = 5;    // 10 world‑units between paternal ↔ maternal
     const GEN_STEP    = 5;     // constant vertical distance per generation
 
@@ -85,7 +84,7 @@ function layoutFamily(graph, rootId) {
         const child     = byId.get(id);
         const parents   = parentsOf.get(id) || [];
 
-        parents.forEach((pid, idx) => {
+        parents.forEach((pid: number, idx: number) => {
             const p   = byId.get(pid);
             const sgn = idx === 0 ? -1 : 1;        // first parent left, second right
 
@@ -100,7 +99,7 @@ function layoutFamily(graph, rootId) {
 }
 
 
-function layoutFamilyWithSpread(graph, rootId) {
+function layoutFamilyWithSpread(graph: FamilyGraph, rootId: number) {
     const X_STEP      = 5;    // 10 world‑units between paternal ↔ maternal
     const GEN_STEP    = 5;     // constant vertical distance per generation
     const SPOUSE_GAP  = 2;     // slight left/right split between the two parents
@@ -125,7 +124,7 @@ function layoutFamilyWithSpread(graph, rootId) {
         const child     = byId.get(id);
         const parents   = parentsOf.get(id) || [];
 
-        parents.forEach((pid, idx) => {
+        parents.forEach((pid: number, idx: number) => {
             const p   = byId.get(pid);
             // inherit branch side unless we’re the first split at depth‑0
             const branchDir = dir || (idx === 0 ? -1 : 1);
@@ -144,7 +143,7 @@ function layoutFamilyWithSpread(graph, rootId) {
 }
 
 
-function layoutWithD3(graph, rootId) {
+function layoutWithD3(graph: FamilyGraph, rootId: number) {
     const X_STEP   = 4;   // tweak to taste (horizontal separation)
     const GEN_STEP =  4;   // vertical gap between generations
 
@@ -159,7 +158,7 @@ function layoutWithD3(graph, rootId) {
     });
 
     // Build a recursive hierarchy tree *from the child upward*
-    function buildHierarchy(nodeId) {
+    function buildHierarchy(nodeId: number) {
         const node = { id: nodeId, children: [] };
         const parentIds = parentsOf.get(nodeId) || [];
 
@@ -174,10 +173,10 @@ function layoutWithD3(graph, rootId) {
     const root     = d3.hierarchy(treeRoot);
 
     // Layout using d3.tree()
-    d3.tree().nodeSize([X_STEP, GEN_STEP]).separation((a, b) => a.parent === b.parent ? 1 : 1.4)(root);
+    d3.tree().nodeSize([X_STEP, GEN_STEP]).separation((a: any, b: any) => a.parent === b.parent ? 1 : 1.4)(root);
 
     // Copy x/y positions back to original graph nodes
-    root.each(d => {
+    root.each((d: any) => {
         const orig = byId.get(d.data.id);
         orig.x = d.x;
         orig.y = d.depth * GEN_STEP;
@@ -187,7 +186,7 @@ function layoutWithD3(graph, rootId) {
 }
 
 
-function labelSprite(text) {
+function labelSprite(text: string) {
     const canvas   = document.createElement("canvas");
     const ctx      = canvas.getContext("2d");
     ctx.font       = "24px sans-serif";
@@ -200,14 +199,14 @@ function labelSprite(text) {
     ctx.fillStyle  = "#000000";
     ctx.fillText(text, 10, 28);
 
-    const texture  = new CanvasTexture(canvas);
-    const material = new SpriteMaterial({map: texture, transparent: true});
-    const sprite   = new Sprite(material);
+    const texture  = new THREE.CanvasTexture(canvas);
+    const material = new THREE.SpriteMaterial({map: texture, transparent: true});
+    const sprite   = new THREE.Sprite(material);
     sprite.scale.set(w * 0.01, h * 0.01, 1);  // shrink canvas→world
     return sprite;
 }
 
-function labelSpriteWithImage(name, imageUrl = null) {
+function labelSpriteWithImage(name: string, imageUrl: string | null = null) {
     return new Promise(resolve => {
         const canvas   = document.createElement("canvas");
         const ctx      = canvas.getContext("2d");
@@ -236,14 +235,14 @@ function labelSpriteWithImage(name, imageUrl = null) {
         ctx.fillStyle = "#ffffff";
         ctx.fillRect(0, 0, side, side);
 
-        const texture  = new CanvasTexture(canvas);
-        const material = new SpriteMaterial({map: texture, transparent: true});
-        const sprite   = new Sprite(material);
+        const texture  = new THREE.CanvasTexture(canvas);
+        const material = new THREE.SpriteMaterial({map: texture, transparent: true});
+        const sprite   = new THREE.Sprite(material);
 
         // Scale canvas pixels → world units
         sprite.scale.set(side * 0.01, side * 0.01, 1);
 
-        let img = null;
+        let img: HTMLImageElement | null = null;
         function drawLabel() {
             if (imageUrl && img && img.complete) {
                 ctx.drawImage(img, imageX, padding, imgSize, imgSize);
@@ -292,7 +291,7 @@ function labelSpriteWithImage(name, imageUrl = null) {
 }
 
 
-async function drawFamilyTree(scene, data, threejsDrawing) {
+async function drawFamilyTree(scene: THREE.Scene, data: any, threejsDrawing: ThreeJSDrawing) {
     // --- draw nodes ------------------------------------------------------
     const nodes = data.nodes;
     const links = data.links;
@@ -308,19 +307,19 @@ async function drawFamilyTree(scene, data, threejsDrawing) {
     });
 
     // --- draw links -------------------------------------------------------
-    const material = new LineBasicMaterial({color: 0x888888});
+    const material = new THREE.LineBasicMaterial({color: 0x888888});
     graph.links.forEach(({source, target}) => {
         const a = graph.nodes.find(n => n.id === source);
         const b = graph.nodes.find(n => n.id === target);
-        const g = new BufferGeometry().setFromPoints([
-            new Vector3(a.x, a.y, 0),
-            new Vector3(b.x, b.y, 0)
+        const g = new THREE.BufferGeometry().setFromPoints([
+            new THREE.Vector3(a.x, a.y, 0),
+            new THREE.Vector3(b.x, b.y, 0)
         ]);
-        scene.add(new Line(g, material));
+        scene.add(new THREE.Line(g, material));
     });
 
     // draw ambient light...
-    const light = new AmbientLight(0x404040, 1);
+    const light = new THREE.AmbientLight(0x404040, 1);
     scene.add(light);
 }
 
@@ -330,7 +329,7 @@ const familyTreeDrawing = {
         {'func': drawFamilyTree, 'dataSrc': 'familytree', 'dataType': 'json'}
     ],
     'eventListeners': null,
-    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
+    'animationCallback': (renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawing: ThreeJSDrawing, camera: THREE.Camera) => {
     },
     'data': {
         'sheetMusic': null,

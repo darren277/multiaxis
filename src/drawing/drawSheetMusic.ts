@@ -1,9 +1,10 @@
-import { Mesh, MeshBasicMaterial, BoxGeometry, SphereGeometry, Raycaster, Vector2 } from 'three';
+import * as THREE from "three";
 import { GLTFLoader } from 'gltfloader';
 import { drawBasicLights } from './drawLights.js';
 import { Tween, Easing } from 'tween';
 
 import { AudioListener, Audio, AudioLoader } from 'three';
+import { ThreeJSDrawing } from "../types.js";
 
 const listener = new AudioListener();
 
@@ -76,7 +77,7 @@ const NOTE_MAPPING = {
 const noteSounds = {}; // e.g., { 'C4': AudioObject, ... }
 
 
-let startTime = null;
+let startTime: number | null = null;
 
 /**
  * A simplistic function that:
@@ -90,7 +91,7 @@ let startTime = null;
  * @param {THREE.Scene} scene The Three.js scene
  * @param {Object} data The parsed JSON data
  */
-function drawSheetMusic(scene, data) {
+function drawSheetMusic(scene: THREE.Scene, data: any) {
     // 1) Parse the tempo & note info from your data
     //    MIDO typically gives you microseconds_per_beat or 'tempo'
     //    in microseconds (e.g. 600000 => 0.6s per quarter note => 100BPM).
@@ -110,10 +111,10 @@ function drawSheetMusic(scene, data) {
     const notesRaw = track.notes || [];
 
     // 3) Draw staff lines (white lines on black background, or vice versa)
-    const lineMaterial = new MeshBasicMaterial({ color: 0xffffff });
+    const lineMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
     for (let i = 0; i < 5; i++) {
-        const lineGeom = new BoxGeometry(100, 0.02, 0.01);
-        const lineMesh = new Mesh(lineGeom, lineMaterial);
+        const lineGeom = new THREE.BoxGeometry(100, 0.02, 0.01);
+        const lineMesh = new THREE.Mesh(lineGeom, lineMaterial);
         // place lines from x=0..100, spaced in y
         lineMesh.position.set(50, i * 0.5, 0);
         scene.add(lineMesh);
@@ -123,9 +124,9 @@ function drawSheetMusic(scene, data) {
     //    We accumulate delta times into a running "currentTick"
     let currentTick = 0;
     const noteOnMap = {};  // key: pitch => the tick at which it started
-    const noteObjects = [];
+    const noteObjects: { mesh: THREE.Mesh; startSec: number; endSec: number; durationSec: number; }[] = [];
 
-    notesRaw.forEach((msg) => {
+    notesRaw.forEach((msg: { type: string; note: number; velocity: number; time: number; }) => {
         // Accumulate the delta time
         currentTick += msg.time;
 
@@ -153,9 +154,9 @@ function drawSheetMusic(scene, data) {
                 const yPos = 2 + (msg.note - 60) * 0.1;
 
                 // Build a sphere for the note
-                const geometry = new SphereGeometry(0.1, 16, 16);
-                const material = new MeshBasicMaterial({ color: 0xffffff });
-                const noteMesh = new Mesh(geometry, material);
+                const geometry = new THREE.SphereGeometry(0.1, 16, 16);
+                const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
+                const noteMesh = new THREE.Mesh(geometry, material);
 
                 // We'll place it off to the right (x=100 or so) and animate left.
                 // Initially place it at x=100 so we can scroll from x=10..-10 over note duration
@@ -177,7 +178,7 @@ function drawSheetMusic(scene, data) {
 
     // 5) Return an object with an update() method for the main animation loop
     return {
-        update(currentTimeSec) {
+        update(currentTimeSec: number) {
             noteObjects.forEach((note) => {
                 const { mesh, startSec, endSec, durationSec } = note;
 
@@ -196,19 +197,19 @@ function drawSheetMusic(scene, data) {
     };
 }
 
-async function loadGltfModel(data_src) {
+async function loadGltfModel(data_src: string) {
     const gltfLoader = new GLTFLoader();
     const gltf = await gltfLoader.loadAsync(`./imagery/${data_src}.gltf`);
     return gltf;
 }
 
-const raycaster = new Raycaster();
-const mouse = new Vector2();
-const clickableKeys = [];
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+const clickableKeys: THREE.Mesh[] = [];
 
 const keyZdelta = 5.0;
 
-function onKeyClick(keyMesh) {
+function onKeyClick(keyMesh: THREE.Mesh) {
     const originalZ = keyMesh.position.z;
 
     // Animate down
@@ -233,7 +234,7 @@ function onKeyClick(keyMesh) {
 //    if (keyMesh.name === 'Object024_Solid_Glass_0') {
 //        note = 'D4';
 //    }
-    let note = NOTE_MAPPING[keyMesh.name];
+    let note: string = NOTE_MAPPING[keyMesh.name];
     const sound = noteSounds[note];
 
     if (sound && sound.isPlaying) {
@@ -242,7 +243,7 @@ function onKeyClick(keyMesh) {
     if (sound) sound.play();
 }
 
-function onMouseClick(event, camera, domElement) {
+function onMouseClick(event: MouseEvent, camera: THREE.Camera, domElement: HTMLElement) {
     // Normalize mouse coordinates
     const rect = domElement.getBoundingClientRect();
     mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
@@ -258,7 +259,7 @@ function onMouseClick(event, camera, domElement) {
 
 
 // Object040 = individual key?
-function drawMusic(scene, data, state) {
+function drawMusic(scene: THREE.Scene, data: any, state: any) {
     state.data.sheetMusic = drawSheetMusic(scene, data);
 
     const camera = state.data.camera;
@@ -271,7 +272,7 @@ function drawMusic(scene, data, state) {
         scene.add(piano);
 
         // iterate over all children of the gltf scene
-        piano.traverse((child) => {
+        piano.traverse((child: THREE.Object3D) => {
             if (child.isMesh) {
                 child.castShadow = true;
                 child.receiveShadow = true;
@@ -286,7 +287,7 @@ function drawMusic(scene, data, state) {
                 const glass = child.children[0].children[0];
 
                 // Simple mapping for now
-                let note = NOTE_MAPPING[glass.name];
+                let note: string = NOTE_MAPPING[glass.name];
                 console.log(`Note mapping: ${glass.name} => ${note}`);
 
                 // Load sound only once per note
@@ -318,7 +319,7 @@ function drawMusic(scene, data, state) {
                     console.log('glass', glass);
                     if (glass) {
                         // Simple mapping for now
-                        let note = NOTE_MAPPING[glass.name];
+                        let note: string = NOTE_MAPPING[glass.name];
                         console.log(`Note mapping: ${glass.name} => ${note}`);
 
                         // Load sound only once per note
@@ -357,12 +358,12 @@ const musicDrawing = {
     ],
     // domElement.addEventListener('click', (e) => onMouseClick(e, camera, domElement));
     'eventListeners': {
-        'click': (event, data) => {
+        'click': (event: MouseEvent, data: any) => {
             const { scene, renderer, camera } = data;
             onMouseClick(event, camera, renderer.domElement);
         },
     },
-    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
+    'animationCallback': (renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawing: ThreeJSDrawing, camera: THREE.Camera) => {
         if (!startTime) startTime = timestamp;
         const elapsedMs = timestamp - startTime;
         const elapsedSec = elapsedMs / 1000;

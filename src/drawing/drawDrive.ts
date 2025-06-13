@@ -1,4 +1,5 @@
-import { Mesh, MeshBasicMaterial, BoxGeometry, AxesHelper } from 'three';
+import * as THREE from 'three';
+import { ThreeJSDrawing } from '../types';
 
 console.debug('Ammo.js loaded', Ammo);
 
@@ -30,7 +31,7 @@ function drawChassis() {
     };
 }
 
-function drawWheels(vehicle) {
+function drawWheels(vehicle: any) {
     const wheelDirectionCS0 = new Ammo.btVector3(0, -1, 0);
     const wheelAxleCS = new Ammo.btVector3(-1, 0, 0);
     const suspensionRestLength = 0.6;
@@ -47,7 +48,7 @@ function drawWheels(vehicle) {
     vehicle.addWheel(new Ammo.btVector3(1, 0.5, -1.5), wheelDirectionCS0, wheelAxleCS, suspensionRestLength, wheelRadius, tuning, false);
 }
 
-function updateVehicleGraphics(vehicle, carMesh) {
+function updateVehicleGraphics(vehicle: any, carMesh: any) {
     console.log('Transform:', vehicle.getChassisWorldTransform());
 
     const tm = vehicle.getChassisWorldTransform();
@@ -68,7 +69,7 @@ const maxEngineForce = 2000;
 const maxSteering = 0.3;
 
 
-function animateCar(physicsWorld, carMesh, vehicle) {
+function animateCar(physicsWorld: any, carMesh: any, vehicle: any) {
     engineForce = 500;
     steering    = 0;
 
@@ -101,7 +102,7 @@ function animateCar(physicsWorld, carMesh, vehicle) {
         const man = disp.getManifoldByIndexInternal(m);
         console.log('Manifold', man);
         const b0 = man.getBody0(), b1 = man.getBody1();
-        console.log(`  Manifold ${m}:`, b0.ptr, '↔', b1.ptr, '– pts:', man.getNumContacts());
+        console.log(`  Manifold ${m}:`, b0.ptr, '↔', b1.ptr, '- pts:', man.getNumContacts());
     }
 
     vehicle.applyEngineForce(engineForce, 2); // Rear Left
@@ -123,7 +124,7 @@ function animateCar(physicsWorld, carMesh, vehicle) {
 }
 
 
-function drawGround(scene, physicsWorld) {
+function drawGround(scene: THREE.Scene, physicsWorld: any) {
     const groundShape = new Ammo.btBoxShape(new Ammo.btVector3(50, 0.5, 50));
     const groundTransform = new Ammo.btTransform();
     groundTransform.setIdentity();
@@ -134,15 +135,15 @@ function drawGround(scene, physicsWorld) {
     ));
     physicsWorld.addRigidBody(groundBody);
 
-    const groundGeo = new BoxGeometry(100, 1, 100);
-    const groundMat = new MeshBasicMaterial({ color: 0x999999 });
-    const groundMesh = new Mesh(groundGeo, groundMat);
+    const groundGeo = new THREE.BoxGeometry(100, 1, 100);
+    const groundMat = new THREE.MeshBasicMaterial({ color: 0x999999 });
+    const groundMesh = new THREE.Mesh(groundGeo, groundMat);
     groundMesh.position.y = -0.5;
     scene.add(groundMesh);
 }
 
 
-function drawCar(physicsWorld, scene) {
+function drawCar(physicsWorld: any, scene: THREE.Scene) {
     const chassis = drawChassis();
     const { chassisBody } = chassis;
 
@@ -176,7 +177,7 @@ function drawCar(physicsWorld, scene) {
 }
 
 
-function drawDrive(scene, threejsDrawing) {
+function drawDrive(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
     threejsDrawing.data.physicsWorld = null;
 
     Ammo().then(function (AmmoLib) {
@@ -200,9 +201,9 @@ function drawDrive(scene, threejsDrawing) {
         const vehicle = drawCar(threejsDrawing.data.physicsWorld, scene);
         threejsDrawing.data.vehicle = vehicle;
 
-        const carGeo = new BoxGeometry(2, 1, 4);
-        const carMat = new MeshBasicMaterial({ color: 0x00ff00 });
-        const carMesh = new Mesh(carGeo, carMat);
+        const carGeo = new THREE.BoxGeometry(2, 1, 4);
+        const carMat = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+        const carMesh = new THREE.Mesh(carGeo, carMat);
 
         carMesh.position.set(0, 4, 0);
         carMesh.rotation.set(0, 0, 0);
@@ -213,7 +214,7 @@ function drawDrive(scene, threejsDrawing) {
 
         threejsDrawing.data.carMesh = carMesh;
 
-        scene.add(new AxesHelper(5));
+        scene.add(new THREE.AxesHelper(5));
     });
 }
 
@@ -226,7 +227,7 @@ const driveDrawing = {
 //        click: (e, data) => {
 //            onClick(e, data.scene, data.camera, data.renderer, data.data);
 //        }
-        'keydown': (e, data) => {
+        'keydown': (e: KeyboardEvent, data: any) => {
             console.log('keydown', e.key);
             // Prevent default action for certain keys
             if (e.key === 'w' || e.key === 's' || e.key === 'a' || e.key === 'd' || e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
@@ -247,14 +248,14 @@ const driveDrawing = {
                     steering = -maxSteering; break;
             }
         },
-        'keyup': (e, data) => {
+        'keyup': (e: KeyboardEvent, data: any) => {
             console.log('keyup', e.key);
             if (e.key === 'w' || e.key === 's' || e.key === 'ArrowUp' || e.key === 'ArrowDown') engineForce = 0;
             if (e.key === 'a' || e.key === 'd' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') steering    = 0;
             console.log(`key ${e.type} ${e.key} → engine=${engineForce} steer=${steering}`);
         }
     },
-    animationCallback: (renderer, timestamp, threejsDrawing, camera) => {
+    animationCallback: (renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawing: ThreeJSDrawing, camera: THREE.Camera) => {
         const data = threejsDrawing.data;
         if (data) {
             const physicsWorld = data.physicsWorld;

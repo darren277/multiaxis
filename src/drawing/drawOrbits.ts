@@ -1,4 +1,5 @@
-import { TextureLoader, SphereGeometry, Clock, Mesh, MeshBasicMaterial, MeshStandardMaterial, PlaneGeometry, BoxGeometry, LinearFilter, PointLight, AmbientLight, BackSide } from 'three';
+import * as THREE from 'three';
+import { ThreeJSDrawing } from '../threejsDrawing';
 
 const planets = [
     {"name": "Mercury", "diameter": 4879, "rotation": 58.6, "revolution": 87.97, "distance_from_sun": 57.9*(10**6), "texture": "8k_mercury.jpg"},
@@ -11,9 +12,18 @@ const planets = [
     {"name": "Neptune", "diameter": 49528, "rotation": 0.67, "revolution": 164.79, "distance_from_sun": 4495.1*(10**6), "texture": "2k_neptune.jpg"},
 ]
 
-let planetObjects = [];
+type Planet = {
+    name: string;
+    diameter: number; // in km
+    rotation: number; // in Earth days
+    revolution: number; // in Earth days
+    distance_from_sun: number; // in km
+    texture: string; // texture file name
+};
 
-const textureLoader = new TextureLoader();
+let planetObjects: Planet[] = [];
+
+const textureLoader = new THREE.TextureLoader();
 
 // Example: 1 unit = 10,000 km (arbitrary but keeps numbers smaller)
 const SCALE_FACTOR = 1 / 10000;
@@ -31,21 +41,21 @@ const PLANET_SIZE_SCALE_FACTOR = 10;
 const dayToRealSeconds = 1.0;
 // Then each second, Earth covers (360° / 365.26) = ~0.9856° of its orbit.
 
-function createPlanet(planetData, scene) {
+function createPlanet(planetData: Planet, scene: THREE.Scene) {
     // Convert diameter (km) to radius in Three.js units
     const radius = (planetData.diameter / 2) * SCALE_FACTOR * PLANET_SIZE_SCALE_FACTOR;
 
     // Create geometry & material
-    const geometry = new SphereGeometry(radius, 32, 32);
+    const geometry = new THREE.SphereGeometry(radius, 32, 32);
 
     // If you have texture images, load them here:
     const texture = textureLoader.load(`textures/${planetData.texture}`);
 
-    const material = new MeshStandardMaterial({
+    const material = new THREE.MeshStandardMaterial({
         map: texture,
     });
 
-    const mesh = new Mesh(geometry, material);
+    const mesh = new THREE.Mesh(geometry, material);
 
     // Position the planet at the correct orbital distance from Sun
     // (on the +X axis initially).
@@ -73,37 +83,37 @@ function createPlanet(planetData, scene) {
 }
 
 
-function castStars(scene, threejsDrawing) {
+function castStars(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
     const starTexture = textureLoader.load('textures/8k_stars.jpg');
 
     // reduce mipmap blurring
-    starTexture.minFilter = LinearFilter;
-    starTexture.magFilter = LinearFilter;
+    starTexture.minFilter = THREE.LinearFilter;
+    starTexture.magFilter = THREE.LinearFilter;
 
     const cubeSize = 100000; // Large enough to encompass entire solar system
 
-    const geometry = new BoxGeometry(cubeSize, cubeSize, cubeSize);
+    const geometry = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize);
 
     // Material with your star texture on all sides
-    const material = new MeshBasicMaterial({
+    const material = new THREE.MeshBasicMaterial({
         map: starTexture,
-        side: BackSide // Invert the faces so the texture is visible from inside
+        side: THREE.BackSide // Invert the faces so the texture is visible from inside
     });
 
-    const skybox = new Mesh(geometry, material);
+    const skybox = new THREE.Mesh(geometry, material);
     scene.add(skybox);
 
     threejsDrawing.data.skybox = skybox; // Store reference to the skybox in data
 }
 
-function drawFloor(scene, orbitRadius) {
+function drawFloor(scene: THREE.Scene, orbitRadius: number) {
     const size = orbitRadius * 2.5;
 
-    const floorGeometry = new PlaneGeometry(size, size);
-    const floorMaterial = new MeshStandardMaterial({
+    const floorGeometry = new THREE.PlaneGeometry(size, size);
+    const floorMaterial = new THREE.MeshStandardMaterial({
         color: 0x888888,
     });
-    const floor = new Mesh(floorGeometry, floorMaterial);
+    const floor = new THREE.Mesh(floorGeometry, floorMaterial);
     floor.rotation.x = -Math.PI / 2; // make it horizontal
     floor.position.y = -100;
     floor.receiveShadow = true;
@@ -112,18 +122,18 @@ function drawFloor(scene, orbitRadius) {
 
 // TODO: The Moon...
 
-function drawOrbits(scene, threejsDrawing) {
-    const sunGeometry = new SphereGeometry(sunRadius, 32, 32);
-    //const sunMaterial = new MeshBasicMaterial({ color: 0xffff00 });
+function drawOrbits(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
+    const sunGeometry = new THREE.SphereGeometry(sunRadius, 32, 32);
+    //const sunMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00 });
     // (Or a more realistic texture for the Sun.)
     const sunTexture = textureLoader.load('textures/8k_sun.jpg');
-    const sunMaterial = new MeshStandardMaterial({
+    const sunMaterial = new THREE.MeshStandardMaterial({
         map: sunTexture,
         //emissive: 0xffff00, // Emissive color for Sun
         //emissiveIntensity: 1, // Adjust intensity as needed
     });
 
-    const sunMesh = new Mesh(sunGeometry, sunMaterial);
+    const sunMesh = new THREE.Mesh(sunGeometry, sunMaterial);
     scene.add(sunMesh);
 
     planets.forEach((p) => {
@@ -136,20 +146,20 @@ function drawOrbits(scene, threejsDrawing) {
     //drawFloor(scene, earthOrbitRadius);
     //drawFloor(scene, threejsDrawing.data.planetObjects[7].orbitRadius);
 
-    const light = new PointLight(0xffffff, 1, 0); // last arg = infinite distance
+    const light = new THREE.PointLight(0xffffff, 1, 0); // last arg = infinite distance
     light.position.set(0, 0, 0); // Place the light at the Sun's position
     scene.add(light);
 
-    const ambientLight = new AmbientLight(0xffffff, 0.2);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
     scene.add(ambientLight);
 
     castStars(scene, threejsDrawing);
 }
 
-let clock = new Clock(); // Three.js clock to track deltaTime
+let clock = new THREE.Clock(); // Three.js clock to track deltaTime
 
 
-function animatePlanet(planet, daysPassed) {
+function animatePlanet(planet: Planet, daysPassed: number) {
     // 1) ORBIT around the Sun
     // revolve once per `planet.revolution` days
     const orbitSpeed = (2 * Math.PI) / planet.revolution;
@@ -173,7 +183,7 @@ const orbitsDrawing = {
         {'func': drawOrbits, 'dataSrc': null}
     ],
     'eventListeners': null,
-    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
+    'animationCallback': (renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawing: ThreeJSDrawing, camera: THREE.Camera) => {
         // Time since last frame in seconds:
         const delta = clock.getDelta();
 

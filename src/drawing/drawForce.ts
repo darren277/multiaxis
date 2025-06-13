@@ -1,8 +1,9 @@
 import * as THREE from 'three';
 import SpriteText from 'three-spritetext';
 import ForceGraph3D from '3d-force-graph';
+import { ThreeJSDrawing } from '../types';
 
-function drawForce3dGraph(scene, data, threejsDrawing) {
+function drawForce3dGraph(scene: THREE.Scene, data: any, threejsDrawing: ThreeJSDrawing) {
     const { renderer, camera, controls } = threejsDrawing.data;
 
     const dataSrc = threejsDrawing.data.dataSrc;
@@ -45,7 +46,7 @@ function drawForce3dGraph(scene, data, threejsDrawing) {
         .graphData(data)
         .nodeLabel('id')
         .nodeAutoColorBy('group')
-        .nodeThreeObject(node => {
+        .nodeThreeObject((node: any) => {
             // Example: create text labels via three-spritetext
             const sprite = new SpriteText(node.name);
             sprite.material.depthWrite = false; // transparent backgrounds
@@ -54,7 +55,7 @@ function drawForce3dGraph(scene, data, threejsDrawing) {
             return sprite;
         })
         .linkThreeObjectExtend(true)
-        .linkThreeObject(link => {
+        .linkThreeObject((link: any) => {
             // If you want custom link labels as well
             //const sprite = new SpriteText(`${link.source.id} > ${link.target.id}`);
             const sprite = new SpriteText(`${link.source} --${link.relation}--> ${link.target}`);
@@ -62,7 +63,7 @@ function drawForce3dGraph(scene, data, threejsDrawing) {
             sprite.textHeight = 1.5;
             return sprite;
         })
-        .linkPositionUpdate((sprite, { start, end }) => {
+        .linkPositionUpdate((sprite: SpriteText, { start, end }: { start: THREE.Vector3; end: THREE.Vector3 }) => {
             // Move link labels to the midpoint
             const middlePos = Object.assign(
                 ...['x', 'y', 'z'].map(c => ({
@@ -91,7 +92,7 @@ const force3dDrawing = {
         }
     },
     'eventListeners': null,
-    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
+    'animationCallback': (renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawing: ThreeJSDrawing, camera: THREE.Camera) => {
         if (!threejsDrawing.data._forceGraphInstance) {
             console.warn('No ForceGraph3D instance found.');
             return;

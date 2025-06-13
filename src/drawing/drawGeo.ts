@@ -1,14 +1,12 @@
-import {
-    Group, SphereGeometry, Mesh, MeshStandardMaterial, MeshBasicMaterial, MeshLambertMaterial, Shape, Vector3, BufferGeometry,
-    MathUtils, LineLoop, LineBasicMaterial, TextureLoader, AxesHelper, DirectionalLight, ExtrudeGeometry, PlaneGeometry, Box3
-} from 'three';
+import * as THREE from 'three';
 
 import { drawBasicLights } from './drawLights.js';
+import { ThreeJSDrawing } from '../types.js';
 
 const HOUSE_TO_HIGHLIGHT = '<REPLACE_WITH_BUILDING_ID>';
 const DEFAULT_HOUSE_COLOR = 0xf0f0f0;
 
-async function loadAndRenderGeoJSON(scene, buildingGroupParams) {
+async function loadAndRenderGeoJSON(scene: THREE.Scene, buildingGroupParams: any) {
     const { buildingGroupPosX, buildingGroupPosZ, buildingGroupScaleX, buildingGroupScaleZ } = buildingGroupParams;
 
     const response = await fetch('./data/buildings.geojson');
@@ -17,7 +15,7 @@ async function loadAndRenderGeoJSON(scene, buildingGroupParams) {
     // Approximate meters per degree at given latitude
     const R = 6378137; // Earth radius in meters
     const latScale = Math.PI * R / 180;
-    const lonScale = (lat) => latScale * Math.cos(lat * Math.PI / 180);
+    const lonScale = (lat: number) => latScale * Math.cos(lat * Math.PI / 180);
 
     // STEP 1: Pick a shared geographic center (first polygon’s first point)
     let centerLon = null;
@@ -37,11 +35,11 @@ async function loadAndRenderGeoJSON(scene, buildingGroupParams) {
         return;
     }
 
-    const buildingGroup = new Group();
+    const buildingGroup = new THREE.Group();
     // add each building mesh to `buildingGroup`
 
     // STEP 2: Loop through each polygon
-    geojson.features.forEach(feature => {
+    geojson.features.forEach((feature: any) => {
         if (feature.geometry.type === "Polygon") {
             const coords = feature.geometry.coordinates[0]; // Outer ring
 
@@ -50,8 +48,8 @@ async function loadAndRenderGeoJSON(scene, buildingGroupParams) {
             const isBuilding = tags.building && (tags.building === "yes" || tags.building === "house");
 
             if (isBuilding) {
-                const shape = new Shape();
-                coords.forEach(([lon, lat], i) => {
+                const shape = new THREE.Shape();
+                coords.forEach(([lon, lat]: [number, number], i: number) => {
                     const x = (lon - centerLon) * lonScale(centerLat);
                     const y = (lat - centerLat) * latScale;
                     if (i === 0) {
@@ -75,9 +73,9 @@ async function loadAndRenderGeoJSON(scene, buildingGroupParams) {
                     houseColor = 0xff0000; // red
                 }
 
-                const geometry = new ExtrudeGeometry(shape, extrudeSettings);
-                const material = new MeshStandardMaterial({ color: houseColor, roughness: 0.5, metalness: 0.5 });
-                const mesh = new Mesh(geometry, material);
+                const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+                const material = new THREE.MeshStandardMaterial({ color: houseColor, roughness: 0.5, metalness: 0.5 });
+                const mesh = new THREE.Mesh(geometry, material);
 
                 mesh.rotation.x = -Math.PI / 2;
                 buildingGroup.add(mesh);
@@ -89,9 +87,9 @@ async function loadAndRenderGeoJSON(scene, buildingGroupParams) {
 
     // Once done loading all buildings...
     // Compute bounding box of all buildings:
-    const box = new Box3().setFromObject(buildingGroup);
-    const size = new Vector3();
-    const center = new Vector3();
+    const box = new THREE.Box3().setFromObject(buildingGroup);
+    const size = new THREE.Vector3();
+    const center = new THREE.Vector3();
     box.getSize(size);
     box.getCenter(center);
 
@@ -114,16 +112,16 @@ async function loadAndRenderGeoJSON(scene, buildingGroupParams) {
     // You can also use size.y for the height of the buildings
 }
 
-const textureLoader = new TextureLoader();
+const textureLoader = new THREE.TextureLoader();
 
-async function drawMap(scene, threejsDrawing) {
+async function drawMap(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
     textureLoader.load('./textures/neighbourhood.png', (texture) => {
         const planeWidth = 750; // meters
         const planeHeight = 750;
 
-        const geometry = new PlaneGeometry(planeWidth, planeHeight);
-        const material = new MeshBasicMaterial({ map: texture });
-        const mapPlane = new Mesh(geometry, material);
+        const geometry = new THREE.PlaneGeometry(planeWidth, planeHeight);
+        const material = new THREE.MeshBasicMaterial({ map: texture });
+        const mapPlane = new THREE.Mesh(geometry, material);
 
         mapPlane.rotation.x = -Math.PI / 2; // make horizontal
 
@@ -137,8 +135,8 @@ async function drawMap(scene, threejsDrawing) {
     });
 }
 
-function drawBuildings(scene, threejsDrawing) {
-    const light = new DirectionalLight(0xffffff, 1);
+function drawBuildings(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
+    const light = new THREE.DirectionalLight(0xffffff, 1);
     light.position.set(100, 200, 100).normalize();
     scene.add(light);
 
@@ -149,7 +147,7 @@ function drawBuildings(scene, threejsDrawing) {
         buildingGroupScaleZ: threejsDrawing.data.buildingGroupScaleZ
     }
 
-    drawMap(scene).then(() => {
+    drawMap(scene, threejsDrawing).then(() => {
         loadAndRenderGeoJSON(scene, buildingGroupParams).then(() => {
             console.log("Buildings loaded and rendered.");
         }).catch((error) => {
@@ -162,9 +160,9 @@ function drawBuildings(scene, threejsDrawing) {
     drawBasicLights(scene, threejsDrawing);
 
     // draw some test cubes...
-    const cubeGeo = new SphereGeometry(0.5, 32, 32);
-    const cubeMat = new MeshStandardMaterial({ color: 0x00ff00 });
-    const cube = new Mesh(cubeGeo, cubeMat);
+    const cubeGeo = new THREE.SphereGeometry(0.5, 32, 32);
+    const cubeMat = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
+    const cube = new THREE.Mesh(cubeGeo, cubeMat);
     cube.position.set(0, 0, 0); // place it somewhere visible
     scene.add(cube);
 }
@@ -175,11 +173,11 @@ function drawBuildings(scene, threejsDrawing) {
  * @param {function} projectionFn - A function to convert [lng, lat] to [x, y]
  * @returns {THREE.Group} group containing all polygon meshes/lines
  */
-function createGeoJsonMap(scene, geojson, projectionFn, debug = false) {
-    const group = new Group();
+function createGeoJsonMap(scene: THREE.Scene, geojson: any, projectionFn: any, debug = false) {
+    const group = new THREE.Group();
 
     // Iterate over features
-    geojson.features.forEach(feature => {
+    geojson.features.forEach((feature: any) => {
         const geometryType = feature.geometry.type;
         const coords = feature.geometry.coordinates;
 
@@ -190,7 +188,7 @@ function createGeoJsonMap(scene, geojson, projectionFn, debug = false) {
             group.add(polygonGroup);
         } else if (geometryType === 'MultiPolygon') {
             // coords is [ [ [ [lng, lat], ... ] ], [ [lng, lat], ... ] ]
-            coords.forEach(polyCoords => {
+            coords.forEach((polyCoords: any) => {
                 //const polygonGroup = polygonToMesh(polyCoords, projectionFn);
                 const polygonGroup = polygonToMesh3D(scene, polyCoords, projectionFn, debug);
                 group.add(polygonGroup);
@@ -202,11 +200,11 @@ function createGeoJsonMap(scene, geojson, projectionFn, debug = false) {
     return group;
 }
 
-function drawDebugDots(scene, points) {
+function drawDebugDots(scene: THREE.Scene, points: THREE.Vector3[]) {
     points.forEach(p => {
-        const dot = new Mesh(
-            new SphereGeometry(0.05),
-            new MeshBasicMaterial({ color: 0xff0000 })
+        const dot = new THREE.Mesh(
+            new THREE.SphereGeometry(0.05),
+            new THREE.MeshBasicMaterial({ color: 0xff0000 })
         );
         dot.position.copy(p);
         scene.add(dot);
@@ -218,13 +216,13 @@ function drawDebugDots(scene, points) {
  * We’ll do outlines as Lines for simplicity.
  * If you want filled polygons, you’d use Shape and ShapeGeometry instead.
  */
-function polygonToMesh(scene, polygonCoords, projectionFn, debug = false) {
+function polygonToMesh(scene: THREE.Scene, polygonCoords: any, projectionFn: any, debug = false) {
     // polygonCoords: array of rings (first ring is outer boundary, subsequent rings are holes)
-    const polygonGroup = new Group();
+    const polygonGroup = new THREE.Group();
 
-    polygonCoords.forEach(ring => {
-        const shape = new Shape();
-        ring.forEach((coord, index) => {
+    polygonCoords.forEach((ring: any) => {
+        const shape = new THREE.Shape();
+        ring.forEach((coord: [number, number], index: number) => {
             const [lng, lat] = coord;
             const [x, y] = projectionFn(lng, lat);
 
@@ -254,9 +252,9 @@ function polygonToMesh(scene, polygonCoords, projectionFn, debug = false) {
 //        const lineMaterial = new LineBasicMaterial({ color: 0x000000 });
 //        const line = new LineLoop(lineGeometry, lineMaterial);
 //        polygonGroup.add(line);
-        const geometry = new ShapeGeometry(shape);
-        const material = new MeshBasicMaterial({ color: 0xff0000, side: THREE.DoubleSide });
-        const mesh = new Mesh(geometry, material);
+        const geometry = new THREE.ShapeGeometry(shape);
+        const material = new THREE.MeshBasicMaterial({ color: 0xff0000, side: THREE.DoubleSide });
+        const mesh = new THREE.Mesh(geometry, material);
         polygonGroup.add(mesh);
 
         if (debug) {
@@ -268,18 +266,18 @@ function polygonToMesh(scene, polygonCoords, projectionFn, debug = false) {
 }
 
 
-function polygonToMesh3D(scene, polygonCoords, projectionFn, debug = false) {
-    const polygonGroup = new Group();
+function polygonToMesh3D(scene: THREE.Scene, polygonCoords: any, projectionFn: any, debug = false) {
+    const polygonGroup = new THREE.Group();
 
-    polygonCoords.forEach(ring => {
-        const points = ring.map(([lng, lat]) => {
+    polygonCoords.forEach((ring: any) => {
+        const points = ring.map(([lng, lat]: [number, number]) => {
             const [x, y, z] = projectionFn(lng, lat);
-            return new Vector3(x, y, z);
+            return new THREE.Vector3(x, y, z);
         });
 
-        const lineGeometry = new BufferGeometry().setFromPoints(points);
-        const lineMaterial = new LineBasicMaterial({ color: 0xffaa00 });
-        const line = new LineLoop(lineGeometry, lineMaterial);
+        const lineGeometry = new THREE.BufferGeometry().setFromPoints(points);
+        const lineMaterial = new THREE.LineBasicMaterial({ color: 0xffaa00 });
+        const line = new THREE.LineLoop(lineGeometry, lineMaterial);
         polygonGroup.add(line);
 
         if (debug) {
@@ -292,7 +290,7 @@ function polygonToMesh3D(scene, polygonCoords, projectionFn, debug = false) {
 
 
 
-function equirectangularProjection(lng, lat) {
+function equirectangularProjection(lng: number, lat: number) {
     // lat, lng in degrees
     // Convert degrees to radians
     const x = (lng * Math.PI) / 180;
@@ -308,10 +306,10 @@ function equirectangularProjection(lng, lat) {
 
 /* Rendering on a Sphere (Globe) */
 
-function latLngToSphere(lng, lat, radius = 5) {
+function latLngToSphere(lng: number, lat: number, radius = 5) {
     // Convert lat, lng (in degrees) to radians
-    const phi = MathUtils.degToRad(90 - lat);
-    const theta = MathUtils.degToRad(lng);
+    const phi = THREE.MathUtils.degToRad(90 - lat);
+    const theta = THREE.MathUtils.degToRad(lng);
 
     const x = radius * Math.sin(phi) * Math.cos(theta);
     const y = radius * Math.cos(phi);
@@ -378,13 +376,13 @@ const exampleGeoJson = {
 
 
 function drawEarth() {
-    const textureLoader = new TextureLoader();
+    const textureLoader = new THREE.TextureLoader();
     const earthTexture = textureLoader.load('textures/8k_earth_daymap.jpg'); // Use your own image path
 
-    const globe = new Mesh(
-        new SphereGeometry(5, 64, 64),
+    const globe = new THREE.Mesh(
+        new THREE.SphereGeometry(5, 64, 64),
         //new MeshStandardMaterial({color: 0x2266cc, roughness: 1, metalness: 0})
-        new MeshStandardMaterial({map: earthTexture, roughness: 1, metalness: 0})
+        new THREE.MeshStandardMaterial({map: earthTexture, roughness: 1, metalness: 0})
     );
 
     globe.rotation.y = Math.PI / 2; // Rotate to face the camera
@@ -396,19 +394,19 @@ function drawEarth() {
 }
 
 
-function drawGeo(scene, threejsDrawing) {
-    const projectionFn = (lng, lat) => {return equirectangularProjection(lng, lat);};
+function drawGeo(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
+    const projectionFn = (lng: number, lat: number) => {return equirectangularProjection(lng, lat);};
     const mapGroup = createGeoJsonMap(scene, exampleGeoJson, projectionFn);
     scene.add(mapGroup);
-    scene.add(new AxesHelper(10));
+    scene.add(new THREE.AxesHelper(10));
 }
 
-function drawGeo3d(scene, threejsDrawing) {
+function drawGeo3d(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
     const DEBUG = true;
 
     // GLOBE:
     const radius = 5;
-    const projectionFn = (lng, lat) => latLngToSphere(lng, lat, radius);
+    const projectionFn = (lng: number, lat: number) => latLngToSphere(lng, lat, radius);
 
     //const mapGroup = createGeoJsonMap(threejsDrawing.data.geojson, projectionFn);
     const mapGroup = createGeoJsonMap(scene, exampleGeoJson, projectionFn, DEBUG);
@@ -416,7 +414,7 @@ function drawGeo3d(scene, threejsDrawing) {
     scene.add(mapGroup);
 
     // 3) Set up any additional rendering logic here
-    scene.add(new AxesHelper(10));
+    scene.add(new THREE.AxesHelper(10));
 
     const globe = drawEarth();
     scene.add(globe);
@@ -443,7 +441,7 @@ const geoDrawing = {
         {'func': drawGeo, 'dataSrc': null}
     ],
     'eventListeners': null,
-    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
+    'animationCallback': (renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawing: ThreeJSDrawing, camera: THREE.Camera) => {
     },
     'data': {
         'geojson': exampleGeoJson,
@@ -460,7 +458,7 @@ const geoDrawing3d = {
         {'func': drawGeo3d, 'dataSrc': null}
     ],
     'eventListeners': null,
-    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
+    'animationCallback': (renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawing: ThreeJSDrawing, camera: THREE.Camera) => {
         // Update the globe rotation
         const globe = threejsDrawing.data.globe;
         if (globe) {
@@ -487,7 +485,7 @@ const buildingsDrawing = {
         {'func': drawBuildings, 'dataSrc': null}
     ],
     'eventListeners': null,
-    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
+    'animationCallback': (renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawing: ThreeJSDrawing, camera: THREE.Camera) => {
     },
     'data': {
         'geojson': exampleGeoJson,

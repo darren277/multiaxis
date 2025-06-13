@@ -1,12 +1,13 @@
-import { TextureLoader, Clock, Group, Object3D, ShaderMaterial, PlaneGeometry, Mesh, MeshBasicMaterial, CanvasTexture } from 'three';
+import * as THREE from "three";
 import { GLTFLoader } from 'gltfloader';
 import { drawBasicLights, drawSun } from './drawLights.js';
 import { Tween, Easing } from 'tween';
+import { ThreeJSDrawing } from "../types.js";
 
 
-const loader = new TextureLoader();
+const loader = new THREE.TextureLoader();
 
-//const angryMouth = new Mesh(new PlaneGeometry(0.4, 0.2), new MeshBasicMaterial({map: loader.load('textures/mouth_open.png'), transparent: true}));
+//const angryMouth = new THREE.Mesh(new THREE.PlaneGeometry(0.4, 0.2), new THREE.MeshBasicMaterial({map: loader.load('textures/mouth_open.png'), transparent: true}));
 
 // angryMouth.position.set(0, 0.1, 0.25); // front of face
 // yourHeadMesh.add(angryMouth); // stick it to the head
@@ -20,7 +21,7 @@ const loader = new TextureLoader();
 // If the mouth/eyes are on a separate UV region, you can animate the offset of a sprite sheet using material.map.offset.x.
 
 
-async function loadGltfModel(data_src) {
+async function loadGltfModel(data_src: string) {
     const gltfLoader = new GLTFLoader();
     const gltf = await gltfLoader.loadAsync(`${data_src}`);
     return gltf;
@@ -28,7 +29,7 @@ async function loadGltfModel(data_src) {
 
 const stretchUniform = { value: 3.0 };
 
-const stretchyMaterial = new ShaderMaterial({
+const stretchyMaterial = new THREE.ShaderMaterial({
     uniforms: {
         stretch: stretchUniform
     },
@@ -58,7 +59,7 @@ const HEAD = 'Object_5';
 //const ANIMATABLE_PART = [LEFT_EYE, HEAD, 'Object_3', 'Object_6'];
 const ANIMATABLE_NAMES = [LEFT_EYE, HEAD];
 
-const originalTraverse = Object3D.prototype.traverse;
+const originalTraverse = THREE.Object3D.prototype.traverse;
 
 
 function drawMouth() {
@@ -83,7 +84,7 @@ function drawMouth() {
     ctx.closePath();
     ctx.fill();
 
-    const mouthTexture = new CanvasTexture(canvas);
+    const mouthTexture = new THREE.CanvasTexture(canvas);
     mouthTexture.needsUpdate = true;
 
     return mouthTexture;
@@ -92,7 +93,7 @@ function drawMouth() {
 
 // Optional: Dynamic drawing updates
 // You can redraw the canvas anytime and the texture will update live:
-function drawAngryMouth(mouthTexture) {
+function drawAngryMouth(mouthTexture: THREE.CanvasTexture) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = '#f00';
     ctx.beginPath();
@@ -115,12 +116,12 @@ Let me know if you want a mini face expression system built on this — with tog
 
 
 
-async function drawMale07(scene, threejsDrawing) {
+async function drawMale07(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
     const { scene: gltfScene } = await loadGltfModel('imagery/skibidi/male-07_v1.glb');
 
     // 1) Find the meshes you want to animate
-    const animMeshes = [];
-    gltfScene.traverse(node => {
+    const animMeshes: THREE.Mesh[] = [];
+    gltfScene.traverse((node: THREE.Object3D) => {
         // exclude body from scene...
         if (node.name === BODY) {
             node.visible = false;
@@ -130,7 +131,7 @@ async function drawMale07(scene, threejsDrawing) {
                 //node.material = stretchyMaterial; // replace with custom shader
                 const originalMaterial = node.material;
 
-                originalMaterial.onBeforeCompile = (shader) => {
+                originalMaterial.onBeforeCompile = (shader: Shader) => {
                     // Inject your uniform
                     shader.uniforms.stretch = stretchUniform;
 
@@ -174,7 +175,7 @@ async function drawMale07(scene, threejsDrawing) {
     return gltfScene;
 }
 
-async function drawToilet(scene, threejsDrawing) {
+async function drawToilet(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
     // toilet
     const toilet = await loadGltfModel('imagery/skibidi/toilet.gltf');
 
@@ -196,7 +197,7 @@ async function drawToilet(scene, threejsDrawing) {
 //const startScale = { x: 1, y: 1, z: 1 };
 //const endScale = { x: 1.5, y: 1.5, z: 1.5 };
 
-function animateMeshes(meshes) {
+function animateMeshes(meshes: THREE.Mesh[]) {
     if (!meshes.length) return;
 
     const duration = 2000;
@@ -222,11 +223,11 @@ function animateMeshes(meshes) {
     }).onComplete(() => forward.start());
 }
 
-function animateStretchingMeshes(camera, meshes) {
+function animateStretchingMeshes(camera: THREE.Camera, meshes: THREE.Mesh[]) {
     const mesh = meshes[1]; // Assuming you want to animate the first mesh
     const geometry = mesh.geometry;
     const position = geometry.attributes.position;
-    const originalZ = []; // preserve original positions
+    const originalZ: number[] = []; // preserve original positions
 
     // Cache original positions
     for (let i = 0; i < position.count; i++) {
@@ -268,7 +269,7 @@ function animateStretchingMeshes(camera, meshes) {
     //new Tween(camera.position).to({ z: 2 }, 300).easing(Easing.Back.Out).yoyo(true).repeat(1).start();
 }
 
-function animateMouth(mouthPlane) {
+function animateMouth(mouthPlane: THREE.Mesh) {
     // Animate the expression
     //new Tween(mouthPlane.scale).to({ y: 1.5 }, 300).yoyo(true).repeat(2).start();
 
@@ -277,10 +278,10 @@ function animateMouth(mouthPlane) {
     new Tween(mouthPlane.scale).to({ y: 0.01 }, 200).yoyo(true).repeat(1).start();
 }
 
-const clock = new Clock();
+const clock = new THREE.Clock();
 let prevTime = 0;
 
-function animate(renderer, timestamp, threejsDrawing, camera) {
+function animate(renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawing: ThreeJSDrawing, camera: THREE.Camera) {
     // timestamp is already in ms
     if (prevTime === 0) prevTime = timestamp;
 
@@ -294,7 +295,7 @@ function animate(renderer, timestamp, threejsDrawing, camera) {
     }
 }
 
-function drawSkibidi(scene, threejsDrawing) {
+function drawSkibidi(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
     // Draw the lights
     drawBasicLights(scene, threejsDrawing);
 
@@ -308,7 +309,7 @@ function drawSkibidi(scene, threejsDrawing) {
     // 0.4, 0.4
     //const mouthPlaneSize = 0.4;
     const mouthPlaneSize = 5.0;
-    const mouthPlane = new Mesh(new PlaneGeometry(mouthPlaneSize, mouthPlaneSize), new MeshBasicMaterial({map: mouthTexture, transparent: true}));
+    const mouthPlane = new THREE.Mesh(new THREE.PlaneGeometry(mouthPlaneSize, mouthPlaneSize), new THREE.MeshBasicMaterial({map: mouthTexture, transparent: true}));
 
     // Position it in front of the face
     //mouthPlane.position.set(0, 0.1, 0.25); // adjust as needed

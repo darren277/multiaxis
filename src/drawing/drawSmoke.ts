@@ -1,6 +1,7 @@
-import { Vector2, ShaderMaterial, TextureLoader, DataTexture, FloatType, RepeatWrapping, RGBAFormat, PlaneGeometry, Mesh } from 'three';
+import * as THREE from "three";
 
 import noiseModule from 'noisejs';
+import { ThreeJSDrawing } from "../types";
 
 const Noise = noiseModule.Noise;
 const noise = new Noise(Math.random());
@@ -146,7 +147,7 @@ void main() {
 }
 `;
 
-function generatePerlinData(width, height, scale = 0.1) {
+function generatePerlinData(width: number, height: number, scale = 0.1) {
     const size = width * height;
     const data = new Float32Array(4 * size); // RGBA float data
 
@@ -172,23 +173,23 @@ const width = 64;
 const height = 64;
 const perlinData = generatePerlinData(width, height);
 
-const noiseTexture = new DataTexture(
+const noiseTexture = new THREE.DataTexture(
     perlinData,
     width,
     height,
-    RGBAFormat,
-    FloatType
+    THREE.RGBAFormat,
+    THREE.FloatType
 );
 noiseTexture.needsUpdate = true;
-noiseTexture.wrapS = noiseTexture.wrapT = RepeatWrapping;
+noiseTexture.wrapS = noiseTexture.wrapT = THREE.RepeatWrapping;
 //const noiseTexture = loader.load('perlin_noise.png');
 //const baseTexture = loader.load('smoke_base.jpg');
 //baseTexture.wrapS = baseTexture.wrapT = RepeatWrapping;
 
 const uniforms = {
-    iResolution: { value: new Vector2(window.innerWidth, window.innerHeight) },
+    iResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
     iTime: { value: 0 },
-    iMouse: { value: new Vector2(0, 0) },
+    iMouse: { value: new THREE.Vector2(0, 0) },
     //iChannel0: { value: baseTexture },
     mode: { value: 0 }, // start with radial
     iChannel1: { value: noiseTexture }
@@ -196,7 +197,7 @@ const uniforms = {
 
 
 // smokeFragmentShader
-const smokeMaterial = new ShaderMaterial({
+const smokeMaterial = new THREE.ShaderMaterial({
     uniforms,
     fragmentShader: smokeFragmentShader,
     vertexShader: `
@@ -252,8 +253,8 @@ You’d then regenerate the Float32Array each frame and call:
 noiseTexture.needsUpdate = true;
 */
 
-function drawSmoke(scene) {
-    const geometry = new PlaneGeometry(10, 10);
+function drawSmoke(scene: THREE.Scene) {
+    const geometry = new THREE.PlaneGeometry(10, 10);
     const pos = geometry.attributes.position;
 
     for (let i = 0; i < pos.count; i++) {
@@ -265,7 +266,7 @@ function drawSmoke(scene) {
 
     pos.needsUpdate = true;
 
-    const smokePlane = new Mesh(geometry, smokeMaterial);
+    const smokePlane = new THREE.Mesh(geometry, smokeMaterial);
     scene.add(smokePlane);
 
     // Radial
@@ -284,7 +285,7 @@ const smokeDrawing = {
         {'func': drawSmoke, 'dataSrc': null}
     ],
     'eventListeners': null,
-    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
+    'animationCallback': (renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawing: ThreeJSDrawing, camera: THREE.Camera) => {
         const uniforms = threejsDrawing.data.uniforms;
         uniforms.iTime.value += 0.01;
 

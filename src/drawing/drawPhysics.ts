@@ -1,8 +1,9 @@
-import { ArrowHelper, Vector3,  Mesh, MeshBasicMaterial, MeshStandardMaterial, BoxGeometry, SphereGeometry, Clock, HemisphereLight, DirectionalLight } from 'three';
+import * as THREE from 'three';
 
-const clock = new Clock();
+const clock = new THREE.Clock();
 
 import GUI from 'lil-gui';
+import { ThreeJSDrawing } from '../threejsDrawing';
 
 const gravityConstant = 9.81;
 
@@ -13,7 +14,7 @@ const params = {
     forceY: 0,
     forceZ: 0,
     restitution: 1.0,
-    applyForce: (box) => {
+    applyForce: (box: any) => {
         const f = new Ammo.btVector3(params.forceX, params.forceY, params.forceZ);
         box.body.applyCentralForce(f);
     }
@@ -22,9 +23,9 @@ const params = {
 
 
 // Inside your animation loop
-function updateVelocityArrow(arrowHelper, obj) {
+function updateVelocityArrow(arrowHelper: any, obj: any) {
     const velocity = obj.body.getLinearVelocity();
-    const vel = new Vector3(velocity.x(), velocity.y(), velocity.z());
+    const vel = new THREE.Vector3(velocity.x(), velocity.y(), velocity.z());
     arrowHelper.setDirection(vel.clone().normalize());
     arrowHelper.setLength(vel.length());
     arrowHelper.position.copy(obj.mesh.position);
@@ -32,7 +33,7 @@ function updateVelocityArrow(arrowHelper, obj) {
 
 
 
-async function initPhysics(threejsDrawing) {
+async function initPhysics(threejsDrawing: ThreeJSDrawing) {
     // Physics configuration
     threejsDrawing.data.collisionConfiguration = new Ammo.btDefaultCollisionConfiguration();
     threejsDrawing.data.dispatcher = new Ammo.btCollisionDispatcher(threejsDrawing.data.collisionConfiguration);
@@ -52,13 +53,13 @@ async function initPhysics(threejsDrawing) {
 
 
 
-let trail = [];
+let trail: THREE.Mesh[] = [];
 
-function updateTrail(scene, obj) {
+function updateTrail(scene: THREE.Scene, obj: any) {
     const pos = obj.mesh.position.clone();
-    const dot = new Mesh(
-        new SphereGeometry(0.05),
-        new MeshBasicMaterial({ color: 0xff0000 })
+    const dot = new THREE.Mesh(
+        new THREE.SphereGeometry(0.05),
+        new THREE.MeshBasicMaterial({ color: 0xff0000 })
     );
     dot.position.copy(pos);
     scene.add(dot);
@@ -71,7 +72,7 @@ function updateTrail(scene, obj) {
     }
 }
 
-function createRigidBody(name, physicsWorld, shape, mass, position) {
+function createRigidBody(name: string, physicsWorld: any, shape: any, mass: number, position: THREE.Vector3) {
     const transform = new Ammo.btTransform();
     transform.setIdentity();
     transform.setOrigin(new Ammo.btVector3(position.x, position.y, position.z));
@@ -82,9 +83,9 @@ function createRigidBody(name, physicsWorld, shape, mass, position) {
     const body = new Ammo.btRigidBody(rbInfo);
     physicsWorld.addRigidBody(body);
 
-    const mesh = new Mesh(
-        new BoxGeometry(2, 2, 2), // visualize shape
-        new MeshStandardMaterial({ color: 0xff4444 })
+    const mesh = new THREE.Mesh(
+        new THREE.BoxGeometry(2, 2, 2), // visualize shape
+        new THREE.MeshStandardMaterial({ color: 0xff4444 })
     );
     mesh.position.copy(position);
 
@@ -92,7 +93,7 @@ function createRigidBody(name, physicsWorld, shape, mass, position) {
 }
 
 
-function updateMass(box, newMass) {
+function updateMass(box: any, newMass: number) {
     const body = box.body;
     const shape = body.getCollisionShape();
     const localInertia = new Ammo.btVector3(0, 0, 0);
@@ -101,25 +102,25 @@ function updateMass(box, newMass) {
     body.updateInertiaTensor();
 }
 
-function updateFriction(box, val) {
+function updateFriction(box: any, val: number) {
     box.body.setFriction(val);
 }
 
 
-function drawBasicNewtonianForces(scene, physicsWorld) {
+function drawBasicNewtonianForces(scene: THREE.Scene, physicsWorld: any) {
     // Basic setup
     const gravity = new Ammo.btVector3(0, -9.81, 0);
 
     // Create ground
     const groundShape = new Ammo.btBoxShape(new Ammo.btVector3(50, 1, 50));
-    const ground = createRigidBody('Newtonian Ground', physicsWorld, groundShape, 0, new Vector3(0, -1, 0));
+    const ground = createRigidBody('Newtonian Ground', physicsWorld, groundShape, 0, new THREE.Vector3(0, -1, 0));
     const mesh = ground.mesh;
     scene.add(mesh);
 
     // Create a box
     const boxShape = new Ammo.btBoxShape(new Ammo.btVector3(1, 1, 1));
     const mass = 2;
-    const box = createRigidBody('Newtonian Box', physicsWorld, boxShape, mass, new Vector3(0, 5, 0));
+    const box = createRigidBody('Newtonian Box', physicsWorld, boxShape, mass, new THREE.Vector3(0, 5, 0));
     const boxMesh = box.mesh;
     scene.add(boxMesh);
 
@@ -133,10 +134,10 @@ function drawBasicNewtonianForces(scene, physicsWorld) {
 }
 
 
-function drawTorqueAndAngularMotion(scene, physicsWorld) {
+function drawTorqueAndAngularMotion(scene: THREE.Scene, physicsWorld: any) {
     // Create a tall cylinder
     const shape = new Ammo.btCylinderShape(new Ammo.btVector3(0.5, 2, 0.5));
-    const cylinder = createRigidBody('Cylinder', physicsWorld, shape, 3, new Vector3(0, 5, 0));
+    const cylinder = createRigidBody('Cylinder', physicsWorld, shape, 3, new THREE.Vector3(0, 5, 0));
     const mesh = cylinder.mesh;
     scene.add(mesh);
 
@@ -148,17 +149,17 @@ function drawTorqueAndAngularMotion(scene, physicsWorld) {
     return cylinder;
 }
 
-function drawFriction(scene, physicsWorld) {
+function drawFriction(scene: THREE.Scene, physicsWorld: any) {
     // Ground with default friction
     const groundShape = new Ammo.btBoxShape(new Ammo.btVector3(10, 1, 10));
-    const groundBody = createRigidBody('Friction Ground', physicsWorld, groundShape, 0, new Vector3(0, -1, 0));
+    const groundBody = createRigidBody('Friction Ground', physicsWorld, groundShape, 0, new THREE.Vector3(0, -1, 0));
     groundBody.body.setFriction(1.0); // high friction surface
     const groundMesh = groundBody.mesh;
     scene.add(groundMesh);
 
     // A sliding box
     const boxShape = new Ammo.btBoxShape(new Ammo.btVector3(1, 1, 1));
-    const slidingBox = createRigidBody('Sliding Box', physicsWorld, boxShape, 2, new Vector3(-5, 1, 0));
+    const slidingBox = createRigidBody('Sliding Box', physicsWorld, boxShape, 2, new THREE.Vector3(-5, 1, 0));
     slidingBox.body.setFriction(0.5); // medium friction box
     const slidingBoxMesh = slidingBox.mesh;
     scene.add(slidingBoxMesh);
@@ -173,12 +174,12 @@ function drawFriction(scene, physicsWorld) {
 }
 
 
-function drawElasticForce(scene, physicsWorld) {
+function drawElasticForce(scene: THREE.Scene, physicsWorld: any) {
     // Two bodies connected by a virtual spring
     const mass = 1;
     const shape = new Ammo.btSphereShape(0.5);
-    const pointA = createRigidBody('Elastic Point A', physicsWorld, shape, mass, new Vector3(-2, 5, 0));
-    const pointB = createRigidBody('Elastic Point B', physicsWorld, shape, mass, new Vector3(2, 5, 0));
+    const pointA = createRigidBody('Elastic Point A', physicsWorld, shape, mass, new THREE.Vector3(-2, 5, 0));
+    const pointB = createRigidBody('Elastic Point B', physicsWorld, shape, mass, new THREE.Vector3(2, 5, 0));
 
     const pointAMesh = pointA.mesh;
     const pointBMesh = pointB.mesh;
@@ -203,9 +204,9 @@ function drawElasticForce(scene, physicsWorld) {
     }
 }
 
-function applyAirResistance(obj, dragCoeff = 0.5) {
+function applyAirResistance(obj: any, dragCoeff = 0.5) {
     const vel = obj.body.getLinearVelocity();
-    const v = new Vector3(vel.x(), vel.y(), vel.z());
+    const v = new THREE.Vector3(vel.x(), vel.y(), vel.z());
     const drag = v.clone().multiplyScalar(-dragCoeff);
 
     const dragForce = new Ammo.btVector3(drag.x, drag.y, drag.z);
@@ -213,25 +214,25 @@ function applyAirResistance(obj, dragCoeff = 0.5) {
 }
 
 
-function drawLights(scene) {
-    const hemi = new HemisphereLight(0xffffff, 0x444444, 0.7);
+function drawLights(scene: THREE.Scene) {
+    const hemi = new THREE.HemisphereLight(0xffffff, 0x444444, 0.7);
     scene.add(hemi);
 
-    const dir = new DirectionalLight(0xffffff, 0.8);
+    const dir = new THREE.DirectionalLight(0xffffff, 0.8);
     dir.position.set(5, 10, 7.5);
     scene.add(dir);
 }
 
 const gui = new GUI();
 
-function drawGUI(box) {
+function drawGUI(box: any) {
     // Create a folder
     const physicsFolder = gui.addFolder(box.name);
 
     // Add controls inside that folder
-    physicsFolder.add(params, 'mass', 0.1, 10).onChange((newMass) => updateMass(box, newMass));
-    physicsFolder.add(params, 'friction', 0, 1).onChange((val) => updateFriction(box, val));
-    physicsFolder.add(params, 'restitution', 0, 1).onChange((val) => box.body.setRestitution(val));
+    physicsFolder.add(params, 'mass', 0.1, 10).onChange((newMass: number) => updateMass(box, newMass));
+    physicsFolder.add(params, 'friction', 0, 1).onChange((val: number) => updateFriction(box, val));
+    physicsFolder.add(params, 'restitution', 0, 1).onChange((val: number) => box.body.setRestitution(val));
 
     // Apply force button separately if you like:
     physicsFolder.add(params, 'forceX', -50, 50);
@@ -240,7 +241,7 @@ function drawGUI(box) {
     physicsFolder.add(params, 'applyForce').name('Apply Force');
 }
 
-function drawPhysics(scene, threejsDrawing) {
+function drawPhysics(scene: THREE.Scene, threejsDrawing: any) {
     threejsDrawing.data.physicsWorld = null;
     threejsDrawing.data.collisionConfiguration = null;
     threejsDrawing.data.dispatcher = null;
@@ -281,7 +282,7 @@ function drawPhysics(scene, threejsDrawing) {
             threejsDrawing.data.rigidBodies.push(pointA);
             threejsDrawing.data.rigidBodies.push(pointB);
 
-            const arrowHelper = new ArrowHelper(new Vector3(1, 0, 0), new Vector3(0, 0, 0), 1, 0xffff00);
+            const arrowHelper = new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 0, 0), 1, 0xffff00);
             scene.add(arrowHelper);
 
             threejsDrawing.data.arrowHelper = arrowHelper;
@@ -334,7 +335,7 @@ const physicsDrawing = {
     ],
     'eventListeners': {
     },
-    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
+    'animationCallback': (renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawing: any, camera: THREE.PerspectiveCamera) => {
         const deltaTime = clock.getDelta();
         const physicsWorld = threejsDrawing.data.physicsWorld;
         const dispatcher = threejsDrawing.data.dispatcher;
