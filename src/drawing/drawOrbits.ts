@@ -54,7 +54,7 @@ const PLANET_SIZE_SCALE_FACTOR = 10;
 const dayToRealSeconds = 1.0;
 // Then each second, Earth covers (360° / 365.26) = ~0.9856° of its orbit.
 
-function createPlanet(planetData: Planet, scene: THREE.Scene) {
+function createPlanet(planetData: PlanetData, scene: THREE.Scene): Planet {
     // Convert diameter (km) to radius in Three.js units
     const radius = (planetData.diameter / 2) * SCALE_FACTOR * PLANET_SIZE_SCALE_FACTOR;
 
@@ -92,6 +92,9 @@ function createPlanet(planetData: Planet, scene: THREE.Scene) {
         orbitRadius: orbitRadius,
         revolution: planetData.revolution, // days to orbit (Mercury: 88 days, Earth: 365, etc.)
         rotation: planetData.rotation,     // days to rotate once
+        diameter: planetData.diameter,
+        distance_from_sun: planetData.distance_from_sun,
+        texture: planetData.texture,
     };
 }
 
