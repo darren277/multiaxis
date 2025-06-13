@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import { getYawObject, CollisionManager } from './collisionManager';
 
 //export const staticBoxes   = [];   // immovable stuff
 //export const movingMeshes  = [];   // meshes that move every frame
@@ -8,6 +7,18 @@ import { getYawObject, CollisionManager } from './collisionManager';
 
 export const worldMeshes = []; // meshes to check for ground
 
+
+// Define KeyManager interface if not imported from elsewhere
+interface KeyManager {
+    isShiftDown: boolean;
+    moveForward: boolean;
+    moveLeft: boolean;
+    moveBackward: boolean;
+    moveRight: boolean;
+    canJump: boolean;
+    jumpPressed: boolean;
+    // velocity?: { y: number }; // Uncomment if velocity is used
+}
 
 function onKeyDownWalking(event: KeyboardEvent, keyManager: KeyManager) {
     event.preventDefault();
@@ -37,7 +48,7 @@ function onKeyDownWalking(event: KeyboardEvent, keyManager: KeyManager) {
     }
 }
 
-function onKeyUpWalking(event, keyManager) {
+function onKeyUpWalking(event: KeyboardEvent, keyManager: KeyManager) {
     event.preventDefault();
     switch (event.code) {
         case 'ShiftLeft':

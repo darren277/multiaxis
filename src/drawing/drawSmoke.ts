@@ -287,6 +287,9 @@ function drawSmoke(scene: THREE.Scene) {
     // Twisted FBM
     uniforms.mode.value = 3;
 
+    // TODO: Look back at file history to see if anything got cutoff / lost here...
+};
+
 const smokeDrawing = {
     'sceneElements': [],
     'drawFuncs': [

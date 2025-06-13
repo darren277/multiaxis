@@ -46,7 +46,7 @@ function drawForceDirectedGraph(scene: THREE.Scene, data: any) {
 
     const simulation = forceSimulation(graphData.nodes)
         .force('charge', forceManyBody().strength(-50))
-        .force('link', forceLink(graphData.links).id(d => d.id).distance(2))
+        .force('link', forceLink(graphData.links).id((d: { id: any; }) => d.id).distance(2))
         .force('center', forceCenter(0, 0, 0))
         .alphaDecay(0.02); // Allow some time to settle
 
@@ -153,7 +153,7 @@ function onMouseDown(camera: THREE.Camera, data: any, event: MouseEvent, rect: D
         const foundEntry = Object.entries(data.nodeSpheres).find(([id, obj]) => obj === mesh);
         const nodeId = foundEntry ? foundEntry[0] : null;
 
-        data.draggedNode = nodeId ? data.graphData.nodes.find(n => n.id == nodeId) : null;
+        data.draggedNode = nodeId ? data.graphData.nodes.find((n: { id: string; }) => n.id == nodeId) : null;
     }
 }
 
@@ -251,8 +251,12 @@ const forceDrawing = {
         }
     },
     'animationCallback': (renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawing: ThreeJSDrawing, camera: THREE.Camera) => {
-        threejsDrawing.data.simulation.tick(); // progress the simulation
-        updateForceGraph(threejsDrawing.data.graphData, threejsDrawing.data.nodeSpheres, threejsDrawing.data.linkLines); // reflect new positions
+        (threejsDrawing.data.simulation as d3.Simulation<any, any>).tick(); // progress the simulation
+        updateForceGraph(
+            threejsDrawing.data.graphData,
+            threejsDrawing.data.nodeSpheres as { [key: string]: THREE.Mesh },
+            threejsDrawing.data.linkLines as { line: THREE.Line, link: any }[]
+        ); // reflect new positions
     },
     'data': {
         'simulation': null,

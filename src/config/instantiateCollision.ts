@@ -1,4 +1,4 @@
-import { ArrowHelper } from 'three';
+import * as THREE from 'three';
 import { CollisionManager, checkCollision } from '../config/collisionManager';
 import { ThreeJSDrawing } from '../threejsDrawing';
 
@@ -21,8 +21,8 @@ export function instantiateCollision(threejsDrawing: ThreeJSDrawing) {
         }
     });
 
-    collision.debugRayHelper = new ArrowHelper();
-    threejsDrawing.data.scene.add(collision.debugRayHelper)
+    collision.debugRayHelper = new THREE.ArrowHelper();
+    (threejsDrawing.data.scene as THREE.Scene).add(collision.debugRayHelper)
 
     collision.lastGroundY         = undefined;
     collision.keyManager.canJump  = true;

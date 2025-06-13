@@ -25,7 +25,21 @@ async function loadGltfModel(data_src: string) {
 // "Barn":          { position: tileToPosition(3, 2), rotation: [0, 0, 0], scale: [1, 5, 1] },
 // "Big Barn":      { position: tileToPosition(7, 1), rotation: [0, Math.PI/2, 0], scale: [1, 1, 1] },
 
-const modelLayout = {
+const farmModelNames = [
+    'Barn',
+    'Big Barn',
+    'ChickenCoop',
+    'Fence',
+    'Open Barn',
+    'Silo House',
+    'Silo',
+    'Small Barn',
+    'Tower Windmill',
+] as const;
+
+type FarmModelName = typeof farmModelNames[number];
+
+const modelLayout: Record<FarmModelName, { position: number[]; rotation: number[]; scale: number[] }> = {
     "Barn":          { position: [0, 0, 0],     rotation: [0, 0, 0], scale: [1, 5, 1] },
     "Big Barn":      { position: [20, 0, 10],   rotation: [0, Math.PI / 2, 0], scale: [1, 1, 1] },
     "ChickenCoop":   { position: [-10, 0, 5],   rotation: [0, 0, 0], scale: [1.2, 1.2, 1.2] },
@@ -37,18 +51,7 @@ const modelLayout = {
     "Tower Windmill":{ position: [-30, 0, 20],  rotation: [0, 0, 0], scale: [1, 1, 1] },
 };
 
-
-const farmModels = [
-    'Barn',
-    'Big Barn',
-    'ChickenCoop',
-    'Fence',
-    'Open Barn',
-    'Silo House',
-    'Silo',
-    'Small Barn',
-    'Tower Windmill',
-]
+const farmModels: FarmModelName[] = [...farmModelNames];
 
 function makeDoorClickable(doorMesh: THREE.Mesh) {
     // --- find door size so we can offset it by half the width ----------
@@ -121,7 +124,7 @@ function drawFarm(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
                 }
             });
 
-            const layout = modelLayout[modelName];
+            const layout = modelLayout[modelName as FarmModelName];
             if (layout) {
                 const [px, py, pz] = layout.position;
                 const [rx, ry, rz] = layout.rotation;
@@ -193,7 +196,7 @@ let lastTime = 0;
 
 function animateFarm(renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawing: ThreeJSDrawing, camera: THREE.Camera) {
     const scene = threejsDrawing.data.scene;
-    const controls = threejsDrawing.data.controls;
+    const controls = threejsDrawing.data.controls as { object: THREE.Object3D };
     if (!controls) {
         console.warn('No controls found.');
         return;
@@ -214,7 +217,11 @@ function animateFarm(renderer: THREE.WebGLRenderer, timestamp: number, threejsDr
         animateElevator(lift, player, elapsed);
     }
 
-    updateObstacleBoxes(threejsDrawing.data.staticBoxes, threejsDrawing.data.movingMeshes, threejsDrawing.data.obstacleBoxes);
+    updateObstacleBoxes(
+        (threejsDrawing.data.staticBoxes as unknown as THREE.Box3[]) ?? [],
+        (threejsDrawing.data.movingMeshes as THREE.Mesh[]) ?? [],
+        (threejsDrawing.data.obstacleBoxes as unknown as THREE.Box3[]) ?? []
+    );
 
     walkingAnimationCallback(scene as THREE.Scene, controls, threejsDrawing.data.collision, elapsed, true);
 }

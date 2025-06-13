@@ -147,7 +147,7 @@ function releaseNeurotransmitters(scene: THREE.Scene, vesicles: THREE.Mesh[], pa
 function resetReceptors(receptorMeshes: THREE.Mesh[]) {
     receptorMeshes.forEach(r => {
         r.userData.bound = false;
-        r.material.color.set(modelRegistry.receptors.materials[r.userData.type].color);
+        (r.material as THREE.MeshStandardMaterial).color.set(modelRegistry.receptors.materials[r.userData.type].color);
     });
 }
 
@@ -156,13 +156,13 @@ function onBind(nt: THREE.Mesh, receptor: THREE.Mesh) {
     console.log(`Binding ${nt.userData.type} to ${receptor.userData.type}`);
 
     // Optional: add feedback on binding
-    receptor.material.color.set(highlightColor);
+    (receptor.material as THREE.MeshStandardMaterial).color.set(highlightColor);
     receptor.userData.pulse = Math.PI * 2;
 
     // EFFECT: Change neurotransmitter color
-    nt.material.color.set(0xff00ff);  // Magenta burst
-    nt.material.transparent = true;
-    nt.material.opacity = 1.0;
+    (nt.material as THREE.MeshStandardMaterial).color.set(0xff00ff);  // Magenta burst
+    (nt.material as THREE.MeshStandardMaterial).transparent = true;
+    (nt.material as THREE.MeshStandardMaterial).opacity = 1.0;
 
     receptor.userData.bound = true;
 

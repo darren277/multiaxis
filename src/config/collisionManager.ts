@@ -226,6 +226,7 @@ export class CollisionManager {
     clock: THREE.Clock;
     quatTmp: THREE.Quaternion;
     keyManager: KeyManager;
+    lastGroundY: number | undefined; // last known ground Y position
 
     constructor(args?: CollisionManagerParams) {
         const {
@@ -242,6 +243,7 @@ export class CollisionManager {
         this.staticBoxes   = staticBoxes;
         this.movingMeshes  = movingMeshes;
         this.obstacleBoxes = obstacleBoxes;
+        this.lastGroundY = undefined;
 
         // unpack your tuning constants
         ({
@@ -454,7 +456,7 @@ export class CollisionManager {
         if (this.player.userData.currentPlatform) {
             plat = this.player.userData.currentPlatform;
             if (plat.userData.boxNeedsRefresh) { /* ... */ }
-            const footBox = new Box3().setFromCenterAndSize(footPos, new Vector3(this.playerSize * 0.6, 0.1, this.playerSize * 0.6));
+            const footBox = new THREE.Box3().setFromCenterAndSize(footPos, new THREE.Vector3(this.playerSize * 0.6, 0.1, this.playerSize * 0.6));
             if (!footBox.intersectsBox(plat.userData.box)) {
                 this.player.userData.currentPlatform = null;
                 if (plat.userData) plat.userData.rider = null; // Check if plat.userData exists

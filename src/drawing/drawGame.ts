@@ -168,9 +168,10 @@ function drawGame(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
     // Provide a data bucket if not present
     if (!threejsDrawing.data) threejsDrawing.data = {};
     // Explicitly type data to avoid 'unknown' errors
-    const data = threejsDrawing.data as { walls: THREE.Object3D[], enemies: THREE.Object3D[], [key: string]: any };
+    const data = threejsDrawing.data as { walls: THREE.Object3D[], enemies: THREE.Object3D[], scene?: THREE.Scene, [key: string]: any };
     data.walls   = [];
     data.enemies = [];
+    data.scene = scene;
 
     // Build floor & walls
     for (let z = 0; z < map.length; z++) {
@@ -209,9 +210,9 @@ function animationCallback(renderer: THREE.WebGLRenderer, timestamp: number, thr
 
     // Spawn a new enemy every 120 s (optional demo)
     const t = Math.floor(timestamp / 1000);
-    if (!data.lastSpawn) data.lastSpawn = t;
-    if (t - data.lastSpawn >= 120) {
-        spawnEnemy(renderer.scene || camera.parent, data, 2, 2); // simple spawn
+    if (!data.lastSpawn) {
+        data.lastSpawn = t;
+        spawnEnemy(data.scene || camera.parent, data, 2, 2); // simple spawn
         data.lastSpawn = t;
     }
 }

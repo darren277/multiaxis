@@ -20,6 +20,28 @@ export interface AnimationCallback {
     (renderer: THREE.Renderer, timestamp: number, drawing: ThreeJSDrawing, camera: THREE.Camera): void;
 }
 
+export interface TVData {
+    rotated?: boolean;
+    rotation: {
+        set: (x: number, y: number, z: number) => void;
+    };
+    // add other properties as needed
+}
+export interface ComplexData {
+    tv?: TVData;
+    tvX?: number;
+    tvY?: number;
+    tvZ?: number;
+    tvScale?: number;
+    movingMeshes?: THREE.Object3D[];
+    staticBoxes?: THREE.Object3D[];
+    worldMeshes?: THREE.Object3D[];
+    obstacleBoxes?: THREE.Object3D[];
+    screenMesh?: THREE.Object3D;
+    screenCss?: any; // Replace with actual type if available
+    css3DRenderer?: any; // Replace with actual type if available
+    pickPlane?: any; // Replace with actual type if available
+}
 export interface DrawingData {
     staticBoxes?: THREE.Object3D[];
     movingMeshes?: THREE.Object3D[];
@@ -28,6 +50,7 @@ export interface DrawingData {
     collision?: any;
     keyManager?: any;
     [key: string]: unknown;
+    tv?: TVData; // For complex drawings
 }
 
 export interface SceneConfig {

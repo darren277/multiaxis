@@ -287,7 +287,7 @@ function animateWater(renderer: THREE.WebGLRenderer, timestamp: number, threejsD
     const deltaTime = clock.getDelta();
     waterMaterial.uniforms.time.value += deltaTime;
 
-    renderer.render(threejsDrawing.data.scene, camera);
+    renderer.render(threejsDrawing.data.scene as THREE.Scene, camera);
 }
 
 // Define allowed ground types

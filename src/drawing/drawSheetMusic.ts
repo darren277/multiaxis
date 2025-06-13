@@ -15,7 +15,7 @@ const audioLoader = new AudioLoader();
 
 // create a helper function to verify these mappings from the browser console as they are played...
 
-const NOTE_MAPPING = {
+const NOTE_MAPPING: { [key: string]: string } = {
     'Box001_Solid_Glass_0': 'C1',
     'Box008_Solid_Glass2_0': 'Db1',
     'Object006_Solid_Glass_0': 'D1',

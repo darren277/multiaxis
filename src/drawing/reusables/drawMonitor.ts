@@ -3,6 +3,7 @@
 import * as THREE from "three";
 import { CSS3DObject } from 'three/examples/jsm/renderers/CSS3DRenderer.js';
 import { ThreeJSDrawing } from "../../types";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 
 let instance = null;
 
@@ -231,7 +232,7 @@ class Time extends EventEmitter {
         this.current = currentTime;
         this.elapsed = this.current - this.start;
 
-        this.trigger('tick');
+        this.trigger('tick', []);
 
         window.requestAnimationFrame(() => {
             this.tick();
@@ -329,6 +330,9 @@ export default class MonitorScreen extends EventEmitter {
     mouseClickInProgress: boolean;
     dimmingPlane: THREE.Mesh;
     videoTextures: { [key in string]: THREE.VideoTexture };
+    mouse: Mouse;
+    items: any;
+    url: string;
 
     constructor(url: string) {
         super();
@@ -365,7 +369,7 @@ export default class MonitorScreen extends EventEmitter {
      */
     async loadItems (sources: Array<{ type: string; name: string; path: string }>) {
 
-        const gltfLoader       = new THREE.GLTFLoader();
+        const gltfLoader       = new GLTFLoader();
         const textureLoader    = new THREE.TextureLoader();
         const cubeTextureLoader= new THREE.CubeTextureLoader();
         const audioLoader      = new THREE.AudioLoader();
@@ -421,10 +425,10 @@ export default class MonitorScreen extends EventEmitter {
             (event: MouseEvent) => {
                 const id = event.target && 'id' in event.target ? (event.target as HTMLElement).id : null;
                 if (id === 'computer-screen') {
-                    event.inComputer = true;
+                    (event as MouseEvent & { inComputer?: boolean }).inComputer = true;
                 }
 
-                this.inComputer = event.inComputer;
+                this.inComputer = (event as MouseEvent & { inComputer?: boolean }).inComputer ?? false;
 
                 if (this.inComputer && !this.prevInComputer) {
                     // TODO: this.camera.trigger('enterMonitor');
@@ -959,7 +963,7 @@ function animationCallback(renderer: THREE.WebGLRenderer, timestamp: number, thr
         cssScene = new THREE.Scene();
         threejsDrawing.data.cssScene = cssScene;
     }
-    cssRenderer.render(cssScene, camera);
+    cssRenderer.render(cssScene as THREE.Scene, camera);
 }
 
 const monitorDrawing = {

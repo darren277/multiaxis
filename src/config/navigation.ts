@@ -150,7 +150,7 @@ function lookUpNeighbors(map: (string | null)[][], i: number, j: number) {
             if (scene) {
                 const position: [number, number] = [di * 100, dj * 100];
 
-                let cornerKey;
+                let cornerKey: string;
                 if (di === -1 && dj === -1) {
                     cornerKey = 'UPPER_LEFT';
                 } else if (di === -1 && dj === 0) {
@@ -169,6 +169,8 @@ function lookUpNeighbors(map: (string | null)[][], i: number, j: number) {
                     cornerKey = 'LOWER_RIGHT';
                 } else if (di === 1 && dj === 1) {
                     cornerKey = 'RIGHT';
+                } else {
+                    cornerKey = 'CENTER'; // default fallback
                 }
                 neighbors.push({ scene, position, cornerKey });
             }

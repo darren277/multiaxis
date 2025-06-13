@@ -3,6 +3,7 @@ import * as d3 from "d3-hierarchy";
 import { ThreeJSDrawing } from '../types';
 
 interface Node {
+    imageUrl: null;
     id: number;
     name: string;
     birthYear: number;   //  <-- add this
@@ -158,16 +159,18 @@ function layoutWithD3(graph: FamilyGraph, rootId: number) {
     });
 
     // Build a recursive hierarchy tree *from the child upward*
-    function buildHierarchy(nodeId: number) {
-        const node = { id: nodeId, children: [] };
-        const parentIds = parentsOf.get(nodeId) || [];
-
-        for (const pid of parentIds) {
-            node.children.push(buildHierarchy(pid));
+    type HierarchyNode = { id: number; children: HierarchyNode[] };
+    
+    function buildHierarchy(nodeId: number): HierarchyNode {
+            const node: HierarchyNode = { id: nodeId, children: [] };
+            const parentIds = parentsOf.get(nodeId) || [];
+    
+            for (const pid of parentIds) {
+                node.children.push(buildHierarchy(pid));
+            }
+    
+            return node;
         }
-
-        return node;
-    }
 
     const treeRoot = buildHierarchy(rootId);
     const root     = d3.hierarchy(treeRoot);

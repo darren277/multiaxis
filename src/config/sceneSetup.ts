@@ -28,7 +28,7 @@ export async function setupScene(
     overlayElements: OverlayElement[] = [],
     sceneConfig = defaultSceneConfig
     ) {
-    let controls: { enabled: boolean; target: { set: (arg0: number, arg1: number, arg2: number) => void; }; update: () => void; lock: () => any; name: string; object: any; minDistance: number; maxDistance: number; } | null;
+    let controls: any = null;
     let stats;
     let css2DRenderer;
     let css3DRenderer;
@@ -52,7 +52,10 @@ export async function setupScene(
     const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, clippingPlane);
     camera.position.set(startPosition.x, startPosition.y, startPosition.z);
 
-    const renderer = new THREE.WebGLRenderer({canvas: container.querySelector('canvas'), antialias: true});
+    const existingCanvas = container.querySelector('canvas');
+    const renderer = new THREE.WebGLRenderer(
+        existingCanvas ? { canvas: existingCanvas, antialias: true } : { antialias: true }
+    );
 
     if (vrEnabled) {
         importVRButton().then(VRButton => {

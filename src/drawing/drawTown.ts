@@ -61,14 +61,14 @@ function animateTown(
 
     scene.updateMatrixWorld(true);
 
-    if (lift) {
+    if (lift && lift instanceof THREE.Mesh) {
         animateElevator(lift, player, elapsed);
     }
 
     updateObstacleBoxes(
-        threejsDrawing.data.staticBoxes ?? [],
-        threejsDrawing.data.movingMeshes ?? [],
-        threejsDrawing.data.obstacleBoxes ?? []
+        (threejsDrawing.data.staticBoxes as unknown as THREE.Box3[]) ?? [],
+        (threejsDrawing.data.movingMeshes as THREE.Mesh[]) ?? [],
+        (threejsDrawing.data.obstacleBoxes as unknown as THREE.Box3[]) ?? []
     );
 
     walkingAnimationCallback(scene, controls, threejsDrawing.data.collision, elapsed, true);

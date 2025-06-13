@@ -16,7 +16,7 @@ function draw_letter(font: Font, letter: string, x: number, y: number, z: number
     var geometry = new TextGeometry( letter, {
             font: font,
             size: 3,
-            height: 0.1,
+            depth: 0.1,
             curveSegments: 12,
             bevelEnabled: true,
             bevelThickness: 0.1,

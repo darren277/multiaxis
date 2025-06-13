@@ -1,35 +1,35 @@
 function importOrbitControls() {
-    return import('orbitcontrols').then(module => {
+    return import('three/examples/jsm/controls/OrbitControls.js').then(module => {
         return module.OrbitControls;
     });
 }
 
 function importPointerLockControls() {
-    return import('pointerlockcontrols').then(module => {
+    return import('three/examples/jsm/controls/PointerLockControls.js').then(module => {
         return module.PointerLockControls;
     });
 }
 
 function importTrackballControls() {
-    return import('trackballcontrols').then(module => {
+    return import('three/examples/jsm/controls/TrackballControls.js').then(module => {
         return module.TrackballControls;
     });
 }
 
 function importCSS3DRenderer() {
-    return import('css3drenderer').then(module => {
+    return import('three/examples/jsm/renderers/CSS3DRenderer.js').then(module => {
         return module.CSS3DRenderer;
     });
 }
 
 function importCSS2DRenderer() {
-    return import('css2drenderer').then(module => {
+    return import('three/examples/jsm/renderers/CSS2DRenderer.js').then(module => {
         return module.CSS2DRenderer;
     });
 }
 
 function importVRButton() {
-    return import('vrbutton').then(module => {
+    return import('three/examples/jsm/webxr/VRButton.js').then(module => {
         return module.VRButton;
     });
 }

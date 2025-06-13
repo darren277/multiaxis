@@ -35,7 +35,7 @@ function drawRubiksCube(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
     for (let x = -1; x <= 1; x++) {
         for (let y = -1; y <= 1; y++) {
             for (let z = -1; z <= 1; z++) {
-                const faceColors = {
+                const faceColors: { [key: string]: ColorKey | null } = {
                     right: x === 1 ? 'red' : null,
                     left: x === -1 ? 'orange' : null,
                     top: y === 1 ? 'white' : null,
@@ -121,7 +121,7 @@ const eventListeners = {
         const key = event.key.toUpperCase();
         if ((key as FaceKey) in faceMap) {
             const { axis, value } = faceMap[key as FaceKey];
-            rotateFace(threejsDrawing.data.scene, data.cubelets, axis, value);
+            rotateFace(data.scene, data.cubelets, axis, value);
         }
     }
 };

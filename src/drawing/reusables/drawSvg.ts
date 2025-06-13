@@ -292,7 +292,7 @@ function drawSvg(scene: THREE.Scene, data: any, threejsDrawing: ThreeJSDrawing) 
     scene.add(floor);
 
     // Add basic lights
-    drawBasicLights(scene);
+    drawBasicLights(scene, threejsDrawing);
 
     // add ambient lights...
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
@@ -303,11 +303,17 @@ const toArray = (v: any, n: number) => Array.isArray(v) ? v : Array(n).fill(v);
 const defaultDepth = 1;
 
 function buildSvgGroup({
-    data,                     // SVGLoader output         (required)
-    position = [0, 0, 0],     // world-space position      (optional)
-    rotation = [0, 0, 0],     // world-space rotation      (optional)
-    scale    = 0.1,           // uniform or [sx,sy,sz]     (optional)
-    depth    = defaultDepth   // fallback extrusion depth  (optional)
+    data,
+    position = [0, 0, 0],
+    rotation = [0, 0, 0],
+    scale    = 0.1,
+    depth    = defaultDepth
+}: {
+    data: any,                     // SVGLoader output         (required)
+    position?: [number, number, number],     // world-space position      (optional)
+    rotation?: [number, number, number],     // world-space rotation      (optional)
+    scale?: number | [number, number, number],           // uniform or [sx,sy,sz]     (optional)
+    depth?: number   // fallback extrusion depth  (optional)
 }) {
     const group = new THREE.Group();
     const [sx, sy, sz] = toArray(scale, 3);
