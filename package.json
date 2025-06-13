@@ -17,11 +17,18 @@
   "scripts": {
     "build": "rollup -c",
     "build:watch": "rollup -c -w",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest",
+    "test:watch": "vitest --watch"
   },
   "dependencies": {
     "@tweenjs/tween.js": "^25.0.0",
     "rollout": "^0.1.0",
     "rollup": "^4.43.0"
+  },
+  "devDependencies": {
+    "@types/three": "^0.177.0",
+    "@vitest/ui": "^3.2.3",
+    "happy-dom": "^18.0.1",
+    "vitest": "^3.2.3"
   }
 }
