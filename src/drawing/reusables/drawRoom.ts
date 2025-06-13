@@ -2,12 +2,12 @@ import * as THREE from "three";
 //import { GUI } from 'lil-gui';
 
 // Import our modular “draw” functions
-import { drawLights, updateLights, lightingParams, bulbLuminousPowers, hemiLuminousIrradiances } from './drawLights.js';
-import { drawFloor, loadWoodTextures, makeWoodMaterial, drawPerimeterWalkway, drawElevator, playerOnPlatform } from './drawFloor.js';
-import { drawWalls } from './drawWalls.js';
-import { walkingAnimationCallback, addObstacle, onKeyDownWalking, onKeyUpWalking, updateObstacleBoxes } from '../config/walking.js';
-import { instantiateCollision } from '../config/instantiateCollision.js';
-import { ThreeJSDrawing } from "../../threejsDrawing.js";
+import { drawLights, updateLights, lightingParams, bulbLuminousPowers, hemiLuminousIrradiances } from './drawLights';
+import { drawFloor, loadWoodTextures, makeWoodMaterial, drawPerimeterWalkway, drawElevator, playerOnPlatform } from './drawFloor';
+import { drawWalls } from './drawWalls';
+import { walkingAnimationCallback, addObstacle, onKeyDownWalking, onKeyUpWalking, updateObstacleBoxes } from '../../config/walking';
+import { instantiateCollision } from '../../config/instantiateCollision';
+import { ThreeJSDrawing } from "../../threejsDrawing";
 
 let previousShadowMap = false;
 

@@ -1,8 +1,8 @@
 import * as THREE from "three";
-import { GLTFLoader } from 'gltfloader';
-import { drawBasicLights, drawSun } from './drawLights.js';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import { drawBasicLights, drawSun } from './reusables/drawLights';
 import { Tween, Easing } from 'tween';
-import { ThreeJSDrawing } from "../types.js";
+import { ThreeJSDrawing } from "../types";
 
 
 const loader = new THREE.TextureLoader();

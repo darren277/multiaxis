@@ -1,6 +1,6 @@
 import { ArrowHelper } from 'three';
-import { CollisionManager, checkCollision } from '../config/collisionManager.js';
-import { ThreeJSDrawing } from '../threejsDrawing.js';
+import { CollisionManager, checkCollision } from '../config/collisionManager';
+import { ThreeJSDrawing } from '../threejsDrawing';
 
 export function instantiateCollision(threejsDrawing: ThreeJSDrawing) {
     const collision = new CollisionManager({

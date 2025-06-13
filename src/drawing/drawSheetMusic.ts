@@ -1,10 +1,10 @@
 import * as THREE from "three";
-import { GLTFLoader } from 'gltfloader';
-import { drawBasicLights } from './drawLights.js';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import { drawBasicLights } from './reusables/drawLights';
 import { Tween, Easing } from 'tween';
 
 import { AudioListener, Audio, AudioLoader } from 'three';
-import { ThreeJSDrawing } from "../types.js";
+import { ThreeJSDrawing } from "../types";
 
 const listener = new AudioListener();
 

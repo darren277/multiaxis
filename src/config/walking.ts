@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { getYawObject, CollisionManager } from './collisionManager.js';
+import { getYawObject, CollisionManager } from './collisionManager';
 
 //export const staticBoxes   = [];   // immovable stuff
 //export const movingMeshes  = [];   // meshes that move every frame

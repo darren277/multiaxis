@@ -1,6 +1,6 @@
 import * as THREE from "three";
-import { GLTFLoader } from 'gltfloader';
-import { drawSun } from './drawLights.js';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { drawSun } from './reusables/drawLights.js';
 import { onKeyDownWalking, onKeyUpWalking, addObstacle, updateObstacleBoxes, walkingAnimationCallback } from '../config/walking.js';
 import { mergeGeometries } from 'buffer-geometry-utils';
 import { instantiateCollision } from '../config/instantiateCollision.js';

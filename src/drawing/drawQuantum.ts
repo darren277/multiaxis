@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import { TextGeometry} from 'textgeometry';
-import { FontLoader } from 'fontloader';
+import { TextGeometry} from 'three/examples/jsm/geometries/TextGeometry';
+import { FontLoader, Font } from 'three/examples/jsm/loaders/FontLoader';
 import { ThreeJSDrawing } from '../types';
 
 function loadFont(url: string, callback: (font: Font) => void) {

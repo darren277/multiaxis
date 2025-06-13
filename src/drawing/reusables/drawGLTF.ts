@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import { drawBasicLights } from './drawLights.js';
-import { ThreeJSDrawing } from '../../threejsDrawing.js';
+import { drawBasicLights } from './drawLights';
+import { ThreeJSDrawing } from '../../threejsDrawing';
 
 type GLTF = {
     scene: THREE.Scene;

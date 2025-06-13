@@ -1,9 +1,9 @@
 import * as THREE from "three";
 
-import { PDBLoader } from 'pdbloader';
-import { CSS2DRenderer, CSS2DObject } from 'css2drenderer';
-import { drawBasicLights } from './drawLights.js';
-import { ThreeJSDrawing } from "../threejsDrawing.js";
+import { PDBLoader } from 'three/examples/jsm/loaders/PDBLoader.js';
+import { CSS2DRenderer, CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
+import { drawBasicLights } from './reusables/drawLights';
+import { ThreeJSDrawing } from "../threejsDrawing";
 
 let labelRenderer: CSS2DRenderer;
 

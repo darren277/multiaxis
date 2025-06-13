@@ -1,7 +1,7 @@
 import * as THREE from 'three';
-import { drawBasicLights, drawSun } from './drawLights.js';
-import { GLTFLoader } from 'gltfloader'
-import { createPerlinGrassTexture, createGroundFromLayout, groundLayout, animateWater } from './drawGround.js';
+import { drawBasicLights, drawSun } from './reusables/drawLights.js';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { createPerlinGrassTexture, createGroundFromLayout, groundLayout, animateWater } from './reusables/drawGround.js';
 import { onKeyDownWalking, onKeyUpWalking, updateObstacleBoxes, walkingAnimationCallback } from '../config/walking.js';
 import { instantiateCollision } from '../config/instantiateCollision.js';
 import { ThreeJSDrawing } from '../types.js';

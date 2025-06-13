@@ -1,7 +1,7 @@
 import * as THREE from "three";
-import { SVGLoader } from 'svgloader';
-import { drawBasicLights } from './drawLights.js';
-import { ThreeJSDrawing } from "../../threejsDrawing.js";
+import { SVGLoader } from 'three/examples/jsm/loaders/SVGLoader';
+import { drawBasicLights } from './drawLights';
+import { ThreeJSDrawing } from "../../threejsDrawing";
 
 const svgLoader = new SVGLoader();
 const interactiveSvgGroups: THREE.Object3D<THREE.Object3DEventMap>[] = [];

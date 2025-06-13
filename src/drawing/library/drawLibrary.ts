@@ -1,10 +1,10 @@
 import * as THREE from 'three';
-import { CSS2DObject } from 'css2drenderer';
-import { sortAlphabeticallyByName } from './sortResources.js';
-import { calculatePositionOfResource, casePitchX, rowPitchZ, worldX, worldZ } from './calculatePosition.js';
-import { onKeyDownWalking, onKeyUpWalking, walkingAnimationCallback, addObstacle } from '../../config/walking.js';
-import { drawRoom, animateRoom } from '../drawRoom.js';
-import { ThreeJSDrawing } from '../../threejsDrawing.js';
+import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer';
+import { sortAlphabeticallyByName } from './sortResources';
+import { calculatePositionOfResource, casePitchX, rowPitchZ, worldX, worldZ } from './calculatePosition';
+import { onKeyDownWalking, onKeyUpWalking, walkingAnimationCallback, addObstacle } from '../../config/walking';
+import { drawRoom, animateRoom } from '../reusables/drawRoom';
+import { ThreeJSDrawing } from '../../threejsDrawing';
 import { Library, Resource } from './types';
 
 function drawFloor(scene: THREE.Scene) {

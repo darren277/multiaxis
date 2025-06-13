@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { goToStep } from './helpers.js';
+import { goToStep } from './helpers';
 
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();

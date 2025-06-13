@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import {
     importOrbitControls, importPointerLockControls, importTrackballControls, importCSS3DRenderer, importCSS2DRenderer,
     importVRButton, importStats
-} from './dynamicImports.js';
+} from './dynamicImports';
 
 export const defaultSceneConfig = {
     startPosition: { x: 0, y: 2, z: 5 },

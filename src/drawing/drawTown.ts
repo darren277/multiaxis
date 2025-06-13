@@ -1,12 +1,11 @@
-import { drawHouses } from './drawHouse.js';
-import { drawSun } from './drawLights.js';
-import { createPerlinGrassTexture } from './drawGround.js';
-// @ts-ignore-next-line
+import { drawHouses } from './reusables/drawHouse';
+import { drawSun } from './reusables/drawLights';
+import { createPerlinGrassTexture } from './reusables/drawGround';
 import * as THREE from 'three';
-import { onKeyDownWalking, onKeyUpWalking, updateObstacleBoxes, walkingAnimationCallback } from '../config/walking.js';
-import { instantiateCollision } from '../config/instantiateCollision.js';
-import { ThreeJSDrawing } from '../types.js';
-import { animateElevator } from './drawRoom.js';
+import { onKeyDownWalking, onKeyUpWalking, updateObstacleBoxes, walkingAnimationCallback } from '../config/walking';
+import { instantiateCollision } from '../config/instantiateCollision';
+import { ThreeJSDrawing } from '../types';
+import { animateElevator } from './reusables/drawRoom';
 
 
 function drawTown(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
