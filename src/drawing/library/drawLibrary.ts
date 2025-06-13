@@ -44,7 +44,7 @@ function createBookCaseMesh(
         rotation = new THREE.Vector3(),
     }: {
         name: string;
-        textureName: string;
+        textureName: keyof typeof BOOK_CASE_TEXTURES;
         width?: number;
         height?: number;
         depth?: number;
@@ -105,7 +105,7 @@ function createBookCases(scene: THREE.Scene, staticBoxes: any[], width: number, 
         scene, staticBoxes,
         {
             name: `book_case_1${String.fromCharCode(97 + i)}`, // e.g., 1a, 1b, 1c
-            textureName: `bookcase${bookCaseI+1}`,
+            textureName: `bookcase${bookCaseI+1}` as keyof typeof BOOK_CASE_TEXTURES,
             width: width,
             height: height,
             depth: depth,
@@ -121,7 +121,7 @@ function createBookCases(scene: THREE.Scene, staticBoxes: any[], width: number, 
         scene, staticBoxes,
         {
             name: `book_case_1${String.fromCharCode(97 + i)}_back`, // e.g., 1a, 1b, 1c
-            textureName: `bookcase${bookCaseI+1}`,
+            textureName: `bookcase${bookCaseI+1}` as keyof typeof BOOK_CASE_TEXTURES,
             width: width,
             height: height,
             depth: depth,

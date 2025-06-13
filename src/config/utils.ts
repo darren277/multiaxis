@@ -28,7 +28,8 @@ async function loadDataSource(dataSrc: string) {
     // FileLoader has a .loadAsync() that returns a Promise<string>
     const loader = new THREE.FileLoader();
     const raw = await loader.loadAsync(path);
-    return JSON.parse(raw);
+    const rawStr = typeof raw === 'string' ? raw : new TextDecoder().decode(raw);
+    return JSON.parse(rawStr);
 }
 
 function drawHelpers(scene: THREE.Scene, threejsDrawing: any) {

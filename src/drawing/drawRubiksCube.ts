@@ -118,6 +118,7 @@ const faceMap: Record<FaceKey, { axis: 'x' | 'y' | 'z'; value: number }> = {
 const eventListeners = {
     'keydown': (event: KeyboardEvent, { camera, data, controls }: any) => {
         // TODO: Test threejsDrawing.data.scene...
+        const key = event.key.toUpperCase();
         if ((key as FaceKey) in faceMap) {
             const { axis, value } = faceMap[key as FaceKey];
             rotateFace(threejsDrawing.data.scene, data.cubelets, axis, value);

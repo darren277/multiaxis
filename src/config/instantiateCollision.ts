@@ -4,18 +4,18 @@ import { ThreeJSDrawing } from '../threejsDrawing';
 
 export function instantiateCollision(threejsDrawing: ThreeJSDrawing) {
     const collision = new CollisionManager({
-        player:        threejsDrawing.data.controls.object,
+        player:        (threejsDrawing.data.controls as { object: any }).object,
         worldMeshes:   threejsDrawing.data.worldMeshes,
         staticBoxes:   threejsDrawing.data.staticBoxes,
         movingMeshes:  threejsDrawing.data.movingMeshes,
         obstacleBoxes: threejsDrawing.data.obstacleBoxes,
         params: {
-            playerSize: threejsDrawing.sceneConfig.playerSize || 1.0,
-            stepDown: threejsDrawing.sceneConfig.stepDown || 1.0,
-            gravity: threejsDrawing.sceneConfig.gravity || 9.8 * 10,
-            speed: threejsDrawing.sceneConfig.speed || 20.0,
-            jumpVelocity: threejsDrawing.sceneConfig.jumpVelocity || 50.0,
-            checkCollisionFunc: threejsDrawing.sceneConfig.checkCollisionFunc || checkCollision,
+            playerSize: threejsDrawing.sceneConfig?.playerSize ?? 1.0,
+            stepDown: threejsDrawing.sceneConfig?.stepDown ?? 1.0,
+            gravity: threejsDrawing.sceneConfig?.gravity ?? 9.8 * 10,
+            speed: threejsDrawing.sceneConfig?.speed ?? 20.0,
+            jumpVelocity: threejsDrawing.sceneConfig?.jumpVelocity ?? 50.0,
+            checkCollisionFunc: threejsDrawing.sceneConfig?.checkCollisionFunc ?? checkCollision,
         }
     });
 
@@ -29,7 +29,11 @@ export function instantiateCollision(threejsDrawing: ThreeJSDrawing) {
     threejsDrawing.data.collision = collision;
     threejsDrawing.data.keyManager = collision.keyManager;
 
-    threejsDrawing.data.controls.object.position.set(threejsDrawing.sceneConfig.startPosition.x, threejsDrawing.sceneConfig.startPosition.y, threejsDrawing.sceneConfig.startPosition.z)
+    threejsDrawing.data.controls.object.position.set(
+        threejsDrawing.sceneConfig?.startPosition?.x ?? 0,
+        threejsDrawing.sceneConfig?.startPosition?.y ?? 0,
+        threejsDrawing.sceneConfig?.startPosition?.z ?? 0
+    )
 
     threejsDrawing.data.ready = true;
 }

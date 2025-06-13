@@ -14,7 +14,7 @@ type TweenFunctionParams = {
     duration?: number; // Duration in milliseconds
 };
 
-function tweenCamera(camera: THREE.Camera, { camera, controls, toPos, lookAt, duration = 3000 }: TweenFunctionParams, p0: { x: number | undefined; y: number; z: number | undefined; }, p1: null) {
+function tweenCamera(camera: THREE.Camera, { controls, toPos, lookAt, duration = 3000 }: TweenFunctionParams, p0: { x: number | undefined; y: number; z: number | undefined; }, p1: null) {
     const from = {x: camera.position.x, y: camera.position.y, z: camera.position.z};
 
     new Tween(from).to(toPos, duration).easing(Easing.Quadratic.InOut)

@@ -167,7 +167,7 @@ function generatePerlinData(width: number, height: number, scale = 0.1) {
     return data;
 }
 
-const loader = new TextureLoader();
+const loader = new THREE.TextureLoader();
 
 const width = 64;
 const height = 64;

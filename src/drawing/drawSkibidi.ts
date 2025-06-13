@@ -334,6 +334,7 @@ const skibidiDrawing = {
     'eventListeners': {},
     'animationCallback': animate,
     'data': {
+        animatableMeshes: []
     }
 }
 

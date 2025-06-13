@@ -48,7 +48,7 @@ export function extractPerTriangle(staticBoxes: THREE.Box3[], mesh: THREE.Mesh) 
         tmpBox.setFromPoints([a, b, c]);
         if (tmpBox.max.y - tmpBox.min.y > 3) continue; // skip tall walls
 
-        addObstacle(staticBoxes, tmpBox.clone());       // push a tiny box
+        addObstacle(staticBoxes, tmpBox.clone() as any);       // push a tiny box
         spatialHashStaticBoxes([tmpBox.clone()]);
     }
 }
@@ -129,7 +129,7 @@ export function checkCollision(
 }
 
 function isGroundHit(hit: THREE.Intersection) {
-    let obj = hit.object;
+    let obj: THREE.Object3D | null = hit.object;
     while (obj) {
         if (obj.userData.isGround) return true;
         obj = obj.parent;
@@ -207,13 +207,18 @@ type CollisionManagerParams = {
 }
 
 export class CollisionManager {
-    playerSize = 0.5; // default player size
-    stepDown = 0.5;   // how far you can step down
-    gravity = 9.81;  // gravity strength
-    speed = 5;       // horizontal speed
-    jumpVelocity = 5; // vertical jump speed
+    playerSize: number = 0.5; // default player size
+    stepDown: number = 0.5;   // how far you can step down
+    gravity: number = 9.81;  // gravity strength
+    speed: number = 5;       // horizontal speed
+    jumpVelocity: number = 5; // vertical jump speed
     checkCollisionFunc = checkCollision; // default collision function
     debugRayHelper = new THREE.ArrowHelper(new THREE.Vector3(0, -1, 0), new THREE.Vector3(0, 0, 0), 1, 0xff0000);
+    player: THREE.Object3D<THREE.Object3DEventMap>;
+    worldMeshes: THREE.Mesh<THREE.BufferGeometry<THREE.NormalBufferAttributes>, THREE.Material | THREE.Material[], THREE.Object3DEventMap>[];
+    staticBoxes: THREE.Box3[];
+    movingMeshes: THREE.Mesh<THREE.BufferGeometry<THREE.NormalBufferAttributes>, THREE.Material | THREE.Material[], THREE.Object3DEventMap>[];
+    obstacleBoxes: THREE.Box3[];
 
     constructor(args?: CollisionManagerParams) {
         const {
@@ -241,12 +246,12 @@ export class CollisionManager {
             checkCollisionFunc: this.checkCollisionFunc,
         } = params);
 
-        this.velocity   = new Vector3();
-        this.direction  = new Vector3();
-        this.DOWN       = new Vector3(0, -1, 0);
-        this.ray        = new Raycaster();
-        this.clock      = new Clock();
-        this.quatTmp    = new Quaternion();
+        this.velocity   = new THREE.Vector3();
+        this.direction  = new THREE.Vector3();
+        this.DOWN       = new THREE.Vector3(0, -1, 0);
+        this.ray        = new THREE.Raycaster();
+        this.clock      = new THREE.Clock();
+        this.quatTmp    = new THREE.Quaternion();
         this.keyManager = new KeyManager();
 
         // prime clock...
@@ -254,7 +259,7 @@ export class CollisionManager {
     }
 
     /** Call once per frame */
-    update(controls, dt, obstacleIgnore = null) {
+    update(controls: any, dt: number, obstacleIgnore: any = null) {
         //const dt         = Math.min(this.clock.getDelta(), 0.1);
         //const dt         = this.clock.getDelta();
         //console.log('dt (s):', dt.toFixed(3), 'vel.x:', this.velocity.x.toFixed(2), 'vel.y:', this.velocity.y.toFixed(2));
@@ -276,7 +281,7 @@ export class CollisionManager {
         this._updateObstacleBoxes();
     }
 
-    _applyInput(controls, yawObject, dt) {
+    _applyInput(controls: any, yawObject: THREE.Object3D, dt: number) {
         // copy your existing WASD / Shift-to-rotate logic here,
         // writing into this.velocity.x/z or yawObject.quaternion,
         // using this.direction and this.quatTmp…
@@ -296,7 +301,7 @@ export class CollisionManager {
         );
     }
 
-    _moveHorizontal(yawObject, dt, ignore) {
+    _moveHorizontal(yawObject: THREE.Object3D, dt: number, ignore: any = null) {
         const temp = new THREE.Vector3();
         // try X
         temp.copy(yawObject.position).addScaledVector(new THREE.Vector3(this.velocity.x,0,0), dt);
@@ -310,7 +315,7 @@ export class CollisionManager {
         }
     }
 
-    _applyGravityAndGroundClampOld(yawObject, pos, halfHeight, dt) {
+    _applyGravityAndGroundClampOld(yawObject: THREE.Object3D, pos: THREE.Vector3, halfHeight: number, dt: number) {
         let plat;
 
         // apply gravity
@@ -421,7 +426,7 @@ export class CollisionManager {
         }
     }
 
-    _applyGravityAndGroundClamp(yawObject, pos, halfHeight, dt) {
+    _applyGravityAndGroundClamp(yawObject: THREE.Object3D, pos: THREE.Vector3, halfHeight: number, dt: number) {
         // Apply gravity (pos.y is updated)
         this.velocity.y -= this.gravity * dt;
         pos.y += this.velocity.y * dt;
@@ -569,8 +574,8 @@ export class CollisionManager {
         this.obstacleBoxes.length = 0;
         this.staticBoxes   .forEach(b => this.obstacleBoxes.push(b));
         this.movingMeshes  .forEach(m => {
-        if (!m.userData._box) m.userData._box = new Box3();
-            m.userData._box.setFromObject(m).expandByVector(new Vector3(0,2,0));
+        if (!m.userData._box) m.userData._box = new THREE.Box3();
+            m.userData._box.setFromObject(m).expandByVector(new THREE.Vector3(0,2,0));
             this.obstacleBoxes.push(m.userData._box);
         });
     }

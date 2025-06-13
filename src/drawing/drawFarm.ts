@@ -1,10 +1,11 @@
 import * as THREE from 'three';
-import { drawBasicLights, drawSun } from './reusables/drawLights.js';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { createPerlinGrassTexture, createGroundFromLayout, groundLayout, animateWater } from './reusables/drawGround.js';
-import { onKeyDownWalking, onKeyUpWalking, updateObstacleBoxes, walkingAnimationCallback } from '../config/walking.js';
-import { instantiateCollision } from '../config/instantiateCollision.js';
-import { ThreeJSDrawing } from '../types.js';
+import { drawBasicLights, drawSun } from './reusables/drawLights';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import { createPerlinGrassTexture, createGroundFromLayout, groundLayout, animateWater } from './reusables/drawGround';
+import { onKeyDownWalking, onKeyUpWalking, updateObstacleBoxes, walkingAnimationCallback } from '../config/walking';
+import { instantiateCollision } from '../config/instantiateCollision';
+import { ThreeJSDrawing } from '../types';
+import { animateElevator } from './reusables/drawRoom';
 
 
 const raycaster = new THREE.Raycaster();
@@ -70,7 +71,9 @@ function makeDoorClickable(doorMesh: THREE.Mesh) {
 
 function reparentToHinge(doorMesh: THREE.Mesh, hingeOffsetX = -0.5) {
     const parent = new THREE.Group();
-    doorMesh.parent.add(parent); // insert into scene
+    if (doorMesh.parent) {
+        doorMesh.parent.add(parent); // insert into scene
+    }
     parent.position.copy(doorMesh.position);
     doorMesh.position.set(hingeOffsetX, 0, 0); // move the mesh relative to hinge
     parent.add(doorMesh);

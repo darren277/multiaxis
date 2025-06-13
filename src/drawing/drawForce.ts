@@ -7,7 +7,7 @@ function drawForce3dGraph(scene: THREE.Scene, data: any, threejsDrawing: ThreeJS
     const { renderer, camera, controls } = threejsDrawing.data;
 
     const dataSrc = threejsDrawing.data.dataSrc;
-    const dagMode = threejsDrawing.dataSources[dataSrc] && threejsDrawing.dataSources[dataSrc].specialOptions.dagMode;
+    const dagMode = typeof dataSrc === 'string' && threejsDrawing.dataSources[dataSrc] && threejsDrawing.dataSources[dataSrc].specialOptions.dagMode;
     console.log('dagMode', dagMode);
 
     if (threejsDrawing.data._forceGraphInstance) {

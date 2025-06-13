@@ -144,7 +144,7 @@ function onMouseDown(camera: THREE.Camera, data: any, event: MouseEvent, rect: D
     raycaster.setFromCamera(mouse, camera);
 
     const nodeMeshes = Object.values(data.nodeSpheres);
-    const intersects = raycaster.intersectObjects(nodeMeshes);
+    const intersects = raycaster.intersectObjects(nodeMeshes as THREE.Object3D[]);
 
     if (intersects.length > 0) {
         data.dragging = true;

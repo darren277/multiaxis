@@ -106,7 +106,7 @@ function drawSynapse(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
     // Place some example receptors on the postsynaptic surface
     receptorTypes.forEach((type, i) => {
         for (let j = 0; j < 4; j++) {
-            const receptor = createReceptor(type, new THREE.Vector3(
+            const receptor = createReceptor(type as ReceptorType, new THREE.Vector3(
                 -1.5 + j * 1.0,
                 -4,
                 (Math.random() - 0.5) * 2
@@ -137,7 +137,7 @@ function getReceptorTargetsFor(ntype: string) {
 // Animate neurotransmitter release
 function releaseNeurotransmitters(scene: THREE.Scene, vesicles: THREE.Mesh[], particles: THREE.Mesh[], transmitters = ['glutamate']) {
     vesicles.forEach(v => {
-        const type = transmitters[Math.floor(Math.random() * transmitters.length)];
+        const type = transmitters[Math.floor(Math.random() * transmitters.length)] as NeurotransmitterType;
         const particle = createNeurotransmitter(type, v.position);
         particles.push(particle);
         scene.add(particle);

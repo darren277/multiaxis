@@ -2,7 +2,7 @@
 
 import * as THREE from 'three';
 import { Tween, Easing, removeAll } from 'tween';
-import { CSS3DRenderer, CSS3DObject } from 'css3drenderer';
+import { CSS3DRenderer, CSS3DObject } from 'three/examples/jsm/renderers/CSS3DRenderer.js';
 
 const vector = new THREE.Vector3();
 

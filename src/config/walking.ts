@@ -60,7 +60,7 @@ function onKeyUpWalking(event, keyManager) {
 }
 
 
-function simpleBoxClamp(yawObject, obstacleBoxes) {
+function simpleBoxClamp(yawObject: { position: { x: any; z: any; }; }, obstacleBoxes: any) {
     // ———————————————— simple box clamp ————————————————
     // snap to the highest static box under your feet
     const px = yawObject.position.x, pz = yawObject.position.z;
@@ -222,7 +222,7 @@ function walkingAnimationCallback(scene: THREE.Scene, controls: any, collision: 
 }
 
 function addObstacle(staticBoxes: THREE.Box3[], source: THREE.Object3D) {
-    if (source.isBox3) {            // already a Box3, just store it
+    if (source instanceof THREE.Box3) {            // already a Box3, just store it
         staticBoxes.push(source);
         return;
     }

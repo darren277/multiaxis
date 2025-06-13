@@ -123,7 +123,7 @@ function drawSheetMusic(scene: THREE.Scene, data: any) {
     // 4) Parse note events
     //    We accumulate delta times into a running "currentTick"
     let currentTick = 0;
-    const noteOnMap = {};  // key: pitch => the tick at which it started
+    const noteOnMap: { [key: number]: number } = {};  // key: pitch => the tick at which it started
     const noteObjects: { mesh: THREE.Mesh; startSec: number; endSec: number; durationSec: number; }[] = [];
 
     notesRaw.forEach((msg: { type: string; note: number; velocity: number; time: number; }) => {
@@ -348,7 +348,7 @@ function drawMusic(scene: THREE.Scene, data: any, state: any) {
         });
     });
 
-    drawBasicLights(scene);
+    drawBasicLights(scene, state.data.threejsDrawing);
 }
 
 const musicDrawing = {

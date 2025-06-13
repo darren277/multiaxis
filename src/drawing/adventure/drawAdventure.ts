@@ -26,10 +26,10 @@ function updateLabelPosition(anchor: THREE.Object3D | THREE.Vector3 | { x: numbe
     * 1.  Resolve a Vector3
     * ------------------------------------------------------------- */
     let pos;
-    if (anchor && anchor.isObject3D) {
+    if (anchor && anchor instanceof THREE.Object3D) {
         // Real Three.js object
         pos = anchor.position.clone();
-    } else if (anchor && anchor.isVector3) {
+    } else if (anchor && anchor instanceof THREE.Vector3) {
         // Already a Vector3
         pos = anchor.clone();
     } else if (anchor && 'x' in anchor && 'y' in anchor && 'z' in anchor) {
@@ -348,7 +348,21 @@ const adventureDrawing = {
         });
         // Update other items
         if (!threejsDrawing.data.otherItems) return;
-        threejsDrawing.data.otherItems.forEach(({ mesh, labelObject, item }) => {
+        threejsDrawing.data.otherItems.forEach((
+            { mesh, labelObject, item }: { 
+                mesh: THREE.Mesh<THREE.PlaneGeometry, THREE.MeshBasicMaterial, THREE.Object3DEventMap> | null, 
+                labelObject: any, 
+                item: { 
+                    id: string; 
+                    image?: string; 
+                    video?: string; 
+                    caption: string; 
+                    position: { x: number; y: number; z: number; }; 
+                    customClasses?: string; 
+                    dataAttributes?: { [key: string]: string; }; 
+                } 
+            }
+        ) => {
             let anchor, labelEl;
             anchor = mesh || item.position;
             if (labelObject.element) {

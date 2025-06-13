@@ -169,6 +169,10 @@ function animate( renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THR
     smallSphereTwo.rotation.y = (Math.PI / 2) - timerTwo * 0.1;
     smallSphereTwo.rotation.z = timerTwo * 0.8;
 
+    // Save current render target and XR enabled state
+    const currentRenderTarget = renderer.getRenderTarget();
+    const currentXrEnabled = renderer.xr.enabled;
+
     // render the portal effect
     renderPortal(renderer, scene, camera, leftPortal, rightPortal, leftPortalTexture);
     renderPortal(renderer, scene, camera, rightPortal, leftPortal, rightPortalTexture);
