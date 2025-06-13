@@ -1,16 +1,18 @@
-import { TextureLoader, BoxGeometry, PlaneGeometry, SphereGeometry, Mesh, MeshBasicMaterial, MeshStandardMaterial, Vector2, Vector3, Raycaster, AmbientLight, DirectionalLight } from 'three'; // for any references you still need
+import * as THREE from 'three';
 import { CSS2DObject } from 'css2drenderer';
 import { sortAlphabeticallyByName } from './sortResources.js';
 import { calculatePositionOfResource, casePitchX, rowPitchZ, worldX, worldZ } from './calculatePosition.js';
 import { onKeyDownWalking, onKeyUpWalking, walkingAnimationCallback, addObstacle } from '../../config/walking.js';
 import { drawRoom, animateRoom } from '../drawRoom.js';
+import { ThreeJSDrawing } from '../../threejsDrawing.js';
+import { Library, Resource } from './types';
 
-function drawFloor(scene) {
-    const floorGeometry = new PlaneGeometry(200, 200);
-    const floorMaterial = new MeshStandardMaterial({
+function drawFloor(scene: THREE.Scene) {
+    const floorGeometry = new THREE.PlaneGeometry(200, 200);
+    const floorMaterial = new THREE.MeshStandardMaterial({
         color: 0x888888,
     });
-    const floor = new Mesh(floorGeometry, floorMaterial);
+    const floor = new THREE.Mesh(floorGeometry, floorMaterial);
     floor.rotation.x = -Math.PI / 2; // make it horizontal
     floor.position.y = 0;
     floor.receiveShadow = true;
@@ -18,7 +20,7 @@ function drawFloor(scene) {
 }
 
 
-const textureLoader = new TextureLoader();
+const textureLoader = new THREE.TextureLoader();
 
 const BOOK_CASE_TEXTURES = {
     'bookcase1': textureLoader.load('textures/bookcase1.png'),
@@ -29,11 +31,10 @@ const BOOK_CASE_TEXTURES = {
     'bookcase6': textureLoader.load('textures/bookcase6.png'),
 };
 
-function createBookCaseMesh(scene, staticBoxes,
-{
+function createBookCaseMesh(scene: THREE.Scene, staticBoxes: any[], {
     name, textureName,
     width = 10, height = 10, depth = 0.5,
-    position = new Vector3(), rotation = new Vector3(),
+    position = new THREE.Vector3(), rotation = new THREE.Vector3(),
 }) {
     // Load the bookcase texture
     const bookCaseTexture = BOOK_CASE_TEXTURES[textureName];
@@ -48,20 +49,20 @@ function createBookCaseMesh(scene, staticBoxes,
     // const bookCaseMesh = new Mesh(geometry, material);
 
     // Option B: A thin box for a bit more realism
-    const boxGeometry = new BoxGeometry(width, height, depth);
+    const boxGeometry = new THREE.BoxGeometry(width, height, depth);
     // We'll put the texture on the front face only:
     //  - For a quick approach, set 'map' for all faces or
     //  - Create different materials for front/back/sides
     const materials = [
-        new MeshBasicMaterial({ color: 0xcccccc }), // left
-        new MeshBasicMaterial({ color: 0xcccccc }), // right
-        new MeshBasicMaterial({ color: 0xcccccc }), // top
-        new MeshBasicMaterial({ color: 0xcccccc }), // bottom
-        new MeshBasicMaterial({ map: bookCaseTexture }), // front
-        new MeshBasicMaterial({ color: 0xcccccc })  // back
+        new THREE.MeshBasicMaterial({ color: 0xcccccc }), // left
+        new THREE.MeshBasicMaterial({ color: 0xcccccc }), // right
+        new THREE.MeshBasicMaterial({ color: 0xcccccc }), // top
+        new THREE.MeshBasicMaterial({ color: 0xcccccc }), // bottom
+        new THREE.MeshBasicMaterial({ map: bookCaseTexture }), // front
+        new THREE.MeshBasicMaterial({ color: 0xcccccc })  // back
     ];
 
-    const bookCaseMesh = new Mesh(boxGeometry, materials);
+    const bookCaseMesh = new THREE.Mesh(boxGeometry, materials);
 
     bookCaseMesh.name = name;
     // Position/rotate
@@ -77,7 +78,7 @@ function createBookCaseMesh(scene, staticBoxes,
 // Now we can create multiple shelves, labeling them book_case_1a, book_case_1b, etc. Suppose we have two bookcases in “Row 1”, spaced out along the x axis.
 
 
-function createBookCases(scene, staticBoxes, width, height, depth, row1StartX, spaceBetween, caseCount = 3, y_pos = 5, z_pos = 5) {
+function createBookCases(scene: THREE.Scene, staticBoxes: any[], width: number, height: number, depth: number, row1StartX: number, spaceBetween: number, caseCount = 3, y_pos = 5, z_pos = 5) {
     let bookCaseI = 0;
 
     for (let i = 0; i < caseCount; i++) {
@@ -92,13 +93,13 @@ function createBookCases(scene, staticBoxes, width, height, depth, row1StartX, s
             width: width,
             height: height,
             depth: depth,
-            position: new Vector3(x_pos, y_pos, z_pos)
+            position: new THREE.Vector3(x_pos, y_pos, z_pos)
         });
 
         // draw reverse side...
         const reverse_z_pos = z_pos - 0.5;
 
-        const rotation = new Vector3(0, Math.PI, 0);
+        const rotation = new THREE.Vector3(0, Math.PI, 0);
 
         createBookCaseMesh(
         scene, staticBoxes,
@@ -108,7 +109,7 @@ function createBookCases(scene, staticBoxes, width, height, depth, row1StartX, s
             width: width,
             height: height,
             depth: depth,
-            position: new Vector3(x_pos, y_pos, reverse_z_pos),
+            position: new THREE.Vector3(x_pos, y_pos, reverse_z_pos),
             rotation: rotation
         });
 
@@ -126,13 +127,13 @@ function createBookCases(scene, staticBoxes, width, height, depth, row1StartX, s
     */
 }
 
-function createLights(scene) {
+function createLights(scene: THREE.Scene) {
     // Ambient light
-    const ambientLight = new AmbientLight(0xffffff, 0.7);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
     scene.add(ambientLight);
 
     // Directional or point light
-    const dirLight = new DirectionalLight(0xffffff, 0.5);
+    const dirLight = new THREE.DirectionalLight(0xffffff, 0.5);
     dirLight.position.set(10, 20, 10);
     scene.add(dirLight);
 }
@@ -140,7 +141,7 @@ function createLights(scene) {
 
 const SHELVES_PER_CASE = 6;
 
-function calculateNumberOfShelves(library) {
+function calculateNumberOfShelves(library: Library): number {
     // 20 cases per row x 10 rows = 200 cases...
     // 200 cases * 6 shelves = 1200 shelves
     const { numberOfRows, numberOfCases, spaceBetweenRows, spaceBetweenCases } = library;
@@ -173,7 +174,7 @@ const DATA = {
     ]
 }
 
-function drawLibrary(scene, threejsDrawing) {
+function drawLibrary(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
     // Draw the floor
     //drawFloor(scene);
     drawRoom(scene, threejsDrawing);
@@ -230,11 +231,11 @@ function drawLibrary(scene, threejsDrawing) {
 }
 
 
-const raycaster = new Raycaster();
-const mouse = new Vector2();
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
 
 
-function drawResources(scene, library, resources, row1StartX, row0StartZ, camera, renderer) {
+function drawResources(scene: THREE.Scene, library: Library, resources: Resource[], row1StartX: number, row0StartZ: number, camera: THREE.Camera, renderer: THREE.WebGLRenderer) {
     // Sort the resources alphabetically by name
     const sorted = sortAlphabeticallyByName([...resources]);
 
@@ -246,9 +247,9 @@ function drawResources(scene, library, resources, row1StartX, row0StartZ, camera
         console.log(`Resource: ${resource.name}, Position: (${x}, ${y}, ${z})`);
 
         // simple sphere for now...
-        const sphere = new Mesh(
-            new SphereGeometry(0.5, 16, 16),
-            new MeshStandardMaterial({ color: 0x00ff00 })
+        const sphere = new THREE.Mesh(
+            new THREE.SphereGeometry(0.5, 16, 16),
+            new THREE.MeshStandardMaterial({ color: 0x00ff00 })
         );
 
         sphere.position.set(x, y, z);
@@ -307,7 +308,7 @@ function drawResources(scene, library, resources, row1StartX, row0StartZ, camera
     // 2‑c  Ray‑picking once per click -----------------------------------------
     window.addEventListener('click', onClick, false);
 
-    function onClick(event) {
+    function onClick(event: MouseEvent) {
         // normalised device coords
         const rect = renderer.domElement.getBoundingClientRect();   // ← key line
         mouse.x =  ( (event.clientX - rect.left) / rect.width  ) * 2 - 1;
@@ -319,17 +320,17 @@ function drawResources(scene, library, resources, row1StartX, row0StartZ, camera
     }
 }
 
-function showOverlay(resource) {
-    document.getElementById('overlayTitle'     ).textContent = resource.name;
+function showOverlay(resource: Resource) {
+    document.getElementById('overlayTitle').textContent = resource.name;
     document.getElementById('overlayAuthorYear').textContent = `${resource.author} • ${resource.year}`;
-    document.getElementById('overlayBody'      ).innerHTML   = resource.description || '<em>No description yet.</em>';
+    document.getElementById('overlayBody').innerHTML = resource.description || '<em>No description yet.</em>';
     document.getElementById('resourceOverlay').style.display = 'block';
 }
 
 // document.addEventListener('keydown', onKeyDownWalking);
 // document.addEventListener('keyup', onKeyUpWalking);
 
-function drawLibraryRoom(scene, threejsDrawing) {
+function drawLibraryRoom(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
     threejsDrawing.data.movingMeshes = [];
     threejsDrawing.data.worldMeshes = [];
     threejsDrawing.data.staticBoxes = [];
@@ -346,16 +347,16 @@ const libraryDrawing = {
     'eventListeners': {
         //'click': (event) => {},
         //'mousemove': (event) => {},
-        'keydown': (event, stuff) => {
+        'keydown': (event: KeyboardEvent, stuff) => {
             const keyManager = stuff.data.keyManager;
             onKeyDownWalking(event, keyManager);
         },
-        'keyup': (event, stuff) => {
+        'keyup': (event: KeyboardEvent, stuff) => {
             const keyManager = stuff.data.keyManager;
             onKeyUpWalking(event, keyManager);
         },
     },
-    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
+    'animationCallback': (renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawing: ThreeJSDrawing, camera: THREE.Camera) => {
         if (!threejsDrawing.data.staticBoxes || !threejsDrawing.data.movingMeshes || !threejsDrawing.data.worldMeshes) {
             console.warn('No static boxes, moving meshes, or world meshes found.');
             return;

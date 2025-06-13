@@ -1,25 +1,27 @@
+import { Library, Resource } from './types';
+
 // ────────────────────────────────────────────────────────────────────────────
 // Library‑layout helpers
 // ────────────────────────────────────────────────────────────────────────────
 const SHELVES_PER_CASE = 6;
 
 // Distance between the centres of two neighbouring cases.
-export function casePitchX(lib)  {       // centre‑to‑centre distance in X
+export function casePitchX(lib: Library)  {       // centre‑to‑centre distance in X
   return lib.bookcase.width + lib.spaceBetweenCases;
 }
 
 // Distance between the centres of two neighbouring rows (z direction).
-export function rowPitchZ(lib)   {       // centre‑to‑centre distance in Z
+export function rowPitchZ(lib: Library)   {       // centre‑to‑centre distance in Z
   return lib.bookcase.depth + lib.spaceBetweenRows;
 }
 
-export function worldX(row1StartX, lib, caseIdx) { return row1StartX + caseIdx * casePitchX(lib); }
+export function worldX(row1StartX: number, lib: Library, caseIdx: number) { return row1StartX + caseIdx * casePitchX(lib); }
 
-export function worldZ(row0StartZ, lib, rowIdx)  { return row0StartZ + rowIdx  * rowPitchZ(lib); }
+export function worldZ(row0StartZ: number, lib: Library, rowIdx: number)  { return row0StartZ + rowIdx  * rowPitchZ(lib); }
 
 // Convert  (row, case, shelf)  →  world‑space coordinate that matches the
 // positions produced in createBookCases().
-function shelfToWorld(row1StartX, row0StartZ, library, rowIdx, caseIdx, shelfIdx) {
+function shelfToWorld(row1StartX: number, row0StartZ: number, library: Library, rowIdx: number, caseIdx: number, shelfIdx: number) {
     // ── X  (left ↔ right) ────────────────────────────────────────────────────
     const x = worldX(row1StartX, library, caseIdx);
 
@@ -37,7 +39,7 @@ function shelfToWorld(row1StartX, row0StartZ, library, rowIdx, caseIdx, shelfIdx
 }
 
 // Map an evenly‑spaced “slot” to  (row, case, shelf). Usable for any #resources.
-function slotToAddress(slot, library) {
+function slotToAddress(slot: number, library: Library) {
     const casesPerRow = library.numberOfCases;
     const shelvesPerRow = casesPerRow * SHELVES_PER_CASE;
 
@@ -60,7 +62,7 @@ function slotToAddress(slot, library) {
  * @param {Number} n             – total number of resources being placed
  * @returns {{x:Number, y:Number, z:Number}}
  */
-export function calculatePositionOfResource(resource, library, row1StartX, row0StartZ, i, n) {
+export function calculatePositionOfResource(resource: Resource, library: Library, row1StartX: number, row0StartZ: number, i: number, n: number) {
     const totalShelves = library.numberOfRows * library.numberOfCases * SHELVES_PER_CASE;
 
     // Evenly distribute the resources along the shelf indices [0 … totalShelves‑1].

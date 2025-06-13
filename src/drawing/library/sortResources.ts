@@ -1,5 +1,6 @@
+import { Library, Resource } from './types';
 
-function sortAlphabeticallyByName(resources) {
+function sortAlphabeticallyByName(resources: Resource[]) {
     return resources.sort((a, b) => {
         const nameA = a.name.toLowerCase();
         const nameB = b.name.toLowerCase();
@@ -14,7 +15,7 @@ function sortAlphabeticallyByName(resources) {
     });
 }
 
-function sortAlphabeticallyByAuthorSurname(resources) {
+function sortAlphabeticallyByAuthorSurname(resources: Resource[]) {
     return resources.sort((a, b) => {
         const surnameA = a.author.split(' ').pop().toLowerCase();
         const surnameB = b.author.split(' ').pop().toLowerCase();
@@ -29,25 +30,25 @@ function sortAlphabeticallyByAuthorSurname(resources) {
     });
 }
 
-function sortByYear(resources) {
+function sortByYear(resources: Resource[]) {
     return resources.sort((a, b) => {
         return a.year - b.year;
     });
 }
 
-function sortByWordCount(resources) {
+function sortByWordCount(resources: Resource[]) {
     return resources.sort((a, b) => {
         return a.word_count - b.word_count;
     });
 }
 
-function sortByPersonalRating(resources) {
+function sortByPersonalRating(resources: Resource[]) {
     return resources.sort((a, b) => {
         return a.personal_rating - b.personal_rating;
     });
 }
 
-function sortByDewey(resources) {
+function sortByDewey(resources: Resource[]) {
     return resources.sort((a, b) => {
         const deweyA = a.dewey.split('.').map(Number);
         const deweyB = b.dewey.split('.').map(Number);
