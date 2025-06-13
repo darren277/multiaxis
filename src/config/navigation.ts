@@ -1,5 +1,16 @@
 import * as THREE from 'three';
 
+type CornerKey =
+  | 'LOWER_LEFT'
+  | 'LEFT'
+  | 'UPPER_LEFT'
+  | 'DOWN'
+  | 'CENTER'
+  | 'UP'
+  | 'LOWER_RIGHT'
+  | 'RIGHT'
+  | 'UPPER_RIGHT';
+
 type CubeDef = {
     position: [number, number, number];
     color: number;
@@ -103,7 +114,7 @@ const CUBE_DEFS_FARM = [
     { targetScene: 'bedroom', position: [100, 0.25, 100], color: 0xff33ff }, // color name: light magenta
 ]
 
-const CORNER_COLOR_MAP = {
+const CORNER_COLOR_MAP: Record<CornerKey, number> = {
     'LOWER_LEFT': 0x00ff00, // green
     'LEFT': 0x0000ff, // blue
     'UPPER_LEFT': 0xff0000, // red
@@ -115,7 +126,7 @@ const CORNER_COLOR_MAP = {
     'UPPER_RIGHT': 0xff33ff, // light magenta
 };
 
-const CORNER_POSITION_MAP = {
+const CORNER_POSITION_MAP: Record<CornerKey, [number, number]> = {
     'LOWER_LEFT': [-100, -100],
     'LEFT': [-100, 0],
     'UPPER_LEFT': [-100, 100],
@@ -127,9 +138,9 @@ const CORNER_POSITION_MAP = {
     'UPPER_RIGHT': [100, 100]
 }
 
-function lookUpNeighbors(map: (string | null)[][], i: number, j: number) {
+function lookUpNeighbors(map: (string | null)[][], i: number, j: number): { scene: string; position: [number, number]; cornerKey: CornerKey }[] {
     // returns an array of neighboring scenes (each paired with its position)
-    const neighbors: { scene: string; position: [number, number]; cornerKey: string }[] = [];
+    const neighbors: { scene: string; position: [number, number]; cornerKey: CornerKey }[] = [];
     const directions = [
         [-1, -1], // UPPER_LEFT
         [-1, 0],  // LEFT
@@ -150,7 +161,7 @@ function lookUpNeighbors(map: (string | null)[][], i: number, j: number) {
             if (scene) {
                 const position: [number, number] = [di * 100, dj * 100];
 
-                let cornerKey: string;
+                let cornerKey: CornerKey;
                 if (di === -1 && dj === -1) {
                     cornerKey = 'UPPER_LEFT';
                 } else if (di === -1 && dj === 0) {
@@ -191,7 +202,7 @@ function constructCubeDefs(map: (string | null)[][], allowDiagonals = false) {
                     //const cornerKey = `${position[0] > 0 ? 'LOWER' : 'UPPER'}_${position[1] > 0 ? 'RIGHT' : 'LEFT'}`;
                     console.log('cornerKey', cornerKey);
 
-                    const color = CORNER_COLOR_MAP[cornerKey];
+                    const color = CORNER_COLOR_MAP[cornerKey as CornerKey];
 
                     const cubeDef: CubeDef = {
                         targetScene: neighborScene,
