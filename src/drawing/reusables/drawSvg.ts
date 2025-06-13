@@ -407,13 +407,14 @@ type SvgToRenderConfig = {
     rotation: number[];
     scale: number;
     depth: number;
-    data?: any;
+    data: any;
 };
 
 const svgsToRender: SvgToRenderConfig[] = [
     {
         //data: svgData_1,              // output of SVGLoader.parse() or loader.loadAsync()
         data_src: 'OpenProject_out_annotated', // path to SVG file
+        data: null, // will be filled after loading
         position: [-50, 50, -98],
         rotation: [   0, 0,   0],     // (optional) radians
         //scale   : 0.1,                // (optional) uniform; can also be [sx,sy,sz]
@@ -423,6 +424,7 @@ const svgsToRender: SvgToRenderConfig[] = [
     {
         //data: svgData_2,
         data_src: 'OpenProject_out_annotated', // path to SVG file
+        data: null, // will be filled after loading
         position: [-80, 50, -98],
         //rotation: [  0, Math.PI/2, 0],
         rotation: [0, 0, 0],     // (optional) radians
@@ -462,7 +464,15 @@ async function drawMultipleSvgs(scene: THREE.Scene, data: any, threejsDrawing: T
     drawBasicLights(scene, threejsDrawing);
 
     svgsToRender.forEach(cfg => {
-        const g = buildSvgGroup(cfg);
+        const { data, position, rotation, scale, depth } = cfg;
+        if (!data) throw new Error("missing svg data");
+        const pos3: [number, number, number] = [position[0] ?? 0, position[1] ?? 0, position[2] ?? 0];
+        const rot3: [number, number, number] = [
+            rotation[0] ?? 0,
+            rotation[1] ?? 0,
+            rotation[2] ?? 0
+        ];
+        const g = buildSvgGroup({ data, position: pos3, rotation: rot3, scale, depth });
         scene.add(g);
     });
 }

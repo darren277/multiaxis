@@ -586,7 +586,7 @@ function onMouseDown(e: MouseEvent, threejsDrawing: ThreeJSDrawing) {
     }
 }
 
-function createLockedPlane(axis = 'y', value = 0) {
+function createLockedPlane(axis: 'x' | 'y' | 'z' = 'y', value = 0) {
     const normals = {x: new THREE.Vector3(1, 0, 0), y: new THREE.Vector3(0, 1, 0), z: new THREE.Vector3(0, 0, 1)};
     return new THREE.Plane(normals[axis], value);
 }

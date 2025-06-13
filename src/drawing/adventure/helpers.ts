@@ -87,7 +87,7 @@ function precomputeBackgroundPlanes(scene: THREE.Scene, threejsDrawing: ThreeJSD
         return;
     }
 
-    threejsDrawing.data.allPhotoEntries.forEach(({ item }) => {
+    threejsDrawing.data.allPhotoEntries.forEach(({ item }: { item: any }) => {
         console.log("Processing item:", item.id, "with background image:", item.bg_img, item);
         if (!item.bg_img) return; // skip if no BG
 

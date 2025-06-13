@@ -98,6 +98,7 @@ function layoutFamily(graph: FamilyGraph, rootId: number) {
 
         parents.forEach((pid: number, idx: number) => {
             const p   = byId.get(pid);
+            if (!p) return;
             const sgn = idx === 0 ? -1 : 1;        // first parent left, second right
 
             const step = X_STEP / (depth + 1);     // narrower each generation
@@ -143,6 +144,7 @@ function layoutFamilyWithSpread(graph: FamilyGraph, rootId: number) {
 
         parents.forEach((pid: number, idx: number) => {
             const p   = byId.get(pid);
+            if (!p) return;
             // inherit branch side unless we’re the first split at depth‑0
             const branchDir = dir || (idx === 0 ? -1 : 1);
 

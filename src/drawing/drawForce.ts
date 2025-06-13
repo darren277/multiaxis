@@ -1,9 +1,9 @@
 import * as THREE from 'three';
 import SpriteText from 'three-spritetext';
-import ForceGraph3D from '3d-force-graph';
+import ForceGraph3D, {ForceGraph3DInstance} from '3d-force-graph';
 import { ThreeJSDrawing } from '../types';
 
-function drawForce3dGraph(scene: THREE.Scene, data: any, threejsDrawing: ThreeJSDrawing & { data: { _forceGraphInstance: InstanceType<typeof ForceGraph3D> | null } }) {
+function drawForce3dGraph(scene: THREE.Scene, data: any, threejsDrawing: ThreeJSDrawing & { data: { _forceGraphInstance: ExtendedForceGraphInstance | null } }) {
     const { renderer, camera, controls } = threejsDrawing.data;
 
     const dataSrc = threejsDrawing.data.dataSrc;
@@ -88,6 +88,22 @@ function drawForce3dGraph(scene: THREE.Scene, data: any, threejsDrawing: ThreeJS
     threejsDrawing.data._forceGraphInstance = Graph;
 }
 
+type NodeObject = {
+    id: string;
+    name: string;
+    group: string;
+    color?: string;
+};
+
+type LinkObject<T> = {
+    source: T | string; // can be a node object or an id
+    target: T | string; // can be a node object or an id
+    relation?: string; // optional relation label
+};
+
+type ExtendedForceGraphInstance = ForceGraph3DInstance<NodeObject, LinkObject<NodeObject>> & {
+    tickFrame: () => void;
+};
 
 const force3dDrawing = {
     'sceneElements': [],
@@ -107,13 +123,13 @@ const force3dDrawing = {
         }
         if (
             threejsDrawing.data._forceGraphInstance &&
-            (threejsDrawing.data._forceGraphInstance as InstanceType<typeof ForceGraph3D>).tickFrame
+            (threejsDrawing.data._forceGraphInstance as ExtendedForceGraphInstance).tickFrame
         ) {
-            (threejsDrawing.data._forceGraphInstance as InstanceType<typeof ForceGraph3D>).tickFrame();
+            (threejsDrawing.data._forceGraphInstance as ExtendedForceGraphInstance).tickFrame();
         }
     },
     'data': {
-        '_forceGraphInstance': null as InstanceType<typeof ForceGraph3D> | null,
+        '_forceGraphInstance': null as ExtendedForceGraphInstance | null,
     },
     'sceneConfig': {
         'isForceGraph': true,

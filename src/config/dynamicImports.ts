@@ -35,8 +35,9 @@ function importVRButton() {
 }
 
 function importStats() {
-    return import('stats').then(module => {
-        return module.Stats;
+    return import('stats.js').then(module => {
+        //return module.Stats;
+        return module.default; // stats.js exports default
     });
 }
 

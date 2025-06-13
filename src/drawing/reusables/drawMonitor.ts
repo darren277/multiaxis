@@ -242,7 +242,7 @@ class Time extends EventEmitter {
 
 const UIEventBus = {
     on(event: string, callback: (...args: any[]) => any) {
-        document.addEventListener(event, (e) => callback(e.detail));
+        document.addEventListener(event, (e) => callback((e as CustomEvent).detail));
     },
     dispatch(event: string, data: any) {
         document.dispatchEvent(new CustomEvent(event, { detail: data }));
@@ -282,7 +282,7 @@ export class Mouse extends EventEmitter {
    x: number;
    y: number;
    inComputer: boolean;
-   application: Application;
+   application: Application | undefined;
 
     constructor() {
         super();
@@ -496,7 +496,9 @@ export default class MonitorScreen extends EventEmitter {
                     this.shouldLeaveMonitor = false;
                 }
 
-                this.mouse.trigger('mousemove', [event]);
+                if (this.mouse) {
+                    this.mouse.trigger('mousemove', [event]);
+                }
 
                 this.prevInComputer = this.inComputer;
             },
@@ -506,7 +508,9 @@ export default class MonitorScreen extends EventEmitter {
             'mousedown',
             (event: MouseEvent) => {
                 this.inComputer = (event as MouseEvent & { inComputer?: boolean }).inComputer;
-                this.mouse.trigger('mousedown', [event]);
+                if (this.mouse) {
+                    this.mouse.trigger('mousedown', [event]);
+                }
 
                 this.mouseClickInProgress = true;
                 this.prevInComputer = this.inComputer;
@@ -517,7 +521,9 @@ export default class MonitorScreen extends EventEmitter {
             'mouseup',
             (event: MouseEvent) => {
                 this.inComputer = (event as MouseEvent & { inComputer?: boolean }).inComputer;
-                this.mouse.trigger('mouseup', [event]);
+                if (this.mouse) {
+                    this.mouse.trigger('mouseup', [event]);
+                }
 
                 if (this.shouldLeaveMonitor) {
                     // TODO: Handle 'leftMonitor' event here if needed
@@ -537,6 +543,9 @@ export default class MonitorScreen extends EventEmitter {
     createIframe(url: string) {
         // Create container
         const container = document.createElement('div');
+        if (!this.screenSize) {
+            throw new Error("screenSize is undefined");
+        }
         container.style.width = this.screenSize.width + 'px';
         container.style.height = this.screenSize.height + 'px';
         container.style.opacity = '1';
@@ -608,8 +617,12 @@ export default class MonitorScreen extends EventEmitter {
         const object = new CSS3DObject(element);
 
         // copy monitor position and rotation
-        object.position.copy(this.position);
-        object.rotation.copy(this.rotation);
+        if (this.position) {
+            object.position.copy(this.position);
+        }
+        if (this.rotation) {
+            object.rotation.copy(this.rotation);
+        }
 
         // Add to CSS scene
         this.cssScene.add(object);
@@ -623,6 +636,9 @@ export default class MonitorScreen extends EventEmitter {
         material.blending = THREE.NoBlending;
 
         // Create plane geometry
+        if (!this.screenSize) {
+            throw new Error("screenSize is undefined");
+        }
         const geometry = new THREE.PlaneGeometry(this.screenSize.width, this.screenSize.height);
 
         // Create the GL plane mesh
@@ -721,9 +737,15 @@ export default class MonitorScreen extends EventEmitter {
         const mesh = new THREE.Mesh(geometry, material);
 
         // Copy position and apply the depth offset
+        if (!this.position) {
+            throw new Error("position is undefined");
+        }
         mesh.position.copy(this.offsetPosition(this.position, new THREE.Vector3(0, 0, offset)));
 
         // Copy rotation
+        if (!this.rotation) {
+            throw new Error("rotation is undefined");
+        }
         mesh.rotation.copy(this.rotation);
 
         this.scene.add(mesh);
@@ -735,6 +757,12 @@ export default class MonitorScreen extends EventEmitter {
      */
     createEnclosingPlanes(maxOffset: number) {
         // Create planes, lots of boiler plate code here because I'm lazy
+        if (!this.screenSize) {
+            throw new Error("screenSize is undefined");
+        }
+        if (!this.position) {
+            throw new Error("position is undefined");
+        }
         const planes = {
             left: {
                 size: new THREE.Vector2(maxOffset, this.screenSize.height),
@@ -782,6 +810,15 @@ export default class MonitorScreen extends EventEmitter {
     }
 
     createPerspectiveDimmer(maxOffset: number) {
+        if (!this.position) {
+            throw new Error("position is undefined");
+        }
+        if (!this.rotation) {
+            throw new Error("rotation is undefined");
+        }
+        if (!this.screenSize) {
+            throw new Error("screenSize is undefined");
+        }
         const material = new THREE.MeshBasicMaterial({side: THREE.DoubleSide, color: 0x000000, transparent: true, blending: THREE.AdditiveBlending});
 
         const plane = new THREE.PlaneGeometry(this.screenSize.width, this.screenSize.height);
