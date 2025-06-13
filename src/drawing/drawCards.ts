@@ -2,6 +2,12 @@ import * as THREE from "three";
 import TWEEN from '@tweenjs/tween.js'
 import { ThreeJSDrawing } from "../threejsDrawing";
 
+declare global {
+    interface Window {
+        cardPositions: any; // or Array<[number, number]> if known
+    }
+}
+
 const cardWidth = 2.5;
 const cardHeight = 3.5;
 const cardThickness = 0.02; // small enough but noticeable edge
