@@ -15,9 +15,13 @@
   "type": "commonjs",
   "main": "rollup.config.js",
   "scripts": {
+    "build": "rollup -c",
+    "build:watch": "rollup -c -w",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@tweenjs/tween.js": "^25.0.0"
+    "@tweenjs/tween.js": "^25.0.0",
+    "rollout": "^0.1.0",
+    "rollup": "^4.43.0"
   }
 }
