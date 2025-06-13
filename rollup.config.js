@@ -4,7 +4,7 @@ import { terser }  from '@rollup/plugin-terser';
 export default {
     input: {
         main: 'src/main.ts',
-        config: 'src/config/index.ts',
+        //config: 'src/config/index.ts',
     },
     output: {
         file: 'dist/bundle.js',
@@ -21,7 +21,12 @@ export default {
             // every other file keeps default: 1 chunk per dynamic import
         }
     },
-    plugins: [typescript(), terser()],
+    plugins: [
+        typescript({
+            exclude: ['src/imagery/**/*', 'src/textures/**/*']
+        }),
+        terser()
+    ],
     exclude: [
         'src/imagery/**',
         'src/textures/**'
