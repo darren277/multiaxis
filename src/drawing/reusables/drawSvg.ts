@@ -105,6 +105,10 @@ function isGiantWhiteBox(path: Path) {
 
 function removeSpacesRGB(rgb: string) {
     const rgbString = rgb.match(/\d+/g);
+    if (!rgbString) {
+        // fallback to gray if parsing fails
+        return '#888888';
+    }
     return `#${rgbString.map(num => parseInt(num).toString(16).padStart(2, '0')).join('')}`;
 }
 
@@ -120,7 +124,11 @@ function processShape(
     let material;
     if (linearGradient) {
         //material = renderLinearGradient(linearGradient.vDir, linearGradient.colorA, linearGradient.colorB);
-        material = renderLinearGradientCanvas(linearGradient.colorA, linearGradient.colorB, Math.abs(linearGradient.vDir[0]) > Math.abs(linearGradient.vDir[1]));
+        material = renderLinearGradientCanvas(
+            new THREE.Color(linearGradient.colorA),
+            new THREE.Color(linearGradient.colorB),
+            Math.abs(linearGradient.vDir[0]) > Math.abs(linearGradient.vDir[1])
+        );
     } else {
         const threeColor = cssToColor(fillColor, 0x888888);
         console.log('threeColor', threeColor, fillColor);
@@ -239,13 +247,13 @@ class Path {
     path: THREE.Path;
     color: THREE.Color;
 
-    constructor(path: THREE.Path) {
+    constructor(path: Path) {
         this.path = path;
         this.color = determineColor(path) || new THREE.Color(0x888888);
     }
 }
 
-function determineColor(path: THREE.Path) {
+function determineColor(path: Path) {
     const style = path.userData?.style || {};
     // Some color fields might be inherited:
     //   - path.color        => usually the fill color
@@ -263,7 +271,7 @@ function determineColor(path: THREE.Path) {
 
     if (fillColor.startsWith('rgb')) {
         const rgb = fillColor.match(/\d+/g);
-        fillColor = `#${rgb.map((num: string) => parseInt(num).toString(16).padStart(2, '0')).join('')}`;
+        fillColor = `#${rgb ? rgb.map((num: string) => parseInt(num).toString(16).padStart(2, '0')).join('') : '888888'}`;
         const threeColor = new THREE.Color(0xffff00);
         return threeColor;
     }
@@ -284,7 +292,9 @@ function drawSvg(scene: THREE.Scene, data: any, threejsDrawing: ThreeJSDrawing) 
     const svgGroup = new THREE.Group();
     data.paths.forEach((path: THREE.Path, i: number) => {
         const pathGroup = processPath(path);
-        svgGroup.add(pathGroup);
+        if (pathGroup) {
+            svgGroup.add(pathGroup);
+        }
     });
 
     svgGroup.scale.set(0.5, 0.5, 0.5);
