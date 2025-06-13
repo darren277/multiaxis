@@ -14,7 +14,7 @@ type TweenFunctionParams = {
     duration?: number; // Duration in milliseconds
 };
 
-function tweenCamera({ camera, controls, toPos, lookAt, duration = 3000 }: TweenFunctionParams, controls: any, p0: { x: number | undefined; y: number; z: number | undefined; }, p1: null) {
+function tweenCamera({ camera, controls, toPos, lookAt, duration = 3000 }: TweenFunctionParams, p0: { x: number | undefined; y: number; z: number | undefined; }, p1: null) {
     const from = {x: camera.position.x, y: camera.position.y, z: camera.position.z};
 
     new Tween(from).to(toPos, duration).easing(Easing.Quadratic.InOut)
@@ -64,6 +64,9 @@ function tweenCamera({ camera, controls, toPos, lookAt, duration = 3000 }: Tween
 */
 
 type GraphNode = {
+    fz: number;
+    fy: any;
+    fx: number;
     depth: any;
     data: any;
     id: number | string;
@@ -73,6 +76,7 @@ type GraphNode = {
     x?: number; // for D3 layout
     y?: number; // for D3 layout
     z?: number; // for D3 layout
+    children?: GraphNode[];
 };
 
 type GraphLink = {
@@ -100,7 +104,7 @@ type Graph = {
 function buildTreeData(nodes: GraphNode[], links: GraphLink[]) {
     type TreeNode = GraphNode & { children: TreeNode[] };
     const map = new Map<GraphNode['id'], TreeNode>(
-        nodes.map(n => [n.id, { ...n, children: [] } as TreeNode])
+        nodes.map(n => [n.id, { ...n, children: [] as TreeNode[] }])
     );
     const hasParent = new Set<GraphNode['id']>();
 
@@ -149,6 +153,7 @@ function extractMinimalTree(nodes: GraphNode[], links: GraphLink[]) {
         const parent = nodeMap.get(source);
         const child  = nodeMap.get(target);
         if (parent && child) {
+            // @ts-ignore-next-line
             parent.children.push(child);
             hasParent.add(target);
         }
@@ -156,7 +161,11 @@ function extractMinimalTree(nodes: GraphNode[], links: GraphLink[]) {
 
     // Find root (no incoming edges)
     const root = nodes.find(n => !hasParent.has(n.id));
-    return {root: nodeMap.get(root.id), treeLinks, extraLinks};
+    return {
+        root: root ? nodeMap.get(root.id) : undefined,
+        treeLinks,
+        extraLinks
+    };
 }
 
 /**
@@ -486,7 +495,7 @@ function applyForce(nodeMeshes: THREE.Mesh[], linkMeshes: THREE.Mesh[], graph: G
     graph.nodes.forEach(n => {
         if (n.id === ROOT_ID) {
             n.fx = 0;       // fix x = 0
-            n.fy = Y_LEVEL; // fix y = 0.5
+            n.fy = FLOOR_Y; // fix y = 0.5
             n.fz = FIXED_Z;
         }
     });
@@ -494,10 +503,10 @@ function applyForce(nodeMeshes: THREE.Mesh[], linkMeshes: THREE.Mesh[], graph: G
     const simulation = forceSimulation(graph.nodes)
         .force('charge', forceManyBody().strength(-30))
         .force('link',   forceLink(graph.links)
-                          .id(d => d.id)
+                          .id((d: { id: any; }) => d.id)
                           .distance(5))
         // push nodes out along +X based on depth
-        .force('treeX', forceX(d => d.id === ROOT_ID
+        .force('treeX', forceX((d: { id: any; depth: any; }) => d.id === ROOT_ID
                                    ? 0
                                    : d.depth * SPACING)
                           .strength(1))
@@ -589,7 +598,11 @@ type TreeLayoutOptions = {
  * @param {GraphData} data - Graph structure with flat nodes and links
  * @param {TreeLayoutOptions} [options] - Layout spacing and floor height
  */
-function drawTreeWithExtras(scene: THREE.Scene, data: Graph, options: TreeLayoutOptions = {}) {
+function drawTreeWithExtras(scene: THREE.Scene, data: Graph, options: TreeLayoutOptions = {
+    dx: 0,
+    dy: 0,
+    floorY: 0
+}) {
     const {
         dx = 30,
         dy = 60,
@@ -776,7 +789,7 @@ function drawNetwork(scene: THREE.Scene, data: Graph, threejsDrawing: any) {
     const laidOutNodes = drawTreeWithExtras(scene, data, treeOptions);
 
     // After rendering laidOutNodes
-    const nodeMap = new Map(laidOutNodes.map(n => [n.data.id, n]));
+    const nodeMap: Map<number, GraphNode> = new Map(laidOutNodes.map((n: { data: { id: number; }; }) => [n.data.id as number, n]));
     const adjacencyMap = buildAdjacencyMap(data.links);
 
     const camera = threejsDrawing.data.camera;
