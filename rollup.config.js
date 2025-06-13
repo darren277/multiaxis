@@ -23,7 +23,7 @@ export default {
     },
     plugins: [
         typescript({
-            exclude: ['src/imagery/**/*', 'src/textures/**/*']
+            exclude: ['src/imagery/**/*', 'src/textures/**/*', 'src/drawings_local.ts']
         }),
         terser()
     ],
