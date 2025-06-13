@@ -27,8 +27,16 @@ export function instantiateCollision(threejsDrawing: ThreeJSDrawing) {
             gravity: typeof threejsDrawing.sceneConfig?.gravity === 'number' ? threejsDrawing.sceneConfig.gravity : 9.8 * 10,
             speed: typeof threejsDrawing.sceneConfig?.speed === 'number' ? threejsDrawing.sceneConfig.speed : 20.0,
             jumpVelocity: typeof threejsDrawing.sceneConfig?.jumpVelocity === 'number' ? threejsDrawing.sceneConfig.jumpVelocity : 50.0,
-            checkCollisionFunc: typeof threejsDrawing.sceneConfig?.checkCollisionFunc === 'function'
-                ? threejsDrawing.sceneConfig.checkCollisionFunc
+            checkCollisionFunc: (
+                typeof threejsDrawing.sceneConfig?.checkCollisionFunc === 'function' &&
+                threejsDrawing.sceneConfig.checkCollisionFunc.length >= 2
+            )
+                ? threejsDrawing.sceneConfig.checkCollisionFunc as (
+                    playerSize: number,
+                    position: THREE.Vector3,
+                    obstacleBoxes?: THREE.Box3[],
+                    ignore?: THREE.Box3 | null
+                ) => boolean
                 : checkCollision,
         }
     });
