@@ -1,16 +1,29 @@
-import { TextureLoader, PlaneGeometry, Mesh, MeshBasicMaterial, DoubleSide, VideoTexture, LinearFilter, Vector3 } from 'three'; // for any references you still need
+import * as THREE from 'three'; // for any references you still need
 import { CSS3DObject } from 'css3drenderer';
 
+type Item = {
+    id: string;
+    image?: string; // URL to the image
+    video?: string; // URL to the video
+    caption: string; // Text to display
+    position: { x: number; y: number; z: number }; // 3D position in the scene
+    customClasses?: string; // e.g. "bounce" or "pulse"
+    dataAttributes?: { [key: string]: string }; // e.g. { 'data-direction': 'left' }
+};
 
-function createPhotoMesh(item) {
+function createPhotoMesh(item: Item) {
     // Use TextureLoader to load the image
-    const textureLoader = new TextureLoader();
+    const textureLoader = new THREE.TextureLoader();
+    if (!item.image || item.image === 'NO_IMAGE') {
+        console.warn('No image provided for item:', item);
+        return null; // or handle this case as needed
+    }
     const texture = textureLoader.load(item.image);
 
     // Adjust geometry size as you like (width, height)
-    const geometry = new PlaneGeometry(4, 3);
-    const material = new MeshBasicMaterial({ map: texture, side: DoubleSide });
-    const mesh = new Mesh(geometry, material);
+    const geometry = new THREE.PlaneGeometry(4, 3);
+    const material = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide });
+    const mesh = new THREE.Mesh(geometry, material);
 
     // Position in 3D from item data
     mesh.position.set(item.position.x, item.position.y, item.position.z);
@@ -23,7 +36,7 @@ function createPhotoMesh(item) {
     return mesh;
 }
 
-function createVideoMesh(item, worldWidth, worldHeight) {
+function createVideoMesh(item: Item, worldWidth: number, worldHeight: number) {
     // 1) Create an HTML video element
     const video = document.createElement('video');
     //video.src = 'path-to-video-file.mp4';
@@ -34,14 +47,14 @@ function createVideoMesh(item, worldWidth, worldHeight) {
     video.play();
 
     // 2) Create a texture from the video
-    const videoTexture = new VideoTexture(video);
-    videoTexture.minFilter = LinearFilter;
-    videoTexture.magFilter = LinearFilter;
+    const videoTexture = new THREE.VideoTexture(video);
+    videoTexture.minFilter = THREE.LinearFilter;
+    videoTexture.magFilter = THREE.LinearFilter;
 
     // 3) Use that texture in a MeshBasicMaterial
-    const geometry = new PlaneGeometry(4, 3);
-    const material = new MeshBasicMaterial({ map: videoTexture, side: DoubleSide });
-    const mesh = new Mesh(geometry, material);
+    const geometry = new THREE.PlaneGeometry(4, 3);
+    const material = new THREE.MeshBasicMaterial({ map: videoTexture, side: THREE.DoubleSide });
+    const mesh = new THREE.Mesh(geometry, material);
 
     const x = item.position.x;
     const y = item.position.y;
@@ -55,7 +68,7 @@ function createVideoMesh(item, worldWidth, worldHeight) {
     return mesh;
 }
 
-function createVideoMeshOLD(item, worldWidth, worldHeight) {
+function createVideoMeshOLD(item: Item, worldWidth: number, worldHeight: number) {
     var div = document.createElement( 'div' );
     div.style.width = `${worldWidth}px`;
     div.style.height = `${worldHeight}px`;
@@ -65,6 +78,7 @@ function createVideoMeshOLD(item, worldWidth, worldHeight) {
     iframe.style.width = `${worldWidth}px`;
     iframe.style.height = `${worldHeight}px`;
     iframe.style.border = '0px';
+    // @ts-ignore-next-line
     iframe.src = item.video;
     //iframe.src = 'https://www.darrenmackenzie.com'
 
@@ -86,7 +100,7 @@ function createVideoMeshOLD(item, worldWidth, worldHeight) {
     return object;
 }
 
-function create3DLabelWithAnimation(captionText, className, dataAttributes = {}) {
+function create3DLabelWithAnimation(captionText: string, className: string, dataAttributes: { [key: string]: string } = {}) {
     // Outer DIV that CSS3DRenderer will transform in 3D space
     const outerDiv = document.createElement('div');
     // No special styles here; let Three.js apply its inline transform
@@ -121,15 +135,23 @@ function create3DLabelWithAnimation(captionText, className, dataAttributes = {})
 }
 
 
-function createCaptionedItem(scene, item, isVideo, worldWidth = null, worldHeight = null, use3dRenderer = false) {
+function createCaptionedItem(scene: THREE.Scene, item: Item, isVideo: boolean, worldWidth: number | null = null, worldHeight: number | null = null, use3dRenderer: boolean = false) {
     let mesh = null;
 
     // 1. Create Mesh
     if ((item.image || item.video) && item.image !== 'NO_IMAGE') {
         if (isVideo) {
+            if (!worldWidth || !worldHeight) {
+                console.warn('World dimensions not provided for video mesh creation.');
+                return null; // or handle this case as needed
+            }
             mesh = createVideoMesh(item, worldWidth, worldHeight);
         } else {
             mesh = createPhotoMesh(item);
+        }
+        if (!mesh) {
+            console.warn('Failed to create mesh for item:', item);
+            return null; // or handle this case as needed
         }
         scene.add(mesh);
     } else {
@@ -158,7 +180,7 @@ function createCaptionedItem(scene, item, isVideo, worldWidth = null, worldHeigh
         const labelObject = create3DLabelWithAnimation(captionText, customClasses, dataAttributes);
 
         // 1) figure out the mesh center in world‐space
-        const basePos = mesh ? mesh.position.clone() : new Vector3(item.position.x, item.position.y, item.position.z);
+        const basePos = mesh ? mesh.position.clone() : new THREE.Vector3(item.position.x, item.position.y, item.position.z);
 
         // 2) compute half the mesh height + a small margin (world‐units)
         let halfHeight = 0;
@@ -169,7 +191,7 @@ function createCaptionedItem(scene, item, isVideo, worldWidth = null, worldHeigh
         const offsetY = -(halfHeight + margin);
 
         // 3) position the labelObject under the mesh
-        labelObject.position.copy(basePos).add(new Vector3(0, offsetY, 0));
+        labelObject.position.copy(basePos).add(new THREE.Vector3(0, offsetY, 0));
 
         // Alternatively, if you want it to follow the mesh exactly:
         // labelObject.position.copy(mesh.position).add(new Vector3(0, offsetY, 0));
@@ -177,8 +199,8 @@ function createCaptionedItem(scene, item, isVideo, worldWidth = null, worldHeigh
         return { mesh, labelObject, item }; // return the CSS3DObject
     } else {
         // -- 2D DOM Overlay --
-        if (dataAttributes.length > 0) {
-            labelEl.setAttribute('data-direction', value);
+        for (const [key, value] of Object.entries(dataAttributes)) {
+            labelEl.setAttribute(key, value);
         }
 
         const labelEl = document.createElement('div');

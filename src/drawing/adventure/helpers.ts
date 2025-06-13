@@ -1,8 +1,9 @@
 import {Tween, Easing} from 'tween'
-import { PlaneGeometry, Mesh, MeshBasicMaterial, TextureLoader } from 'three';
+import * as THREE from 'three';
+import { ThreeJSDrawing } from '../../threejsDrawing';
 
 
-function tweenCameraToView(camera, view, lookAt, duration = 2000) {
+function tweenCameraToView(camera: THREE.Camera, view: { position: THREE.Vector3 }, lookAt: THREE.Vector3, duration = 2000) {
     new Tween(camera.position)
         .to({ x: view.position.x, y: view.position.y, z: view.position.z }, duration)
         .easing(Easing.Quadratic.Out)
@@ -23,10 +24,10 @@ function tweenCameraToView(camera, view, lookAt, duration = 2000) {
     // then in your render loop do camera.lookAt( thatVector ).
 }
 
-let autoNextTimeoutId = null;
+let autoNextTimeoutId: string | number | NodeJS.Timeout | null | undefined = null;
 
 // Function to set camera to a particular view
-function goToStep(camera, stepId, adventureSteps, controls) {
+function goToStep(camera: THREE.Camera, stepId: string, adventureSteps: { [key: string]: any }, controls: any) {
     const stepData = adventureSteps[stepId];
 
     if (!stepData) {
@@ -69,12 +70,12 @@ function goToStep(camera, stepId, adventureSteps, controls) {
 }
 
 
-function precomputeBackgroundPlanes(scene, threejsDrawing, renderer) {
+function precomputeBackgroundPlanes(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing, renderer: THREE.WebGLRenderer) {
     // assume computeBackgroundPlane(item.position, fov, aspect, camOffset, bgDistance)
     // returns { position:{x,y,z}, width, height }
 
-    const bgLoader = new TextureLoader();
-    const bgMeshes = {};
+    const bgLoader = new THREE.TextureLoader();
+    const bgMeshes: { [key: string]: THREE.Mesh } = {};
 
     if (!threejsDrawing.data || !threejsDrawing.data.allPhotoEntries) {
         console.warn("BRUH!@!!!! No photo entries found in threejsDrawing data.");
@@ -94,12 +95,12 @@ function precomputeBackgroundPlanes(scene, threejsDrawing, renderer) {
 //        );
         const position = item.bg_pos;
 
-        const geo  = new PlaneGeometry(item.bg_width + 50, item.bg_height + 50);
-        const mat  = new MeshBasicMaterial({
+        const geo  = new THREE.PlaneGeometry(item.bg_width + 50, item.bg_height + 50);
+        const mat  = new THREE.MeshBasicMaterial({
             map: bgLoader.load(item.bg_img),
             depthWrite: false,    // so it never occludes your slides
         });
-        const mesh = new Mesh(geo, mat);
+        const mesh = new THREE.Mesh(geo, mat);
         mesh.position.set(position[0], position[1], position[2] - 25);
 
         // initially invisible

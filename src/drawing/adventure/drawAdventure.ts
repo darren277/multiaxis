@@ -1,4 +1,4 @@
-import { Vector3, AmbientLight, DirectionalLight, PlaneGeometry, Mesh, MeshBasicMaterial, TextureLoader } from 'three'; // for any references you still need
+import * as THREE from 'three'; // for any references you still need
 import { CSS3DObject } from 'css3drenderer';
 
 import {onAdventureKeyDown, onClick} from './interactions.js';
@@ -9,7 +9,7 @@ import { precomputeBackgroundPlanes, goToStep } from './helpers.js';
 let currentViewIndex = 0;
 
 
-const vector = new Vector3(); // reuse this
+const vector = new THREE.Vector3(); // reuse this
 
 /**
  * Re‑positions a DOM label so it sits under a mesh **or** an arbitrary world‑space point.
@@ -21,7 +21,7 @@ const vector = new Vector3(); // reuse this
  * @param {THREE.WebGLRenderer} renderer
  * @param {number} yOffset        How far (world units) below the anchor to show the label.  Negative = downward.
  */
-function updateLabelPosition(anchor, labelEl, camera, renderer, yOffset = -1.8) {
+function updateLabelPosition(anchor: THREE.Object3D | THREE.Vector3 | { x: number, y: number, z: number }, labelEl: HTMLElement, camera: THREE.Camera, renderer: THREE.WebGLRenderer, yOffset = -1.8) {
     /* ---------------------------------------------------------------
     * 1.  Resolve a Vector3
     * ------------------------------------------------------------- */
@@ -34,7 +34,7 @@ function updateLabelPosition(anchor, labelEl, camera, renderer, yOffset = -1.8) 
         pos = anchor.clone();
     } else if (anchor && 'x' in anchor && 'y' in anchor && 'z' in anchor) {
         // Plain {x,y,z}
-        pos = new Vector3(anchor.x, anchor.y, anchor.z);
+        pos = new THREE.Vector3(anchor.x, anchor.y, anchor.z);
     } else {
         console.warn('updateLabelPosition: invalid anchor', anchor);
         return;
@@ -78,15 +78,15 @@ const Z = 6; // 6 units in front of the item, along the negative Z axis
 
 const Y_FACTOR = 0; // Adjust this factor to position the camera above the item
 
-function vantagePointForItem(item) {
+function vantagePointForItem(item: Item): {position: THREE.Vector3, lookAt: THREE.Vector3} {
     // Where the item is
-    const itemPos = new Vector3(item.position.x, item.position.y + Y_FACTOR, item.position.z);
+    const itemPos = new THREE.Vector3(item.position.x, item.position.y + Y_FACTOR, item.position.z);
 
     console.log("Vantage point for item:", item.id, "at position", itemPos);
 
     // Define a small offset so the camera is in front of the plane
     // For example, 6 units “in front” along the negative Z axis
-    const offset = new Vector3(X, Y, Z);
+    const offset = new THREE.Vector3(X, Y, Z);
 
     // We'll assume the plane faces the camera’s negative Z by default
     // So the camera is itemPos + offset
@@ -98,10 +98,10 @@ function vantagePointForItem(item) {
 
 
 
-function buildSceneItems(scene, sceneItems, worldWidth = 4, worldHeight = 3, css3DRenderer = null) {
+function buildSceneItems(scene: THREE.Scene, sceneItems: Item[], worldWidth: number = 4, worldHeight: number = 3, css3DRenderer: any = null) {
     // Where allPhotoEntries is your array of { mesh, labelEl, item } returned from createCaptionedPhoto.
 
-    const allPhotoEntries = [];
+    const allPhotoEntries: { mesh: THREE.Mesh<THREE.PlaneGeometry, THREE.MeshBasicMaterial, THREE.Object3DEventMap> | null; labelObject: any; item: { id: string; image?: string; video?: string; caption: string; position: { x: number; y: number; z: number; }; customClasses?: string; dataAttributes?: { [key: string]: string; }; }; }[] = [];
 
     // Build photo meshes
     sceneItems.forEach((item) => {
@@ -109,6 +109,10 @@ function buildSceneItems(scene, sceneItems, worldWidth = 4, worldHeight = 3, css
         const isVideo = item.video && item.video !== "";
         const use3dRenderer = true;
         entry = createCaptionedItem(scene, item, isVideo, worldWidth, worldHeight, use3dRenderer);
+        if (!entry) {
+            console.warn('Failed to create entry for item:', item);
+            return; // Skip this item if creation failed
+        }
         if (entry.mesh) scene.add(entry.mesh);
         if (css3DRenderer) {
             css3DRenderer.scene.add(entry.labelObject);
@@ -119,7 +123,7 @@ function buildSceneItems(scene, sceneItems, worldWidth = 4, worldHeight = 3, css
     });
 
     // Generate steps
-    const adventureSteps = {};
+    const adventureSteps: { [key: string]: any } = {};
     sceneItems.forEach((item, index) => {
         const vantage = vantagePointForItem(item);
         //const stepId = `view_${item.id}`;
@@ -167,17 +171,17 @@ Summary & Extensions
 */
 
 
-function drawMassiveBackdrop(scene) {
-    const bgLoader = new TextureLoader();
+function drawMassiveBackdrop(scene: THREE.Scene) {
+    const bgLoader = new THREE.TextureLoader();
 
     const position = [0.0, 0.0, -20.0];
 
-    const geo  = new PlaneGeometry(500, 500);
-    const mat  = new MeshBasicMaterial({
+    const geo  = new THREE.PlaneGeometry(500, 500);
+    const mat  = new THREE.MeshBasicMaterial({
         map: bgLoader.load("textures/8k_stars.jpg"),
         depthWrite: false,    // so it never occludes your slides
     });
-    const mesh = new Mesh(geo, mat);
+    const mesh = new THREE.Mesh(geo, mat);
     mesh.position.set(position[0], position[1], position[2]);
 
     // initially invisible
@@ -191,7 +195,7 @@ function drawMassiveBackdrop(scene) {
 // labelContainerId = 'labelContainer'
 // labelContainerTagName = 'div'
 
-function constructElement(document, tagName, id, attrs) {
+function constructElement(document: Document, tagName: string, id: string, attrs: { [key: string]: string }) {
     const element = document.createElement(tagName);
     element.id = id;
     for (const [key, value] of Object.entries(attrs)) {
@@ -201,13 +205,13 @@ function constructElement(document, tagName, id, attrs) {
 }
 
 
-async function drawAdventure(scene, data, threejsDrawing) {
+async function drawAdventure(scene: THREE.Scene, data: any, threejsDrawing: any) {
     const use3DRenderer = !!threejsDrawing.data.use3DRenderer;
     const css3DRenderer = use3DRenderer ? threejsDrawing.data.css3DRenderer : null;
     const {adventureSteps, allPhotoEntries} = buildSceneItems(scene, data.sceneItems, threejsDrawing.data.worldWidth, threejsDrawing.data.worldHeight, css3DRenderer);
 
     // build data.otherItems...
-    const otherItems = data.otherItems.map((item) => {
+    const otherItems = data.otherItems.map((item: Item) => {
         // TODO: Add a mechanism to render the other items with relative positions, and toggle their visibility so that only when they are in the viewport, they are rendered...
         // This means that if `item.visibleOn` == `['allSlides']`, then you will have to iterate over every regular slide and define the position of the item relative to the slide.
         console.log('creating other item', item);
@@ -235,10 +239,10 @@ async function drawAdventure(scene, data, threejsDrawing) {
     threejsDrawing.data.currentStepId = data.sceneItems[0].id;
 
     // Draw ambient light...
-    const ambientLight = new AmbientLight(0xffffff, 0.5);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
     scene.add(ambientLight);
     // Draw directional light...
-    const directionalLight = new DirectionalLight(0xffffff, 0.5);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
     directionalLight.position.set(0, 1, 0);
     scene.add(directionalLight);
 
@@ -257,7 +261,7 @@ const adventureDrawing = {
         {'func': drawAdventure, 'dataSrc': 'adventure1', 'dataType': 'json'}
     ],
     'eventListeners': {
-        'keydown': (e, other) => {
+        'keydown': (e: KeyboardEvent, other: any) => {
             // Handle keydown events for the adventure
             //{camera, event, adventureSteps, controls}
             const {camera, data, controls} = other;
@@ -274,7 +278,7 @@ const adventureDrawing = {
             if (!nextStepId) return;
             data.currentStepId = nextStepId;
         },
-        'click': (e, other) => {
+        'click': (e: MouseEvent, other: any) => {
             const {renderer, camera, scene, data, controls} = other;
             onClick(scene, renderer, camera, e);
 
@@ -299,7 +303,7 @@ const adventureDrawing = {
             goToStep(camera, nextStepId, data.adventureSteps, controls);
         },
     },
-    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
+    'animationCallback': (renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawing: any, camera: THREE.Camera) => {
         const { bgMeshes, currentStepId } = threejsDrawing.data;
         if (bgMeshes) {
             // show only the current slide’s background
@@ -347,7 +351,7 @@ const adventureDrawing = {
         //'controller': 'orbital','
         'cssRendererEnabled': 'DUAL',
         // looking slightly higher up...
-        'lookAt': new Vector3(0, 1.5, 0),
+        'lookAt': new THREE.Vector3(0, 1.5, 0),
     }
 }
 

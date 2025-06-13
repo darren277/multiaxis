@@ -1,11 +1,11 @@
-import { Raycaster, Vector2 } from 'three';
+import * as THREE from 'three';
 import { goToStep } from './helpers.js';
 
-const raycaster = new Raycaster();
-const mouse = new Vector2();
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
 
 // Event listeners...
-function onAdventureKeyDown_BIDIRECTIONAL_ONLY(camera, event, adventureSteps, controls, currentStepId) {
+function onAdventureKeyDown_BIDIRECTIONAL_ONLY(camera: THREE.Camera, event: KeyboardEvent, adventureSteps: { [key: string]: any }, controls: any, currentStepId: string) {
     const stepData = adventureSteps[currentStepId];
     if (!stepData) return;
 
@@ -22,7 +22,7 @@ function onAdventureKeyDown_BIDIRECTIONAL_ONLY(camera, event, adventureSteps, co
 }
 
 
-function onAdventureKeyDown(camera, event, adventureSteps, controls, currentStepId) {
+function onAdventureKeyDown(camera: THREE.Camera, event: KeyboardEvent, adventureSteps: { [key: string]: any }, controls: any, currentStepId: string) {
     // In this case, UpArrow is "next", DownArrow is "previous", and LeftArrow and RightArrow are specifically defined for each step.
     const stepData = adventureSteps[currentStepId];
     if (!stepData) return;
@@ -42,7 +42,7 @@ function onAdventureKeyDown(camera, event, adventureSteps, controls, currentStep
 
 
 
-function onClick(scene, renderer, camera, event) {
+function onClick(scene: THREE.Scene, renderer: THREE.WebGLRenderer, camera: THREE.Camera, event: MouseEvent) {
     const rect = renderer.domElement.getBoundingClientRect();
 
     mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
