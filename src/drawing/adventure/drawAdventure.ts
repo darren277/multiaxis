@@ -5,8 +5,11 @@ import {createCaptionedItem, Item} from './createItems.js';
 import {drawAdventureElements} from './styleDefs.js';
 import { precomputeBackgroundPlanes, goToStep } from './helpers.js';
 
-let currentViewIndex = 0;
+import { CSS3DObject } from 'three/examples/jsm/renderers/CSS3DRenderer';
 
+type LabelObject = CSS3DObject | HTMLDivElement;
+
+let currentViewIndex = 0;
 
 const vector = new THREE.Vector3(); // reuse this
 
@@ -116,7 +119,11 @@ function buildSceneItems(scene: THREE.Scene, sceneItems: Item[], worldWidth: num
         if (css3DRenderer) {
             css3DRenderer.scene.add(entry.labelObject);
         } else {
-            scene.add(entry.labelObject);
+            if (css3DRenderer) {
+                css3DRenderer.scene.add(entry.labelObject);
+            } else if (entry.labelObject instanceof THREE.Object3D) {
+                scene.add(entry.labelObject);
+            }
         }
         allPhotoEntries.push(entry);
     });
@@ -228,7 +235,11 @@ async function drawAdventure(scene: THREE.Scene, data: any, threejsDrawing: any)
             console.log('-------- Adding labelObject to CSS3DRenderer scene');
             threejsDrawing.data.css3DRenderer.scene.add(labelObject);
         } else {
-            scene.add(labelObject);
+            if (css3DRenderer) {
+                css3DRenderer.scene.add(entry.labelObject);
+            } else if (entry.labelObject instanceof THREE.Object3D) {
+                scene.add(entry.labelObject); // now safely typed
+            }
         }
         return { mesh, labelObject, item };
     });
