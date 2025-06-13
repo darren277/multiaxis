@@ -118,4 +118,4 @@ const townDrawing = {
     }
 }
 
-export { townDrawing };
+export { townDrawing, drawTown, animateTown, animationCallback };

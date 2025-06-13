@@ -1,11 +1,12 @@
-import { Mesh, MeshStandardMaterial, Color, DirectionalLight, BufferGeometry, Line, LineBasicMaterial, Box3, Vector3 } from 'three';
+import * as THREE from "three";
 import { PLYLoader } from 'plyloader';
 import { CSS2DObject } from 'css2drenderer';
+import { ThreeJSDrawing } from "../threejsDrawing";
 
 const loader = new PLYLoader();
 
 const labelContainer = document.getElementById('labels');
-const vector = new Vector3();
+const vector = new THREE.Vector3();
 
 const regionNames = [
     'caudalanteriorcingulate',
@@ -51,19 +52,19 @@ const constructedRegionNames = [
     ...regionNames.map(name => `/${RH_PREFIX}${name}${SUFFIX}`)
 ];
 
-async function loadRegions(scene) {
+async function loadRegions(scene: THREE.Scene) {
     const basePath = 'imagery/brain/ply';  // adjust as needed
 
     for (const name of constructedRegionNames) {
         loader.load(`${basePath}${name}`, geometry => {
             geometry.computeVertexNormals();  // just in case
 
-            const material = new MeshStandardMaterial({
-                color: new Color(Math.random(), Math.random(), Math.random()),
+            const material = new THREE.MeshStandardMaterial({
+                color: new THREE.Color(Math.random(), Math.random(), Math.random()),
                 flatShading: false,
             });
 
-            const mesh = new Mesh(geometry, material);
+            const mesh = new THREE.Mesh(geometry, material);
             mesh.name = name.replace('.ply', '');  // optional
 
             // Label
@@ -73,16 +74,16 @@ async function loadRegions(scene) {
             const label = new CSS2DObject(labelDiv);
 
             // Position label above mesh
-            const box = new Box3().setFromObject(mesh);
-            const center = box.getCenter(new Vector3());
-            const labelPos = center.clone().add(new Vector3(0, 10, 0));
+            const box = new THREE.Box3().setFromObject(mesh);
+            const center = box.getCenter(new THREE.Vector3());
+            const labelPos = center.clone().add(new THREE.Vector3(0, 10, 0));
             label.position.copy(labelPos);
             mesh.add(label); // anchor to mesh
 
             // Optional: 3D leader line
             const points = [center, labelPos];
-            const lineGeo = new BufferGeometry().setFromPoints(points);
-            const line = new Line(lineGeo, new LineBasicMaterial({ color: 0xffffff }));
+            const lineGeo = new THREE.BufferGeometry().setFromPoints(points);
+            const line = new THREE.Line(lineGeo, new THREE.LineBasicMaterial({ color: 0xffffff }));
             scene.add(line);
 
             scene.add(mesh);
@@ -91,10 +92,10 @@ async function loadRegions(scene) {
 }
 
 
-function updateLabelPosition(canvas, mesh, labelElement) {
+function updateLabelPosition(canvas: HTMLCanvasElement, mesh: THREE.Mesh, labelElement: HTMLElement, camera: THREE.Camera) {
     // Use mesh.position or bounding box center
-    const box = new Box3().setFromObject(mesh);
-    const center = box.getCenter(new Vector3());
+    const box = new THREE.Box3().setFromObject(mesh);
+    const center = box.getCenter(new THREE.Vector3());
 
     vector.copy(center);
     vector.project(camera); // project to NDC space
@@ -105,14 +106,14 @@ function updateLabelPosition(canvas, mesh, labelElement) {
     labelElement.style.transform = `translate(-50%, -50%) translate(${x}px, ${y}px)`;
 }
 
-function createLeaderLine(startPos, endPos) {
-    const geometry = new BufferGeometry().setFromPoints([startPos, endPos]);
-    const material = new LineBasicMaterial({ color: 0xffffff });
-    return new Line(geometry, material);
+function createLeaderLine(startPos: THREE.Vector3, endPos: THREE.Vector3) {
+    const geometry = new THREE.BufferGeometry().setFromPoints([startPos, endPos]);
+    const material = new THREE.LineBasicMaterial({ color: 0xffffff });
+    return new THREE.Line(geometry, material);
 }
 
-function updateLeaderLine(line, startPos, labelElement) {
-    const endVector = new Vector3();
+function updateLeaderLine(line: THREE.Line, startPos: THREE.Vector3, labelElement: HTMLElement, camera: THREE.Camera, canvas: HTMLCanvasElement) {
+    const endVector = new THREE.Vector3();
     endVector.set((parseFloat(labelElement.style.left) / canvas.clientWidth) * 2 - 1, -(parseFloat(labelElement.style.top) / canvas.clientHeight) * 2 + 1, 0.5);
 
     endVector.unproject(camera);
@@ -133,12 +134,12 @@ for (const intersect of intersects) {
 */
 
 
-function drawBrain(scene, threejsDrawing) {
+function drawBrain(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
     // Load the regions
     loadRegions(scene);
 
     // Optionally, you can add lighting or other scene elements here
-    const light = new DirectionalLight(0xffffff, 1);
+    const light = new THREE.DirectionalLight(0xffffff, 1);
     light.position.set(5, 5, 5).normalize();
     scene.add(light);
 
@@ -153,14 +154,14 @@ const brainDrawing = {
         {'func': drawBrain, 'dataSrc': null, 'dataType': 'ply'}
     ],
     'eventListeners': null,
-    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
+    'animationCallback': (renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawing: any, camera: THREE.Camera) => {
         const canvas = renderer.domElement;
         const scene = threejsDrawing.data.scene;
         for (const mesh of scene.children) {
             if (mesh.isMesh && mesh.name.startsWith('lh_')) {
                 const label = document.getElementById(`label-${mesh.name}`);
                 if (label) {
-                    updateLabelPosition(mesh, label);
+                    updateLabelPosition(canvas, mesh, label, camera);
                 }
             }
         }

@@ -1,14 +1,15 @@
-import { Box3, Vector3, Mesh, MeshBasicMaterial, BoxGeometry } from 'three';
+import * as THREE from "three";
 import { GLTFLoader } from 'gltfloader';
 import { drawSun } from './drawLights.js';
 import { onKeyDownWalking, onKeyUpWalking, addObstacle, updateObstacleBoxes, walkingAnimationCallback } from '../config/walking.js';
 import { mergeGeometries } from 'buffer-geometry-utils';
 import { instantiateCollision } from '../config/instantiateCollision.js';
 import { extractPerTriangle, spatialHashStaticBoxes, checkCollisionSpatialHashes } from '../config/collisionManager.js';
+import { ThreeJSDrawing } from "../types.js";
 
 const gltfLoader = new GLTFLoader();
 
-async function loadGltfModel(data_src) {
+async function loadGltfModel(data_src: string) {
     const gltf = await gltfLoader.loadAsync(`./imagery/${data_src}.gltf`);
     return gltf;
 }
@@ -36,7 +37,7 @@ const OBSTACLES = [
     'Object_205',
 ]
 
-function drawCity(scene, threejsDrawing) {
+function drawCity(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
     threejsDrawing.data.cityReady = false;
 
     const controls = threejsDrawing.data.controls;
@@ -48,9 +49,9 @@ function drawCity(scene, threejsDrawing) {
 
         model.updateMatrixWorld(true);
 
-        const cityBox = new Box3().setFromObject(model);         // whole model
+        const cityBox = new THREE.Box3().setFromObject(model);         // whole model
         const groundY = cityBox.min.y;                           // lowest vertex
-        const centerXZ = cityBox.getCenter(new Vector3());       // horizontal centre
+        const centerXZ = cityBox.getCenter(new THREE.Vector3());       // horizontal centre
 
         // Shift the model so streets sit at y=0
         model.position.y -= groundY;            // lift city up
@@ -58,14 +59,14 @@ function drawCity(scene, threejsDrawing) {
         model.position.z -= centerXZ.z;         // centre on Z
         model.updateMatrixWorld(true);          // bake transforms
 
-        model.traverse((child) => {
+        model.traverse((child: THREE.Object3D) => {
             if (child.isMesh) {
                 child.castShadow = true;
                 child.receiveShadow = true;
 
                 if (STREETS.includes(child.name) || SIDEWALKS.includes(child.name)) {
                     child.geometry.computeBoundingBox();
-                    const worldBox = new Box3().setFromObject(child);
+                    const worldBox = new THREE.Box3().setFromObject(child);
                     groundMin  = Math.min(groundMin, worldBox.min.y);
                 }
             }
@@ -83,9 +84,9 @@ function drawCity(scene, threejsDrawing) {
 
         model.position.y -= groundMin;
 
-        const roadGeoms = [];
+        const roadGeoms: THREE.BufferGeometry[] = [];
 
-        model.traverse(child => {
+        model.traverse((child: THREE.Object3D) => {
             if (child.isMesh && (STREETS.includes(child.name) || SIDEWALKS.includes(child.name))) {
                 //threejsDrawing.data.worldMeshes.push(child);
                 //addObstacle(threejsDrawing.data.staticBoxes, child);
@@ -111,15 +112,15 @@ function drawCity(scene, threejsDrawing) {
         const depth  = cityBox.max.z - cityBox.min.z;
         const height = 0.02;  // 2 cm thick so your ray always sees it
 
-        const floorGeo = new BoxGeometry(width, height, depth);
+        const floorGeo = new THREE.BoxGeometry(width, height, depth);
         floorGeo.translate(
           (cityBox.min.x + cityBox.max.x) / 2,   // centre X
           cityBox.min.y + height / 2,            // just above the street
           (cityBox.min.z + cityBox.max.z) / 2    // centre Z
         );
 
-        const floorMat = new MeshBasicMaterial({visible: false});
-        const cityFloorCollider = new Mesh(floorGeo, floorMat);
+        const floorMat = new THREE.MeshBasicMaterial({visible: false});
+        const cityFloorCollider = new THREE.Mesh(floorGeo, floorMat);
         scene.add(cityFloorCollider);
         //cityFloorCollider.userData.isGround = true;
         cityFloorCollider.name = 'cityFloorCollider';
@@ -130,7 +131,7 @@ function drawCity(scene, threejsDrawing) {
 
 
         const merged = mergeGeometries(roadGeoms, false);
-        const collider = new Mesh(merged, new MeshBasicMaterial({visible: false}));
+        const collider = new THREE.Mesh(merged, new THREE.MeshBasicMaterial({visible: false}));
 
         scene.add(collider);
         //collider.userData.isGround = true;
@@ -145,7 +146,7 @@ function drawCity(scene, threejsDrawing) {
         threejsDrawing.data.cityReady = true;
 
         //threejsDrawing.data.spawnCoords = cityBox.getCenter(new Vector3());
-        threejsDrawing.data.spawnCoords = new Vector3();
+        threejsDrawing.data.spawnCoords = new THREE.Vector3();
         //threejsDrawing.data.spawnCoords.y = cityBox.min.y + 2;        // soles ≈1m above ground
         threejsDrawing.data.spawnCoords.x = 0;
         threejsDrawing.data.spawnCoords.z = 0;
@@ -172,21 +173,21 @@ const cityDrawing = {
         {'func': drawCity, 'dataSrc': null, 'dataType': 'gltf'}
     ],
     'eventListeners': {
-        'click': (event, data) => {
+        'click': (event: MouseEvent, data: any) => {
             const renderer = data.renderer;
             const threejsDrawing = data.threejsDrawing;
             const camera = data.camera;
         },
-        'keydown': (event, stuff) => {
+        'keydown': (event: KeyboardEvent, stuff: any) => {
             const keyManager = stuff.data.keyManager;
             onKeyDownWalking(event, keyManager);
         },
-        'keyup': (event, stuff) => {
+        'keyup': (event: KeyboardEvent, stuff: any) => {
             const keyManager = stuff.data.keyManager;
             onKeyUpWalking(event, keyManager);
         },
     },
-    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
+    'animationCallback': (renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawing: ThreeJSDrawing, camera: THREE.Camera) => {
         //const delta = clock.getDelta();
         const scene = threejsDrawing.data.scene;
         const controls = threejsDrawing.data.controls;

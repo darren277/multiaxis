@@ -1,4 +1,4 @@
-import { Mesh } from 'three';
+import * as THREE from "three";
 
 import { TextGeometry} from 'textgeometry';
 import { FontLoader } from 'fontloader';
@@ -6,6 +6,7 @@ import { FontLoader } from 'fontloader';
 import { determineLabelCoordinates } from '../config/utils.js';
 
 import chartConfig from './chartConfig.js';
+import { ThreeJSDrawing } from "../types.js";
 
 
 const surrounding_opacity = 0.1;
@@ -15,7 +16,7 @@ const surrounding_opacity = 0.1;
  * Draw a 3D chart into the scene, using the given config object.
  * If no config is passed in, we default to the imported 'chartConfig'.
  */
-function drawChart( scene, data, state, config = chartConfig ) {
+function drawChart( scene: THREE.Scene, data: any, state: any, config = chartConfig ) {
     const graphData = data;
 
     // --- 1) Surrounding box ---
@@ -28,19 +29,19 @@ function drawChart( scene, data, state, config = chartConfig ) {
     boxGeometry.translate(xSize / 2, ySize / 2, zSize / 2);
 
     const boxMaterial = config.surroundingBox.material();
-    const boxMesh = new Mesh(boxGeometry, boxMaterial);
+    const boxMesh = new THREE.Mesh(boxGeometry, boxMaterial);
     scene.add(boxMesh);
 
     // --- 2) Axes, labels, and ticks ---
     const loader = new FontLoader();
 
     // You probably only want to load your font once, rather than re-loading for each axis/point.
-    loader.load(config.fontUrl, (font) => {
-        graphData.axes.forEach((axis) => {
+    loader.load(config.fontUrl, (font: Font) => {
+        graphData.axes.forEach((axis: any) => {
             // Axis geometry & material
             const axisGeometry = config.axis.geometry(axis.label, axis.max);
             const axisMaterial = config.axis.material();
-            const axisMesh = new Mesh(axisGeometry, axisMaterial);
+            const axisMesh = new THREE.Mesh(axisGeometry, axisMaterial);
             scene.add(axisMesh);
 
             // Axis label
@@ -58,7 +59,7 @@ function drawChart( scene, data, state, config = chartConfig ) {
                 axisLabelGeo.translate(0, 0, axis.max);
             }
             const axisLabelMat = config.axisLabels.material(axis.label);
-            const axisLabelMesh = new Mesh(axisLabelGeo, axisLabelMat);
+            const axisLabelMesh = new THREE.Mesh(axisLabelGeo, axisLabelMat);
             scene.add(axisLabelMesh);
 
             // Ticks
@@ -72,13 +73,13 @@ function drawChart( scene, data, state, config = chartConfig ) {
                     tickGeometry.translate(0, 0, i);
                 }
                 const tickMaterial = config.axisTicks.material();
-                const tickMesh = new Mesh(tickGeometry, tickMaterial);
+                const tickMesh = new THREE.Mesh(tickGeometry, tickMaterial);
                 scene.add(tickMesh);
             }
         });
 
         // --- 3) Plot data points ---
-        graphData.points.forEach((point) => {
+        graphData.points.forEach((point: any) => {
             // point is like [ x, y, z, color, { size, label } ]
 
             // geometry & material
@@ -87,7 +88,7 @@ function drawChart( scene, data, state, config = chartConfig ) {
             pointGeometry.translate(point[0], point[1], point[2]);
 
             const pointMaterial = config.points.material(point);
-            const pointMesh = new Mesh(pointGeometry, pointMaterial);
+            const pointMesh = new THREE.Mesh(pointGeometry, pointMaterial);
             scene.add(pointMesh);
 
             // If there is a label for this point, draw it
@@ -110,7 +111,7 @@ function drawChart( scene, data, state, config = chartConfig ) {
                 );
 
                 const labelMat = config.pointLabels.material(point);
-                const labelMesh = new Mesh(labelGeo, labelMat);
+                const labelMesh = new THREE.Mesh(labelGeo, labelMat);
                 scene.add(labelMesh);
             }
         });
@@ -133,11 +134,11 @@ const multiAxisDrawing = {
         {'func': drawChart, 'dataSrc': 'data', 'dataType': 'json'}
     ],
     'eventListeners': null,
-    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
+    'animationCallback': (renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawing: ThreeJSDrawing, camera: THREE.Camera) => {
     },
     'data': {
         'sheetMusic': null,
     }
-}
+};
 
 export { multiAxisDrawing };

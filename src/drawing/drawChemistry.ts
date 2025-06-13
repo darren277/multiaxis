@@ -1,13 +1,11 @@
-import {
-    Group, Vector3, Color, DirectionalLight, BoxGeometry, IcosahedronGeometry, Mesh, MeshStandardMaterial, MeshPhongMaterial,
-    PlaneGeometry, ArrowHelper, AmbientLight
-} from 'three';
+import * as THREE from "three";
 
 import { PDBLoader } from 'pdbloader';
 import { CSS2DRenderer, CSS2DObject } from 'css2drenderer';
 import { drawBasicLights } from './drawLights.js';
+import { ThreeJSDrawing } from "../threejsDrawing.js";
 
-let labelRenderer;
+let labelRenderer: CSS2DRenderer;
 
 export const molGraph = {
     nodes: [
@@ -23,9 +21,9 @@ export const molGraph = {
 };
 
 const layout = {
-    ethanol:      new Vector3(-360, 0, 0),
-    acetaldehyde: new Vector3(   0, 0, 0),
-    ethylCl:      new Vector3( 360, 0, 0)
+    ethanol:      new THREE.Vector3(-360, 0, 0),
+    acetaldehyde: new THREE.Vector3(   0, 0, 0),
+    ethylCl:      new THREE.Vector3( 360, 0, 0)
 };
 
 const chemistry = {
@@ -39,22 +37,27 @@ const chemistry = {
 
 
 const loader = new PDBLoader();
-const offset = new Vector3();
+const offset = new THREE.Vector3();
 
 
+type MoleculeNode = {
+    id: string;
+    pdb: string;
+};
 
-function loadOneMolecule(node, scene) {
+
+function loadOneMolecule(node: MoleculeNode, scene: THREE.Scene) {
     return new Promise((resolve) => {
-        const root = new Group();
+        const root = new THREE.Group();
         scene.add(root);
 
-        loader.load(`imagery/pdb/${node.pdb}`, pdb => {
+        loader.load(`imagery/pdb/${node.pdb}`, (pdb: any) => {
             const geometryAtoms = pdb.geometryAtoms;
             const geometryBonds = pdb.geometryBonds;
             const json = pdb.json;
 
-            const boxGeometry = new BoxGeometry(1, 1, 1);
-            const sphereGeometry = new IcosahedronGeometry(1, 3);
+            const boxGeometry = new THREE.BoxGeometry(1, 1, 1);
+            const sphereGeometry = new THREE.IcosahedronGeometry(1, 3);
 
             geometryAtoms.computeBoundingBox();
             geometryAtoms.boundingBox.getCenter(offset).negate();
@@ -65,8 +68,8 @@ function loadOneMolecule(node, scene) {
             let positions = geometryAtoms.getAttribute('position');
             const colors = geometryAtoms.getAttribute('color');
 
-            const position = new Vector3();
-            const color = new Color();
+            const position = new THREE.Vector3();
+            const color = new THREE.Color();
 
             for (let i = 0; i < positions.count; i++) {
                 position.x = positions.getX(i);
@@ -77,9 +80,9 @@ function loadOneMolecule(node, scene) {
                 color.g = colors.getY(i);
                 color.b = colors.getZ(i);
 
-                const material = new MeshPhongMaterial({color: color});
+                const material = new THREE.MeshPhongMaterial({color: color});
 
-                const object = new Mesh(sphereGeometry, material);
+                const object = new THREE.Mesh(sphereGeometry, material);
                 object.position.copy(position);
                 object.position.multiplyScalar(75);
                 object.scale.multiplyScalar(25);
@@ -99,8 +102,8 @@ function loadOneMolecule(node, scene) {
 
             positions = geometryBonds.getAttribute('position');
 
-            const start = new Vector3();
-            const end = new Vector3();
+            const start = new THREE.Vector3();
+            const end = new THREE.Vector3();
 
             for (let i=0; i < positions.count; i+=2) {
 
@@ -115,7 +118,7 @@ function loadOneMolecule(node, scene) {
                 start.multiplyScalar(75);
                 end.multiplyScalar(75);
 
-                const object = new Mesh(boxGeometry, new MeshPhongMaterial({color: 0xffffff}));
+                const object = new THREE.Mesh(boxGeometry, new THREE.MeshPhongMaterial({color: 0xffffff}));
                 object.position.copy(start);
                 object.position.lerp(end, 0.5);
                 object.scale.set(5, 5, start.distanceTo(end));
@@ -127,7 +130,7 @@ function loadOneMolecule(node, scene) {
             chemistry.nodeGroups.set(node.id, root);
 
             // world‑space centre
-            const centre = new Vector3();
+            const centre = new THREE.Vector3();
             pdb.geometryAtoms.boundingBox.getCenter(centre).applyMatrix4(root.matrixWorld);
             chemistry.nodeCenters.set(node.id, centre);
 
@@ -136,22 +139,22 @@ function loadOneMolecule(node, scene) {
     });
 }
 
-function drawAllEdges(scene) {
-    const arrowMat = new MeshPhongMaterial({ color: 0x2194ce });
+function drawAllEdges(scene: THREE.Scene) {
+    const arrowMat = new THREE.MeshPhongMaterial({ color: 0x2194ce });
 
     molGraph.edges.forEach(edge => {
         const from = chemistry.nodeCenters.get(edge.from);
         const to   = chemistry.nodeCenters.get(edge.to);
         if (!from || !to) return;
 
-        const dir  = new Vector3().subVectors(to, from).normalize();
+        const dir  = new THREE.Vector3().subVectors(to, from).normalize();
         const len  = from.distanceTo(to) - 40;          // trim a bit so it doesn't pierce atoms
-        const arrow = new ArrowHelper(dir, from, len, 0x2194ce, 12, 6);
+        const arrow = new THREE.ArrowHelper(dir, from, len, 0x2194ce, 12, 6);
         scene.add(arrow);
         chemistry.edgeArrows.push(arrow);
 
         // put the reaction conditions in the middle
-        const mid = new Vector3().addVectors(from, to).multiplyScalar(0.5);
+        const mid = new THREE.Vector3().addVectors(from, to).multiplyScalar(0.5);
         const div = document.createElement('div');
         div.className = 'label';
         div.textContent = edge.label;
@@ -163,25 +166,25 @@ function drawAllEdges(scene) {
 
 
 
-function drawChemistry(scene, threejsDrawing) {
+function drawChemistry(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
     // Add basic lights
     drawBasicLights(scene);
 
     // ambient light...
-    const ambientLight = new DirectionalLight(0xffffff, 0.5);
+    const ambientLight = new THREE.DirectionalLight(0xffffff, 0.5);
     ambientLight.position.set(0, 0, 1);
 
-    scene.background = new Color(0x050505);
+    scene.background = new THREE.Color(0x050505);
 
-    const light1 = new DirectionalLight(0xffffff, 2.5);
+    const light1 = new THREE.DirectionalLight(0xffffff, 2.5);
     light1.position.set(1, 1, 1);
     scene.add(light1);
 
-    const light2 = new DirectionalLight(0xffffff, 1.5);
+    const light2 = new THREE.DirectionalLight(0xffffff, 1.5);
     light2.position.set(-1, -1, 1);
     scene.add(light2);
 
-    const root = new Group();
+    const root = new THREE.Group();
     scene.add(root);
 
     const promises = molGraph.nodes.map(n => loadOneMolecule(n, scene));
@@ -202,7 +205,7 @@ const chemistryDrawing = {
         {'func': drawChemistry, 'dataSrc': null, 'dataType': 'pdb'}
     ],
     'eventListeners': null,
-    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
+    'animationCallback': (renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawing: ThreeJSDrawing, camera: THREE.Camera) => {
         const t = timestamp * 0.001;
         chemistry.nodeGroups.forEach(root => {
             root.rotation.y = t * 0.0004;

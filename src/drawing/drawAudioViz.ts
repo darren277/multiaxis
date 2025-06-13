@@ -1,7 +1,7 @@
-import { AudioListener, AudioLoader, Audio, AudioAnalyser, Group, BoxGeometry, Mesh, MeshStandardMaterial, AmbientLight } from 'three';
+import * as THREE from "three";
 
 
-function animateVisualizer(analyser, bars) {
+function animateVisualizer(analyser: THREE.AudioAnalyser, bars: THREE.Mesh[]) {
     const data = analyser.getFrequencyData(); // array of values 0–255
     for (let i = 0; i < bars.length; i++) {
         const scaleY = data[i] / 64; // scale factor
@@ -10,14 +10,14 @@ function animateVisualizer(analyser, bars) {
     }
 }
 
-function drawAudioViz(scene, threejsDrawing) {
+function drawAudioViz(scene: THREE.Scene, threejsDrawing: any) {
     const camera = threejsDrawing.data.camera;
 
-    const listener = new AudioListener();
+    const listener = new THREE.AudioListener();
     camera.add(listener);
 
-    const sound = new Audio(listener);
-    const audioLoader = new AudioLoader();
+    const sound = new THREE.Audio(listener);
+    const audioLoader = new THREE.AudioLoader();
 
     audioLoader.load('imagery/Crystal Method - Vapor Trail.mp3', (buffer) => {
         sound.setBuffer(buffer);
@@ -26,18 +26,18 @@ function drawAudioViz(scene, threejsDrawing) {
         sound.play();
     });
 
-    const analyser = new AudioAnalyser(sound, 32); // 32 FFT bins
+    const analyser = new THREE.AudioAnalyser(sound, 32); // 32 FFT bins
 
     threejsDrawing.data.analyser = analyser;
 
     const bars = [];
-    const barGroup = new Group();
+    const barGroup = new THREE.Group();
     scene.add(barGroup);
 
     for (let i = 0; i < 32; i++) {
-        const geo = new BoxGeometry(0.5, 1, 0.5);
-        const mat = new MeshStandardMaterial({ color: 0x00ffff });
-        const bar = new Mesh(geo, mat);
+        const geo = new THREE.BoxGeometry(0.5, 1, 0.5);
+        const mat = new THREE.MeshStandardMaterial({ color: 0x00ffff });
+        const bar = new THREE.Mesh(geo, mat);
         bar.position.x = i - 16;
         barGroup.add(bar);
         bars.push(bar);
@@ -70,7 +70,7 @@ function drawAudioViz(scene, threejsDrawing) {
 
 
     // draw ambient light...
-    const light = new AmbientLight(0xffffff, 0.5);
+    const light = new THREE.AmbientLight(0xffffff, 0.5);
     scene.add(light);
 }
 
@@ -88,7 +88,7 @@ const audioVizDrawing = {
 //            onMouseClick(event, camera, renderer.domElement);
 //        },
     },
-    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
+    'animationCallback': (renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawing: any, camera: THREE.Camera) => {
         const { analyser, bars } = threejsDrawing.data;
         animateVisualizer(analyser, bars);
     },

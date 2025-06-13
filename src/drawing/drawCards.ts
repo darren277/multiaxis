@@ -1,5 +1,6 @@
-import { BoxGeometry, TextureLoader, Mesh, MeshBasicMaterial, Vector2, Vector3, AmbientLight, Raycaster, Plane, CanvasTexture, LinearMipMapLinearFilter, LinearFilter } from 'three';
+import * as THREE from "three";
 import { Tween, Easing } from 'tween';
+import { ThreeJSDrawing } from "../threejsDrawing";
 
 const cardWidth = 2.5;
 const cardHeight = 3.5;
@@ -23,7 +24,7 @@ const DeckConfig = {
 
 const textureCache = new Map();
 
-function hashHtml(htmlString) {
+function hashHtml(htmlString: string): number {
     let hash = 0;
     for (let i = 0; i < htmlString.length; i++) {
         hash = (hash << 5) - hash + htmlString.charCodeAt(i);
@@ -33,29 +34,29 @@ function hashHtml(htmlString) {
 }
 
 
-function getCanvasSizeForCard(cardWidth, cardHeight, scale = 400) {
+function getCanvasSizeForCard(cardWidth: number, cardHeight: number, scale = 400) {
     return {
         width:  Math.round(cardWidth  * scale),
         height: Math.round(cardHeight * scale)
     };
 }
 
-const raycaster = new Raycaster();
-const mouse = new Vector2();
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
 
 const gridSize = 1; // 1 unit grid spacing
 
-let draggingCard = null;
-let dragOffset = new Vector3();
+let draggingCard: THREE.Mesh | null = null;
+let dragOffset = new THREE.Vector3();
 
 let wasOrbitDisabled = false;
 
 let isDPressed = false;
 const dealtCards = new Set(); // track already-dealt cards
 
-const textureLoader = new TextureLoader();
+const textureLoader = new THREE.TextureLoader();
 
-function htmlToTexture(htmlString, width = 256, height = 384) {
+function htmlToTexture(htmlString: string, width = 256, height = 384) {
     // TODO: textureCache.set(card.id, texture);
 
     const key = `${hashHtml(htmlString)}-${width}x${height}`;
@@ -170,7 +171,7 @@ span.teal
             ctx.drawImage(img, 0, 0);
             URL.revokeObjectURL(url);
 
-            const texture = new CanvasTexture(canvas);
+            const texture = new THREE.CanvasTexture(canvas);
             texture.needsUpdate = true;
 
             // Cache and return
@@ -189,8 +190,8 @@ span.teal
 
 
 
-async function renderCard(card, cfg) {
-    const cardGeometry = new BoxGeometry(cfg.width, cfg.height, cfg.thickness);
+async function renderCard(card: any, cfg: any) {
+    const cardGeometry = new THREE.BoxGeometry(cfg.width, cfg.height, cfg.thickness);
 
     let cardFrontTexture;
 
@@ -198,19 +199,19 @@ async function renderCard(card, cfg) {
         const { width, height } = getCanvasSizeForCard(cfg.width, cfg.height);
         cardFrontTexture = await htmlToTexture(card.htmlContent, width, height);
         cardFrontTexture.anisotropy = cfg.anisotropy;
-        cardFrontTexture.minFilter = LinearMipMapLinearFilter;
-        cardFrontTexture.magFilter = LinearFilter;
+        cardFrontTexture.minFilter = THREE.LinearMipMapLinearFilter;
+        cardFrontTexture.magFilter = THREE.LinearFilter;
     } else {
         cardFrontTexture = textureLoader.load(`textures/${card.texture}`);
     }
     const cardBackTexture = textureLoader.load(`textures/${card.backTexture || 'cards/back_texture.png'}`);
 
     // Material for the front face
-    const frontMaterial = new MeshBasicMaterial({ map: cardFrontTexture });
+    const frontMaterial = new THREE.MeshBasicMaterial({ map: cardFrontTexture });
     // Material for the back face
-    const backMaterial  = new MeshBasicMaterial({ map: cardBackTexture });
+    const backMaterial  = new THREE.MeshBasicMaterial({ map: cardBackTexture });
     // Material for the edges – solid color or repeated edge texture
-    const edgeMaterial  = new MeshBasicMaterial({ color: 0xffffff });
+    const edgeMaterial  = new THREE.MeshBasicMaterial({ color: 0xffffff });
 
     const cardMaterials = [
       edgeMaterial, // +X side
@@ -221,7 +222,7 @@ async function renderCard(card, cfg) {
       backMaterial,  // -Z side
     ];
 
-    const cardMesh = new Mesh(cardGeometry, cardMaterials);
+    const cardMesh = new THREE.Mesh(cardGeometry, cardMaterials);
 
     // apply extra rotation for landscape cards
     if (cfg.faceRotationZ !== 0) cardMesh.rotation.z = cfg.faceRotationZ;
@@ -230,7 +231,7 @@ async function renderCard(card, cfg) {
 }
 
 
-async function renderCards(scene, cardDataArr, cfg) {
+async function renderCards(scene: THREE.Scene, cardDataArr: any[], cfg: any) {
     const cardMeshPromises = cardDataArr.map(async cardData => {
         const cardMesh = await renderCard(cardData, cfg);
         cardMesh.position.copy(cardData.position);
@@ -243,29 +244,29 @@ async function renderCards(scene, cardDataArr, cfg) {
 }
 
 
-function generateCardPositionsOld(numCards, horizontalSpacing = 3) {
+function generateCardPositionsOld(numCards: number, horizontalSpacing = 3) {
     const positions = [];
     for (let i = 0; i < numCards; i++) {
         const x = (i % 10) * horizontalSpacing; // 10 cards per row
         const y = Math.floor(i / 10) * horizontalSpacing;
-        positions.push(new Vector3(x, y, 0));
+        positions.push(new THREE.Vector3(x, y, 0));
     }
     return positions;
 }
 
 // with verticalSpacing
-async function generateCardPositions(numCards, horizontalSpacing = 3, verticalSpacing = 3) {
+async function generateCardPositions(numCards: number, horizontalSpacing = 3, verticalSpacing = 3) {
     const positions = [];
     for (let i = 0; i < numCards; i++) {
         const x = (i % 10) * horizontalSpacing; // 10 cards per row
         const y = Math.floor(i / 10) * verticalSpacing;
-        positions.push(new Vector3(x, y, 0));
+        positions.push(new THREE.Vector3(x, y, 0));
     }
     return positions;
 }
 
 
-function shuffleArray(array) {
+function shuffleArray(array: any[]) {
     for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [array[i], array[j]] = [array[j], array[i]];
@@ -273,7 +274,7 @@ function shuffleArray(array) {
 }
 
 
-function animateCardSwap(card, targetPos, onComplete) {
+function animateCardSwap(card: THREE.Mesh, targetPos: THREE.Vector3, onComplete?: () => void) {
     const liftHeight = 0.5; // how high to lift the card
 
     // 1) Lift up
@@ -297,7 +298,7 @@ function animateCardSwap(card, targetPos, onComplete) {
 }
 
 
-function shuffleAndAnimate(cards, cardPositions) {
+function shuffleAndAnimate(cards: THREE.Mesh[], cardPositions: THREE.Vector3[]) {
     // Create an array of indices [0..cards.length-1]
     const indices = Array.from({ length: cards.length }, (_, i) => i);
     shuffleArray(indices); // randomize
@@ -314,7 +315,7 @@ function shuffleAndAnimate(cards, cardPositions) {
 }
 
 
-function swapCardsOld(cards, i, j, onComplete) {
+function swapCardsOld(cards: THREE.Mesh[], i: number, j: number, onComplete?: () => void) {
     const cardA = cards[i];
     const cardB = cards[j];
     const posA = cardA.position.clone();
@@ -337,7 +338,7 @@ function swapCardsOld(cards, i, j, onComplete) {
  * Returns true if we actually launched a swap, false if one of the two
  * cards is busy.
  */
-function swapCards(cards, i, j, onComplete) {
+function swapCards(cards: THREE.Mesh[], i: number, j: number, onComplete?: () => void) {
     if (i === j) return false;                    // same index – ignore
 
     const cardA = cards[i];
@@ -353,7 +354,7 @@ function swapCards(cards, i, j, onComplete) {
 
     // move A up and out of the way
     const liftHeight = 0.6;
-    const tempPos = posA.clone().add(new Vector3(0, liftHeight, 0));
+    const tempPos = posA.clone().add(new THREE.Vector3(0, liftHeight, 0));
 
     animateCardSwap(cardA, tempPos, () => {
 
@@ -375,7 +376,7 @@ function swapCards(cards, i, j, onComplete) {
 
 const gapBetweenCards = 0.5;
 
-function dealOneCard(cards, cfg) {
+function dealOneCard(cards: THREE.Mesh[], cfg: any) {
     const nthCard = dealtCards.size;
 
     const available = cards.filter((_, i) => !dealtCards.has(i));
@@ -414,7 +415,7 @@ function dealOneCard(cards, cfg) {
 }
 
 
-function getCardValue(cardName) {
+function getCardValue(cardName: string) {
     switch (cardName) {
         case 'ace':
             return 11; // or 1, depending on the game rules
@@ -445,7 +446,7 @@ function getCardValue(cardName) {
     }
 }
 
-function calculateHandValue(dealtCards, cardsArray) {
+function calculateHandValue(dealtCards: Set<number>, cardsArray: any[]) {
     let totalValue = 0;
     let aceCount = 0;
 
@@ -468,7 +469,7 @@ function calculateHandValue(dealtCards, cardsArray) {
     return totalValue;
 }
 
-function animationCallback(cards) {
+function animationCallback(cards: THREE.Mesh[]) {
     const SWAPS_PER_PRESS = 10;
     let launched = 0;
     const maxTries = SWAPS_PER_PRESS * 3;   // prevent infinite loop
@@ -483,7 +484,7 @@ function animationCallback(cards) {
 // TODO: Is back_texture too high resolution?
 
 
-function drawCards(scene, data, threejsDrawing) {
+function drawCards(scene: THREE.Scene, data: any, threejsDrawing: any) {
     const cards = data.cards || [];
     const metadata = data.metadata || {};
     // cards format: `"ace_of_spaces": { "name": "Ace of Spades", "texture": "ace_of_spades.png", "backTexture": "cards/back_texture.png" }`
@@ -491,7 +492,7 @@ function drawCards(scene, data, threejsDrawing) {
         return {
             name: key,
             ...value,
-            position: new Vector3(0, 0, 0) // default position
+            position: new THREE.Vector3(0, 0, 0) // default position
         };
     });
 
@@ -512,7 +513,7 @@ function drawCards(scene, data, threejsDrawing) {
 
         threejsDrawing.data.ready = true;
 
-        const ambientLight = new AmbientLight(0x404040, 1);
+        const ambientLight = new THREE.AmbientLight(0x404040, 1);
         scene.add(ambientLight);
 
         window.addEventListener('mousedown', (e) => onMouseDown(e, threejsDrawing));
@@ -525,7 +526,7 @@ function drawCards(scene, data, threejsDrawing) {
 
 function logDealtCards() {
     const dealtCardsArray = Array.from(dealtCards);
-    const dealtCardPositions = window.cardPositions.filter((_, i) => dealtCardsArray.includes(i));
+    const dealtCardPositions = window.cardPositions.filter((_: any, i: number) => dealtCardsArray.includes(i));
     console.log('Dealt cards:', dealtCardsArray, 'Positions:', dealtCardPositions);
 }
 
@@ -542,7 +543,7 @@ window.addEventListener('keyup', (e) => {
     if (e.code === 'KeyD')   isDPressed    = false;
 });
 
-function onMouseDown(e, threejsDrawing) {
+function onMouseDown(e: MouseEvent, threejsDrawing: ThreeJSDrawing) {
     if (!threejsDrawing.data?.cards) return;
 
     const camera = threejsDrawing.data.camera;
@@ -557,10 +558,10 @@ function onMouseDown(e, threejsDrawing) {
         controls.enabled = false;
         wasOrbitDisabled = true;
 
-        draggingCard = intersects[0].object;
+        draggingCard = intersects[0].object as THREE.Mesh;
 
         // Find projected point on the table
-        const intersectionPoint = new Vector3();
+        const intersectionPoint = new THREE.Vector3();
         raycaster.ray.intersectPlane(tablePlane, intersectionPoint);
 
         dragOffset.copy(intersectionPoint).sub(draggingCard.position);
@@ -568,14 +569,14 @@ function onMouseDown(e, threejsDrawing) {
 }
 
 function createLockedPlane(axis = 'y', value = 0) {
-    const normals = {x: new Vector3(1, 0, 0), y: new Vector3(0, 1, 0), z: new Vector3(0, 0, 1)};
-    return new Plane(normals[axis], value);
+    const normals = {x: new THREE.Vector3(1, 0, 0), y: new THREE.Vector3(0, 1, 0), z: new THREE.Vector3(0, 0, 1)};
+    return new THREE.Plane(normals[axis], value);
 }
 
 const tablePlane = createLockedPlane('y', 0);
 const wallPlane = createLockedPlane('x', 0);
 
-function snapToGrid(pos, allowedAxes = ['x', 'z']) {
+function snapToGrid(pos: THREE.Vector3, allowedAxes = ['x', 'z']) {
     const snapped = pos.clone();
     if (allowedAxes.includes('x')) snapped.x = Math.round(snapped.x / gridSize) * gridSize;
     if (allowedAxes.includes('y')) snapped.y = Math.round(snapped.y / gridSize) * gridSize;
@@ -583,7 +584,7 @@ function snapToGrid(pos, allowedAxes = ['x', 'z']) {
     return snapped;
 }
 
-function onMouseMove(e, threejsDrawing) {
+function onMouseMove(e: MouseEvent, threejsDrawing: ThreeJSDrawing) {
     if (!draggingCard) return;
 
     const camera = threejsDrawing.data.camera;
@@ -596,7 +597,7 @@ function onMouseMove(e, threejsDrawing) {
     mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
     mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
 
-    const intersectionPoint = new Vector3();
+    const intersectionPoint = new THREE.Vector3();
     raycaster.setFromCamera(mouse, camera);
     raycaster.ray.intersectPlane(wallPlane, intersectionPoint);
 
@@ -608,7 +609,7 @@ function onMouseMove(e, threejsDrawing) {
     }
 }
 
-function onMouseUp(e, threejsDrawing) {
+function onMouseUp(e: MouseEvent, threejsDrawing: ThreeJSDrawing) {
     draggingCard = null;
 
     if (wasOrbitDisabled) {
@@ -617,7 +618,7 @@ function onMouseUp(e, threejsDrawing) {
     }
 }
 
-function getIntersections(event, camera, canvas, objects) {
+function getIntersections(event: MouseEvent, camera: THREE.Camera, canvas: HTMLCanvasElement, objects: THREE.Object3D[]) {
     const rect = canvas.getBoundingClientRect();
     mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
     mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
@@ -632,7 +633,7 @@ const cardsDrawing = {
         {'func': drawCards, 'dataSrc': 'cards', 'dataType': 'json'},
     ],
     'eventListeners': null,
-    'animationCallback': (renderer, timestamp, threejsDrawing, camera) => {
+    'animationCallback': (renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawing: ThreeJSDrawing, camera: THREE.Camera) => {
         if (!threejsDrawing.data.ready || !threejsDrawing.data.cards) {
             console.warn('No cards found.');
             return;
