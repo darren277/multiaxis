@@ -83,7 +83,15 @@ function createPlanet(planetData: Planet, scene: THREE.Scene) {
 }
 
 
-function castStars(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
+type PlanetObject = ReturnType<typeof createPlanet>;
+
+type OrbitsDrawingData = {
+    planetObjects: PlanetObject[];
+    skybox?: THREE.Mesh;
+    [key: string]: any;
+};
+
+function castStars(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing & { data: OrbitsDrawingData }) {
     const starTexture = textureLoader.load('textures/8k_stars.jpg');
 
     // reduce mipmap blurring
@@ -114,15 +122,15 @@ function drawFloor(scene: THREE.Scene, orbitRadius: number) {
         color: 0x888888,
     });
     const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-    floor.rotation.x = -Math.PI / 2; // make it horizontal
-    floor.position.y = -100;
+    floor.rotation.x = -Math.PI / 2; // Rotate to make it horizontal
     floor.receiveShadow = true;
     scene.add(floor);
 }
 
+
 // TODO: The Moon...
 
-function drawOrbits(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
+function drawOrbits(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing & { data: OrbitsDrawingData }) {
     const sunGeometry = new THREE.SphereGeometry(sunRadius, 32, 32);
     //const sunMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00 });
     // (Or a more realistic texture for the Sun.)
@@ -195,6 +203,11 @@ const orbitsDrawing = {
         }
 
         // Keep skybox centered on camera
+        if (threejsDrawing.data.skybox) {
+            threejsDrawing.data.skybox.position.copy(camera.position);
+        }
+
+        // Keep skybox centered on camera
         threejsDrawing.data.skybox.position.copy(camera.position);
     },
     'data': {
@@ -207,7 +220,7 @@ const orbitsDrawing = {
         },
         'clippingPlane': 200000
     }
-}
+};
 
 
 export { orbitsDrawing };

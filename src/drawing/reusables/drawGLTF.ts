@@ -45,7 +45,7 @@ function drawGLTF(scene: THREE.Scene, data: GLTF, threejsDrawing: ThreeJSDrawing
     scene.add(floor);
 
     // Add basic lights
-    drawBasicLights(scene);
+    drawBasicLights(scene, threejsDrawing);
 
     const leftArm = gltf.scene.getObjectByName("UpperArm_L");
     const rightArm = gltf.scene.getObjectByName("UpperArm_R");
@@ -71,7 +71,7 @@ const gltfDrawing = {
     ],
     'eventListeners': null,
     'animationCallback': (renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawing: ThreeJSDrawing, camera: THREE.Camera) => {
-        const gltf = threejsDrawing.data.gltf;
+        const gltf = threejsDrawing.data.gltf as GLTF | undefined;
         const scene = threejsDrawing.data.scene;
         if (!gltf) {
             return;
@@ -79,6 +79,7 @@ const gltfDrawing = {
         animateParts(gltf, timestamp);
     },
     'data': {
+        gltf: undefined
     }
 }
 

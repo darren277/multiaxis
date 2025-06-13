@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { GUI } from 'lil-gui';
+//import { GUI } from 'lil-gui';
 
 // Import our modular “draw” functions
 import { drawLights, updateLights, lightingParams, bulbLuminousPowers, hemiLuminousIrradiances } from './drawLights.js';
@@ -21,7 +21,7 @@ function drawRoom(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
     threejsDrawing.data.bulbMat   = lights.bulbMat;
     threejsDrawing.data.hemiLight = lights.hemiLight;
 
-    threejsDrawing.data.hemiLight.groundColor.set(0x666666);
+    (threejsDrawing.data.hemiLight as THREE.HemisphereLight).groundColor.set(0x666666);
 
     const woodTex = loadWoodTextures();           // one‑time
     const woodMat = makeWoodMaterial(woodTex);    // one shared material
@@ -29,38 +29,42 @@ function drawRoom(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
     // ~~~~~~~~~~~~~~~~~~
     // Draw floor
     threejsDrawing.data.floor = drawFloor(scene, woodMat, 200);
-    threejsDrawing.data.floor.userData.isGround = true;   // optional flag
-    threejsDrawing.data.worldMeshes.push(threejsDrawing.data.floor);          // add once at scene setup
+    (threejsDrawing.data.floor as THREE.Mesh).userData.isGround = true;   // optional flag
+    if (!threejsDrawing.data.worldMeshes) {
+        threejsDrawing.data.worldMeshes = [];
+    }
+    threejsDrawing.data.worldMeshes.push(threejsDrawing.data.floor as THREE.Object3D);          // add once at scene setup
 
     // Draw ceiling
     threejsDrawing.data.ceiling = drawFloor(scene, woodMat, 200);
-    threejsDrawing.data.ceiling.rotation.x = Math.PI / 2;
-    threejsDrawing.data.ceiling.position.y = 200;
+    (threejsDrawing.data.ceiling as THREE.Mesh).rotation.x = Math.PI / 2;
+    (threejsDrawing.data.ceiling as THREE.Mesh).position.y = 200;
     addObstacle(threejsDrawing.data.staticBoxes, threejsDrawing.data.ceiling);
 
     // Draw walls
     threejsDrawing.data.southWall = drawFloor(scene, woodMat, 200);
-    threejsDrawing.data.southWall.rotation.x = Math.PI;
-    threejsDrawing.data.southWall.position.z = -100;
-    threejsDrawing.data.southWall.position.y = 100;
+    //threejsDrawing.data.southWall.rotation.x = Math.PI;
+    (threejsDrawing.data.southWall as THREE.Mesh).rotation.x = -Math.PI / 2; // rotate to horizontal
+    (threejsDrawing.data.southWall as THREE.Mesh).position.z = -100;
+    (threejsDrawing.data.southWall as THREE.Mesh).position.y = 100;
     addObstacle(threejsDrawing.data.staticBoxes, threejsDrawing.data.southWall);
 
     threejsDrawing.data.northWall = drawFloor(scene, woodMat, 200);
-    threejsDrawing.data.northWall.rotation.x = Math.PI;
-    threejsDrawing.data.northWall.position.z = 100;
-    threejsDrawing.data.northWall.position.y = 100;
+    (threejsDrawing.data.northWall as THREE.Mesh).rotation.x = Math.PI;
+    (threejsDrawing.data.northWall as THREE.Mesh).position.z = 100;
+    (threejsDrawing.data.northWall as THREE.Mesh).position.y = 100;
     addObstacle(threejsDrawing.data.staticBoxes, threejsDrawing.data.northWall);
 
     threejsDrawing.data.eastWall = drawFloor(scene, woodMat, 200);
-    threejsDrawing.data.eastWall.rotation.y = Math.PI / 2;
-    threejsDrawing.data.eastWall.position.x = 100;
-    threejsDrawing.data.eastWall.position.y = 100;
+    (threejsDrawing.data.eastWall as THREE.Mesh).rotation.y = Math.PI / 2;
+    (threejsDrawing.data.eastWall as THREE.Mesh).position.x = 100;
+    (threejsDrawing.data.eastWall as THREE.Mesh).position.y = 100;
     addObstacle(threejsDrawing.data.staticBoxes, threejsDrawing.data.eastWall);
 
     threejsDrawing.data.westWall = drawFloor(scene, woodMat, 200);
-    threejsDrawing.data.westWall.rotation.y = -Math.PI / 2;
-    threejsDrawing.data.westWall.position.x = -100;
-    threejsDrawing.data.westWall.position.y = 100;
+    (threejsDrawing.data.westWall as THREE.Mesh).rotation.y = -Math.PI / 2;
+    (threejsDrawing.data.westWall as THREE.Mesh).position.x = -100;
+    (threejsDrawing.data.westWall as THREE.Mesh).position.y = 100;
     addObstacle(threejsDrawing.data.staticBoxes, threejsDrawing.data.westWall);
 
     // ~~~~~~~~~~~~~~~~~~
@@ -91,7 +95,7 @@ function drawRoom(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
     threejsDrawing.data.movingMeshes.push(elevator);
     threejsDrawing.data.worldMeshes.push(elevator);
 
-    scene.updateMatrixWorld(true);
+    (scene as THREE.Scene).updateMatrixWorld(true);
     threejsDrawing.data.worldMeshes.forEach(m => {console.assert(!m.matrixWorldNeedsUpdate, `${m.uuid.slice(0,8)} still dirty (${m.name || 'unnamed'})`);});
 
     // ~~~~~~~~~~~~~~~~~~
@@ -182,7 +186,7 @@ export function animateRoom(renderer: THREE.WebGLRenderer, timestamp: number, th
     animateLights(renderer, threejsDrawing);
 
     const scene = threejsDrawing.data.scene;
-    const controls = threejsDrawing.data.controls;
+    const controls = threejsDrawing.data.controls as { object: THREE.Object3D };
     if (!controls) {
         console.warn('No controls found.');
         return;

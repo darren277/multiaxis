@@ -40,7 +40,7 @@ async function initPhysics(threejsDrawing: ThreeJSDrawing) {
     threejsDrawing.data.broadphase = new Ammo.btDbvtBroadphase();
     threejsDrawing.data.solver = new Ammo.btSequentialImpulseConstraintSolver();
     threejsDrawing.data.physicsWorld = new Ammo.btDiscreteDynamicsWorld(threejsDrawing.data.dispatcher, threejsDrawing.data.broadphase, threejsDrawing.data.solver, threejsDrawing.data.collisionConfiguration);
-    threejsDrawing.data.physicsWorld.setGravity(new Ammo.btVector3(0, - gravityConstant, 0));
+    (threejsDrawing.data.physicsWorld as any).setGravity(new Ammo.btVector3(0, - gravityConstant, 0));
 
     const transformAux1 = new Ammo.btTransform();
     const tempBtVec3_1 = new Ammo.btVector3(0, 0, 0);

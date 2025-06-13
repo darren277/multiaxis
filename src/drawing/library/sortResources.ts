@@ -17,8 +17,8 @@ function sortAlphabeticallyByName(resources: Resource[]) {
 
 function sortAlphabeticallyByAuthorSurname(resources: Resource[]) {
     return resources.sort((a, b) => {
-        const surnameA = a.author.split(' ').pop().toLowerCase();
-        const surnameB = b.author.split(' ').pop().toLowerCase();
+        const surnameA = a.author ? (a.author.split(' ').pop() || '').toLowerCase() : '';
+        const surnameB = b.author ? (b.author.split(' ').pop() || '').toLowerCase() : '';
 
         if (surnameA < surnameB) {
             return -1;

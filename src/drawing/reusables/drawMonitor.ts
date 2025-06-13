@@ -420,7 +420,7 @@ export default class MonitorScreen extends EventEmitter {
         document.addEventListener(
             'mousemove',
             (event: MouseEvent) => {
-                const id = event.target.id;
+                const id = event.target && 'id' in event.target ? (event.target as HTMLElement).id : null;
                 if (id === 'computer-screen') {
                     event.inComputer = true;
                 }
@@ -768,7 +768,7 @@ export default class MonitorScreen extends EventEmitter {
         if (this.dimmingPlane) {
             const planeNormal = new THREE.Vector3(0, 0, 1);
             const viewVector = new THREE.Vector3();
-            viewVector.copy(this.camera.instance.position);
+            viewVector.copy(this.camera.position);
             viewVector.sub(this.position);
             viewVector.normalize();
 
@@ -776,7 +776,7 @@ export default class MonitorScreen extends EventEmitter {
 
             // calculate the distance from the camera vector to the plane vector
             const dimPos = this.dimmingPlane.position;
-            const camPos = this.camera.instance.position;
+            const camPos = this.camera.position;
 
             const distance = Math.sqrt((camPos.x - dimPos.x) ** 2 + (camPos.y - dimPos.y) ** 2 + (camPos.z - dimPos.z) ** 2);
 
@@ -826,7 +826,7 @@ class Computer {
     scene: THREE.Scene;
     gltfModel: any;
     texture: any;
-    bakedModel: BakedModel;
+    bakedModel!: BakedModel;
 
     constructor(scene: THREE.Scene, gltfModel: any, texture: any) {
         this.scene = scene;
@@ -867,7 +867,19 @@ async function drawMonitor(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
 
     // Provide a data bucket if not present
     if (!threejsDrawing.data) threejsDrawing.data = {};
-    const data = threejsDrawing.data;
+    const data = threejsDrawing.data as {
+        monitorScreen?: MonitorScreen;
+        url?: string;
+        cssScene?: THREE.Scene;
+        camera?: THREE.Camera;
+        controls?: {
+            target: THREE.Vector3;
+            update: () => void;
+            minDistance: number;
+            maxDistance: number;
+        };
+        [key: string]: any;
+    };
 
     // Create the monitor screen
     data.monitorScreen = new MonitorScreen(data.url);
@@ -888,15 +900,23 @@ async function drawMonitor(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
     const sphere = new THREE.Sphere();
     const radius    = box.getBoundingSphere(sphere).radius;
 
+    // Type assertion for controls (assuming OrbitControls)
+    const controls = threejsDrawing.data.controls as {
+        target: THREE.Vector3;
+        update: () => void;
+        minDistance: number;
+        maxDistance: number;
+    };
+
     // put target in the logical centre of the computer setup
-    threejsDrawing.data.controls.target.copy(sphere.center);
-    threejsDrawing.data.controls.update();
+    controls.target.copy(sphere.center);
+    controls.update();
 
-    threejsDrawing.data.controls.minDistance = sphere.radius * 0.5;
-    threejsDrawing.data.controls.maxDistance = sphere.radius * 5;
+    controls.minDistance = sphere.radius * 0.5;
+    controls.maxDistance = sphere.radius * 5;
 
-    threejsDrawing.data.camera.near = 0.1;
-    threejsDrawing.data.camera.far  = 100;
+    (threejsDrawing.data.camera as THREE.PerspectiveCamera).near = 0.1;
+    (threejsDrawing.data.camera as THREE.PerspectiveCamera).far  = 100;
 
     // Create the screen
     data.monitorScreen.mouse = new Mouse();

@@ -14,7 +14,7 @@ type TweenFunctionParams = {
     duration?: number; // Duration in milliseconds
 };
 
-function tweenCamera({ camera, controls, toPos, lookAt, duration = 3000 }: TweenFunctionParams, p0: { x: number | undefined; y: number; z: number | undefined; }, p1: null) {
+function tweenCamera(camera: THREE.Camera, { camera, controls, toPos, lookAt, duration = 3000 }: TweenFunctionParams, p0: { x: number | undefined; y: number; z: number | undefined; }, p1: null) {
     const from = {x: camera.position.x, y: camera.position.y, z: camera.position.z};
 
     new Tween(from).to(toPos, duration).easing(Easing.Quadratic.InOut)
@@ -399,7 +399,10 @@ function createCurvedLink(source: GraphNode, target: GraphNode, color = 0x8888ff
     const geometry = new THREE.TubeGeometry(curve, 20, thickness, 8, false);
     const material = new THREE.MeshStandardMaterial({ color });
 
-    return new THREE.Mesh(geometry, material);
+    const mesh = new THREE.Mesh(geometry, material);
+    // Store the thickness/radius for later updates
+    (mesh as any).tubeRadius = thickness;
+    return mesh;
 }
 
 
@@ -407,9 +410,6 @@ function createCurvedLink(source: GraphNode, target: GraphNode, color = 0x8888ff
  * Updates the geometry of an existing curved tube mesh between two nodes.
  *
  * @param {THREE.Mesh} mesh - The mesh to update (created from TubeGeometry)
- * @param {GraphNode} source - The source node (must have x, y, z)
- * @param {GraphNode} target - The target node (must have x, y, z)
- */
 function updateCurvedLink(mesh: THREE.Mesh, source: GraphNode, target: GraphNode) {
     // Remove old geometry...
     mesh.geometry.dispose();
@@ -423,8 +423,8 @@ function updateCurvedLink(mesh: THREE.Mesh, source: GraphNode, target: GraphNode
 
     const curve = new THREE.QuadraticBezierCurve3(start, mid, end);
 
-    // Fallback in case radius is undefined
-    const radius = mesh.geometry.parameters?.radius ?? 0.1;
+    // Retrieve the stored radius (thickness) from the mesh, fallback to 0.1 if not set
+    const radius = (mesh as any).tubeRadius ?? 0.1;
     const newGeometry = new THREE.TubeGeometry(curve, 20, radius, 8, false);
 
     mesh.geometry = newGeometry;
@@ -442,7 +442,7 @@ function updateCurvedLink(mesh: THREE.Mesh, source: GraphNode, target: GraphNode
 function updateThreeJSPositions(nodeMeshes: THREE.Mesh[], linkMeshes: THREE.Mesh[], graph: Graph) {
     nodeMeshes.forEach((mesh, i) => {
         const node = graph.nodes[i];
-        mesh.position.set(node.x, node.y ?? 0.5, node.z);
+        mesh.position.set(node.x ?? 0, node.y ?? 0.5, node.z ?? 0);
     });
 
     // Potential issue: Are link.source and link.target always full node objects during the force simulation phase?
@@ -681,7 +681,7 @@ function handleLeft(camera: THREE.Camera, controls: any, adjacencyMap: Map<numbe
         const nextId = neighbors[navState.selectionIndex];
         const nextNode = nodeMap.get(nextId);
 
-        handleSideways(nextId, nextNode, nextId, nextNode, selector);
+        handleSideways(camera, controls, nextId, nextNode, selector);
     }
 }
 

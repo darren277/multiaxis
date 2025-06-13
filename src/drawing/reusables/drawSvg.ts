@@ -4,10 +4,10 @@ import { drawBasicLights } from './drawLights.js';
 import { ThreeJSDrawing } from "../../threejsDrawing.js";
 
 const svgLoader = new SVGLoader();
-const interactiveSvgGroups = [];
+const interactiveSvgGroups: THREE.Object3D<THREE.Object3DEventMap>[] = [];
 const raycaster = new THREE.Raycaster();
 const pointer   = new THREE.Vector2();
-let   hovered   = null;
+let   hovered: THREE.Object3D<THREE.Object3DEventMap> | null   = null;
 
 function cssToColor(cssString: string, fallback = 0x888888) {
     const c = new THREE.Color();
@@ -286,7 +286,7 @@ function drawSvg(scene: THREE.Scene, data: any, threejsDrawing: ThreeJSDrawing) 
     scene.add(ambientLight);
 }
 
-const toArray = (v, n) => Array.isArray(v) ? v : Array(n).fill(v);
+const toArray = (v: any, n: number) => Array.isArray(v) ? v : Array(n).fill(v);
 const defaultDepth = 1;
 
 function buildSvgGroup({
@@ -358,7 +358,16 @@ function loadSvg(url: string) {
     });
 }
 
-const svgsToRender = [
+type SvgToRenderConfig = {
+    data_src: string;
+    position: number[];
+    rotation: number[];
+    scale: number;
+    depth: number;
+    data?: any;
+};
+
+const svgsToRender: SvgToRenderConfig[] = [
     {
         //data: svgData_1,              // output of SVGLoader.parse() or loader.loadAsync()
         data_src: 'OpenProject_out_annotated', // path to SVG file
@@ -431,15 +440,17 @@ function onPointerMove(evt: PointerEvent, renderer: THREE.WebGLRenderer, camera:
 
     if (newHovered !== hovered) {
         if (hovered) hovered.traverse(ch => {
-            if (ch.material?.color) ch.material.color.copy(ch.userData.origColor);
+            if ((ch as THREE.Mesh).material && ((ch as THREE.Mesh).material as any).color) {
+                ((ch as THREE.Mesh).material as any).color.copy(ch.userData.origColor);
+            }
         });
         hovered = newHovered;
         if (hovered) hovered.traverse(ch => {
-            if (ch.material?.color) {
+            if ((ch as THREE.Mesh).material && ((ch as THREE.Mesh).material as any).color) {
                 if (!ch.userData.origColor) {
-                    ch.userData.origColor = ch.material.color.clone();
+                    ch.userData.origColor = ((ch as THREE.Mesh).material as any).color.clone();
                 }
-                ch.material.color.offsetHSL(0, 0, 0.2);
+                ((ch as THREE.Mesh).material as any).color.offsetHSL(0, 0, 0.2);
             }
         });
 
@@ -447,7 +458,7 @@ function onPointerMove(evt: PointerEvent, renderer: THREE.WebGLRenderer, camera:
     }
 }
 
-function findInteractiveParent(obj: THREE.Object3D) {
+function findInteractiveParent(obj: THREE.Object3D | null): THREE.Object3D | null {
     while (obj) {
         if (obj.userData?.kind === 'svgPath') return obj;
         obj = obj.parent;
@@ -455,7 +466,7 @@ function findInteractiveParent(obj: THREE.Object3D) {
     return null;
 }
 
-function onPointerClick(evt: PointerEvent) {
+function onPointerClick(evt: PointerEvent, renderer: any, camera: any) {
     if (!hovered) return;            // nothing under pointer
 
     // simple demo: log info

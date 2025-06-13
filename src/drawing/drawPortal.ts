@@ -7,6 +7,17 @@ let leftRT: THREE.WebGLRenderTarget, rightRT: THREE.WebGLRenderTarget;
 let sphere: THREE.Mesh, velocity = new THREE.Vector3(0.06, 0, 0);   // constant rightward speed
 const clock = new THREE.Clock();
 
+// Declare reflectedPosition and other portal-related variables at module scope
+let reflectedPosition: THREE.Vector3;
+let portalCamera: THREE.PerspectiveCamera;
+let leftPortalTexture: THREE.WebGLRenderTarget;
+let rightPortalTexture: THREE.WebGLRenderTarget;
+let bottomLeftCorner: THREE.Vector3;
+let bottomRightCorner: THREE.Vector3;
+let topLeftCorner: THREE.Vector3;
+let smallSphereOne: THREE.Mesh;
+let smallSphereTwo: THREE.Mesh;
+
 
 function init(renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE.PerspectiveCamera) {
     renderer.localClippingEnabled = true;
@@ -103,7 +114,14 @@ function init(renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE.P
     scene.add(blueLight);
 }
 
-function renderPortal( thisPortalMesh: THREE.Mesh, otherPortalMesh: THREE.Mesh, thisPortalTexture: THREE.WebGLRenderTarget ) {
+function renderPortal(
+    renderer: THREE.WebGLRenderer,
+    scene: THREE.Scene,
+    camera: THREE.PerspectiveCamera,
+    thisPortalMesh: THREE.Mesh,
+    otherPortalMesh: THREE.Mesh,
+    thisPortalTexture: THREE.WebGLRenderTarget
+) {
 
     // set the portal camera position to be reflected about the portal plane
     thisPortalMesh.worldToLocal( reflectedPosition.copy( camera.position ) );
@@ -151,9 +169,9 @@ function animate( renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THR
     smallSphereTwo.rotation.y = (Math.PI / 2) - timerTwo * 0.1;
     smallSphereTwo.rotation.z = timerTwo * 0.8;
 
-    // save the original camera properties
-    const currentRenderTarget = renderer.getRenderTarget();
-    const currentXrEnabled = renderer.xr.enabled;
+    // render the portal effect
+    renderPortal(renderer, scene, camera, leftPortal, rightPortal, leftPortalTexture);
+    renderPortal(renderer, scene, camera, rightPortal, leftPortal, rightPortalTexture);
     const currentShadowAutoUpdate = renderer.shadowMap.autoUpdate;
     renderer.xr.enabled = false; // Avoid camera modification
     renderer.shadowMap.autoUpdate = false; // Avoid re-computing shadows

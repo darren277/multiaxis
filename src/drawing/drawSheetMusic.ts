@@ -273,7 +273,7 @@ function drawMusic(scene: THREE.Scene, data: any, state: any) {
 
         // iterate over all children of the gltf scene
         piano.traverse((child: THREE.Object3D) => {
-            if (child.isMesh) {
+            if (child instanceof THREE.Mesh) {
                 child.castShadow = true;
                 child.receiveShadow = true;
             }
@@ -368,16 +368,18 @@ const musicDrawing = {
         const elapsedMs = timestamp - startTime;
         const elapsedSec = elapsedMs / 1000;
 
-        const tempoScale = threejsDrawing.data.tempoScale;
+        // Explicitly type data to inform TypeScript about tempoScale
+        const data = threejsDrawing.data as { tempoScale: number, sheetMusic: any };
+        const tempoScale = data.tempoScale;        
 
         const scaledElapsedSec = elapsedSec * tempoScale;
 
-        if (!threejsDrawing.data.sheetMusic) {
+        if (!data.sheetMusic) {
             // it takes a few seconds to load the sheet music
             console.warn("No sheet music data found");
             return;
         }
-        threejsDrawing.data.sheetMusic.update(scaledElapsedSec);
+        data.sheetMusic.update(scaledElapsedSec);
     },
     'data': {
         'sheetMusic': null,

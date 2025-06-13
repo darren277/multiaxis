@@ -203,7 +203,6 @@ function createCaptionedItem(scene: THREE.Scene, item: Item, isVideo: boolean, w
             labelEl.setAttribute(key, value);
         }
 
-        const labelEl = document.createElement('div');
         labelEl.className = 'caption-label ' + customClasses;
         labelEl.innerHTML = captionText;
 
@@ -212,7 +211,12 @@ function createCaptionedItem(scene: THREE.Scene, item: Item, isVideo: boolean, w
         labelEl.style.pointerEvents = 'none';
 
         // You probably have a container for 2D overlays
-        document.getElementById('labelContainer2d').appendChild(labelEl);
+        const labelContainer = document.getElementById('labelContainer2d');
+        if (labelContainer) {
+            labelContainer.appendChild(labelEl);
+        } else {
+            console.warn("labelContainer2d element not found in the DOM.");
+        }
 
         return { mesh, labelObject: labelEl, item }; // return the DOM element
     }

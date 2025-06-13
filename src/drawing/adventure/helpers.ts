@@ -57,7 +57,9 @@ function goToStep(camera: THREE.Camera, stepId: string, adventureSteps: { [key: 
 
     // Update overlay text
     const overlayText = document.getElementById("overlayText");
-    overlayText.innerHTML = stepData.text;
+    if (overlayText) {
+        overlayText.innerHTML = stepData.text;
+    }
 
     // If the step has an autoNext property, schedule it
     if (stepData.autoNext) {
@@ -77,7 +79,10 @@ function precomputeBackgroundPlanes(scene: THREE.Scene, threejsDrawing: ThreeJSD
     const bgLoader = new THREE.TextureLoader();
     const bgMeshes: { [key: string]: THREE.Mesh } = {};
 
-    if (!threejsDrawing.data || !threejsDrawing.data.allPhotoEntries) {
+    if (
+        !threejsDrawing.data ||
+        !Array.isArray(threejsDrawing.data.allPhotoEntries)
+    ) {
         console.warn("BRUH!@!!!! No photo entries found in threejsDrawing data.");
         return;
     }

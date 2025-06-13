@@ -18,12 +18,12 @@ function drawTown(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
     if (!threejsDrawing.data.worldMeshes) {
         threejsDrawing.data.worldMeshes = [];
     }
-    threejsDrawing.data.worldMeshes.push(threejsDrawing.data.floor);
+    threejsDrawing.data.worldMeshes.push(threejsDrawing.data.floor as THREE.Object3D);
 
     (threejsDrawing.data.floor as THREE.Mesh).rotation.x = -Math.PI / 2;
     (threejsDrawing.data.floor as THREE.Mesh).receiveShadow = true;
 
-    scene.add(threejsDrawing.data.floor);
+    scene.add(threejsDrawing.data.floor as THREE.Object3D);
 
     // Add basic lights
     //drawBasicLights(scene);
@@ -39,7 +39,7 @@ function drawTown(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
 let lastTime = 0;
 
 function animateTown(
-    renderer: THREE.Renderer,
+    renderer: THREE.WebGLRenderer,
     timestamp: number,
     threejsDrawing: ThreeJSDrawing,
     camera: THREE.Camera
@@ -66,13 +66,17 @@ function animateTown(
         animateElevator(lift, player, elapsed);
     }
 
-    updateObstacleBoxes(threejsDrawing.data.staticBoxes, threejsDrawing.data.movingMeshes, threejsDrawing.data.obstacleBoxes);
+    updateObstacleBoxes(
+        threejsDrawing.data.staticBoxes ?? [],
+        threejsDrawing.data.movingMeshes ?? [],
+        threejsDrawing.data.obstacleBoxes ?? []
+    );
 
     walkingAnimationCallback(scene, controls, threejsDrawing.data.collision, elapsed, true);
 }
 
 function animationCallback(
-    renderer: THREE.Renderer,
+    renderer: THREE.WebGLRenderer,
     timestamp: number,
     threejsDrawing: ThreeJSDrawing,
     camera: THREE.Camera

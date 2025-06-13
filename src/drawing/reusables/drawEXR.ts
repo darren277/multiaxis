@@ -4,7 +4,7 @@ import { ThreeJSDrawing } from '../../threejsDrawing';
 
 
 function drawExrPMREM(scene: THREE.Scene, texture: THREE.Texture, threejsDrawing: ThreeJSDrawing) {
-    const { renderer } = threejsDrawing.data;
+    const { renderer } = threejsDrawing.data as { renderer: THREE.WebGLRenderer };
     const pmremGenerator = new THREE.PMREMGenerator(renderer);
     pmremGenerator.compileEquirectangularShader();
 

@@ -14,7 +14,9 @@ const receptorColorMap = {
 
 const highlightColor = 0xffff00; // universal "binding" color
 
-function createNeurotransmitter(type = 'glutamate', position = new THREE.Vector3()) {
+type NeurotransmitterType = 'glutamate' | 'dopamine' | 'serotonin' | 'gaba';
+
+function createNeurotransmitter(type: NeurotransmitterType = 'glutamate', position = new THREE.Vector3()) {
     const geo = modelRegistry.neurotransmitters.geometries[type];
     const mat = modelRegistry.neurotransmitters.materials[type].clone(); // clone so you can animate opacity, etc.
 
@@ -33,7 +35,9 @@ function createNeurotransmitter(type = 'glutamate', position = new THREE.Vector3
     return particle;
 }
 
-function createReceptor(type = 'AMPA', position = new THREE.Vector3()) {
+type ReceptorType = 'AMPA' | 'NMDA' | 'GABA_A';
+
+function createReceptor(type: ReceptorType = 'AMPA', position = new THREE.Vector3()) {
     const geo = modelRegistry.receptors.geometries[type];
     const mat = modelRegistry.receptors.materials[type].clone();
 

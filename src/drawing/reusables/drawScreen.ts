@@ -35,14 +35,7 @@ type ScreenParams = {
  * @returns {{mesh:THREE.Mesh, css:CSS3DObject}}
  */
 function drawScreen(
-    webglScene,
-    cssScene,
-    url,
-    thumbnail,
-    width = 25,
-    height = 15,
-    position = new THREE.Vector3(0, 5, -98),
-    rotation = new THREE.Euler(0, 0, 0)
+    { webglScene, cssScene, url, thumbnail, width = 25, height = 15, position = new THREE.Vector3(0, 5, -98), rotation = new THREE.Euler(0, 0, 0) }: ScreenParams
 ) {
     const texLoader = new THREE.TextureLoader();
     const tex       = texLoader.load(thumbnail);

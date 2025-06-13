@@ -162,10 +162,10 @@ const quantumDrawing = {
         if (!threejsDrawing.data.group) {
             return;
         }
-        threejsDrawing.data.group.rotation.y += 0.005;
+        (threejsDrawing.data.group as THREE.Group).rotation.y += 0.005;
     },
     'data': {
-        'group': null,
+        'group': null as THREE.Group | null,
     }
 }
 

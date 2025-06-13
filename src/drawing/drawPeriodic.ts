@@ -16,7 +16,7 @@ function drawTable(scene: THREE.Scene, objects: any[], targets: any, data: any[]
 
         const number = document.createElement('div');
         number.className = 'number';
-        number.textContent = (i/5) + 1;
+        number.textContent = ((i/5) + 1).toString();
         element.appendChild(number);
 
         const symbol = document.createElement('div');

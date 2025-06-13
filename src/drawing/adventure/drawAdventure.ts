@@ -217,7 +217,12 @@ async function drawAdventure(scene: THREE.Scene, data: any, threejsDrawing: any)
         console.log('creating other item', item);
         const isVideo = item.video && item.video !== "";
         //const use3dRenderer = false;
-        const { mesh, labelObject } = createCaptionedItem(scene, item, isVideo, threejsDrawing.data.worldWidth, threejsDrawing.data.worldHeight, use3DRenderer);
+        const entry = createCaptionedItem(scene, item, isVideo, threejsDrawing.data.worldWidth, threejsDrawing.data.worldHeight, use3DRenderer);
+        if (!entry) {
+            console.warn('Failed to create entry for other item:', item);
+            return null; // Skip this item if creation failed
+        }
+        const { mesh, labelObject } = entry;
         console.log('other item', mesh, labelObject);
         // Mesh gets added inside of function: scene.add(mesh);
         if (use3DRenderer && css3DRenderer) {
@@ -271,7 +276,7 @@ const adventureDrawing = {
             // Not super important, though.
             // NOTE ON THE ABOVE: I've started using `data` as both so for the sake of decluttering, we are now getting rid of `uiState` altogether.
 
-            event.preventDefault();
+            e.preventDefault();
 
             // COMMENT OUT FOLLOWING LINE FOR DEBUG VIA CLICK CONTROL HELPER...
             const nextStepId = onAdventureKeyDown(camera, e, adventureSteps, controls, currentStepId);
@@ -282,7 +287,9 @@ const adventureDrawing = {
             const {renderer, camera, scene, data, controls} = other;
             onClick(scene, renderer, camera, e);
 
-            const label = e.target.closest('.caption-label-3d, .label-child');
+            const label = e.target && (e.target as Element).closest
+                ? (e.target as Element).closest('.caption-label-3d, .label-child')
+                : null;
 
             if (!label) return; // clicked outside of a label
 
@@ -308,14 +315,28 @@ const adventureDrawing = {
         if (bgMeshes) {
             // show only the current slide’s background
             Object.entries(bgMeshes).forEach(([slideId, mesh]) => {
-                mesh.visible = (slideId === currentStepId);
+                (mesh as THREE.Mesh).visible = (slideId === currentStepId);
             });
         }
 
         // Update label positions
         if (!threejsDrawing.data.allPhotoEntries) return;
         if (threejsDrawing.data.use3DRenderer) return;
-        threejsDrawing.data.allPhotoEntries.forEach(({ mesh, labelObject, item }) => {
+        threejsDrawing.data.allPhotoEntries.forEach((
+            { mesh, labelObject, item }: { 
+                mesh: THREE.Mesh<THREE.PlaneGeometry, THREE.MeshBasicMaterial, THREE.Object3DEventMap> | null, 
+                labelObject: any, 
+                item: { 
+                    id: string; 
+                    image?: string; 
+                    video?: string; 
+                    caption: string; 
+                    position: { x: number; y: number; z: number; }; 
+                    customClasses?: string; 
+                    dataAttributes?: { [key: string]: string; }; 
+                } 
+            }
+        ) => {
             let anchor, labelEl;
             anchor = mesh || item.position;
             if (labelObject.element) {

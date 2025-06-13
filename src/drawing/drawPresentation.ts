@@ -21,7 +21,7 @@ const cameraViews = [
     // Add as many views as you like...
 ];
 
-function tweenCameraToView(camera, view, duration = 2000) {
+function tweenCameraToView(camera: THREE.Camera, view: { position: THREE.Vector3; lookAt: THREE.Vector3 }, duration = 2000) {
     new Tween(camera.position)
         .to({ x: view.position.x, y: view.position.y, z: view.position.z }, duration)
         .easing(Easing.Quadratic.Out)

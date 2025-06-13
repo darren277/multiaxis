@@ -18,12 +18,14 @@ function drawImage(scene: THREE.Scene, imgPath: string) {
 
     imageCanvas.width = imageCanvas.height = 128;
 
-    context.fillStyle = '#444';
-    context.fillRect( 0, 0, 128, 128 );
+    if (context) {
+        context.fillStyle = '#444';
+        context.fillRect( 0, 0, 128, 128 );
 
-    context.fillStyle = '#fff';
-    context.fillRect( 0, 0, 64, 64 );
-    context.fillRect( 64, 64, 64, 64 );
+        context.fillStyle = '#fff';
+        context.fillRect( 0, 0, 64, 64 );
+        context.fillRect( 64, 64, 64, 64 );
+    }
 
     const textureCanvas = new THREE.CanvasTexture( imageCanvas );
     textureCanvas.colorSpace = THREE.SRGBColorSpace;

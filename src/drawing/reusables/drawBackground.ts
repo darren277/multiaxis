@@ -41,13 +41,15 @@ function getTexturesFromAtlasFile(atlasImgUrl: string, tilesNum: number) {
             canvas.height = tileWidth;
             canvas.width = tileWidth;
 
-            context.drawImage(
-                image,
-                tileWidth * i, 0,            // source x,y
-                tileWidth, tileWidth,        // source width/height
-                0, 0,                        // target x,y
-                tileWidth, tileWidth         // target width/height
-            );
+            if (context) {
+                context.drawImage(
+                    image,
+                    tileWidth * i, 0,            // source x,y
+                    tileWidth, tileWidth,        // source width/height
+                    0, 0,                        // target x,y
+                    tileWidth, tileWidth         // target width/height
+                );
+            }
 
             textures[i].image = canvas;
             textures[i].needsUpdate = true;

@@ -42,7 +42,7 @@ function buildHollowWalls(w: number, h: number, d: number, wallMat: THREE.Materi
     return group;
 }
 
-function addDoorAndWindow(houseGroup: THREE.Group, wallWidth: number, wallHeight: number, rng: () => number, wallThickness = 0.3, wallDepth = 0.3) {
+function addDoorAndWindow(houseGroup: THREE.Group, wallWidth: number, wallHeight: number, rng: (min?: number, max?: number) => number, wallThickness = 0.3, wallDepth = 0.3) {
     const doorWidth = rng(1.2, 2);
     const doorHeight = rng(2.2, 3);
     const doorMat = new THREE.MeshToonMaterial({ color: 0x663300 });
@@ -95,11 +95,18 @@ function generateGradientMap(levels = 5) {
 
 const gradientMap = generateGradientMap();
 
-function drawCartoonHouse(scene: THREE.Scene, options = {}) {
+function drawCartoonHouse(
+    scene: THREE.Scene,
+    options: {
+        position?: THREE.Vector3,
+        scaleFactor?: number,
+        rng?: (min?: number, max?: number) => number
+    } = {}
+) {
     const {
         position = new THREE.Vector3(0, 0, 0),
         scaleFactor = 1,
-        rng = null
+        rng = Math.random
     } = options;
 
     const group = new THREE.Group();

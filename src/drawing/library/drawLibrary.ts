@@ -31,11 +31,27 @@ const BOOK_CASE_TEXTURES = {
     'bookcase6': textureLoader.load('textures/bookcase6.png'),
 };
 
-function createBookCaseMesh(scene: THREE.Scene, staticBoxes: any[], {
-    name, textureName,
-    width = 10, height = 10, depth = 0.5,
-    position = new THREE.Vector3(), rotation = new THREE.Vector3(),
-}) {
+function createBookCaseMesh(
+    scene: THREE.Scene,
+    staticBoxes: any[],
+    {
+        name,
+        textureName,
+        width = 10,
+        height = 10,
+        depth = 0.5,
+        position = new THREE.Vector3(),
+        rotation = new THREE.Vector3(),
+    }: {
+        name: string;
+        textureName: string;
+        width?: number;
+        height?: number;
+        depth?: number;
+        position?: THREE.Vector3;
+        rotation?: THREE.Vector3;
+    }
+) {
     // Load the bookcase texture
     const bookCaseTexture = BOOK_CASE_TEXTURES[textureName];
     console.log(`Loading texture: ${textureName}`, bookCaseTexture);
@@ -240,7 +256,7 @@ function drawResources(scene: THREE.Scene, library: Library, resources: Resource
     const sorted = sortAlphabeticallyByName([...resources]);
 
     // keep a list so the raycaster only tests resource spheres
-    const resourceMeshes = [];
+    const resourceMeshes: THREE.Object3D<THREE.Object3DEventMap>[] = [];
 
     sorted.forEach((resource, i) => {
         const {x, y, z} = calculatePositionOfResource(resource, library, row1StartX, row0StartZ, i, sorted.length);
@@ -321,10 +337,17 @@ function drawResources(scene: THREE.Scene, library: Library, resources: Resource
 }
 
 function showOverlay(resource: Resource) {
-    document.getElementById('overlayTitle').textContent = resource.name;
-    document.getElementById('overlayAuthorYear').textContent = `${resource.author} • ${resource.year}`;
-    document.getElementById('overlayBody').innerHTML = resource.description || '<em>No description yet.</em>';
-    document.getElementById('resourceOverlay').style.display = 'block';
+    const overlayTitle = document.getElementById('overlayTitle');
+    if (overlayTitle) overlayTitle.textContent = resource.name;
+
+    const overlayAuthorYear = document.getElementById('overlayAuthorYear');
+    if (overlayAuthorYear) overlayAuthorYear.textContent = `${resource.author} • ${resource.year}`;
+
+    const overlayBody = document.getElementById('overlayBody');
+    if (overlayBody) overlayBody.innerHTML = resource.description || '<em>No description yet.</em>';
+
+    const resourceOverlay = document.getElementById('resourceOverlay');
+    if (resourceOverlay) resourceOverlay.style.display = 'block';
 }
 
 // document.addEventListener('keydown', onKeyDownWalking);
@@ -347,11 +370,11 @@ const libraryDrawing = {
     'eventListeners': {
         //'click': (event) => {},
         //'mousemove': (event) => {},
-        'keydown': (event: KeyboardEvent, stuff) => {
+        'keydown': (event: KeyboardEvent, stuff: { data: { keyManager: any; }; }) => {
             const keyManager = stuff.data.keyManager;
             onKeyDownWalking(event, keyManager);
         },
-        'keyup': (event: KeyboardEvent, stuff) => {
+        'keyup': (event: KeyboardEvent, stuff: { data: { keyManager: any; }; }) => {
             const keyManager = stuff.data.keyManager;
             onKeyUpWalking(event, keyManager);
         },

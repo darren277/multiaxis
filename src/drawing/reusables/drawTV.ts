@@ -9,7 +9,7 @@ function renderVideoTexture(video: HTMLVideoElement, texture: THREE.VideoTexture
     }
 }
 
-function onVideoLoadedOld(screenMesh: THREE.Mesh, video: HTMLVideoElement, gltfScene: THREE.Scene) {
+function onVideoLoadedOld(screenMesh: THREE.Mesh, video: HTMLVideoElement, gltfScene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
     const videoAspect = video.videoWidth / video.videoHeight;
     console.log('Video aspect ratio:', videoAspect);
     // 1.7777 = 16:9
@@ -74,7 +74,7 @@ function onVideoLoadedOld(screenMesh: THREE.Mesh, video: HTMLVideoElement, gltfS
 
         // Orient plane the same way (assumes front-facing z)
         screenPlane.lookAt(screenPlane.position.clone().add(new THREE.Vector3(0, 0, -1)));
-        scene.add(screenPlane);
+        gltfScene.add(screenPlane);
     }
 
     threejsDrawing.data = { video, texture, material, screenMesh, videoPlaying: true };
@@ -195,7 +195,7 @@ function drawTV(scene: THREE.Scene, data: any, threejsDrawing: ThreeJSDrawing) {
     scene.add(gltfScene);
 
     gltfScene.traverse((child: THREE.Object3D) => {
-        if (child.isMesh && child.name.startsWith('Screen_')) {
+        if (child instanceof THREE.Mesh && child.name.startsWith('Screen_')) {
             console.log('Found screen mesh:', child.name);
             // Screen_1_low_Material001_0
             // Screen_2_low_Material001_0
@@ -220,6 +220,8 @@ function drawTV(scene: THREE.Scene, data: any, threejsDrawing: ThreeJSDrawing) {
 
         //const {texture, plane, material} = onVideoLoaded(screenMesh, video, gltfScene);
         const {texture, material} = onVideoLoaded(screenMesh, video, gltfScene);
+        // If you use onVideoLoadedOld, pass threejsDrawing as the fourth argument:
+        // const {texture, material} = onVideoLoadedOld(screenMesh, video, gltfScene, threejsDrawing);
         video.play();
         //threejsDrawing.data = { video, texture, plane, material };
         if (!threejsDrawing.data || !threejsDrawing.data.videoPlaylist) {

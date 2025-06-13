@@ -186,7 +186,16 @@ noiseTexture.wrapS = noiseTexture.wrapT = THREE.RepeatWrapping;
 //const baseTexture = loader.load('smoke_base.jpg');
 //baseTexture.wrapS = baseTexture.wrapT = RepeatWrapping;
 
-const uniforms = {
+type SmokeUniforms = {
+    iResolution: { value: THREE.Vector2 },
+    iTime: { value: number },
+    iMouse: { value: THREE.Vector2 },
+    //iChannel0?: { value: THREE.Texture },
+    mode: { value: number },
+    iChannel1: { value: THREE.DataTexture }
+};
+
+const uniforms: SmokeUniforms = {
     iResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
     iTime: { value: 0 },
     iMouse: { value: new THREE.Vector2(0, 0) },
@@ -277,7 +286,6 @@ function drawSmoke(scene: THREE.Scene) {
     //uniforms.mode.value = 2;
     // Twisted FBM
     uniforms.mode.value = 3;
-}
 
 const smokeDrawing = {
     'sceneElements': [],
@@ -286,7 +294,7 @@ const smokeDrawing = {
     ],
     'eventListeners': null,
     'animationCallback': (renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawing: ThreeJSDrawing, camera: THREE.Camera) => {
-        const uniforms = threejsDrawing.data.uniforms;
+        const uniforms: SmokeUniforms = threejsDrawing.data.uniforms as SmokeUniforms;
         uniforms.iTime.value += 0.01;
 
         // const value = noise.perlin3(x * scale, y * scale, time * 0.1);

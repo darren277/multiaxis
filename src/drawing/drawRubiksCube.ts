@@ -2,8 +2,10 @@ import * as THREE from "three";
 import { Tween, Easing } from 'tween';
 import { ThreeJSDrawing } from "../types";
 
-function getMaterials(faceColors: { [key: string]: string | null }): THREE.Material[] {
-    const colors = {
+type ColorKey = 'white' | 'yellow' | 'red' | 'orange' | 'green' | 'blue' | 'black';
+
+function getMaterials(faceColors: { [key: string]: ColorKey | null }): THREE.Material[] {
+    const colors: Record<ColorKey, number> = {
         white: 0xffffff,
         yellow: 0xffff00,
         red: 0xff0000,
@@ -14,12 +16,12 @@ function getMaterials(faceColors: { [key: string]: string | null }): THREE.Mater
     };
 
     return [
-        new THREE.MeshBasicMaterial({ color: colors[faceColors.right] || colors.black }),  // +X
-        new THREE.MeshBasicMaterial({ color: colors[faceColors.left] || colors.black }),   // -X
-        new THREE.MeshBasicMaterial({ color: colors[faceColors.top] || colors.black }),    // +Y
-        new THREE.MeshBasicMaterial({ color: colors[faceColors.bottom] || colors.black }), // -Y
-        new THREE.MeshBasicMaterial({ color: colors[faceColors.front] || colors.black }),  // +Z
-        new THREE.MeshBasicMaterial({ color: colors[faceColors.back] || colors.black })    // -Z
+        new THREE.MeshBasicMaterial({ color: faceColors.right ? colors[faceColors.right as ColorKey] : colors.black }),  // +X
+        new THREE.MeshBasicMaterial({ color: faceColors.left ? colors[faceColors.left as ColorKey] : colors.black }),   // -X
+        new THREE.MeshBasicMaterial({ color: faceColors.top ? colors[faceColors.top as ColorKey] : colors.black }),    // +Y
+        new THREE.MeshBasicMaterial({ color: faceColors.bottom ? colors[faceColors.bottom as ColorKey] : colors.black }), // -Y
+        new THREE.MeshBasicMaterial({ color: faceColors.front ? colors[faceColors.front as ColorKey] : colors.black }),  // +Z
+        new THREE.MeshBasicMaterial({ color: faceColors.back ? colors[faceColors.back as ColorKey] : colors.black })    // -Z
     ];
 }
 
@@ -101,7 +103,9 @@ function rotateFace(scene: THREE.Scene, cubelets: THREE.Mesh[], axis: 'x' | 'y' 
 // Rotate the front (F) face counter-clockwise
 //rotateFace(cubelets, 'z', 1.05, -1);
 
-const faceMap = {
+type FaceKey = 'U' | 'D' | 'F' | 'B' | 'R' | 'L';
+
+const faceMap: Record<FaceKey, { axis: 'x' | 'y' | 'z'; value: number }> = {
     U: { axis: 'y', value: 1.05 },
     D: { axis: 'y', value: -1.05 },
     F: { axis: 'z', value: 1.05 },
@@ -114,10 +118,8 @@ const faceMap = {
 const eventListeners = {
     'keydown': (event: KeyboardEvent, { camera, data, controls }: any) => {
         // TODO: Test threejsDrawing.data.scene...
-        const key = event.key.toUpperCase();
-        console.log('Key pressed:', key);
-        if (faceMap[key]) {
-            const { axis, value } = faceMap[key];
+        if ((key as FaceKey) in faceMap) {
+            const { axis, value } = faceMap[key as FaceKey];
             rotateFace(threejsDrawing.data.scene, data.cubelets, axis, value);
         }
     }

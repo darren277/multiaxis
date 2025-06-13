@@ -9,6 +9,7 @@ function createPerlinGrassTexture() {
     const canvas = document.createElement('canvas');
     canvas.width = canvas.height = size;
     const ctx = canvas.getContext('2d');
+    if (!ctx) return null;
 
     const noise = perlin.generatePerlinNoise(size, size);
 
@@ -104,6 +105,8 @@ function createGrassTexture() {
 
     const ctx = canvas.getContext('2d');
 
+    if (!ctx) return null;
+
     for (let y = 0; y < size; y++) {
         for (let x = 0; x < size; x++) {
             const noise = Math.random() * 50;
@@ -127,6 +130,8 @@ function createRoadTexture() {
     canvas.width = canvas.height = size;
     const ctx = canvas.getContext('2d');
 
+    if (!ctx) return null;
+
     for (let y = 0; y < size; y++) {
         for (let x = 0; x < size; x++) {
             const noise = Math.random() * 20;
@@ -147,6 +152,8 @@ function createWaterTexture() {
     const canvas = document.createElement('canvas');
     canvas.width = canvas.height = size;
     const ctx = canvas.getContext('2d');
+
+    if (!ctx) return null;
 
     for (let y = 0; y < size; y++) {
         for (let x = 0; x < size; x++) {
@@ -171,6 +178,8 @@ function createSandTexture() {
     canvas.width = canvas.height = size;
     const ctx = canvas.getContext('2d');
 
+    if (!ctx) return null;
+
     for (let y = 0; y < size; y++) {
         for (let x = 0; x < size; x++) {
             const noise = Math.random() * 30;
@@ -193,6 +202,8 @@ function createDirtRoadTexture() {
     const canvas = document.createElement('canvas');
     canvas.width = canvas.height = size;
     const ctx = canvas.getContext('2d');
+
+    if (!ctx) return null;
 
     const noise = generatePerlinNoise(size, size, {
         octaveCount: 4,
@@ -226,6 +237,8 @@ function createGrassDirtComboTexture() {
     const canvas = document.createElement('canvas');
     canvas.width = canvas.height = size;
     const ctx = canvas.getContext('2d');
+
+    if (!ctx) return null;
 
     const grassColor = (n: number) => {
         const g = 100 + n * 50;
