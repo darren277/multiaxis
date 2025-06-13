@@ -312,39 +312,82 @@ const IFRAME_SIZE = {
     h: SCREEN_SIZE.h - IFRAME_PADDING,
 };
 
+type Sizes = {
+    width: number;
+    height: number;
+    pixelRatio: number;
+};
+
+type Debug = {
+    active: boolean;
+    ui: any; // GUI instance
+    folder: any; // GUI folder
+};
+
+type Application = {
+    world: {
+        scene: THREE.Scene;
+        cssScene: THREE.Scene;
+        renderer: THREE.WebGLRenderer;
+        camera: THREE.Camera;
+        resources: Resources;
+        debug: Debug;
+        sizes: Sizes;
+    };
+};
+
+type Resources = {
+    items: { [key in string]: any };
+    toLoad: number;
+    loaded: number;
+    loadItems: (sources: Array<{ type: string; name: string; path: string }>) => Promise<void>;
+    sourceLoaded: (source: { type: string; name: string }, file: any) => void;
+};
+
+type GUI = {
+    active: boolean;
+    ui: any; // GUI instance
+    folder: any; // GUI folder
+};
+
 export default class MonitorScreen extends EventEmitter {
-    application: THREE.Application;
+    application: Application | undefined;
     scene: THREE.Scene;
     cssScene: THREE.Scene;
-    resources: Resources;
-    debug: Debug;
-    sizes: Sizes;
-    debugFolder: GUI;
-    screenSize: THREE.Vector2;
-    position: THREE.Vector3;
-    rotation: THREE.Euler;
-    camera: THREE.Camera;
-    prevInComputer: boolean;
-    shouldLeaveMonitor: boolean;
-    inComputer: boolean;
-    mouseClickInProgress: boolean;
-    dimmingPlane: THREE.Mesh;
-    videoTextures: { [key in string]: THREE.VideoTexture };
-    mouse: Mouse;
+    resources: Resources | undefined;
+    debug: Debug | undefined;
+    sizes: Sizes | undefined;
+    debugFolder: GUI | undefined;
+    screenSize: THREE.Vector2 | undefined;
+    position: THREE.Vector3 | undefined;
+    rotation: THREE.Euler | undefined;
+    camera: THREE.Camera | undefined;
+    prevInComputer: boolean | undefined;
+    shouldLeaveMonitor: boolean | undefined;
+    inComputer: boolean | undefined;
+    mouseClickInProgress: boolean | undefined;
+    dimmingPlane: THREE.Mesh | undefined;
+    videoTextures: { [key in string]: THREE.VideoTexture | undefined } = {};
+    mouse: Mouse | undefined;
     items: any;
     url: string;
+    sources: Array<{ type: string; name: string; path: string }> | undefined;
 
     constructor(url: string) {
         super();
         this.url = url;
 
-        this.scene = null;
-        this.cssScene = null;
-        this.sizes = null;
+        this.scene = new THREE.Scene();
+        this.cssScene = new THREE.Scene();
+        this.sizes = {
+            width: SCREEN_SIZE.w,
+            height: SCREEN_SIZE.h,
+            pixelRatio: window.devicePixelRatio
+        };
         this.items = { texture: {}, cubeTexture: {}, gltfModel: {}, audio: {} };
         this.sources = [];
         this.screenSize = new THREE.Vector2(SCREEN_SIZE.w, SCREEN_SIZE.h);
-        this.camera = null;
+        this.camera = new THREE.Camera();
         this.position = new THREE.Vector3(0, 950, 255);
         this.rotation = new THREE.Euler(-3 * THREE.MathUtils.DEG2RAD, 0, 0);
         this.videoTextures = {};
