@@ -3,7 +3,7 @@ import { ClickAndKeyControls } from './config/clickControlHelper.js';
 import { prepareDrawingContext, drawHelpers, parseQueryParams } from './config/utils.js';
 import { loadThenDraw } from './config/loadThenDraw.js';
 // @ts-ignore-next-line
-import { OutlineEffect } from 'outline-effect';
+import { OutlineEffect } from 'three/examples/jsm/effects/OutlineEffect.js';
 import { drawNavCubes, onClickNav, ALL_CUBE_DEFS } from './config/navigation.js';
 // @ts-ignore-next-line
 import {update as tweenUpdate} from '@tweenjs/tween.js'

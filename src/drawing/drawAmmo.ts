@@ -1,8 +1,8 @@
 /* Adapted from https://github.com/mrdoob/three.js/blob/master/examples/physics_ammo_break.html */
 
 import * as THREE from "three";
-import { ConvexObjectBreaker } from 'convex-object-breaker';
-import { ConvexGeometry } from 'convex-geometry';
+import { ConvexObjectBreaker } from "three/examples/jsm/physics/ConvexObjectBreaker.js";
+import { ConvexGeometry } from "three/examples/jsm/geometries/ConvexGeometry.js";
 import { ThreeJSDrawing } from "../threejsDrawing";
 
 console.debug('Ammo.js loaded', Ammo);
