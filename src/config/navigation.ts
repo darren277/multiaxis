@@ -1,11 +1,17 @@
-import { BoxGeometry, MeshStandardMaterial, Mesh, Raycaster, Vector2 } from 'three';
+import * as THREE from 'three';
 
-function drawNavCube(cubeDef, scene, threejsDrawing, debug = false) {
+type CubeDef = {
+    position: [number, number, number];
+    color: number;
+    targetScene: string;
+};
+
+function drawNavCube(cubeDef: CubeDef, scene: THREE.Scene, threejsDrawing: any, debug = false) {
     // Add a clickable object
-    const boxGeo = new BoxGeometry(0.5, 0.5, 0.5);
-    //const boxMat = new MeshStandardMaterial({ color: 0x00ff00 });
-    const boxMat = new MeshStandardMaterial({ color: cubeDef.color, transparent: true, opacity: 0.5 });
-    const navCube = new Mesh(boxGeo, boxMat);
+    const boxGeo = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+    //const boxMat = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
+    const boxMat = new THREE.MeshStandardMaterial({ color: cubeDef.color, transparent: true, opacity: 0.5 });
+    const navCube = new THREE.Mesh(boxGeo, boxMat);
     //navCube.position.set(1, 0.25, -2); // place it somewhere visible
     navCube.position.set(cubeDef.position[0], cubeDef.position[1], cubeDef.position[2]); // place it somewhere visible
     //navCube.userData.targetScene = 'library'; // <-- match a key in THREEJS_DRAWINGS
@@ -21,16 +27,16 @@ function drawNavCube(cubeDef, scene, threejsDrawing, debug = false) {
 }
 
 
-function drawNavCubes(scene, threejsDrawing, cubeDefs, debug = false) {
+function drawNavCubes(scene: THREE.Scene, threejsDrawing: any, cubeDefs: CubeDef[], debug = false) {
     cubeDefs.forEach(cubeDef => {
         drawNavCube(cubeDef, scene, threejsDrawing, debug);
     });
 }
 
-const raycaster = new Raycaster();
-const mouse = new Vector2();
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
 
-function onClickNav(event, scene, renderer, camera) {
+function onClickNav(event: MouseEvent, scene: THREE.Scene, renderer: THREE.WebGLRenderer, camera: THREE.PerspectiveCamera) {
     const rect = renderer.domElement.getBoundingClientRect();
     mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
     mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
@@ -121,9 +127,9 @@ const CORNER_POSITION_MAP = {
     'UPPER_RIGHT': [100, 100]
 }
 
-function lookUpNeighbors(map, i, j) {
+function lookUpNeighbors(map: (string | null)[][], i: number, j: number) {
     // returns an array of neighboring scenes (each paired with its position)
-    const neighbors = [];
+    const neighbors: { scene: string; position: [number, number]; cornerKey: string }[] = [];
     const directions = [
         [-1, -1], // UPPER_LEFT
         [-1, 0],  // LEFT
@@ -171,12 +177,12 @@ function lookUpNeighbors(map, i, j) {
     return neighbors;
 }
 
-function constructCubeDefs(map, allowDiagonals = false) {
-    let cubeDefsMap = {};
+function constructCubeDefs(map: (string | null)[][], allowDiagonals = false) {
+    let cubeDefsMap: { [key: string]: CubeDef[] } = {};
     for (let i = 0; i < map.length; i++) {
         for (let j = 0; j < map[i].length; j++) {
             const scene = map[i][j];
-            let cubeDefs = [];
+            let cubeDefs: CubeDef[] = [];
             if (scene) {
                 const neighbors = lookUpNeighbors(map, i, j);
                 for (const { scene: neighborScene, position, cornerKey } of neighbors) {
@@ -185,7 +191,7 @@ function constructCubeDefs(map, allowDiagonals = false) {
 
                     const color = CORNER_COLOR_MAP[cornerKey];
 
-                    const cubeDef = {
+                    const cubeDef: CubeDef = {
                         targetScene: neighborScene,
                         position: [position[0], 0.25, position[1]],
                         color: color

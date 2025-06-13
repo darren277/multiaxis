@@ -1,7 +1,7 @@
 import { pixelToWorldUnits, loadDataSource } from './utils.js';
-import { FloatType } from 'three';
+import * as THREE from 'three';
 
-async function loadThenDraw(scene, func, dataSrc, dataType, camera, threejsDrawing, dataSelected) {
+async function loadThenDraw(scene: THREE.Scene, func: Function, dataSrc: string, dataType: string, camera: THREE.PerspectiveCamera, threejsDrawing: any, dataSelected: string) {
     const data_src = dataSelected || dataSrc;
     console.log(`Loading data source: ${data_src}`);
     threejsDrawing.data.dataSrc = data_src;
@@ -24,7 +24,7 @@ async function loadThenDraw(scene, func, dataSrc, dataType, camera, threejsDrawi
         func(scene, gltf, threejsDrawing);
     } else if (dataType === 'exr') {
         const { EXRLoader } = await import('exrloader');
-        const exrLoader = new EXRLoader().setDataType(FloatType);
+        const exrLoader = new EXRLoader().setDataType(THREE.FloatType);
         const texture = await exrLoader.loadAsync(`./textures/${data_src}.exr`);
         func(scene, texture, threejsDrawing);
     } else {

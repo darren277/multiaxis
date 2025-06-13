@@ -1,17 +1,26 @@
-import { Vector3, Raycaster, Clock, Quaternion, Box3, Matrix3 } from 'three';
-import { addObstacle } from './walking.js';
+import * as THREE from 'three';
+import { addObstacle } from './walking';
 
-export const WORLD_Y   = new Vector3(0, 1, 0);
-export const WORLD_X   = new Vector3(1, 0, 0);
+export const WORLD_Y   = new THREE.Vector3(0, 1, 0);
+export const WORLD_X   = new THREE.Vector3(1, 0, 0);
 export const GROUND_Y  = 0.25; // height of the ground plane
 export const turnSpeed = Math.PI / 2;      // 90 ° per second
 
-export const groundRay = new Raycaster();
+export const groundRay = new THREE.Raycaster();
 
-export const tempBox = new Box3();        // temporary box for the player
-export const tempPosition = new Vector3(); // for calculating next pos
+export const tempBox = new THREE.Box3();        // temporary box for the player
+export const tempPosition = new THREE.Vector3(); // for calculating next pos
 
 class KeyManager {
+    moveForward = false;
+    moveBackward = false;
+    moveLeft = false;
+    moveRight = false;
+    isShiftDown = false;
+    canJump = true;          // can jump if on the ground
+    jumpPressed = false;     // jump was pressed this frame
+    velocity = new THREE.Vector3(); // current velocity of the player
+
     constructor() {
         this.moveForward = false;
         this.moveBackward = false;
@@ -20,13 +29,13 @@ class KeyManager {
         this.isShiftDown = false;
         this.canJump = true;
         this.jumpPressed = false;
-        this.velocity = new Vector3();
+        this.velocity = new THREE.Vector3();
     }
 }
 
-export function extractPerTriangle(staticBoxes, mesh) {
-    const tmpBox = new Box3();
-    const a = new Vector3(), b = new Vector3(), c = new Vector3();
+export function extractPerTriangle(staticBoxes: THREE.Box3[], mesh: THREE.Mesh) {
+    const tmpBox = new THREE.Box3();
+    const a = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3();
 
     mesh.geometry = mesh.geometry.toNonIndexed();   // ensure positions are flat
 
@@ -53,7 +62,7 @@ const tileSize = 2;
 const spatial = new Map();
 // Map<"x,z" , Box3[]>
 
-export function spatialHashStaticBoxes(staticBoxes) {
+export function spatialHashStaticBoxes(staticBoxes: THREE.Box3[]) {
     staticBoxes.forEach(box => {
         const minX = Math.floor(box.min.x / tileSize);
         const maxX = Math.floor(box.max.x / tileSize);
@@ -69,10 +78,10 @@ export function spatialHashStaticBoxes(staticBoxes) {
     });
 }
 
-function nearbyBoxes(px, pz) {
+function nearbyBoxes(px: number, pz: number) {
     const gx = Math.floor(px / tileSize);
     const gz = Math.floor(pz / tileSize);
-    const out = [];
+    const out: THREE.Box3[] = [];
     for (let dx = -1; dx <= 1; dx++) {
         for (let dz = -1; dz <= 1; dz++) {
             const cell = spatial.get(`${gx+dx},${gz+dz}`);
@@ -83,23 +92,15 @@ function nearbyBoxes(px, pz) {
 }
 
 
-export function checkCollisionSpatialHashes(playerSize, position, obstacleBoxes = [], ignore = null) {
-    tempBox.setFromCenterAndSize(position, new Vector3(playerSize, playerSize * 2, playerSize));
+export function checkCollisionSpatialHashes(
+    playerSize: number,
+    position: THREE.Vector3,
+    obstacleBoxes: THREE.Box3[] = [],
+    ignore: THREE.Box3 | null = null
+) {
+    tempBox.setFromCenterAndSize(position, new THREE.Vector3(playerSize, playerSize * 2, playerSize));
 
-    const boxes = nearbyBoxes(position.x, position.z);
-
-    for (const box of boxes) {
-        if (box === ignore) continue;
-        if (box.intersectsBox(tempBox)) return true;
-    }
-
-    return false; // no collision
-}
-
-export function checkCollision(playerSize, position, obstacleBoxes = [], ignore = null) {
-    tempBox.setFromCenterAndSize(position, new Vector3(playerSize, playerSize * 2, playerSize));
-
-    const boxes = obstacleBoxes;
+    const boxes: THREE.Box3[] = nearbyBoxes(position.x, position.z);
 
     for (const box of boxes) {
         if (box === ignore) continue;
@@ -109,7 +110,25 @@ export function checkCollision(playerSize, position, obstacleBoxes = [], ignore 
     return false; // no collision
 }
 
-function isGroundHit(hit) {
+export function checkCollision(
+    playerSize: number,
+    position: THREE.Vector3,
+    obstacleBoxes: THREE.Box3[] = [],
+    ignore: THREE.Box3 | null = null
+) {
+    tempBox.setFromCenterAndSize(position, new THREE.Vector3(playerSize, playerSize * 2, playerSize));
+
+    const boxes: THREE.Box3[] = obstacleBoxes;
+
+    for (const box of boxes) {
+        if (box === ignore) continue;
+        if (box.intersectsBox(tempBox)) return true;
+    }
+
+    return false; // no collision
+}
+
+function isGroundHit(hit: THREE.Intersection) {
     let obj = hit.object;
     while (obj) {
         if (obj.userData.isGround) return true;
@@ -118,7 +137,7 @@ function isGroundHit(hit) {
     return false;
 }
 
-export function getYawObject(controls) {
+export function getYawObject(controls: any): THREE.Object3D {
     const yawObject =
       controls.object?.quaternion ? controls.object              // camera
     : controls?._controls?.object?.quaternion ? controls._controls.object
@@ -128,15 +147,15 @@ export function getYawObject(controls) {
 }
 
 function applyInput(
-    keyManager,
-    qTmp,
-    yawObject,
-    direction,
-    velocity,
-    dt,
-    speed,
-    turnSpeed,
-    jumpVelocity,
+    keyManager: KeyManager,
+    qTmp: THREE.Quaternion,
+    yawObject: THREE.Object3D,
+    direction: THREE.Vector3,
+    velocity: THREE.Vector3,
+    dt: number,
+    speed: number,
+    turnSpeed: number,
+    jumpVelocity: number,
 ) {
     if (keyManager.isShiftDown) {
         // rotate instead of move...
@@ -156,7 +175,7 @@ function applyInput(
         direction.normalize();
 
         // build a local move vector and rotate it into world space
-        const moveVector = new Vector3(direction.x, 0, direction.z).applyQuaternion(yawObject.quaternion);
+        const moveVector = new THREE.Vector3(direction.x, 0, direction.z).applyQuaternion(yawObject.quaternion);
 
         // scale by your speed
         velocity.x = moveVector.x * speed;
@@ -171,8 +190,41 @@ function applyInput(
     }
 }
 
+type CollisionManagerParams = {
+    player?: THREE.Object3D,
+    worldMeshes?: THREE.Mesh[],
+    staticBoxes?: THREE.Box3[],
+    movingMeshes?: THREE.Mesh[],
+    obstacleBoxes?: THREE.Box3[],
+    params?: {
+        playerSize?: number,
+        stepDown?: number,
+        gravity?: number,
+        speed?: number,
+        jumpVelocity?: number,
+        checkCollisionFunc?: (playerSize: number, position: THREE.Vector3, obstacleBoxes: THREE.Box3[], ignore?: THREE.Box3 | null) => boolean
+    }
+}
+
 export class CollisionManager {
-    constructor({ player, worldMeshes, staticBoxes, movingMeshes, obstacleBoxes, params }) {
+    playerSize = 0.5; // default player size
+    stepDown = 0.5;   // how far you can step down
+    gravity = 9.81;  // gravity strength
+    speed = 5;       // horizontal speed
+    jumpVelocity = 5; // vertical jump speed
+    checkCollisionFunc = checkCollision; // default collision function
+    debugRayHelper = new THREE.ArrowHelper(new THREE.Vector3(0, -1, 0), new THREE.Vector3(0, 0, 0), 1, 0xff0000);
+
+    constructor(args?: CollisionManagerParams) {
+        const {
+            player = new THREE.Object3D(),
+            worldMeshes = [],
+            staticBoxes = [],
+            movingMeshes = [],
+            obstacleBoxes = [],
+            params = {}
+        } = args || {};
+
         this.player        = player;
         this.worldMeshes   = worldMeshes;
         this.staticBoxes   = staticBoxes;
@@ -245,14 +297,14 @@ export class CollisionManager {
     }
 
     _moveHorizontal(yawObject, dt, ignore) {
-        const temp = new Vector3();
+        const temp = new THREE.Vector3();
         // try X
-        temp.copy(yawObject.position).addScaledVector(new Vector3(this.velocity.x,0,0), dt);
+        temp.copy(yawObject.position).addScaledVector(new THREE.Vector3(this.velocity.x,0,0), dt);
         if (!this.checkCollisionFunc(this.playerSize, temp, this.obstacleBoxes, ignore)) {
             yawObject.position.x = temp.x;
         }
         // try Z
-        temp.copy(yawObject.position).addScaledVector(new Vector3(0,0,this.velocity.z), dt);
+        temp.copy(yawObject.position).addScaledVector(new THREE.Vector3(0,0,this.velocity.z), dt);
         if (!this.checkCollisionFunc(this.playerSize, temp, this.obstacleBoxes, ignore)) {
             yawObject.position.z = temp.z;
         }
@@ -271,7 +323,7 @@ export class CollisionManager {
         //footPos.y -= this.playerSize - 0.01;   // 1cm below soles
         footPos.set(yawObject.position.x, yawObject.position.y - (this.playerSize - 0.01), yawObject.position.z);
 
-        const footBox = new Box3().setFromCenterAndSize(footPos, new Vector3(this.playerSize * 0.6, 0.1, this.playerSize * 0.6));
+        const footBox = new THREE.Box3().setFromCenterAndSize(footPos, new THREE.Vector3(this.playerSize * 0.6, 0.1, this.playerSize * 0.6));
 
         // DETACH from a moving platform if you walked off it
         if (this.player.userData.currentPlatform) {
@@ -279,7 +331,7 @@ export class CollisionManager {
             // refresh its box if needed
             if (plat.userData.boxNeedsRefresh) {
                 plat.userData.box.setFromObject(plat);
-                plat.userData.box.expandByVector(new Vector3(0, 2, 0));
+                plat.userData.box.expandByVector(new THREE.Vector3(0, 2, 0));
                 plat.userData.boxNeedsRefresh = false;
             }
             // if your foot‐box no longer overlaps it, un‐latch
@@ -306,7 +358,7 @@ export class CollisionManager {
         const hits = this.ray.intersectObjects(rayTargets, true);
         const hit = hits.find(i => {
             if (!i.face) return false;             // safety for points/lines
-            const n = i.face.normal.clone().applyMatrix3(new Matrix3().getNormalMatrix(i.object.matrixWorld)).normalize();
+            const n = i.face.normal.clone().applyMatrix3(new THREE.Matrix3().getNormalMatrix(i.object.matrixWorld)).normalize();
             return n.y > 0.01;                     // ignore vertical walls
         });
         if (hit && this.velocity.y <= 0) {

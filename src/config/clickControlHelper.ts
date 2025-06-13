@@ -1,15 +1,36 @@
-import { Raycaster, Vector2 } from 'three';
+import * as THREE from 'three';
 
-function degToRad(degrees) {
+declare global {
+    interface Window {
+        debugObject?: THREE.Object3D | null;
+    }
+}
+
+function degToRad(degrees: number) {
     return degrees * (Math.PI / 180);
 }
 
-function radToDeg(radians) {
+function radToDeg(radians: number) {
     return radians * (180 / Math.PI);
 }
 
 class ClickAndKeyControls {
-    constructor(scene, camera, renderer, moveAmount = 1, rotateAmountDeg = 90) {
+    scene: THREE.Scene;
+    camera: THREE.Camera;
+    renderer: THREE.WebGLRenderer;
+    moveAmount: number;          // Amount to move on arrow keys
+    rotateAmount: number;        // Amount to rotate on arrow keys in radians
+    selectedObject: THREE.Object3D | null; // Currently selected object
+    raycaster: THREE.Raycaster;  // For raycasting on clicks
+    mouse: THREE.Vector2;        // Mouse position for raycasting
+    /**
+     * @param scene - The Three.js scene to interact with
+     * @param camera - The Three.js camera to manipulate
+     * @param renderer - The Three.js WebGLRenderer to capture mouse events
+     * @param moveAmount - Amount to move on arrow keys (default: 1)
+     * @param rotateAmountDeg - Amount to rotate on arrow keys in degrees (default: 90)
+     */
+    constructor(scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.WebGLRenderer, moveAmount = 1, rotateAmountDeg = 90) {
         this.scene = scene;
         this.camera = camera;
         this.renderer = renderer;
@@ -21,8 +42,8 @@ class ClickAndKeyControls {
         this.selectedObject = null;            // track currently clicked object
 
         // For raycasting on clicks
-        this.raycaster = new Raycaster();
-        this.mouse = new Vector2();
+        this.raycaster = new THREE.Raycaster();
+        this.mouse = new THREE.Vector2();
 
         // Bind event handlers
         this.handleClick = this.handleClick.bind(this);
@@ -39,7 +60,7 @@ class ClickAndKeyControls {
         window.removeEventListener('keydown', this.handleKeyDown);
     }
 
-    handleClick(event) {
+    handleClick(event: MouseEvent) {
         // Convert mouse to normalized device coords
         const rect = this.renderer.domElement.getBoundingClientRect();
         this.mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
@@ -67,7 +88,7 @@ class ClickAndKeyControls {
         }
     }
 
-    handleKeyDown(event) {
+    handleKeyDown(event: KeyboardEvent) {
         // SHIFT => move, CTRL => rotate
         const isShift = event.shiftKey;
         const isCtrl = event.ctrlKey || event.metaKey; // e.g. Cmd on Mac
@@ -89,7 +110,7 @@ class ClickAndKeyControls {
         this.logStatus();
     }
 
-    moveTarget(target, arrowKey) {
+    moveTarget(target: THREE.Object3D, arrowKey: string) {
         console.log(`Moving ${target.name || '(unnamed mesh)'} with key: ${arrowKey}`);
         // We'll interpret: Up => +Y, Down => -Y, Left => -X, Right => +X
         switch (arrowKey) {
@@ -114,7 +135,7 @@ class ClickAndKeyControls {
         }
     }
 
-    rotateTarget(target, arrowKey) {
+    rotateTarget(target: THREE.Object3D, arrowKey: string) {
         // We'll interpret:
         //  ArrowUp => rotate +X axis
         //  ArrowDown => rotate -X axis

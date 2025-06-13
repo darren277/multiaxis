@@ -1,4 +1,4 @@
-import { Vector3, Clock, Quaternion, Box3, Raycaster } from 'three';
+import * as THREE from 'three';
 import { getYawObject, CollisionManager } from './collisionManager.js';
 
 //export const staticBoxes   = [];   // immovable stuff
@@ -9,7 +9,7 @@ import { getYawObject, CollisionManager } from './collisionManager.js';
 export const worldMeshes = []; // meshes to check for ground
 
 
-function onKeyDownWalking(event, keyManager) {
+function onKeyDownWalking(event: KeyboardEvent, keyManager: KeyManager) {
     event.preventDefault();
     switch (event.code) {
         case 'ShiftLeft':
@@ -75,7 +75,7 @@ function simpleBoxClamp(yawObject, obstacleBoxes) {
     return bestY;
 }
 
-function walkingAnimationCallbackOld(scene, controls, player, worldMeshes, obstacleBoxes, override = false) {
+function walkingAnimationCallbackOld(scene: THREE.Scene, controls: any, player: THREE.Object3D, worldMeshes: THREE.Mesh[], obstacleBoxes: THREE.Box3[], override = false) {
     if (controls.isLocked === true || (override === true && controls.name === 'PointerLockControls')) {
         const delta = clock.getDelta(); // measure time between frames
         //const yawObject = controls.getObject();   // outer object of PLC
@@ -207,7 +207,7 @@ function walkingAnimationCallbackOld(scene, controls, player, worldMeshes, obsta
 };
 
 
-function walkingAnimationCallback(scene, controls, collision, elapsed, override = false) {
+function walkingAnimationCallback(scene: THREE.Scene, controls: any, collision: any, elapsed: number, override = false) {
     if (controls.isLocked === true || (override === true && controls.name === 'PointerLockControls')) {
         //const delta = clock.getDelta(); // measure time between frames
         //const yawObject = controls.getObject();   // outer object of PLC
@@ -221,20 +221,20 @@ function walkingAnimationCallback(scene, controls, collision, elapsed, override 
     }
 }
 
-function addObstacle(staticBoxes, source) {
+function addObstacle(staticBoxes: THREE.Box3[], source: THREE.Object3D) {
     if (source.isBox3) {            // already a Box3, just store it
         staticBoxes.push(source);
         return;
     }
 
     // otherwise expect an Object3D mesh
-    const box = new Box3().setFromObject(source);
+    const box = new THREE.Box3().setFromObject(source);
     box.object = source;
     source.userData.box = box;
     staticBoxes.push(box);
 }
 
-export function updateObstacleBoxes(staticBoxes, movingMeshes, obstacleBoxes) {
+export function updateObstacleBoxes(staticBoxes: THREE.Box3[], movingMeshes: THREE.Mesh[], obstacleBoxes: THREE.Box3[]) {
     obstacleBoxes.length = 0;               // recycle the array
 
     // 1) copy all the static ones
@@ -242,11 +242,11 @@ export function updateObstacleBoxes(staticBoxes, movingMeshes, obstacleBoxes) {
 
     // 2) refresh & copy each moving mesh
     movingMeshes.forEach(mesh => {
-        if (!mesh.userData.box) mesh.userData.box = new Box3();
+        if (!mesh.userData.box) mesh.userData.box = new THREE.Box3();
         mesh.userData.box.setFromObject(mesh);   // track its new position
 
         // make it tall enough to collide with the player
-        mesh.userData.box.expandByVector(new Vector3(0, 2, 0));
+        mesh.userData.box.expandByVector(new THREE.Vector3(0, 2, 0));
         mesh.userData.box.object = mesh;
 
         obstacleBoxes.push(mesh.userData.box);

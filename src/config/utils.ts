@@ -1,24 +1,24 @@
 import { BoxGeometry, Mesh, MeshBasicMaterial, MeshNormalMaterial, GridHelper } from 'three';
-import { FileLoader } from 'three'; // for texture loading
+import * as THREE from 'three'; // for texture loading
 
-function drawTestCube(scene) {
-    const geometry = new BoxGeometry(1, 1, 1);
-    const material = new MeshBasicMaterial({ color: 0x00ff00 });
-    const cube = new Mesh(geometry, material);
+function drawTestCube(scene: THREE.Scene) {
+    const geometry = new THREE.BoxGeometry(1, 1, 1);
+    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+    const cube = new THREE.Mesh(geometry, material);
     scene.add(cube);
 }
 
-function determineLabelCoordinates(p1, p2, p3, radius) {
+function determineLabelCoordinates(p1: number, p2: number, p3: number, radius: number) {
     let x = p1 + (radius * 2);
     let y = p2;
     let z = p3;
     return [x, y, z];
 };
 
-const fileLoader = new FileLoader();
+const fileLoader = new THREE.FileLoader();
 
 
-async function loadDataSource(dataSrc) {
+async function loadDataSource(dataSrc: string) {
     if (!dataSrc || typeof dataSrc !== 'string') {
         throw new Error(`Invalid data source provided. It must be a non-empty string. Received: ${dataSrc}`);
     }
@@ -26,19 +26,19 @@ async function loadDataSource(dataSrc) {
     path = `./${path}.json`;
 
     // FileLoader has a .loadAsync() that returns a Promise<string>
-    const loader = new FileLoader();
+    const loader = new THREE.FileLoader();
     const raw = await loader.loadAsync(path);
     return JSON.parse(raw);
 }
 
-function drawHelpers(scene, threejsDrawing) {
-    const refGeometry = new BoxGeometry(1, 1, 1); // 1x1x1 cube
-    const refMaterial = new MeshNormalMaterial({ wireframe: true });
-    const refCube = new Mesh(refGeometry, refMaterial);
+function drawHelpers(scene: THREE.Scene, threejsDrawing: any) {
+    const refGeometry = new THREE.BoxGeometry(1, 1, 1); // 1x1x1 cube
+    const refMaterial = new THREE.MeshNormalMaterial({ wireframe: true });
+    const refCube = new THREE.Mesh(refGeometry, refMaterial);
     refCube.position.set(0, 0.5, 0); // sit on ground
     scene.add(refCube);
 
-    const gridHelper = new GridHelper(10, 10); // 10x10 units
+    const gridHelper = new THREE.GridHelper(10, 10); // 10x10 units
     scene.add(gridHelper);
 
     //window.debugObject = object; // now accessible from console
@@ -51,14 +51,14 @@ function drawHelpers(scene, threejsDrawing) {
 //    });
 }
 
-function pixelToWorldUnits(pixelSize, distance, camera) {
+function pixelToWorldUnits(pixelSize: number, distance: number, camera: THREE.Camera) {
     const fovInRad = camera.fov * (Math.PI / 180);
     const screenHeight = 2 * Math.tan(fovInRad / 2) * distance;
     const pixelHeightInWorld = screenHeight / window.innerHeight;
     return pixelSize * pixelHeightInWorld;
 }
 
-async function prepareDrawingContext(threejsDrawing, scene, camera, renderer, controls, css2DRenderer = null, css3DRenderer = null, queryOptions = {}) {
+async function prepareDrawingContext(threejsDrawing: any, scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.WebGLRenderer, controls: any, css2DRenderer: any = null, css3DRenderer: any = null, queryOptions: any = {}) {
     Object.assign(threejsDrawing.data, {
         scene,
         camera,
@@ -71,9 +71,9 @@ async function prepareDrawingContext(threejsDrawing, scene, camera, renderer, co
     return threejsDrawing;
 }
 
-function parseQueryParams(queryString) {
+function parseQueryParams(queryString: string) {
     const urlParams = new URLSearchParams(queryString);
-    const queryParams = {};
+    const queryParams: { [key: string]: any } = {};
     for (const [key, value] of urlParams.entries()) {
         if (key === 'nav') {
             if (value === 'true') {

@@ -5,11 +5,13 @@ export default {
             type: 'button',
             id: 'orbit-toggle-btn',
             text: 'Orbit: ON',
-            onClick: (state, event) => {
+            onClick: (state: any, event: MouseEvent) => {
                 // We'll toggle the orbit controls in here
                 state.orbitEnabled = !state.orbitEnabled;
                 state.controls.enabled = state.orbitEnabled;
-                event.target.innerText = state.orbitEnabled ? 'Orbit: ON' : 'Orbit: OFF';
+                if (event.target) {
+                    (event.target as HTMLElement).innerText = state.orbitEnabled ? 'Orbit: ON' : 'Orbit: OFF';
+                }
             },
         },
         {
@@ -19,9 +21,9 @@ export default {
             max: 100,
             value: 5,
             step: 1,
-            onChange: (state, event) => {
+            onChange: (state: any, event: Event) => {
                 // Maybe we adjust the camera position magnitude
-                const val = parseFloat(event.target.value);
+                const val = parseFloat((event.target as HTMLInputElement).value);
                 // e.g., keep camera at (val, val, val)
                 state.camera.position.set(val, val, val);
             },
@@ -35,8 +37,8 @@ export default {
             max: 2.0,
             value: 1.0,
             step: 0.1,
-            onChange: (state, event) => {
-                const val = parseFloat(event.target.value);
+            onChange: (state: any, event: Event) => {
+                const val = parseFloat((event.target as HTMLInputElement).value);
                 state.tempoScale = val;
                 //state.tempoValue.textContent = `${val.toFixed(2)}x`;
 

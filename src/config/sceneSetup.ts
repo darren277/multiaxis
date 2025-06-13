@@ -1,4 +1,4 @@
-import { Scene, Color, PerspectiveCamera, WebGLRenderer } from 'three';
+import * as THREE from 'three';
 import {
     importOrbitControls, importPointerLockControls, importTrackballControls, importCSS3DRenderer, importCSS2DRenderer,
     importVRButton, importStats
@@ -16,12 +16,19 @@ export const defaultSceneConfig = {
     outlineEffect: false
 }
 
+type OverlayElement = {
+    tagName: string;
+    className?: string;
+    id?: string;
+    attrs?: { [key: string]: string };
+};
+
 export async function setupScene(
     containerId = 'c',
-    overlayElements = [],
+    overlayElements: OverlayElement[] = [],
     sceneConfig = defaultSceneConfig
     ) {
-    let controls;
+    let controls: { enabled: boolean; target: { set: (arg0: number, arg1: number, arg2: number) => void; }; update: () => void; lock: () => any; name: string; object: any; minDistance: number; maxDistance: number; } | null;
     let stats;
     let css2DRenderer;
     let css3DRenderer;
@@ -33,16 +40,19 @@ export async function setupScene(
     const css2DRendererEnabled = cssRendererEnabled && (cssRendererEnabled === '2D' || cssRendererEnabled === 'DUAL');
 
     const container = document.getElementById(containerId);
+    if (!container) {
+        throw new Error(`Container element with id '${containerId}' not found.`);
+    }
     const width = container.clientWidth;
     const height = container.clientHeight;
 
-    const scene = new Scene();
-    scene.background = new Color(background);
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(background);
 
-    const camera = new PerspectiveCamera(75, width / height, 0.1, clippingPlane);
+    const camera = new THREE.PerspectiveCamera(75, width / height, 0.1, clippingPlane);
     camera.position.set(startPosition.x, startPosition.y, startPosition.z);
 
-    const renderer = new WebGLRenderer({canvas: container.querySelector('canvas'), antialias: true});
+    const renderer = new THREE.WebGLRenderer({canvas: container.querySelector('canvas'), antialias: true});
 
     if (vrEnabled) {
         importVRButton().then(VRButton => {
@@ -58,7 +68,7 @@ export async function setupScene(
     if (css2DRendererEnabled) {
         console.log('CSS2DRenderer enabled');
         const CSS2DRenderer = await importCSS2DRenderer();
-        const css2DScene = new Scene();
+        const css2DScene = new THREE.Scene();
         css2DRenderer = new CSS2DRenderer();
         css2DRenderer.scene = css2DScene;
         css2DRenderer.setSize(container.clientWidth, container.clientHeight);
@@ -75,7 +85,7 @@ export async function setupScene(
     if (css3DRendererEnabled) {
         console.log('CSS3DRenderer enabled');
         const CSS3DRenderer = await importCSS3DRenderer();
-        const css3DScene = new Scene();
+        const css3DScene = new THREE.Scene();
         css3DRenderer = new CSS3DRenderer();
         css3DRenderer.scene = css3DScene;
         //cssRenderer.setSize(window.innerWidth, window.innerHeight);
@@ -117,6 +127,7 @@ export async function setupScene(
     camera.lookAt(lookAt.x, lookAt.y, lookAt.z);
 
     function onWindowResize() {
+        if (!container) return;
         camera.aspect = container.clientWidth / container.clientHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(container.clientWidth, container.clientHeight);
@@ -131,23 +142,23 @@ export async function setupScene(
     } else if (controller === 'orbital') {
         const OrbitControls = await importOrbitControls();
         controls = new OrbitControls(camera, renderer.domElement);
-        controls.enabled = true; // we can toggle later
+        controls!.enabled = true; // we can toggle later
 
         //controls.target.set(0, 0, 0); // set the target to the origin
-        controls.target.set(lookAt.x, lookAt.y, lookAt.z); // set the target to the origin
-        controls.update();
+        controls!.target.set(lookAt.x, lookAt.y, lookAt.z); // set the target to the origin
+        controls!.update();
     } else if (controller === 'walking' || controller === 'pointerlock') {
         console.log('PointerLockControls enabled');
         const PointerLockControls = await importPointerLockControls();
         controls = new PointerLockControls(camera, renderer.domElement);
-        document.body.addEventListener('click', () => controls.lock());
-        controls.name = 'PointerLockControls';
-        scene.add(controls.object);
+        document.body.addEventListener('click', () => controls!.lock());
+        controls!.name = 'PointerLockControls';
+        scene.add(controls!.object);
     } else if (controller === 'trackball') {
         const TrackballControls = await importTrackballControls();
         controls = new TrackballControls(camera, renderer.domElement);
-        controls.minDistance = 500;
-        controls.maxDistance = 6000;
+        controls!.minDistance = 500;
+        controls!.maxDistance = 6000;
     } else {
         controls = null;
     }

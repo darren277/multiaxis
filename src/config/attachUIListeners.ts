@@ -1,4 +1,4 @@
-export function attachUIListeners(uiConfig, uiState) {
+export function attachUIListeners(uiConfig: { containerId: string; elements: any[]; }, uiState: any) {
     // Not strictly necessary to get container if you only want to attach by element IDs, but we can do it if you like:
     const container = document.getElementById(uiConfig.containerId);
     if (!container) {
