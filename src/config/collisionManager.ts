@@ -190,6 +190,13 @@ function applyInput(
     }
 }
 
+const wrappedCheckCollision: typeof checkCollision = (
+    playerSize: number,
+    position: THREE.Vector3,
+    obstacleBoxes: THREE.Box3[] | undefined,
+    ignore: THREE.Box3 | null = null
+) => checkCollision(playerSize, position, obstacleBoxes ?? [], ignore);
+
 type CollisionManagerParams = {
     player?: THREE.Object3D,
     worldMeshes?: THREE.Mesh[],
@@ -202,7 +209,7 @@ type CollisionManagerParams = {
         gravity?: number,
         speed?: number,
         jumpVelocity?: number,
-        checkCollisionFunc?: (playerSize: number, position: THREE.Vector3, obstacleBoxes: THREE.Box3[], ignore?: THREE.Box3 | null) => boolean
+        checkCollisionFunc?: typeof checkCollision
     }
 }
 
@@ -252,7 +259,7 @@ export class CollisionManager {
             gravity: this.gravity = 9.81,
             speed: this.speed = 5,
             jumpVelocity: this.jumpVelocity = 5,
-            checkCollisionFunc: this.checkCollisionFunc = checkCollision,
+            checkCollisionFunc: this.checkCollisionFunc = wrappedCheckCollision,
         } = params);
 
         this.velocity   = new THREE.Vector3();
