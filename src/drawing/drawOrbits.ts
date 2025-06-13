@@ -13,6 +13,9 @@ const planets = [
 ]
 
 type Planet = {
+    orbitRadius: number;
+    mesh: any;
+    orbitAngle: number;
     name: string;
     diameter: number; // in km
     rotation: number; // in Earth days

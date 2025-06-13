@@ -65,11 +65,10 @@ function drawForce3dGraph(scene: THREE.Scene, data: any, threejsDrawing: ThreeJS
         })
         .linkPositionUpdate((sprite: SpriteText, { start, end }: { start: THREE.Vector3; end: THREE.Vector3 }) => {
             // Move link labels to the midpoint
-            const middlePos = Object.assign(
-                ...['x', 'y', 'z'].map(c => ({
-                    [c]: start[c] + (end[c] - start[c]) / 2
-                }))
-            );
+            const middlePos = (['x', 'y', 'z'] as const).reduce((acc, c) => {
+                acc[c] = start[c] + (end[c] - start[c]) / 2;
+                return acc;
+            }, {} as { [key in 'x' | 'y' | 'z']?: number });
             Object.assign(sprite.position, middlePos);
         });
 

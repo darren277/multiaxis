@@ -150,9 +150,10 @@ function onMouseDown(camera: THREE.Camera, data: any, event: MouseEvent, rect: D
         data.dragging = true;
 
         const mesh = intersects[0].object;
-        const nodeId = Object.entries(data.nodeSpheres).find(([id, obj]) => obj === mesh)[0];
+        const foundEntry = Object.entries(data.nodeSpheres).find(([id, obj]) => obj === mesh);
+        const nodeId = foundEntry ? foundEntry[0] : null;
 
-        data.draggedNode = data.graphData.nodes.find(n => n.id == nodeId);
+        data.draggedNode = nodeId ? data.graphData.nodes.find(n => n.id == nodeId) : null;
     }
 }
 

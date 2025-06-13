@@ -37,6 +37,7 @@ export interface SceneConfig {
 }
 
 export interface ThreeJSDrawing {
+    camera: any;
     sceneElements: SceneElement[];
     drawFuncs: DrawFunc[];
     //eventListeners: DrawingEventMap;

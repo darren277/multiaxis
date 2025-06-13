@@ -106,7 +106,7 @@ function drawFarm(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
         const modelName = farmModels[i];
         loadGltfModel(modelName).then((gltf) => {
             gltf.scene.traverse((child: THREE.Object3D) => {
-                if (child.isMesh) {
+                if (child instanceof THREE.Mesh) {
                     child.castShadow = true;
                     child.receiveShadow = true;
                     console.log(`Mesh name: ${child.name}`);
@@ -145,7 +145,10 @@ function drawFarm(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
 
     threejsDrawing.data.floor = terrain;
 
-    threejsDrawing.data.floor.userData.isGround = true;
+    (threejsDrawing.data.floor as THREE.Object3D).userData.isGround = true;
+    if (!threejsDrawing.data.worldMeshes) {
+        threejsDrawing.data.worldMeshes = [];
+    }
     threejsDrawing.data.worldMeshes.push(threejsDrawing.data.floor);
 
     drawSun(scene);
@@ -211,7 +214,7 @@ function animateFarm(renderer: THREE.WebGLRenderer, timestamp: number, threejsDr
 
     updateObstacleBoxes(threejsDrawing.data.staticBoxes, threejsDrawing.data.movingMeshes, threejsDrawing.data.obstacleBoxes);
 
-    walkingAnimationCallback(scene, controls, threejsDrawing.data.collision, elapsed, true);
+    walkingAnimationCallback(scene as THREE.Scene, controls, threejsDrawing.data.collision, elapsed, true);
 }
 
 const farmDrawing = {

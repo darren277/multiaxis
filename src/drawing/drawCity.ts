@@ -60,7 +60,7 @@ function drawCity(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
         model.updateMatrixWorld(true);          // bake transforms
 
         model.traverse((child: THREE.Object3D) => {
-            if (child.isMesh) {
+            if (child instanceof THREE.Mesh) {
                 child.castShadow = true;
                 child.receiveShadow = true;
 
@@ -146,11 +146,11 @@ function drawCity(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
         threejsDrawing.data.cityReady = true;
 
         //threejsDrawing.data.spawnCoords = cityBox.getCenter(new Vector3());
-        threejsDrawing.data.spawnCoords = new THREE.Vector3();
+        threejsDrawing.data.spawnCoords = new THREE.Vector3(0, 2, 0);
         //threejsDrawing.data.spawnCoords.y = cityBox.min.y + 2;        // soles ≈1m above ground
-        threejsDrawing.data.spawnCoords.x = 0;
-        threejsDrawing.data.spawnCoords.z = 0;
-        threejsDrawing.data.spawnCoords.y = 2;        // soles ≈1m above ground
+        //threejsDrawing.data.spawnCoords.x = 0;
+        //threejsDrawing.data.spawnCoords.z = 0;
+        //threejsDrawing.data.spawnCoords.y = 2;        // soles ≈1m above ground
 
         console.log('cityBox after shift', cityBox.setFromObject(model));
 
@@ -213,7 +213,7 @@ const cityDrawing = {
 
         updateObstacleBoxes(threejsDrawing.data.staticBoxes, threejsDrawing.data.movingMeshes, threejsDrawing.data.obstacleBoxes);
 
-        walkingAnimationCallback(scene, controls, threejsDrawing.data.collision, elapsed, true);
+        walkingAnimationCallback(scene as THREE.Scene, controls, threejsDrawing.data.collision, elapsed, true);
     },
     'data': {
         'staticBoxes': [],

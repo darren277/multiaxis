@@ -52,7 +52,7 @@ let dragOffset = new THREE.Vector3();
 let wasOrbitDisabled = false;
 
 let isDPressed = false;
-const dealtCards = new Set(); // track already-dealt cards
+const dealtCards: Set<number> = new Set(); // track already-dealt cards
 
 const textureLoader = new THREE.TextureLoader();
 
@@ -640,12 +640,16 @@ const cardsDrawing = {
         }
 
         if (isSpacePressed) {
-            animationCallback(threejsDrawing.data.cards);
+            if (Array.isArray(threejsDrawing.data.cards)) {
+                animationCallback(threejsDrawing.data.cards);
+            }
             isSpacePressed = false; // remove this line if you want it to shuffle continuously while space is held
         }
 
         if (isDPressed) {
-            dealOneCard(threejsDrawing.data.cards, threejsDrawing.data.cfg);             // deal one card
+            if (Array.isArray(threejsDrawing.data.cards)) {
+                dealOneCard(threejsDrawing.data.cards, threejsDrawing.data.cfg); // deal one card
+            }
             isDPressed = false;
 
             const handValue = calculateHandValue(dealtCards, threejsDrawing.data.cardsArray);

@@ -167,7 +167,8 @@ function spawnEnemy(scene: THREE.Scene, data: any, gridX: number, gridZ: number)
 function drawGame(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
     // Provide a data bucket if not present
     if (!threejsDrawing.data) threejsDrawing.data = {};
-    const data = threejsDrawing.data;
+    // Explicitly type data to avoid 'unknown' errors
+    const data = threejsDrawing.data as { walls: THREE.Object3D[], enemies: THREE.Object3D[], [key: string]: any };
     data.walls   = [];
     data.enemies = [];
 

@@ -189,6 +189,11 @@ function layoutWithD3(graph: FamilyGraph, rootId: number) {
 function labelSprite(text: string) {
     const canvas   = document.createElement("canvas");
     const ctx      = canvas.getContext("2d");
+
+    if (!ctx) {
+        throw new Error("Failed to get canvas context");
+    }
+    
     ctx.font       = "24px sans-serif";
     const w        = ctx.measureText(text).width + 20;
     const h        = 40;

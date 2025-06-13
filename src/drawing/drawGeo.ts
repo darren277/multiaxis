@@ -461,14 +461,14 @@ const geoDrawing3d = {
     'animationCallback': (renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawing: ThreeJSDrawing, camera: THREE.Camera) => {
         // Update the globe rotation
         const globe = threejsDrawing.data.globe;
-        if (globe) {
-            globe.rotation.y += 0.0005; // Rotate slowly
+        if (globe && (globe as THREE.Object3D).rotation) {
+            (globe as THREE.Object3D).rotation.y += 0.0005; // Rotate slowly
         }
 
         // Update the map rotation
         const mapGroup = threejsDrawing.data.mapGroup;
-        if (mapGroup) {
-            mapGroup.rotation.y += 0.0005; // Rotate slowly
+        if (mapGroup && (mapGroup as THREE.Object3D).rotation) {
+            (mapGroup as THREE.Object3D).rotation.y += 0.0005; // Rotate slowly
         }
     },
     'data': {

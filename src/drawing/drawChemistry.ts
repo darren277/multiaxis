@@ -28,11 +28,11 @@ const layout = {
 
 const chemistry = {
     // Map<string, THREE.Group>
-    nodeGroups : new Map(),
+    nodeGroups : new Map<string, THREE.Group>(),
     // Map<string, THREE.Vector3>
-    nodeCenters: new Map(),
-    // Array<THREE.Object3D>
-    edgeArrows : []
+    nodeCenters: new Map<string, THREE.Vector3>(),
+    // Array<THREE.ArrowHelper>
+    edgeArrows : [] as THREE.ArrowHelper[]
 };
 
 
@@ -47,7 +47,7 @@ type MoleculeNode = {
 
 
 function loadOneMolecule(node: MoleculeNode, scene: THREE.Scene) {
-    return new Promise((resolve) => {
+    return new Promise<void>((resolve) => {
         const root = new THREE.Group();
         scene.add(root);
 
@@ -126,7 +126,7 @@ function loadOneMolecule(node: MoleculeNode, scene: THREE.Scene) {
                 root.add(object);
             }
 
-            root.position.copy(layout[node.id]);
+            root.position.copy(layout[node.id as LayoutKey]);
             chemistry.nodeGroups.set(node.id, root);
 
             // world‑space centre

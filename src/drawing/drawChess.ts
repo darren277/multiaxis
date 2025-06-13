@@ -3,7 +3,14 @@ import { FontLoader } from 'fontloader';
 import { TextGeometry } from 'textgeometry';
 import { ThreeJSDrawing } from "../types";
 
-export function drawChessBoard(scene: THREE.Scene, options = {}) {
+interface ChessBoardOptions {
+    squareSize?: number;
+    boardHeight?: number;
+    darkColor?: number;
+    lightColor?: number;
+}
+
+export function drawChessBoard(scene: THREE.Scene, options: ChessBoardOptions = {}) {
     const {
         squareSize = 1,
         boardHeight = 0.2,

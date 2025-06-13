@@ -23,7 +23,8 @@ function drawComplex(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
     const tv = threejsDrawing.data.tv;
 
     // Draw the screen
-    const { mesh: screenMesh, css: screenCss, pickPlane } = drawScreen(scene, threejsDrawing.data.css3DRenderer.scene, 'https://www.darrenmackenzie.com', 'mythumbnail.png');
+    const css3DRenderer = threejsDrawing.data.css3DRenderer as { scene: THREE.Scene };
+    const { mesh: screenMesh, css: screenCss, pickPlane } = drawScreen(scene, css3DRenderer.scene, 'https://www.darrenmackenzie.com', 'mythumbnail.png');
 
     threejsDrawing.data.screenMesh = screenMesh;
     threejsDrawing.data.screenCss = screenCss;

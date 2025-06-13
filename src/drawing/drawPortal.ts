@@ -177,8 +177,8 @@ function animate( renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THR
     renderer.shadowMap.autoUpdate = false; // Avoid re-computing shadows
 
     // render the portal effect
-    renderPortal(leftPortal, rightPortal, leftPortalTexture);
-    renderPortal(rightPortal, leftPortal, rightPortalTexture);
+    renderPortal(renderer, scene, camera, leftPortal, rightPortal, leftPortalTexture);
+    renderPortal(renderer, scene, camera, rightPortal, leftPortal, rightPortalTexture);
 
     // restore the original rendering properties
     renderer.xr.enabled = currentXrEnabled;

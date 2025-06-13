@@ -190,7 +190,7 @@ function drawDrive(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
         threejsDrawing.data.physicsWorld = new Ammo.btDiscreteDynamicsWorld(threejsDrawing.data.dispatcher, threejsDrawing.data.broadphase, threejsDrawing.data.solver, threejsDrawing.data.collisionConfiguration);
 
         /* add this line before you drop any rigid bodies/wheels in */
-        threejsDrawing.data.physicsWorld.setGravity(
+        (threejsDrawing.data.physicsWorld as any).setGravity(
             new Ammo.btVector3( 0, -9.81, 0 )      // Bullet units = metres‑per‑second²
         );
 

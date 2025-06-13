@@ -410,6 +410,9 @@ function createCurvedLink(source: GraphNode, target: GraphNode, color = 0x8888ff
  * Updates the geometry of an existing curved tube mesh between two nodes.
  *
  * @param {THREE.Mesh} mesh - The mesh to update (created from TubeGeometry)
+ * @param {GraphNode} source - The starting node
+ * @param {GraphNode} target - The ending node
+ */
 function updateCurvedLink(mesh: THREE.Mesh, source: GraphNode, target: GraphNode) {
     // Remove old geometry...
     mesh.geometry.dispose();

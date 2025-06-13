@@ -56,7 +56,7 @@ async function loadRegions(scene: THREE.Scene) {
     const basePath = 'imagery/brain/ply';  // adjust as needed
 
     for (const name of constructedRegionNames) {
-        loader.load(`${basePath}${name}`, geometry => {
+        loader.load(`${basePath}${name}`, (geometry: THREE.BufferGeometry) => {
             geometry.computeVertexNormals();  // just in case
 
             const material = new THREE.MeshStandardMaterial({
