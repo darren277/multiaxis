@@ -197,7 +197,7 @@ function drawGame(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
 // ---------- animationCallback (runs every frame) ----------
 const clock = new THREE.Clock();
 function animationCallback(renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawing: ThreeJSDrawing, camera: THREE.Camera) {
-    const data     = threejsDrawing.data;
+    const data = threejsDrawing.data as { walls: THREE.Object3D[], enemies: THREE.Object3D[], controls?: any, lastSpawn?: number, [key: string]: any };
     const controls = data.controls;           // PointerLockControls comes from loader
     if (!controls) {
         console.warn('No controls found');

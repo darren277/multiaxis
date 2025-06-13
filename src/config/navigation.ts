@@ -148,7 +148,7 @@ function lookUpNeighbors(map: (string | null)[][], i: number, j: number) {
         if (ni >= 0 && ni < map.length && nj >= 0 && nj < map[ni].length) {
             const scene = map[ni][nj];
             if (scene) {
-                const position = [di * 100, dj * 100];
+                const position: [number, number] = [di * 100, dj * 100];
 
                 let cornerKey;
                 if (di === -1 && dj === -1) {

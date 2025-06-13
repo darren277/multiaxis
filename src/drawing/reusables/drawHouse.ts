@@ -48,9 +48,10 @@ function addDoorAndWindow(houseGroup: THREE.Group, wallWidth: number, wallHeight
     const doorMat = new THREE.MeshToonMaterial({ color: 0x663300 });
 
     // Get front wall Z position (first wall added in buildHollowWalls)
-    const frontWall = houseGroup.children.find(mesh =>
-        mesh.geometry instanceof THREE.BoxGeometry &&
-        Math.abs(mesh.position.z - (wallDepth / 2 - wallThickness / 2)) < 0.01
+    const frontWall = houseGroup.children.find(obj =>
+        obj instanceof THREE.Mesh &&
+        obj.geometry instanceof THREE.BoxGeometry &&
+        Math.abs(obj.position.z - (wallDepth / 2 - wallThickness / 2)) < 0.01
     );
 
     if (!frontWall) {

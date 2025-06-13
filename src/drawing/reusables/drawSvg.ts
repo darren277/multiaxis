@@ -22,6 +22,11 @@ function renderLinearGradientCanvas(colA: THREE.Color, colB: THREE.Color, horizo
     canvas.width  = canvas.height = size;
     const ctx     = canvas.getContext('2d');
 
+    if (!ctx) {
+        console.error('Failed to create canvas context');
+        return new THREE.MeshBasicMaterial({ color: 0x888888, side: THREE.DoubleSide, toneMapped: false });
+    }
+
     const grad = ctx.createLinearGradient(0, 0, horizontal ? size : 0, horizontal ? 0    : size);
     grad.addColorStop(0, colA.getStyle());
     grad.addColorStop(1, colB.getStyle());
@@ -35,7 +40,7 @@ function renderLinearGradientCanvas(colA: THREE.Color, colB: THREE.Color, horizo
     return new THREE.MeshBasicMaterial({ map: tex, side: THREE.DoubleSide, toneMapped: false });
 }
 
-function renderLinearGradient(vDirValues, colorA, colorB) {
+function renderLinearGradient(vDirValues: [number, number], colorA: string, colorB: string) {
     //const vDir = new Vector2(1004.84 - 924.84, 654.9  - 614.9).normalize();
     const vDir = new THREE.Vector2(vDirValues[0], vDirValues[1]).normalize();
 
@@ -74,10 +79,12 @@ function renderLinearGradient(vDirValues, colorA, colorB) {
 }
 
 function isGiantWhiteBox(path: THREE.Path) {
-    const isGiantWhiteBox = path.color === 0xffffff && path.toShapes(true).length === 1;
+    const style = path.userData?.style || {};
+    const fillColor = style.fill || style.stroke || '';
+    const isGiantWhiteBox = (fillColor === '#ffffff' || fillColor === 'white' || fillColor === 'rgb(255,255,255)') && path.toShapes(true).length === 1;
     if (isGiantWhiteBox) {
         console.log('Giant white box detected');
-        console.log('isGiantWhiteBox', path.color, path.toShapes(true).length, isGiantWhiteBox);
+        console.log('isGiantWhiteBox', fillColor, path.toShapes(true).length, isGiantWhiteBox);
     }
     return isGiantWhiteBox;
 }
@@ -87,7 +94,13 @@ function removeSpacesRGB(rgb: string) {
     return `#${rgbString.map(num => parseInt(num).toString(16).padStart(2, '0')).join('')}`;
 }
 
-function processShape(shape: THREE.Shape, depth: number, fillColor: string, isText = false, linearGradient = null) {
+function processShape(
+    shape: THREE.Shape,
+    depth: number,
+    fillColor: string,
+    isText = false,
+    linearGradient: { vDir: number[]; colorA: string; colorB: string; } | null = null
+) {
     const geometry = new THREE.ExtrudeGeometry(shape, {depth, bevelEnabled: false});
 
     let material;
@@ -116,7 +129,7 @@ function processShape(shape: THREE.Shape, depth: number, fillColor: string, isTe
     return mesh;
 }
 
-function processPath(path: THREE.Path) {
+function processPath(path: any) {
     const style = path.userData?.style || {};
     const node  = path.userData?.node;  // Original SVG DOM node (if present)
     const configuration = node?.getAttribute('data-configuration') || '';
@@ -311,7 +324,7 @@ function buildSvgGroup({
 
     /* --- place in world space --- */
     group.position.fromArray(position);
-    group.rotation.fromArray(rotation);
+    group.rotation.fromArray([...rotation, 0, 0, 0].slice(0, 3) as [number, number, number]);
 
     /* (optional) center pivot on the group's own bounding box */
     centerGroupPivot(group);

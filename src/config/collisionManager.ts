@@ -219,6 +219,13 @@ export class CollisionManager {
     staticBoxes: THREE.Box3[];
     movingMeshes: THREE.Mesh<THREE.BufferGeometry<THREE.NormalBufferAttributes>, THREE.Material | THREE.Material[], THREE.Object3DEventMap>[];
     obstacleBoxes: THREE.Box3[];
+    velocity: THREE.Vector3;
+    direction: THREE.Vector3;
+    DOWN: THREE.Vector3;
+    ray: THREE.Raycaster;
+    clock: THREE.Clock;
+    quatTmp: THREE.Quaternion;
+    keyManager: KeyManager;
 
     constructor(args?: CollisionManagerParams) {
         const {
@@ -238,12 +245,12 @@ export class CollisionManager {
 
         // unpack your tuning constants
         ({
-            playerSize: this.playerSize,
-            stepDown: this.stepDown,
-            gravity: this.gravity,
-            speed: this.speed,
-            jumpVelocity: this.jumpVelocity,
-            checkCollisionFunc: this.checkCollisionFunc,
+            playerSize: this.playerSize = 0.5,
+            stepDown: this.stepDown = 0.5,
+            gravity: this.gravity = 9.81,
+            speed: this.speed = 5,
+            jumpVelocity: this.jumpVelocity = 5,
+            checkCollisionFunc: this.checkCollisionFunc = checkCollision,
         } = params);
 
         this.velocity   = new THREE.Vector3();
@@ -482,13 +489,13 @@ export class CollisionManager {
         const hits = this.ray.intersectObjects(rayTargets, true);
         console.log('Raw hits found:', hits.length);
         hits.forEach((h, index) => {
-            const normalY = h.face ? h.face.normal.clone().applyMatrix3(new Matrix3().getNormalMatrix(h.object.matrixWorld)).normalize().y : null;
+            const normalY = h.face ? h.face.normal.clone().applyMatrix3(new THREE.Matrix3().getNormalMatrix(h.object.matrixWorld)).normalize().y : null;
             console.log(`  Raw Hit <span class="math-inline">\{index\}\: obj\=</span>{h.object.name}, dist=<span class="math-inline">\{h\.distance\.toFixed\(3\)\}, pointY\=</span>{h.point.y.toFixed(3)}, normalY=${normalY ? normalY.toFixed(3) : 'N/A'}`);
         });
 
         const walkableHit = hits.find(i => {
             if (!i.face) return false;
-            const n = i.face.normal.clone().applyMatrix3(new Matrix3().getNormalMatrix(i.object.matrixWorld)).normalize();
+            const n = i.face.normal.clone().applyMatrix3(new THREE.Matrix3().getNormalMatrix(i.object.matrixWorld)).normalize();
             return n.y > 0.01; // Consider a surface walkable if its normal is mostly upward
         });
 

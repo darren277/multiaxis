@@ -491,7 +491,7 @@ function drawCards(scene: THREE.Scene, data: any, threejsDrawing: any) {
     const cardsArray = Object.entries(cards).map(([key, value]) => {
         return {
             name: key,
-            ...value,
+            ...(value as object),
             position: new THREE.Vector3(0, 0, 0) // default position
         };
     });
@@ -546,8 +546,8 @@ window.addEventListener('keyup', (e) => {
 function onMouseDown(e: MouseEvent, threejsDrawing: ThreeJSDrawing) {
     if (!threejsDrawing.data?.cards) return;
 
-    const camera = threejsDrawing.data.camera;
-    if (!camera) return;
+    const camera = threejsDrawing.data.camera as THREE.Camera;
+    if (!camera || !(camera instanceof THREE.Camera)) return;
     const renderer = threejsDrawing.data.renderer;
     if (!renderer) return;
     const controls = threejsDrawing.data.controls;
@@ -555,8 +555,10 @@ function onMouseDown(e: MouseEvent, threejsDrawing: ThreeJSDrawing) {
 
     const intersects = getIntersections(e, camera, renderer.domElement, threejsDrawing.data.cards);
     if (intersects.length > 0) {
-        controls.enabled = false;
-        wasOrbitDisabled = true;
+        if ('enabled' in controls) {
+            (controls as { enabled: boolean }).enabled = false;
+            wasOrbitDisabled = true;
+        }
 
         draggingCard = intersects[0].object as THREE.Mesh;
 
@@ -652,7 +654,7 @@ const cardsDrawing = {
             }
             isDPressed = false;
 
-            const handValue = calculateHandValue(dealtCards, threejsDrawing.data.cardsArray);
+            const handValue = calculateHandValue(dealtCards, threejsDrawing.data.cardsArray as any[]);
             console.log(`Hand value: ${handValue}`);
         }
     },

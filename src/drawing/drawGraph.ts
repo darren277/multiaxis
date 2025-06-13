@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { forceSimulation, forceManyBody, forceLink, forceCenter } from 'd3-force-3d';
-import { drawBasicLights } from './drawLights.js';
-import { ThreeJSDrawing } from '../threejsDrawing.js';
+import { drawBasicLights } from './reusables/drawLights';
+import { ThreeJSDrawing } from '../threejsDrawing';
 
 function drawGraph(scene: THREE.Scene, data: any, state: any) {
     console.log('data', data);

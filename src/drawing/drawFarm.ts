@@ -114,7 +114,6 @@ function drawFarm(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
                     child.receiveShadow = true;
                     console.log(`Mesh name: ${child.name}`);
                     if (child.name.includes("Door")) {
-                        clickableDoors.push(child);
                         makeDoorClickable(child);
                         //child.userData.originalRotationY = child.rotation.y;
                         // Optionally: set pivot for rotation (see advanced tip below)
@@ -156,7 +155,7 @@ function drawFarm(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
 
     drawSun(scene);
 
-    scene.updateMatrixWorld(true);
+    (scene as THREE.Scene).updateMatrixWorld(true);
 
     instantiateCollision(threejsDrawing);
 }

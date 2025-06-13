@@ -274,7 +274,7 @@ function destroy(scene: THREE.Scene, renderer: THREE.WebGLRenderer) {
         }
     });
 
-    renderer.instance.dispose();
+    renderer.dispose();
 }
 
 export class Mouse extends EventEmitter {
@@ -377,22 +377,22 @@ export default class MonitorScreen extends EventEmitter {
 
                 case 'gltfModel':
                     return gltfLoader.loadAsync(src.path)
-                        .then(file => this.items.gltfModel[src.name] = file);
+                        .then((file: THREE.GLTF) => this.items.gltfModel[src.name] = file);
 
                 case 'texture':
                     return textureLoader.loadAsync(src.path)
-                        .then(file => {
+                        .then((file: THREE.Texture) => {
                             file.colorSpace = THREE.SRGBColorSpace;
                             this.items.texture[src.name] = file;
                         });
 
                 case 'cubeTexture':
                     return cubeTextureLoader.loadAsync(src.path)
-                        .then(file => this.items.cubeTexture[src.name] = file);
+                        .then((file: THREE.CubeTexture) => this.items.cubeTexture[src.name] = file);
 
                 case 'audio':
                     return audioLoader.loadAsync(src.path)
-                        .then(buffer => this.items.audio[src.name] = buffer);
+                        .then((buffer: AudioBuffer) => this.items.audio[src.name] = buffer);
 
                 default:
                     return Promise.reject(
@@ -504,7 +504,7 @@ export default class MonitorScreen extends EventEmitter {
                     var evt = new CustomEvent(event.data.type, {
                         bubbles: true,
                         cancelable: false,
-                    });
+                    }) as CustomEvent & { inComputer?: boolean; clientX?: number; clientY?: number; key?: string };
 
                     evt.inComputer = true;
                     if (event.data.type === 'mousemove') {
@@ -578,7 +578,7 @@ export default class MonitorScreen extends EventEmitter {
         const geometry = new THREE.PlaneGeometry(this.screenSize.width, this.screenSize.height);
 
         // Create the GL plane mesh
-        const mesh = new Mesh(geometry, material);
+        const mesh = new THREE.Mesh(geometry, material);
 
         // Copy the position, rotation and scale of the CSS plane to the GL plane
         mesh.position.copy(object.position);
@@ -646,7 +646,7 @@ export default class MonitorScreen extends EventEmitter {
     }
 
     getVideoTextures(videoId: string) {
-        const video = document.getElementById(videoId);
+        const video = document.getElementById(videoId) as HTMLVideoElement | null;
         if (!video) {
             setTimeout(() => {this.getVideoTextures(videoId);}, 100);
         } else {
@@ -704,9 +704,9 @@ export default class MonitorScreen extends EventEmitter {
                 rotation: new THREE.Euler(90 * THREE.MathUtils.DEG2RAD, 0, 0),
             },
             bottom: {
-                size: new Vector2(this.screenSize.width, maxOffset),
-                position: this.offsetPosition(this.position, new Vector3(0, -this.screenSize.height / 2, maxOffset / 2)),
-                rotation: new Euler(90 * MathUtils.DEG2RAD, 0, 0),
+                size: new THREE.Vector2(this.screenSize.width, maxOffset),
+                position: this.offsetPosition(this.position, new THREE.Vector3(0, -this.screenSize.height / 2, maxOffset / 2)),
+                rotation: new THREE.Euler(90 * THREE.MathUtils.DEG2RAD, 0, 0),
             },
         };
 
@@ -783,7 +783,7 @@ export default class MonitorScreen extends EventEmitter {
 
             const DIM_FACTOR = 0.7;
 
-            this.dimmingPlane.material.opacity = (1 - opacity) * DIM_FACTOR + (1 - dot) * DIM_FACTOR;
+            (this.dimmingPlane.material as THREE.MeshBasicMaterial).opacity = (1 - opacity) * DIM_FACTOR + (1 - dot) * DIM_FACTOR;
         }
     }
 }
@@ -861,11 +861,15 @@ async function attachSceneComponentsToMonitor(monitor: any, threejsDrawing: Thre
 }
 
 async function drawMonitor(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
-    const cssScene = new THREE.Scene();
-    threejsDrawing.data.cssScene = cssScene;
-
     // Provide a data bucket if not present
     if (!threejsDrawing.data) threejsDrawing.data = {};
+
+    // Ensure cssScene is a THREE.Scene
+    if (!threejsDrawing.data.cssScene || !(threejsDrawing.data.cssScene instanceof THREE.Scene)) {
+        threejsDrawing.data.cssScene = new THREE.Scene();
+    }
+    const cssScene = threejsDrawing.data.cssScene as THREE.Scene;
+
     const data = threejsDrawing.data as {
         monitorScreen?: MonitorScreen;
         url?: string;
@@ -881,7 +885,7 @@ async function drawMonitor(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
     };
 
     // Create the monitor screen
-    data.monitorScreen = new MonitorScreen(data.url);
+    data.monitorScreen = new MonitorScreen(data.url ?? '');
 
     // Attach the scene components to the monitor
     await attachSceneComponentsToMonitor(data.monitorScreen, threejsDrawing, cssScene);
@@ -942,16 +946,18 @@ async function drawMonitor(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
 }
 
 function animationCallback(renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawing: ThreeJSDrawing, camera: THREE.Camera) {
-    const cssScene = threejsDrawing.data.cssScene;
-    const cssRenderer = threejsDrawing.data.cssRenderer;
+    let cssScene = threejsDrawing.data.cssScene;
+    const cssRenderer = threejsDrawing.data.cssRenderer as import('three/examples/jsm/renderers/CSS3DRenderer').CSS3DRenderer;
 
     if (!cssRenderer) {
         console.warn('CSS Renderer not found');
         return;
     }
-    if (!cssScene) {
-        console.warn('CSS Scene not found');
-        return;
+    // Ensure cssScene is a THREE.Scene
+    if (!cssScene || !(cssScene instanceof THREE.Scene)) {
+        console.warn('CSS Scene not found or not a THREE.Scene, creating a new THREE.Scene.');
+        cssScene = new THREE.Scene();
+        threejsDrawing.data.cssScene = cssScene;
     }
     cssRenderer.render(cssScene, camera);
 }

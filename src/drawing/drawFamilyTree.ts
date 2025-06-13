@@ -216,6 +216,10 @@ function labelSpriteWithImage(name: string, imageUrl: string | null = null) {
         const canvas   = document.createElement("canvas");
         const ctx      = canvas.getContext("2d");
 
+        if (!ctx) {
+            throw new Error("Failed to get canvas context");
+        }
+
         const fontSize = 24;
         ctx.font       = `${fontSize}px sans-serif`;
 
@@ -306,7 +310,7 @@ async function drawFamilyTree(scene: THREE.Scene, data: any, threejsDrawing: Thr
     const graph = layoutWithD3(data, /*rootId=*/1);
     graph.nodes.forEach(async n => {
         //const sprite = labelSprite(n.name);
-        const sprite = await labelSpriteWithImage(n.name, n.imageUrl || null);
+        const sprite = await labelSpriteWithImage(n.name, n.imageUrl || null) as THREE.Sprite;
         sprite.position.set(n.x, n.y, 0);
         scene.add(sprite);
     });

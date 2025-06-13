@@ -36,8 +36,8 @@ export async function setupScene(
     // fill in any missing sceneConfig values with defaults
     const {startPosition, lookAt, clippingPlane, background, controller, cssRendererEnabled, statsEnabled, vrEnabled} = {...defaultSceneConfig, ...sceneConfig};
 
-    const css3DRendererEnabled = cssRendererEnabled && (cssRendererEnabled === '3D' || cssRendererEnabled === 'DUAL');
-    const css2DRendererEnabled = cssRendererEnabled && (cssRendererEnabled === '2D' || cssRendererEnabled === 'DUAL');
+    const css3DRendererEnabled = (typeof cssRendererEnabled === 'string') && (cssRendererEnabled === '3D' || cssRendererEnabled === 'DUAL');
+    const css2DRendererEnabled = (typeof cssRendererEnabled === 'string') && (cssRendererEnabled === '2D' || cssRendererEnabled === 'DUAL');
 
     const container = document.getElementById(containerId);
     if (!container) {
@@ -116,10 +116,16 @@ export async function setupScene(
     // Add any optional overlay elements
     for (const element of overlayElements) {
         const el = document.createElement(element.tagName);
-        el.className = element.className;
-        el.id = element.id;
-        for (const [key, value] of Object.entries(element.attrs)) {
-            el.setAttribute(key, value);
+        if (element.className !== undefined) {
+            el.className = element.className;
+        }
+        if (element.id !== undefined) {
+            el.id = element.id;
+        }
+        if (element.attrs) {
+            for (const [key, value] of Object.entries(element.attrs)) {
+                el.setAttribute(key, value);
+            }
         }
         container.appendChild(el);
     }

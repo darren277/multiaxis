@@ -3,7 +3,7 @@ import SpriteText from 'three-spritetext';
 import ForceGraph3D from '3d-force-graph';
 import { ThreeJSDrawing } from '../types';
 
-function drawForce3dGraph(scene: THREE.Scene, data: any, threejsDrawing: ThreeJSDrawing) {
+function drawForce3dGraph(scene: THREE.Scene, data: any, threejsDrawing: ThreeJSDrawing & { data: { _forceGraphInstance: ForceGraph3D | null } }) {
     const { renderer, camera, controls } = threejsDrawing.data;
 
     const dataSrc = threejsDrawing.data.dataSrc;
@@ -96,12 +96,15 @@ const force3dDrawing = {
             console.warn('No ForceGraph3D instance found.');
             return;
         }
-        if (threejsDrawing.data._forceGraphInstance && threejsDrawing.data._forceGraphInstance.tickFrame) {
-            threejsDrawing.data._forceGraphInstance.tickFrame();
+        if (
+            threejsDrawing.data._forceGraphInstance &&
+            (threejsDrawing.data._forceGraphInstance as ForceGraph3D).tickFrame
+        ) {
+            (threejsDrawing.data._forceGraphInstance as ForceGraph3D).tickFrame();
         }
     },
     'data': {
-        '_forceGraphInstance': null,
+        '_forceGraphInstance': null as ForceGraph3D | null,
     },
     'sceneConfig': {
         'isForceGraph': true,

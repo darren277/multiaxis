@@ -199,7 +199,7 @@ function constructElement(document: Document, tagName: string, id: string, attrs
     const element = document.createElement(tagName);
     element.id = id;
     for (const [key, value] of Object.entries(attrs)) {
-        element.style[key] = value;
+        (element.style as any)[key as any] = value;
     }
     return element;
 }
@@ -296,14 +296,15 @@ const adventureDrawing = {
             // Always resolve the root label (in case we clicked on child)
             const rootLabel = label.classList.contains('caption-label-3d') ? label : label.closest('.caption-label-3d');
 
-            if (!rootLabel || !rootLabel.dataset.direction) return;
+            if (!rootLabel || !(rootLabel as HTMLElement).dataset.direction) return;
 
-            const direction = rootLabel.dataset.direction;
+            const direction = (rootLabel as HTMLElement).dataset.direction;
 
             const stepData = data.adventureSteps[data.currentStepId];
             if (!stepData || !stepData.choices) return;
 
-            const nextStepId = stepData.choices[direction];
+            if (typeof direction === 'undefined') return;
+            const nextStepId = stepData.choices[direction as keyof typeof stepData.choices];
             if (!nextStepId) return;
 
             data.currentStepId = nextStepId;

@@ -110,7 +110,9 @@ function onClickScreen(ev: MouseEvent, dom: HTMLElement, screen: THREE.Mesh, cam
 
     /* Make sure the ray can see the plane at any layer / distance */
     raycaster.layers.enableAll();
-    raycaster.far = camera.far;
+    if ('far' in camera) {
+        raycaster.far = (camera as THREE.PerspectiveCamera | THREE.OrthographicCamera).far;
+    }
 
      /* Force‑update matrix if the plane moves each frame */
     screen.updateMatrixWorld(true);

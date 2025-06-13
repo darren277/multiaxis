@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-import { BVHLoader } from 'three/examples/jsm/loaders/BVHLoader.js';
+import { BVHLoader } from 'three/examples/jsm/loaders/BVHLoader';
 import { ThreeJSDrawing } from '../../threejsDrawing';
 
 const clock = new THREE.Clock();

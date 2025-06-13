@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
-import { drawBasicLights } from './drawLights.js';
-import { ThreeJSDrawing } from '../types.js';
+import { drawBasicLights } from './reusables/drawLights';
+import { ThreeJSDrawing } from '../types';
 
 const HOUSE_TO_HIGHLIGHT = '<REPLACE_WITH_BUILDING_ID>';
 const DEFAULT_HOUSE_COLOR = 0xf0f0f0;
@@ -258,7 +258,8 @@ function polygonToMesh(scene: THREE.Scene, polygonCoords: any, projectionFn: any
         polygonGroup.add(mesh);
 
         if (debug) {
-            drawDebugDots(scene, points);
+            const points3D = points.map(p => new THREE.Vector3(p.x, p.y, 0));
+            drawDebugDots(scene, points3D);
         }
     });
 

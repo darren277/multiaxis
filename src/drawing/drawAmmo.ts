@@ -405,7 +405,7 @@ function onPointerDown(event: PointerEvent, data: any) {
     pos.add(raycaster.ray.origin);
     quat.set(0, 0, 0, 1);
     // createRigidBody(scene, physicsWorld, object, physicsShape, mass, pos, quat, vel, angVel)
-    const ballBody = createRigidBody(scene, physicsWorld, ball, ballShape, ballMass, pos, quat);
+    const ballBody = createRigidBody(scene, physicsWorld, ball, ballShape, ballMass, pos, quat, null, null);
 
     pos.copy(raycaster.ray.direction);
     pos.multiplyScalar(24);

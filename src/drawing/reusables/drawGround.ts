@@ -290,7 +290,10 @@ function animateWater(renderer: THREE.WebGLRenderer, timestamp: number, threejsD
     renderer.render(threejsDrawing.data.scene, camera);
 }
 
-const groundLayout = [
+// Define allowed ground types
+type GroundType = 'grass' | 'dirt' | 'sand' | 'road' | 'water';
+
+const groundLayout: GroundType[][] = [
     ['grass', 'grass', 'grass', 'grass', 'grass', 'dirt', 'grass', 'grass', 'grass', 'sand', 'water'],
     ['grass', 'grass', 'grass', 'grass', 'grass', 'dirt', 'grass', 'grass', 'grass', 'sand', 'sand'],
     ['grass', 'grass', 'grass', 'grass', 'grass', 'dirt', 'grass', 'grass', 'grass', 'grass', 'grass'],
@@ -302,7 +305,7 @@ const groundLayout = [
     ['grass', 'grass', 'grass', 'grass', 'grass', 'dirt', 'grass', 'grass', 'grass', 'road', 'road'],
 ];
 
-function createGroundFromLayout(layout: string[][], tileSize = 10) {
+function createGroundFromLayout(layout: GroundType[][], tileSize = 10) {
     const group = new THREE.Group();
 
     const textures = {

@@ -126,7 +126,7 @@ function createPlaceholderPiece(scene: THREE.Scene, type, color = 0xeeeeee, font
         const textGeo = new TextGeometry(type[0].toUpperCase(), {
             font: font,
             size: 0.15,
-            height: 0.05,
+            depth: 0.05,
         });
         const textMesh = new THREE.Mesh(
             textGeo,
@@ -159,13 +159,13 @@ function drawChessCallback(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing, f
     // Draw Chessboard
     drawChessBoard(scene);
 
-    for (let row in pieceMap) {
+    for (let rowNum of Object.keys(pieceMap).map(Number)) {
         for (let col = 0; col < 8; col++) {
-            const type = pieceMap[row][col];
-            const isWhite = row < 2;
+            const type = pieceMap[rowNum][col];
+            const isWhite = rowNum < 2;
             const color = isWhite ? 0xffffff : 0x222222;
             const piece = createPlaceholderPiece(scene, type, color, font);
-            piece.position.set(col - 3.5, 0.1, row - 3.5);
+            piece.position.set(col - 3.5, 0.1, rowNum - 3.5);
             scene.add(piece);
         }
     }

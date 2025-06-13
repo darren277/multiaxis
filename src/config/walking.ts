@@ -150,7 +150,7 @@ function walkingAnimationCallbackOld(scene: THREE.Scene, controls: any, player: 
             // update its box just in case we haven't yet this frame
             if (plat.userData.boxNeedsRefresh) {
                 plat.userData.box.setFromObject(plat);
-                plat.userData.box.expandByVector(new Vector3(0, 2, 0));
+                plat.userData.box.expandByVector(new THREE.Vector3(0, 2, 0));
                 plat.userData.boxNeedsRefresh = false;
             }
 
@@ -229,7 +229,7 @@ function addObstacle(staticBoxes: THREE.Box3[], source: THREE.Object3D) {
 
     // otherwise expect an Object3D mesh
     const box = new THREE.Box3().setFromObject(source);
-    box.object = source;
+    // box.object = source; // Removed: Box3 has no 'object' property
     source.userData.box = box;
     staticBoxes.push(box);
 }

@@ -73,12 +73,12 @@ function drawCity(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
         });
 
         STREETS.forEach(street => {
-            const child = model.getObjectByName(name);
+            const child = model.getObjectByName(street);
             if (child) cityBox.expandByObject(child);
         });
 
         SIDEWALKS.forEach(sidewalk => {
-            const child = model.getObjectByName(name);
+            const child = model.getObjectByName(sidewalk);
             if (child) cityBox.expandByObject(child);
         });
 
@@ -87,7 +87,7 @@ function drawCity(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
         const roadGeoms: THREE.BufferGeometry[] = [];
 
         model.traverse((child: THREE.Object3D) => {
-            if (child.isMesh && (STREETS.includes(child.name) || SIDEWALKS.includes(child.name))) {
+            if (child instanceof THREE.Mesh && (STREETS.includes(child.name) || SIDEWALKS.includes(child.name))) {
                 //threejsDrawing.data.worldMeshes.push(child);
                 //addObstacle(threejsDrawing.data.staticBoxes, child);
                 const g = child.geometry.clone();
@@ -103,7 +103,7 @@ function drawCity(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
                 console.log('child', child);
                 console.log('child.geometry', child.geometry);
             }
-            if (child.isMesh && OBSTACLES.includes(child.name)) {
+            if (child instanceof THREE.Mesh && OBSTACLES.includes(child.name)) {
                 extractPerTriangle(threejsDrawing.data.staticBoxes, child);
             }
         });
@@ -160,7 +160,7 @@ function drawCity(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
     // Draw the sun
     const sun = drawSun(scene, threejsDrawing);
 
-    scene.updateMatrixWorld(true);
+    (scene as THREE.Scene).updateMatrixWorld(true);
 
     instantiateCollision(threejsDrawing);
 }

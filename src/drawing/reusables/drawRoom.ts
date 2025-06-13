@@ -35,6 +35,11 @@ function drawRoom(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
     }
     threejsDrawing.data.worldMeshes.push(threejsDrawing.data.floor as THREE.Object3D);          // add once at scene setup
 
+    // Ensure staticBoxes is initialized
+    if (!threejsDrawing.data.staticBoxes) {
+        threejsDrawing.data.staticBoxes = [] as THREE.Box3[];
+    }
+
     // Draw ceiling
     threejsDrawing.data.ceiling = drawFloor(scene, woodMat, 200);
     (threejsDrawing.data.ceiling as THREE.Mesh).rotation.x = Math.PI / 2;
@@ -79,7 +84,7 @@ function drawRoom(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
 
     // Draw second floor walkway...
     threejsDrawing.data.secondFloorWalkway = drawPerimeterWalkway(scene, woodMat, 200, 25, 50);
-    const { east, west, north, south } = threejsDrawing.data.secondFloorWalkway;
+    const { east, west, north, south }: { east: THREE.Mesh, west: THREE.Mesh, north: THREE.Mesh, south: THREE.Mesh } = threejsDrawing.data.secondFloorWalkway;
     addObstacle(threejsDrawing.data.staticBoxes, east);
     addObstacle(threejsDrawing.data.staticBoxes, west);
     addObstacle(threejsDrawing.data.staticBoxes, north);
@@ -235,10 +240,10 @@ const roomDrawing = {
         'floorMat': null,
         'cubeMat': null,
         'ballMat': null,
-        'worldMeshes': [],
-        'movingMeshes': [],
-        'staticBoxes': [],
-        'obstacleBoxes': [],
+        'worldMeshes': [] as THREE.Object3D[],
+        'movingMeshes': [] as THREE.Object3D[],
+        'staticBoxes': [] as THREE.Box3[],
+        'obstacleBoxes': [] as THREE.Box3[],
         'collision': null,
         'keyManager': null,
     },

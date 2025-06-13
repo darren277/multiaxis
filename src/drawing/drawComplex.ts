@@ -1,12 +1,12 @@
 import * as THREE from 'three';
-import { drawLibrary } from './library/drawLibrary.js';
-import { animateRoom } from './drawRoom.js';
-import { onKeyDownWalking, onKeyUpWalking } from '../config/walking.js';
-import { loadThenDraw } from '../config/loadThenDraw.js';
-import { drawTV, animationCallback as tvAnimation, onClick as tvOnClick } from './drawTV.js';
-import { drawScreen, onClickScreen, onKeyScreen } from './drawScreen.js';
-import { drawMultipleSvgs } from './drawSvg.js';
-import { ThreeJSDrawing } from '../types.js';
+import { drawLibrary } from './library/drawLibrary';
+import { animateRoom } from './reusables/drawRoom';
+import { onKeyDownWalking, onKeyUpWalking } from '../config/walking';
+import { loadThenDraw } from '../config/loadThenDraw';
+import { drawTV, animationCallback as tvAnimation, onClick as tvOnClick } from './reusables/drawTV';
+import { drawScreen, onClickScreen, onKeyScreen } from './reusables/drawScreen';
+import { drawMultipleSvgs } from './reusables/drawSvg';
+import { ThreeJSDrawing } from '../types';
 
 function drawComplex(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
     // Draw the library

@@ -20,7 +20,9 @@ export const molGraph = {
     ]
 };
 
-const layout = {
+type LayoutKey = 'ethanol' | 'acetaldehyde' | 'ethylCl';
+
+const layout: Record<LayoutKey, THREE.Vector3> = {
     ethanol:      new THREE.Vector3(-360, 0, 0),
     acetaldehyde: new THREE.Vector3(   0, 0, 0),
     ethylCl:      new THREE.Vector3( 360, 0, 0)

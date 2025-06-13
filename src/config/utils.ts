@@ -52,7 +52,7 @@ function drawHelpers(scene: THREE.Scene, threejsDrawing: any) {
 //    });
 }
 
-function pixelToWorldUnits(pixelSize: number, distance: number, camera: THREE.Camera) {
+function pixelToWorldUnits(pixelSize: number, distance: number, camera: THREE.PerspectiveCamera) {
     const fovInRad = camera.fov * (Math.PI / 180);
     const screenHeight = 2 * Math.tan(fovInRad / 2) * distance;
     const pixelHeightInWorld = screenHeight / window.innerHeight;
