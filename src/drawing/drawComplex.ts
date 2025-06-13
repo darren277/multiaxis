@@ -24,7 +24,17 @@ function drawComplex(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
 
     // Draw the screen
     const css3DRenderer = threejsDrawing.data.css3DRenderer as { scene: THREE.Scene };
-    const { mesh: screenMesh, css: screenCss, pickPlane } = drawScreen(scene, css3DRenderer.scene, 'https://www.darrenmackenzie.com', 'mythumbnail.png');
+    const { mesh: screenMesh, css: screenCss, pickPlane } = drawScreen(
+        scene,
+        'screen', // or another appropriate string identifier
+        'main',   // or another appropriate string identifier
+        {
+            webglScene: scene,
+            cssScene: css3DRenderer.scene,
+            url: 'https://www.darrenmackenzie.com',
+            thumbnail: 'mythumbnail.png'
+        }
+    );
 
     threejsDrawing.data.screenMesh = screenMesh;
     threejsDrawing.data.screenCss = screenCss;

@@ -26,7 +26,7 @@ function drawTown(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
 
     // Add basic lights
     //drawBasicLights(scene);
-    drawSun(scene);
+    drawSun(scene, threejsDrawing);
 
     drawHouses(scene);
 

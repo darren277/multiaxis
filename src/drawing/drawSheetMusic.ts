@@ -74,7 +74,7 @@ const NOTE_MAPPING: { [key: string]: string } = {
 
 }
 
-const noteSounds = {}; // e.g., { 'C4': AudioObject, ... }
+const noteSounds: { [key: string]: THREE.Audio } = {}; // e.g., { 'C4': AudioObject, ... }
 
 
 let startTime: number | null = null;

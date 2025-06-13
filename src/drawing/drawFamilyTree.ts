@@ -37,6 +37,9 @@ function layoutFamilyYearScale(graph: FamilyGraph, rootId: number) {
     });
 
     const root        = byId.get(rootId);
+    if (!root) {
+        throw new Error(`Root node with id ${rootId} not found`);
+    }
     const refYear     = root.birthYear;  // y=0 at viewer’s birth year
     root.x = 0;
     root.y = 0;
@@ -256,6 +259,8 @@ function labelSpriteWithImage(name: string, imageUrl: string | null = null) {
 
         let img: HTMLImageElement | null = null;
         function drawLabel() {
+            if (!ctx) return;  // safety check
+
             if (imageUrl && img && img.complete) {
                 ctx.drawImage(img, imageX, padding, imgSize, imgSize);
             }
@@ -314,7 +319,7 @@ async function drawFamilyTree(scene: THREE.Scene, data: any, threejsDrawing: Thr
     graph.nodes.forEach(async n => {
         //const sprite = labelSprite(n.name);
         const sprite = await labelSpriteWithImage(n.name, n.imageUrl || null) as THREE.Sprite;
-        sprite.position.set(n.x, n.y, 0);
+        sprite.position.set(n.x ?? 0, n.y ?? 0, 0);
         scene.add(sprite);
     });
 
@@ -323,11 +328,13 @@ async function drawFamilyTree(scene: THREE.Scene, data: any, threejsDrawing: Thr
     graph.links.forEach(({source, target}) => {
         const a = graph.nodes.find(n => n.id === source);
         const b = graph.nodes.find(n => n.id === target);
-        const g = new THREE.BufferGeometry().setFromPoints([
-            new THREE.Vector3(a.x, a.y, 0),
-            new THREE.Vector3(b.x, b.y, 0)
-        ]);
-        scene.add(new THREE.Line(g, material));
+        if (a && b && a.x !== undefined && a.y !== undefined && b.x !== undefined && b.y !== undefined) {
+            const g = new THREE.BufferGeometry().setFromPoints([
+                new THREE.Vector3(a.x, a.y, 0),
+                new THREE.Vector3(b.x, b.y, 0)
+            ]);
+            scene.add(new THREE.Line(g, material));
+        }
     });
 
     // draw ambient light...

@@ -188,8 +188,9 @@ const graphData = {
 function drawForceGraph(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing, state: any) {
     // Random tree
     const N = 40;
+    type NodeType = { id: number; x?: number; y?: number; z?: number };
     const gData = {
-        nodes: [...Array(N).keys()].map(i => ({ id: i })),
+        nodes: [...Array(N).keys()].map(i => ({ id: i } as NodeType)),
         links: [...Array(N).keys()].filter(id => id).map(id => ({source: id, target: Math.round(Math.random() * (id-1))}))
     };
 

@@ -293,7 +293,7 @@ function animate(renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawin
 
     if (timestamp - prevTime > 3000) {
         prevTime = timestamp;
-        const meshes = threejsDrawing.data.animatableMeshes || [];
+        const meshes = Array.isArray(threejsDrawing.data.animatableMeshes) ? threejsDrawing.data.animatableMeshes : [];
         animateStretchingMeshes(camera, meshes);
 
         const mouthPlane = threejsDrawing.data.mouthPlane;
@@ -334,7 +334,7 @@ const skibidiDrawing = {
     'eventListeners': {},
     'animationCallback': animate,
     'data': {
-        animatableMeshes: []
+        animatableMeshes: [] as THREE.Mesh[]
     }
 }
 

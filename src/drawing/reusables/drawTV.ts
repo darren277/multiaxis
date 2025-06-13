@@ -255,7 +255,7 @@ function drawTV(scene: THREE.Scene, data: any, threejsDrawing: ThreeJSDrawing) {
     threejsDrawing.data.tv = gltfScene;
 }
 
-function animationCallback(data: any) {
+function animationCallback(data: any, timestamp: number, threejsDrawing: ThreeJSDrawing, camera: THREE.Camera) {
     const video = data.video;
     const texture = data.texture;
 
@@ -357,7 +357,7 @@ const tvDrawing = {
     animationCallback: (renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawing: ThreeJSDrawing, camera: THREE.Camera) => {
         const data = threejsDrawing.data;
         if (data) {
-            animationCallback(data);
+            animationCallback(data, timestamp, threejsDrawing, camera);
         }
     },
     data: {},

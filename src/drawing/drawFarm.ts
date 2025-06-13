@@ -62,7 +62,9 @@ function makeDoorClickable(doorMesh: THREE.Mesh) {
     // --- build pivot at the hinge edge ---------------------------------
     const pivot = new THREE.Group();
     pivot.position.copy(doorMesh.position);           // stay where door was
-    doorMesh.parent.add(pivot);                       // insert pivot
+    if (doorMesh.parent) {
+        doorMesh.parent.add(pivot);                   // insert pivot
+    }
     doorMesh.position.set(-size.x * 0.5, 0, 0);       // move mesh so left edge is on pivot
     pivot.add(doorMesh);                              // child of pivot now
     doorMesh.userData.pivot = pivot;
@@ -104,7 +106,7 @@ function animateDoors(delta: number) {
 }
 
 function drawFarm(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
-    threejsDrawing.data.farm = {};
+    (threejsDrawing.data.farm as Record<string, any>) = {};
     const farmGroup = new THREE.Group();
     scene.add(farmGroup);
 
@@ -136,7 +138,7 @@ function drawFarm(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
             }
 
             farmGroup.add(gltf.scene);
-            threejsDrawing.data.farm[modelName] = gltf;
+            (threejsDrawing.data.farm as Record<string, any>)[modelName] = gltf;
         });
     }
 
@@ -154,9 +156,9 @@ function drawFarm(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
     if (!threejsDrawing.data.worldMeshes) {
         threejsDrawing.data.worldMeshes = [];
     }
-    threejsDrawing.data.worldMeshes.push(threejsDrawing.data.floor);
+    threejsDrawing.data.worldMeshes.push(threejsDrawing.data.floor as THREE.Object3D);
 
-    drawSun(scene);
+    drawSun(scene, threejsDrawing);
 
     (scene as THREE.Scene).updateMatrixWorld(true);
 

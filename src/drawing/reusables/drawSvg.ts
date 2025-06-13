@@ -340,7 +340,7 @@ function buildSvgGroup({
 
 /* ---------- 1 SVG path → array<THREE.Mesh> ---------- */
 
-function pathToMeshes(path: THREE.Path, fallbackDepth: number = defaultDepth) {
+function pathToMeshes(path: any, fallbackDepth: number = defaultDepth) {
     const node  = path.userData?.node;
     const type  = node?.getAttribute('data-orig-type') || '';
     const fill  = node?.getAttribute('data-orig-fill') || '';
@@ -435,7 +435,7 @@ async function drawMultipleSvgs(scene: THREE.Scene, data: any, threejsDrawing: T
     scene.add(floor);
 
     // Add basic lights
-    drawBasicLights(scene);
+    drawBasicLights(scene, threejsDrawing);
 
     svgsToRender.forEach(cfg => {
         const g = buildSvgGroup(cfg);
@@ -538,3 +538,7 @@ const multiSvgDrawing = {
 }
 
 export { svgDrawing, multiSvgDrawing, drawSvg, drawMultipleSvgs };
+    function deriveColorAndDepth(type: any, fill: any, stroke: any, fallbackDepth: number): { depth: any; fillColor: any; } {
+        throw new Error("Function not implemented.");
+    }
+

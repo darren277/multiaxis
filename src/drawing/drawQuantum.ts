@@ -32,7 +32,7 @@ function draw_letter(font: Font, letter: string, x: number, y: number, z: number
     return mesh;
 };
 
-function drawQuantumCallback(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing, font: THREE.Font) {
+function drawQuantumCallback(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing, font: Font) {
     const twoPi = Math.PI * 2;
 
     const data = {

@@ -173,7 +173,14 @@ function onBind(nt: THREE.Mesh, receptor: THREE.Mesh) {
 
 // Animate
 let frame = 0;
-function animateSynapse(scene: THREE.Scene, vesicles: THREE.Mesh[], particles: THREE.Mesh[], transmitters = ['glutamate'], receptors = ['AMPA'], receptorMeshes = []) {
+function animateSynapse(
+    scene: THREE.Scene,
+    vesicles: THREE.Mesh[],
+    particles: THREE.Mesh[],
+    transmitters = ['glutamate'],
+    receptors = ['AMPA'],
+    receptorMeshes: THREE.Mesh[] = []
+) {
     if (frame % 150 === 0) {
         releaseNeurotransmitters(scene, vesicles, particles, transmitters);
     }
