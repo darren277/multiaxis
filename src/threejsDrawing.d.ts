@@ -42,11 +42,27 @@ export interface ComplexData {
     css3DRenderer?: any; // Replace with actual type if available
     pickPlane?: any; // Replace with actual type if available
 }
-export interface DrawingData {
-    staticBoxes?: THREE.Object3D[];
-    movingMeshes?: THREE.Object3D[];
-    obstacleBoxes?: THREE.Object3D[];
-    worldMeshes?: THREE.Object3D[];
+
+export interface CollisionData {
+    movingMeshes: THREE.Object3D[];
+    staticBoxes: THREE.Object3D[];
+    worldMeshes: THREE.Object3D[];
+    obstacleBoxes: THREE.Object3D[];
+    player: THREE.Object3D;
+    playerSize: number;
+    stepDown: number;
+    gravity: number;
+    speed: number;
+    jumpVelocity: number;
+    checkCollisionFunc: (
+        playerSize: number,
+        position: THREE.Vector3,
+        obstacleBoxes?: THREE.Box3[],
+        ignore?: THREE.Box3 | null
+    ) => boolean;
+}
+
+export interface DrawingDataWithCollision extends CollisionData {
     collision?: any;
     keyManager?: any;
     [key: string]: unknown;
