@@ -28,13 +28,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     try {
         // ignore for now
-        const drawing = (THREEJS_DRAWINGS as unknown as ThreeJSDrawingsMap)[drawingName];
-        if (!drawing) {
+        const drawingLoader = (THREEJS_DRAWINGS as unknown as ThreeJSDrawingsMap)[drawingName];
+        if (!drawingLoader) {
             console.error(`No drawing found for ${drawingName}`);
             return;
         }
-        console.log(`Loading drawing: ${drawingName}`);
-
+        console.log(`Loading drawing: ${drawingName}`, drawingLoader);
+        
+        if (typeof drawingLoader !== 'function') {
+            console.error(`Drawing loader for ${drawingName} is not a function.`);
+            return;
+        }
+        // @ts-ignore-next-line
+        const drawing = await drawingLoader();
         contentLoadedCallback(drawingName, drawing as unknown as ThreeJSDrawing);
     } catch (error) {
         console.warn(`Error loading drawing ${drawingName}:`, error);
