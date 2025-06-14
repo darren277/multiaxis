@@ -14,8 +14,8 @@ console.log('Three.js version (main):', REVISION);
 import { THREEJS_DRAWINGS } from './drawings';
 import type { ThreeJSDrawingsMap } from './types';
 
+// TODO: Make these both env vars...
 const DEBUG = false;
-// TODO: Make this an env var...
 const INCLUDE_LOCAL = false;
 
 document.addEventListener('DOMContentLoaded', async () => {
