@@ -1,5 +1,13 @@
 # multiaxis
 
+## TS
+
+`tsc`.
+
+## Vitest
+
+`npx vitest`.
+
 ## About
 
 Well, this project has certainly grown in scope since its inception.
