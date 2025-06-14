@@ -1,5 +1,8 @@
 import typescript from '@rollup/plugin-typescript';
-import { terser }  from '@rollup/plugin-terser';
+import terser  from '@rollup/plugin-terser';
+import commonjs from '@rollup/plugin-commonjs';
+import { nodeResolve } from '@rollup/plugin-node-resolve';
+import replace from '@rollup/plugin-replace';
 
 export default {
     input: {
@@ -7,7 +10,7 @@ export default {
         //config: 'src/config/index.ts',
     },
     output: {
-        file: 'dist/bundle.js',
+        dir: 'dist/',
         format: 'es',
         sourcemap: true,
 
@@ -22,10 +25,28 @@ export default {
         }
     },
     plugins: [
-        typescript({
-            exclude: ['src/imagery/**/*', 'src/textures/**/*', 'src/drawings_local.ts']
+        replace({
+            preventAssignment: true,
+            values: {
+                __LOG_LEVEL__: JSON.stringify(process.env.LOG_LEVEL || 'info')
+            }
         }),
-        terser()
+        nodeResolve({
+            exclude: [
+                'src/imagery/**/*',
+                'src/textures/**/*',
+                //'src/drawings_local.ts'
+            ]
+        }),
+        //terser()
+        commonjs(),
+        typescript({
+            tsconfig: './tsconfig.json',
+            sourceMap: true,
+            inlineSources: true,
+            declaration: false, // no need for .d.ts files
+            noEmitOnError: true, // fail on type errors
+        }),
     ],
     exclude: [
         'src/imagery/**',
