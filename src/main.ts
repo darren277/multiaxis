@@ -13,6 +13,8 @@ import { THREEJS_DRAWINGS } from './drawings';
 import type { ThreeJSDrawingsMap } from './types';
 
 const DEBUG = false;
+// TODO: Make this an env var...
+const INCLUDE_LOCAL = false;
 
 document.addEventListener('DOMContentLoaded', () => {
     const drawingNameMeta = document.querySelector('meta[name="threejs_drawing_name"]');
@@ -34,23 +36,27 @@ document.addEventListener('DOMContentLoaded', () => {
         contentLoadedCallback(drawingName, drawing as unknown as ThreeJSDrawing);
     } catch (error) {
         console.warn(`Error loading drawing ${drawingName}:`, error);
-        console.log('Trying local drawings...');
-        import('./drawings_local.js').then(({ LOCAL_THREEJS_DRAWINGS }) => {
-            const localDrawing: (() => Promise<ThreeJSDrawing>) | undefined = (LOCAL_THREEJS_DRAWINGS as unknown as Record<string, () => Promise<ThreeJSDrawing>>)[drawingName];
-            if (!localDrawing) {
-                console.error(`No local drawing found for ${drawingName}`);
-                return;
-            }
-            if (localDrawing) {
-                localDrawing().then((threejsDrawing: ThreeJSDrawing) => {
-                    contentLoadedCallback(drawingName, threejsDrawing);
-                });
-            } else {
-                console.error(`No drawing found for ${drawingName}`);
-            }
-        }).catch(error => {
-            console.error('Error loading local drawings:', error);
-        });
+        if (INCLUDE_LOCAL) {
+            console.log('Trying local drawings...');
+            import('./drawings_local.js').then(({ LOCAL_THREEJS_DRAWINGS }) => {
+                const localDrawing: (() => Promise<ThreeJSDrawing>) | undefined = (LOCAL_THREEJS_DRAWINGS as unknown as Record<string, () => Promise<ThreeJSDrawing>>)[drawingName];
+                if (!localDrawing) {
+                    console.error(`No local drawing found for ${drawingName}`);
+                    return;
+                }
+                if (localDrawing) {
+                    localDrawing().then((threejsDrawing: ThreeJSDrawing) => {
+                        contentLoadedCallback(drawingName, threejsDrawing);
+                    });
+                } else {
+                    console.error(`No drawing found for ${drawingName}`);
+                }
+            }).catch(error => {
+                console.error('Error loading local drawings:', error);
+            });
+        } else {
+            console.error(`No drawing found for ${drawingName} and INCLUDE_LOCAL is false.`);
+        }
     }
 })
 
