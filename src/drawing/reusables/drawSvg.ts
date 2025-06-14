@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { SVGLoader } from 'three/examples/jsm/loaders/SVGLoader';
+import { SVGLoader } from 'three/examples/jsm/loaders/SVGLoader.js';
 import { drawBasicLights } from './drawLights';
 import { ThreeJSDrawing } from "../../threejsDrawing";
 

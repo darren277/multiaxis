@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 
-import * as CameraUtils from 'three/examples/jsm/utils/CameraUtils';
+import * as CameraUtils from 'three/examples/jsm/utils/CameraUtils.js';
 
 let portalCam: THREE.PerspectiveCamera, leftPortal: THREE.Mesh, rightPortal: THREE.Mesh;
 let leftRT: THREE.WebGLRenderTarget, rightRT: THREE.WebGLRenderTarget;

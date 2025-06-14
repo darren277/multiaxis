@@ -1,8 +1,8 @@
 import * as THREE from "three";
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { drawSun } from './reusables/drawLights';
 import { onKeyDownWalking, onKeyUpWalking, addObstacle, updateObstacleBoxes, walkingAnimationCallback } from '../config/walking';
-import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { instantiateCollision } from '../config/instantiateCollision';
 import { extractPerTriangle, spatialHashStaticBoxes, checkCollisionSpatialHashes } from '../config/collisionManager';
 import { ThreeJSDrawing } from "../types.js";

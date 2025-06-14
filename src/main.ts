@@ -2,7 +2,7 @@ import { defaultSceneConfig, setupScene } from './config/sceneSetup';
 import { ClickAndKeyControls } from './config/clickControlHelper';
 import { prepareDrawingContext, drawHelpers, parseQueryParams } from './config/utils';
 import { loadThenDraw } from './config/loadThenDraw';
-import { OutlineEffect } from 'three/examples/jsm/effects/OutlineEffect';
+import { OutlineEffect } from 'three/examples/jsm/effects/OutlineEffect.js';
 import { drawNavCubes, onClickNav, ALL_CUBE_DEFS } from './config/navigation';
 import {update as tweenUpdate} from '@tweenjs/tween.js'
 

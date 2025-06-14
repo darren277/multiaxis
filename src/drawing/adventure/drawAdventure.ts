@@ -5,7 +5,7 @@ import {createCaptionedItem, Item} from './createItems';
 import {drawAdventureElements} from './styleDefs';
 import { precomputeBackgroundPlanes, goToStep } from './helpers';
 
-import { CSS3DObject } from 'three/examples/jsm/renderers/CSS3DRenderer';
+import { CSS3DObject } from 'three/examples/jsm/renderers/CSS3DRenderer.js';
 
 type LabelObject = CSS3DObject | HTMLDivElement;
 

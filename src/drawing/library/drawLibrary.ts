@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer';
+import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
 import { sortAlphabeticallyByName } from './sortResources';
 import { calculatePositionOfResource, casePitchX, rowPitchZ, worldX, worldZ } from './calculatePosition';
 import { onKeyDownWalking, onKeyUpWalking, walkingAnimationCallback, addObstacle } from '../../config/walking';
