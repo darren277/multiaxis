@@ -1,5 +1,5 @@
-import { BoxGeometry, Mesh, MeshBasicMaterial, MeshNormalMaterial, GridHelper } from 'three';
 import * as THREE from 'three'; // for texture loading
+import { ThreeJSDrawing } from '../threejsDrawing';
 
 function drawTestCube(scene: THREE.Scene) {
     const geometry = new THREE.BoxGeometry(1, 1, 1);
@@ -14,9 +14,6 @@ function determineLabelCoordinates(p1: number, p2: number, p3: number, radius: n
     let z = p3;
     return [x, y, z];
 };
-
-const fileLoader = new THREE.FileLoader();
-
 
 async function loadDataSource(dataSrc: string) {
     if (!dataSrc || typeof dataSrc !== 'string') {
@@ -59,7 +56,13 @@ function pixelToWorldUnits(pixelSize: number, distance: number, camera: THREE.Pe
     return pixelSize * pixelHeightInWorld;
 }
 
-async function prepareDrawingContext(threejsDrawing: any, scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.WebGLRenderer, controls: any, css2DRenderer: any = null, css3DRenderer: any = null, queryOptions: any = {}) {
+async function prepareDrawingContext(threejsDrawing: ThreeJSDrawing, scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.WebGLRenderer, controls: any, css2DRenderer: any = null, css3DRenderer: any = null, queryOptions: any = {}) {
+    // ensure data exists
+    if (threejsDrawing.data == null || typeof threejsDrawing.data !== 'object') {
+        threejsDrawing.data = {};
+        console.warn(`threejsDrawing.data was not set, initializing as empty object for ${threejsDrawing.name}.`);
+    }
+
     Object.assign(threejsDrawing.data, {
         scene,
         camera,
