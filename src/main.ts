@@ -2,17 +2,15 @@ import { defaultSceneConfig, setupScene } from './config/sceneSetup.js';
 import { ClickAndKeyControls } from './config/clickControlHelper.js';
 import { prepareDrawingContext, drawHelpers, parseQueryParams } from './config/utils.js';
 import { loadThenDraw } from './config/loadThenDraw.js';
-// @ts-ignore-next-line
 import { OutlineEffect } from 'three/examples/jsm/effects/OutlineEffect.js';
 import { drawNavCubes, onClickNav, ALL_CUBE_DEFS } from './config/navigation.js';
-// @ts-ignore-next-line
 import {update as tweenUpdate} from '@tweenjs/tween.js'
 
 import { QueryOptions, ThreeJSDrawing, ALL_CUBE_DEFS as ALL_CUBE_DEFS_TYPE } from './types';
-// @ts-ignore-next-line
 import { REVISION } from 'three';
 console.log('Three.js version (main):', REVISION);
 import { THREEJS_DRAWINGS } from './drawings.js';
+import type { ThreeJSDrawingsMap } from './types';
 
 const DEBUG = false;
 
@@ -26,18 +24,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     try {
         // ignore for now
-        // TODO: handle this better
-        // @ts-ignore-next-line
-        const drawing: () => Promise<ThreeJSDrawing> = THREEJS_DRAWINGS[drawingName];
+        const drawing = (THREEJS_DRAWINGS as unknown as ThreeJSDrawingsMap)[drawingName];
         if (!drawing) {
             console.error(`No drawing found for ${drawingName}`);
             return;
         }
         console.log(`Loading drawing: ${drawingName}`);
 
-        drawing().then((threejsDrawing: ThreeJSDrawing) => {
-            contentLoadedCallback(drawingName, threejsDrawing);
-        })
+        contentLoadedCallback(drawingName, drawing as unknown as ThreeJSDrawing);
     } catch (error) {
         console.warn(`Error loading drawing ${drawingName}:`, error);
         console.log('Trying local drawings...');
@@ -123,8 +117,19 @@ async function contentLoadedCallback(drawingName: string, threejsDrawing: ThreeJ
 
     await prepareDrawingContext(threejsDrawing, scene, camera, renderer, controls, css2DRenderer, css3DRenderer, queryOptions);
 
-    // @ts-ignore-next-line
-    await Promise.all(threejsDrawing.drawFuncs.map(({func, dataSrc, dataType}) => dataSrc ? loadThenDraw(scene, func, dataSrc, dataType ?? undefined, camera, threejsDrawing, dataSelected) : func(scene, threejsDrawing)));
+    await Promise.all(threejsDrawing.drawFuncs.map((drawFuncObj: any) => 
+        drawFuncObj.dataSrc 
+            ? loadThenDraw(
+                scene, 
+                drawFuncObj.func, 
+                drawFuncObj.dataSrc, 
+                drawFuncObj.dataType ?? undefined, 
+                camera, 
+                threejsDrawing, 
+                dataSelected
+            ) 
+            : drawFuncObj.func(scene, threejsDrawing)
+    ));
 
     if (debugMode) {
         console.log('Debug mode enabled');

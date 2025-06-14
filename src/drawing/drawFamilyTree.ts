@@ -177,27 +177,25 @@ function layoutWithD3(graph: FamilyGraph, rootId: number) {
     });
 
     // Build a recursive hierarchy tree *from the child upward*
-    type HierarchyNode = { id: number; children: HierarchyNode[] };
+    type MyHierarchyNode = { id: number; children: MyHierarchyNode[] };
     
-    function buildHierarchy(nodeId: number): HierarchyNode {
-            const node: HierarchyNode = { id: nodeId, children: [] };
-            const parentIds = parentsOf.get(nodeId) || [];
-    
-            for (const pid of parentIds) {
-                node.children.push(buildHierarchy(pid));
-            }
-    
-            return node;
+    function buildHierarchy(nodeId: number): MyHierarchyNode {
+        const node: MyHierarchyNode = { id: nodeId, children: [] };
+        const parentIds = parentsOf.get(nodeId) || [];
+        for (const pid of parentIds) {
+            node.children.push(buildHierarchy(pid));
         }
+        return node;
+    }
 
     const treeRoot = buildHierarchy(rootId);
-    const root     = d3.hierarchy(treeRoot);
+    const root     = d3.hierarchy<MyHierarchyNode>(treeRoot);
 
     // Layout using d3.tree()
-    d3.tree().nodeSize([X_STEP, GEN_STEP]).separation((a: any, b: any) => a.parent === b.parent ? 1 : 1.4)(root);
+    d3.tree<MyHierarchyNode>().nodeSize([X_STEP, GEN_STEP]).separation((a, b) => a.parent === b.parent ? 1 : 1.4)(root);
 
     // Copy x/y positions back to original graph nodes
-    root.each((d: any) => {
+    root.each((d) => {
         const orig = byId.get(d.data.id);
         if (orig) {
             orig.x = d.x;

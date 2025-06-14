@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { forceSimulation, forceManyBody, forceLink, forceCenter, forceX, forceY, forceZ } from 'd3-force-3d';
 import { hierarchy, tree } from 'd3-hierarchy';
+import type { HierarchyPointNode } from 'd3-hierarchy';
 import TWEEN from '@tweenjs/tween.js'
 
 
@@ -14,8 +15,14 @@ type TweenFunctionParams = {
     duration?: number; // Duration in milliseconds
 };
 
-function tweenCamera(camera: THREE.Camera, { controls, toPos, lookAt, duration = 3000 }: TweenFunctionParams, p0: { x: number | undefined; y: number; z: number | undefined; }, p1: null) {
-    const from = {x: camera.position.x, y: camera.position.y, z: camera.position.z};
+function tweenCamera(
+    camera: THREE.Camera,
+    controls: any,
+    toPos: { x: number, y: number, z: number },
+    lookAt: { x: number, y: number, z: number } | null = null,
+    duration: number = 3000
+) {
+    const from = { x: camera.position.x, y: camera.position.y, z: camera.position.z };
 
     new TWEEN.Tween(from).to(toPos, duration).easing(TWEEN.Easing.Quadratic.InOut)
         .onUpdate(() => {
@@ -103,16 +110,20 @@ type Graph = {
  */
 function buildTreeData(nodes: GraphNode[], links: GraphLink[]) {
     type TreeNode = GraphNode & { children: TreeNode[] };
-    const map = new Map<GraphNode['id'], TreeNode>(
-        nodes.map(n => [n.id, { ...n, children: [] as TreeNode[] }])
-    );
+    const map = new Map<GraphNode['id'], TreeNode>();
+
+    // First, create all nodes with empty children arrays
+    nodes.forEach(n => {
+        map.set(n.id, { ...n, children: [] } as TreeNode);
+    });
+
     const hasParent = new Set<GraphNode['id']>();
 
     links.forEach(({ source, target }) => {
         const parent = map.get(source);
         const child  = map.get(target);
         if (parent && child) {
-            parent.children.push(child);
+            (parent.children as TreeNode[]).push(child);
             hasParent.add(target);
         }
     });
@@ -130,8 +141,11 @@ function buildTreeData(nodes: GraphNode[], links: GraphLink[]) {
  * @returns {{ root: *, treeLinks: *, extraLinks: * }}
  */
 function extractMinimalTree(nodes: GraphNode[], links: GraphLink[]) {
-    const nodeMap = new Map(nodes.map(n => [n.id, { ...n, children: [] }]));
-    const hasParent = new Set();
+    type TreeNode = GraphNode & { children: TreeNode[] };
+    const nodeMap = new Map<GraphNode['id'], TreeNode>(
+        nodes.map(n => [n.id, { ...n, children: [] } as TreeNode])
+    );
+    const hasParent = new Set<GraphNode['id']>();
     const treeLinks: GraphLink[] = [];
     const extraLinks: GraphLink[] = [];
 
@@ -153,7 +167,6 @@ function extractMinimalTree(nodes: GraphNode[], links: GraphLink[]) {
         const parent = nodeMap.get(source);
         const child  = nodeMap.get(target);
         if (parent && child) {
-            // @ts-ignore-next-line
             parent.children.push(child);
             hasParent.add(target);
         }
@@ -206,8 +219,7 @@ function computeTreeLinks(root: { links: () => any; }) {
  * @param {d3.HierarchyPointNode[]} nodes2D   // with .data, .x, .y
  * @param {{source,target}[]} links2D         // with .source, .target each a node2D
  */
-// @ts-ignore-next-line
-function renderD3Tree(scene: THREE.Scene, nodes2D: d3.HierarchyPointNode[], links2D: { source: d3.HierarchyPointNode; target: d3.HierarchyPointNode; }[], floorY: number) {
+function renderD3Tree(scene: THREE.Scene, nodes2D: HierarchyPointNode<any>[], links2D: { source: HierarchyPointNode<any>; target: HierarchyPointNode<any>; }[], floorY: number) {
     const FLOOR_Y = 0.5;
 
     // draw nodes
@@ -509,10 +521,9 @@ function applyForce(nodeMeshes: THREE.Mesh[], linkMeshes: THREE.Mesh[], graph: G
                           .id((d: { id: any; }) => d.id)
                           .distance(5))
         // push nodes out along +X based on depth
-        .force('treeX', forceX((d: { id: any; depth: any; }) => d.id === ROOT_ID
-                                   ? 0
-                                   : d.depth * SPACING)
-                          .strength(1))
+        //.force('treeX', forceX().x((d: { id: any; depth: any; }) => d.id === ROOT_ID ? 0 : d.depth * SPACING).strength(1))
+        // TODO: What is going on here with the typing mismatch??
+        .force('treeX', forceX(0).x((d: GraphNode) => d.id === ROOT_ID ? 0 : d.depth * SPACING).strength(1))
         // clamp everyone to Y = FLOOR_Y
         .force('clampY', forceY(FLOOR_Y).strength(1))
         // clamp everyone to Z = FIXED_Z
@@ -618,14 +629,20 @@ function drawTreeWithExtras(scene: THREE.Scene, data: Graph, options: TreeLayout
     const { root, treeLinks, extraLinks } = extractMinimalTree(nodes, links);
 
     // Step 2: Compute D3 hierarchical layout
-    const rootNode = hierarchy(root);
-    tree().nodeSize([dx, dy])(rootNode);
+    const rootNode = hierarchy<GraphNode | undefined>(root);
+    const treeLayout = tree<GraphNode | undefined>().nodeSize([dx, dy]);
+    treeLayout(rootNode);
 
-    const laidOutNodes = rootNode.descendants();
+    const laidOutNodes: HierarchyPointNode<any>[] = rootNode.descendants() as HierarchyPointNode<any>[];
     const laidOutTreeLinks = rootNode.links();
 
     // Step 3: Render nodes and tree links
-    renderD3Tree(scene, laidOutNodes, laidOutTreeLinks, floorY);
+    renderD3Tree(
+        scene,
+        laidOutNodes,
+        laidOutTreeLinks as { source: HierarchyPointNode<any>; target: HierarchyPointNode<any>; }[],
+        floorY
+    );
 
     // Step 4: Render extra cross-links that weren’t in the tree
     connectTreeNodes(scene, laidOutNodes, extraLinks, laidOutTreeLinks, floorY);
@@ -705,11 +722,10 @@ function handleSideways(camera: THREE.Camera, controls: any, nextId: number, nex
     const previewHeight = 5;
 
     if (nextNode) {
-        selector.position.set(nextNode.x, FLOOR_Y + 0.05, nextNode.y);
-        const xyz1 = {x: nextNode.x, y: previewHeight, z: nextNode.y};
+        selector.position.set(nextNode.x ?? 0, FLOOR_Y + 0.05, nextNode.y ?? 0);
+        const xyz1 = {x: nextNode.x ?? 0, y: previewHeight, z: nextNode.y ?? 0};
         if (navState.current) {
-            const xyz2 = {x: navState.current.x, y: navState.current.y, z: navState.current.y};
-            // @ts-ignore-next-line
+            const xyz2 = {x: navState.current.x ?? 0, y: navState.current.y ?? 0.5, z: navState.current.y ?? 0};
             tweenCamera(camera, controls, xyz1, xyz2, 500); // shorter duration for preview
         }
     }
@@ -726,7 +742,11 @@ function handleDown(camera: THREE.Camera, controls: any, nodeMap: Map<number, Gr
 }
 
 function rootPosition(node: GraphNode) {
-    return { x: node.x, y: 5, z: node.y }; // 90° clockwise layout
+    return {
+        x: node.x ?? 0,
+        y: 5,
+        z: node.y ?? 0
+    }; // 90° clockwise layout
 }
 
 
@@ -792,7 +812,11 @@ function drawNetwork(scene: THREE.Scene, data: Graph, threejsDrawing: any) {
     const laidOutNodes = drawTreeWithExtras(scene, data, treeOptions);
 
     // After rendering laidOutNodes
-    const nodeMap: Map<number, GraphNode> = new Map(laidOutNodes.map((n: { data: { id: number; }; }) => [n.data.id as number, n]));
+    const nodeMap: Map<number, GraphNode> = new Map(
+        laidOutNodes
+            .filter((n: any) => n.data && typeof n.data.id === 'number')
+            .map((n: any) => [n.data.id as number, n])
+    );
     const adjacencyMap = buildAdjacencyMap(data.links);
 
     const camera = threejsDrawing.data.camera;

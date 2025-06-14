@@ -40,6 +40,14 @@ export interface ThreeJSDrawingEventContext {
     scene: any;
 }
 
+export interface ThreeJSDrawingsMap {
+    [drawingName: string]: {
+        drawing: ThreeJSDrawing;
+        data: DrawingData;
+        sceneConfig: SceneConfig;
+    };
+}
+
 export {
     ThreeJSDrawing,
 };

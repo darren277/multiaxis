@@ -252,7 +252,7 @@ const forceDrawing = {
         }
     },
     'animationCallback': (renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawing: ThreeJSDrawing, camera: THREE.Camera) => {
-        (threejsDrawing.data.simulation as Simulation<any, any>).tick(); // progress the simulation
+        threejsDrawing.data.simulation.tick(); // progress the simulation
         updateForceGraph(
             threejsDrawing.data.graphData,
             threejsDrawing.data.nodeSpheres as { [key: string]: THREE.Mesh },

@@ -79,8 +79,7 @@ function createVideoMeshOLD(item: Item, worldWidth: number, worldHeight: number)
     iframe.style.width = `${worldWidth}px`;
     iframe.style.height = `${worldHeight}px`;
     iframe.style.border = '0px';
-    // @ts-ignore-next-line
-    iframe.src = item.video;
+    iframe.src = item.video ?? '';
     //iframe.src = 'https://www.darrenmackenzie.com'
 
     iframe.allow = 'autoplay; encrypted-media';
