@@ -13,6 +13,12 @@ declare module 'three' {
     }
 }
 
+// Mock WebGLRenderer to avoid DOM dependencies
+class WebGLRenderer {
+    setSize(width: number, height: number): void {}
+    render(scene: Scene, camera: THREE.Camera): void {}
+}
+
 // Keep reference so we can restore later
 const OriginalFileLoader = THREE.FileLoader;
 
@@ -25,6 +31,7 @@ import {
     loadDataSource,
     drawTestCube,
 } from '../src/config/utils';
+import { Scene } from 'three/src/Three.WebGPU.Nodes.js';
 
 // ---------------------------------------------------------------------------
 
@@ -66,7 +73,7 @@ describe('utils.ts', () => {
     it('prepareDrawingContext populates threejsDrawing.data with scene references', async () => {
         const dummyScene = new THREE.Scene();
         const dummyCamera = new THREE.PerspectiveCamera();
-        const dummyRenderer = new THREE.WebGLRenderer();
+        const dummyRenderer = new WebGLRenderer();
 
         const threejsDrawing: any = {
             name: 'testDrawing',
@@ -77,7 +84,7 @@ describe('utils.ts', () => {
             threejsDrawing,
             dummyScene,
             dummyCamera,
-            dummyRenderer,
+            dummyRenderer as THREE.WebGLRenderer,
             { dummyControl: true }
         );
 
