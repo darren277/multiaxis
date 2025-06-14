@@ -69,16 +69,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 })
 
 async function contentLoadedCallback(drawingName: string, threejsDrawing: ThreeJSDrawing) {
-    const dataSelectedMeta = document.querySelector('meta[name="data_selected"]');
-    if (!dataSelectedMeta) {
-        console.error('Meta tag "data_selected" not found.');
+    if (!drawingName || !threejsDrawing) {
+        console.error(`No drawing found for ${drawingName}`);
         return;
     }
 
-    const dataSelected = (dataSelectedMeta as HTMLMetaElement).content;
-    if (!dataSelected) {
-        console.warn('No data selected, using default data.');
-    }
+    const dataSelected = readDataSelect();
     
     console.log(`Drawing name: ${drawingName}. Data selected: ${dataSelected}`);
 
@@ -91,25 +87,7 @@ async function contentLoadedCallback(drawingName: string, threejsDrawing: ThreeJ
     // Merge threejsDrawing.sceneConfig with defaults
     let sceneConfig = { ...defaultSceneConfig, ...(threejsDrawing.sceneConfig || {}) };
 
-    if (queryOptions) {
-        if (queryOptions.controls && queryOptions.controls === 'walking') {
-            sceneConfig.controller = 'walking';
-        }
-        if (queryOptions.prev) {
-            // TODO: use a detailed lookup map defined elsewhere...
-            // override sceneConfig.startPosition
-            if (queryOptions.prev === 'town') {
-                sceneConfig.startPosition = { x: 0, y: 10, z: -80 };
-            }
-        }
-    }
-
-    if (!threejsDrawing) {
-        console.error(`No drawing found for ${drawingName}`);
-        return;
-    }
-
-    const outlineEffectEnabled = sceneConfig && sceneConfig.outlineEffect || false;
+    buildSceneConfig(sceneConfig, queryOptions);
 
     // Convert sceneElements to OverlayElement[] if necessary
     const overlayElements = (threejsDrawing.sceneElements ?? []).map((el: any) => ({
@@ -121,6 +99,7 @@ async function contentLoadedCallback(drawingName: string, threejsDrawing: ThreeJ
 
     console.log('About to setup scene with config:', sceneConfig);
 
+    // TODO: Define this returned object as a type...
     let { scene, camera, renderer, controls, stats, css2DRenderer, css3DRenderer } = await setupScene('c', overlayElements, sceneConfig) as {
         scene: any,
         camera: any,
@@ -168,6 +147,18 @@ async function contentLoadedCallback(drawingName: string, threejsDrawing: ThreeJ
         const clickKeyControls = new ClickAndKeyControls(scene, camera, renderer);
     }
 
+    // Add navigation cubes if defined
+    if (queryOptions.nav) {
+        addNavigation(threejsDrawing)
+    }
+
+    addCustomListeners(drawing, { scene, controls, renderer });
+
+    startRenderLoop(renderer, {
+        scene, camera, controls, stats, css2DRenderer, css3DRenderer,
+        drawing, outline: sceneConfig.outlineEffect
+    });
+
     // --- OPTION 1: Panoramic cube skybox ---
     //usePanoramicCubeBackground(scene, 'textures/sun_temple_stripe.jpg');
     //usePanoramicCubeBackgroundSixFaces(scene, 'textures/exr/golden_gate_hills_1k');
@@ -175,74 +166,5 @@ async function contentLoadedCallback(drawingName: string, threejsDrawing: ThreeJ
     // --- OPTION 2: Simple procedural background ---
     /////useProceduralBackground(scene);
 
-    // NAV CUBE //
-    //drawNavCubes(scene, threejsDrawing, CUBE_DEFS);
-    if (queryOptions.nav) {
-        const allCubeDefs = ALL_CUBE_DEFS as ALL_CUBE_DEFS_TYPE
-        const cubeDefs = allCubeDefs[drawingName];
-        drawNavCubes(scene, threejsDrawing, cubeDefs, debugMode);
-    }
-
-    // Add event listener for navigation
-    window.addEventListener('click', (event) => {
-        onClickNav(event, scene, renderer, camera);
-    });
-
     //drawImage(scene, 'textures/Canestra_di_frutta_Caravaggio.jpg');
-
-    // Setup UI listeners
-    //attachUIListeners(uiPanelConfig, uiState);
-
-    // Add any event listeners from the threejsDrawing
-    if (threejsDrawing.eventListeners) {
-        for (const [eventName, eventFunc] of Object.entries(threejsDrawing.eventListeners)) {
-            window.addEventListener(eventName, (e) => {
-                if (typeof eventFunc === 'function') {
-                    eventFunc(e, {data: threejsDrawing.data, controls, renderer, scene});
-                }
-            });
-        }
-    }
-
-    let effect: OutlineEffect | undefined = undefined;
-    if (outlineEffectEnabled) {
-        effect = new OutlineEffect(renderer);
-    }
-
-    renderer.setAnimationLoop((
-        timestamp: number,
-        frame: number | undefined,
-    ) => {
-        // Update controls (if using OrbitControls or similar)
-        if (controls) {
-            controls.update();
-        }
-
-        if (threejsDrawing.animationCallback) {
-            threejsDrawing.animationCallback(renderer, timestamp, threejsDrawing, camera);
-        }
-
-        // Update camera projection if needed
-        camera.updateProjectionMatrix();
-
-        tweenUpdate();
-
-        if (stats) {
-            stats.update();
-        }
-
-        renderer.render(scene, camera);
-
-        if (css2DRenderer) {
-            css2DRenderer.render(css2DRenderer.scene, camera);
-        }
-
-        if (css3DRenderer) {
-            css3DRenderer.render(css3DRenderer.scene, camera);
-        }
-
-        if (outlineEffectEnabled && effect) {
-            effect.render(scene, camera);
-        }
-    });
 }
