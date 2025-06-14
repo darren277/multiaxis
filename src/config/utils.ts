@@ -111,6 +111,19 @@ function parseQueryParams(queryString: string) {
         }
     }
     console.log(`Query params: ${JSON.stringify(queryParams)}`);
+
+    // Handle boolean conversion for nav and debug
+    if (queryParams.nav === 'true') {
+        queryParams.nav = true;
+    } else if (queryParams.nav === 'false') {
+        queryParams.nav = false;
+    }
+    if (queryParams.debug === 'true') {
+        queryParams.debug = true;
+    } else if (queryParams.debug === 'false') {
+        queryParams.debug = false;
+    }
+    
     return queryParams;
 }
 
