@@ -16,7 +16,9 @@ const DEBUG = false;
 // TODO: Make this an env var...
 const INCLUDE_LOCAL = false;
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    console.log("👀 Available drawings in THREEJS_DRAWINGS:", THREEJS_DRAWINGS);
+
     const drawingNameMeta = document.querySelector('meta[name="threejs_drawing_name"]');
     if (!drawingNameMeta) {
         console.error('Meta tag "threejs_drawing_name" not found.');
@@ -111,6 +113,8 @@ async function contentLoadedCallback(drawingName: string, threejsDrawing: ThreeJ
         attrs: el.attrs
     }));
 
+    console.log('About to setup scene with config:', sceneConfig);
+
     let { scene, camera, renderer, controls, stats, css2DRenderer, css3DRenderer } = await setupScene('c', overlayElements, sceneConfig) as {
         scene: any,
         camera: any,
@@ -121,21 +125,36 @@ async function contentLoadedCallback(drawingName: string, threejsDrawing: ThreeJ
         css3DRenderer?: any
     };
 
+    console.log('Scene setup complete:', scene, camera, renderer, controls, stats, css2DRenderer, css3DRenderer);
+
     await prepareDrawingContext(threejsDrawing, scene, camera, renderer, controls, css2DRenderer, css3DRenderer, queryOptions);
 
-    await Promise.all(threejsDrawing.drawFuncs.map((drawFuncObj: any) => 
-        drawFuncObj.dataSrc 
-            ? loadThenDraw(
-                scene, 
-                drawFuncObj.func, 
-                drawFuncObj.dataSrc, 
-                drawFuncObj.dataType ?? undefined, 
-                camera, 
-                threejsDrawing, 
-                dataSelected
-            ) 
-            : drawFuncObj.func(scene, threejsDrawing)
-    ));
+    console.log('Drawing context prepared:', threejsDrawing.data);
+
+    const funcs = Array.isArray(threejsDrawing.drawFuncs) ? threejsDrawing.drawFuncs : [];
+
+    if (funcs.length === 0) {
+        console.warn(`No draw functions found for ${drawingName}.`);
+        return;
+    }
+    console.log(`Found ${funcs.length} draw functions for ${drawingName}.`);
+
+    await Promise.all(funcs.map((drawFuncObj: any) =>
+        drawFuncObj.dataSrc
+          ? loadThenDraw(
+              scene,
+              drawFuncObj.func,
+              drawFuncObj.dataSrc,
+              drawFuncObj.dataType ?? undefined,
+              camera,
+              threejsDrawing,
+              dataSelected
+            )
+          : drawFuncObj.func(scene, threejsDrawing)
+      )
+    );
+
+    console.log(`All draw functions executed for ${drawingName}.`);
 
     if (debugMode) {
         console.log('Debug mode enabled');
