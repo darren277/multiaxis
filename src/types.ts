@@ -1,5 +1,5 @@
 import type { ThreeJSDrawing } from './threejsDrawing.d.ts';
-import type { ALL_CUBE_DEFS } from './config/navigation.js';
+import type { ALL_CUBE_DEFS } from './config/navigation';
 
 type QueryOptions = {
     debug?: boolean;

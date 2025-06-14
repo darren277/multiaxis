@@ -1,4 +1,4 @@
-import { pixelToWorldUnits, loadDataSource } from './utils.js';
+import { pixelToWorldUnits, loadDataSource } from './utils';
 import * as THREE from 'three';
 
 async function loadThenDraw(scene: THREE.Scene, func: Function, dataSrc: string, dataType: string, camera: THREE.PerspectiveCamera, threejsDrawing: any, dataSelected: string) {

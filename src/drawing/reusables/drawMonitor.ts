@@ -1,7 +1,7 @@
 /* Adapted from https://github.com/henryjeff/portfolio-website/blob/master/src/Application/World/MonitorScreen.ts */
 
 import * as THREE from "three";
-import { CSS3DObject } from 'three/examples/jsm/renderers/CSS3DRenderer.js';
+import { CSS3DObject } from 'three/examples/jsm/renderers/CSS3DRenderer';
 import { ThreeJSDrawing } from "../../types";
 import { GLTF, GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 

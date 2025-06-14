@@ -1,9 +1,9 @@
 import * as THREE from 'three';
 
-import {onAdventureKeyDown, onClick} from './interactions.js';
-import {createCaptionedItem, Item} from './createItems.js';
-import {drawAdventureElements} from './styleDefs.js';
-import { precomputeBackgroundPlanes, goToStep } from './helpers.js';
+import {onAdventureKeyDown, onClick} from './interactions';
+import {createCaptionedItem, Item} from './createItems';
+import {drawAdventureElements} from './styleDefs';
+import { precomputeBackgroundPlanes, goToStep } from './helpers';
 
 import { CSS3DObject } from 'three/examples/jsm/renderers/CSS3DRenderer';
 

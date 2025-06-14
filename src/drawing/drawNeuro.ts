@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import { modelRegistry } from './neuroGeometries.js';
-import { ThreeJSDrawing } from '../threejsDrawing.js';
+import { modelRegistry } from './neuroGeometries';
+import { ThreeJSDrawing } from '../threejsDrawing';
 
 // Define shared geometries/materials outside
 const particleGeo = new THREE.SphereGeometry(0.2, 8, 8);

@@ -1,7 +1,7 @@
 import * as THREE from "three";
 
-import { PDBLoader } from 'three/examples/jsm/loaders/PDBLoader.js';
-import { CSS2DRenderer, CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
+import { PDBLoader } from 'three/examples/jsm/loaders/PDBLoader';
+import { CSS2DRenderer, CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer';
 import { drawBasicLights } from './reusables/drawLights';
 import { ThreeJSDrawing } from "../threejsDrawing";
 

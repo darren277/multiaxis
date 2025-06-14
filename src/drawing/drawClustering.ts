@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { addAxes } from './drawPlotFunction.js'
-import { ThreeJSDrawing } from '../types.js';
+import { ThreeJSDrawing } from '../types';
 
 function drawClustering(scene: THREE.Scene, data: any[], threejsDrawing: any) {
     // Add axes

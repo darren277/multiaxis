@@ -1,15 +1,15 @@
-import { defaultSceneConfig, setupScene } from './config/sceneSetup.js';
-import { ClickAndKeyControls } from './config/clickControlHelper.js';
-import { prepareDrawingContext, drawHelpers, parseQueryParams } from './config/utils.js';
-import { loadThenDraw } from './config/loadThenDraw.js';
-import { OutlineEffect } from 'three/examples/jsm/effects/OutlineEffect.js';
-import { drawNavCubes, onClickNav, ALL_CUBE_DEFS } from './config/navigation.js';
+import { defaultSceneConfig, setupScene } from './config/sceneSetup';
+import { ClickAndKeyControls } from './config/clickControlHelper';
+import { prepareDrawingContext, drawHelpers, parseQueryParams } from './config/utils';
+import { loadThenDraw } from './config/loadThenDraw';
+import { OutlineEffect } from 'three/examples/jsm/effects/OutlineEffect';
+import { drawNavCubes, onClickNav, ALL_CUBE_DEFS } from './config/navigation';
 import {update as tweenUpdate} from '@tweenjs/tween.js'
 
 import { QueryOptions, ThreeJSDrawing, ALL_CUBE_DEFS as ALL_CUBE_DEFS_TYPE } from './types';
 import { REVISION } from 'three';
 console.log('Three.js version (main):', REVISION);
-import { THREEJS_DRAWINGS } from './drawings.js';
+import { THREEJS_DRAWINGS } from './drawings';
 import type { ThreeJSDrawingsMap } from './types';
 
 const DEBUG = false;

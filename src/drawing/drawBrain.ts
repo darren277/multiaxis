@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { PLYLoader } from 'three/examples/jsm/loaders/PLYLoader';
-import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer.js';
+import { CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRenderer';
 import { ThreeJSDrawing } from "../threejsDrawing";
 
 const loader = new PLYLoader();
