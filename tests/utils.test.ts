@@ -98,23 +98,21 @@ describe('utils.ts', () => {
         const mockJSON = { hello: 'world' };
         const encoded = JSON.stringify(mockJSON);
 
+        let loadAsyncSpy: any;
+
         beforeEach(() => {
-            // Monkey‑patch THREE.FileLoader.loadAsync for deterministic IO‑less tests
-            // @ts-expect-error – we reassign for test only
-            THREE.FileLoader = class {
-                loadAsync(path: string) {
-                    // Simple expectation: path ends with .json
-                    if (!path.endsWith('.json')) {
-                        return Promise.reject(new Error('invalid path'));
-                    }
-                        return Promise.resolve(encoded);
+            // Spy on THREE.FileLoader.prototype.loadAsync for deterministic IO‑less tests
+            loadAsyncSpy = vi.spyOn(THREE.FileLoader.prototype, 'loadAsync').mockImplementation((path: string) => {
+                if (!path.endsWith('.json')) {
+                    return Promise.reject(new Error('invalid path'));
                 }
-            } as unknown as typeof THREE.FileLoader;
+                return Promise.resolve(encoded);
+            });
         });
 
         afterEach(() => {
-            // restore original class
-            THREE.FileLoader = OriginalFileLoader;
+            // restore original method
+            loadAsyncSpy.mockRestore();
         });
 
     it('loadDataSource returns parsed JSON from mock loader', async () => {
