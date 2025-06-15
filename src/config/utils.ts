@@ -1,5 +1,6 @@
 import * as THREE from 'three'; // for texture loading
 import { ThreeJSDrawing } from '../threejsDrawing';
+import { ClickAndKeyControls } from './config/clickControlHelper';
 
 function drawTestCube(scene: THREE.Scene) {
     const geometry = new THREE.BoxGeometry(1, 1, 1);
@@ -30,6 +31,8 @@ async function loadDataSource(dataSrc: string) {
 }
 
 function drawHelpers(scene: THREE.Scene, threejsDrawing: any) {
+    console.log('Debug mode enabled');
+
     const refGeometry = new THREE.BoxGeometry(1, 1, 1); // 1x1x1 cube
     const refMaterial = new THREE.MeshNormalMaterial({ wireframe: true });
     const refCube = new THREE.Mesh(refGeometry, refMaterial);
@@ -38,6 +41,11 @@ function drawHelpers(scene: THREE.Scene, threejsDrawing: any) {
 
     const gridHelper = new THREE.GridHelper(10, 10); // 10x10 units
     scene.add(gridHelper);
+
+    const camera = threejsDrawing.data.camera as THREE.PerspectiveCamera;
+    const renderer = threejsDrawing.data.renderer as THREE.WebGLRenderer;
+
+    const clickKeyControls = new ClickAndKeyControls(scene, camera, renderer);
 
     //window.debugObject = object; // now accessible from console
 

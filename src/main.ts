@@ -1,5 +1,4 @@
 import { defaultSceneConfig, setupScene } from './config/sceneSetup';
-import { ClickAndKeyControls } from './config/clickControlHelper';
 import { prepareDrawingContext, drawHelpers, parseQueryParams } from './config/utils';
 import { loadThenDraw } from './config/loadThenDraw';
 import { OutlineEffect } from 'three/examples/jsm/effects/OutlineEffect.js';

@@ -66,9 +66,7 @@ export async function contentLoadedCallback(drawingName: string, threejsDrawing:
     console.log(`All draw functions executed for ${drawingName}.`);
 
     if (debugMode) {
-        console.log('Debug mode enabled');
         drawHelpers(scene, threejsDrawing);
-        const clickKeyControls = new ClickAndKeyControls(scene, camera, renderer);
     }
 
     // Add navigation cubes if defined
