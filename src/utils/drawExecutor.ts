@@ -1,13 +1,15 @@
 import * as THREE from 'three';
 
+type DrawOptions = {
+    scene: THREE.Scene;
+    camera: THREE.Camera;
+    drawing: ThreeJSDrawing;
+    dataSelected?: string;
+}
+
 export async function runDrawFuncs(
     funcs: DrawFuncObj[],
-    opts: {
-        scene: THREE.Scene;
-        camera: THREE.Camera;
-        drawing: ThreeJSDrawing;
-        dataSelected?: string;
-    }
+    opts: DrawOptions
 ) {
     const { scene, camera, drawing, dataSelected } = opts;
 
