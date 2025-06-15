@@ -25,6 +25,8 @@ export async function contentLoadedCallback(drawingName: string, threejsDrawing:
 
     console.log('About to setup scene with config:', sceneConfig);
 
+    addOptionals(scene, drawing);
+
     // TODO: Define this returned object as a type...
     let { scene, camera, renderer, controls, stats, css2DRenderer, css3DRenderer } = await setupScene('c', overlayElements, sceneConfig) as {
         scene: any,
@@ -67,13 +69,4 @@ export async function contentLoadedCallback(drawingName: string, threejsDrawing:
         scene, camera, controls, stats, css2DRenderer, css3DRenderer,
         drawing, outline: sceneConfig.outlineEffect
     });
-
-    // --- OPTION 1: Panoramic cube skybox ---
-    //usePanoramicCubeBackground(scene, 'textures/sun_temple_stripe.jpg');
-    //usePanoramicCubeBackgroundSixFaces(scene, 'textures/exr/golden_gate_hills_1k');
-
-    // --- OPTION 2: Simple procedural background ---
-    /////useProceduralBackground(scene);
-
-    //drawImage(scene, 'textures/Canestra_di_frutta_Caravaggio.jpg');
 }
