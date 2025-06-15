@@ -18,6 +18,18 @@ export const defaultSceneConfig = {
     outlineEffect: false
 }
 
+export type SceneConfig = typeof defaultSceneConfig & Partial<Record<keyof typeof defaultSceneConfig, any>>;
+
+export type SceneElements = {
+    scene: THREE.Scene;
+    camera: THREE.PerspectiveCamera;
+    renderer: THREE.WebGLRenderer;
+    controls: THREE.EventDispatcher | null;
+    stats?: any;
+    css2DRenderer?: any;
+    css3DRenderer?: any;
+};
+
 export type OverlayElement = {
     tagName: string;
     className?: string;
