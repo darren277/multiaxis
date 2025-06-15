@@ -4,6 +4,16 @@
     2. Parse query parameters to get options.
 */
 
+type SceneElements = {
+    scene: any,
+    camera: any,
+    renderer: any,
+    controls?: any,
+    stats?: { update: () => void },
+    css2DRenderer?: any,
+    css3DRenderer?: any
+}
+
 export function parseEnvironment() {
     const dataSelected = readDataSelect();
 
@@ -51,20 +61,7 @@ export async function contentLoadedCallback(drawingName: string, threejsDrawing:
 
     console.log('About to setup scene with config:', sceneConfig);
     // TODO: Define this returned object as a type...
-    let { scene, camera, renderer, controls, stats, css2DRenderer, css3DRenderer } = await setupScene('c', overlayElements, sceneConfig) as {
-        scene: any,
-        camera: any,
-        renderer: any,
-        controls?: any,
-        stats?: { update: () => void },
-        css2DRenderer?: any,
-        css3DRenderer?: any
-    };
-
-    // Add navigation cubes if defined
-    if (queryOptions.nav) {
-        addNavigation(threejsDrawing)
-    }
+    let { scene, camera, renderer, controls, stats, css2DRenderer, css3DRenderer } = await setupScene('c', overlayElements, sceneConfig) as SceneElements;
 
 
     addOptionals(scene, drawing);
