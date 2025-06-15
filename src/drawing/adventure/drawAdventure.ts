@@ -6,6 +6,7 @@ import {drawAdventureElements} from './styleDefs';
 import { precomputeBackgroundPlanes, goToStep } from './helpers';
 
 import { CSS3DObject } from 'three/examples/jsm/renderers/CSS3DRenderer.js';
+import { assert, debugLog } from '../../utils/assertUtils';
 
 type LabelObject = CSS3DObject | HTMLDivElement;
 
@@ -98,71 +99,116 @@ function vantagePointForItem(item: Item): {position: THREE.Vector3, lookAt: THRE
     return {position: cameraPos, lookAt: itemPos};
 }
 
+export type PhotoEntry = {
+    mesh: THREE.Mesh | null;
+    labelObject: THREE.Object3D | any;
+    item: Item;
+};
 
+export type AdventureStep = {
+    id: string;
+    camera: { position: THREE.Vector3; lookAt: THREE.Vector3 };
+    text: string;
+    choices: Record<string, string> | null;
+};
 
-function buildSceneItems(scene: THREE.Scene, sceneItems: Item[], worldWidth: number = 4, worldHeight: number = 3, css3DRenderer: any = null) {
-    // Where allPhotoEntries is your array of { mesh, labelEl, item } returned from createCaptionedPhoto.
+// ---------------------------------------------------------------------------
+// 1 · buildPhotoEntries  →  THREE‑related side effects only
+// ---------------------------------------------------------------------------
+// const allPhotoEntries: { mesh: THREE.Mesh<THREE.PlaneGeometry, THREE.MeshBasicMaterial, THREE.Object3DEventMap> | null; labelObject: any; item: { id: string; image?: string; video?: string; caption: string; position: { x: number; y: number; z: number; }; customClasses?: string; dataAttributes?: { [key: string]: string; }; }; }[] = [];
+function buildPhotoEntries(
+    scene: THREE.Scene,
+    items: Item[],
+    worldWidth: number,
+    worldHeight: number,
+    css3DRenderer?: any
+): PhotoEntry[] {
+    const entries: PhotoEntry[] = [];
 
-    const allPhotoEntries: { mesh: THREE.Mesh<THREE.PlaneGeometry, THREE.MeshBasicMaterial, THREE.Object3DEventMap> | null; labelObject: any; item: { id: string; image?: string; video?: string; caption: string; position: { x: number; y: number; z: number; }; customClasses?: string; dataAttributes?: { [key: string]: string; }; }; }[] = [];
+    items.forEach((item) => {
+        const isVideo = Boolean(item.video?.trim());
+        const entry = createCaptionedItem(
+            scene,
+            item,
+            isVideo,
+            worldWidth,
+            worldHeight,
+            true /* use3dRenderer */
+        );
 
-    // Build photo meshes
-    sceneItems.forEach((item) => {
-        let entry;
-        const isVideo = item.video && item.video !== "";
-        const use3dRenderer = true;
-        entry = createCaptionedItem(scene, item, isVideo || false, worldWidth, worldHeight, !!use3dRenderer);
-        if (!entry) {
-            console.warn('Failed to create entry for item:', item);
-            return; // Skip this item if creation failed
-        }
+        assert(entry, `Failed to create entry for item ${item.id}`);
+
         if (entry.mesh) scene.add(entry.mesh);
+
         if (css3DRenderer) {
             css3DRenderer.scene.add(entry.labelObject);
-        } else {
-            if (css3DRenderer) {
-                css3DRenderer.scene.add(entry.labelObject);
-            } else if (entry.labelObject instanceof THREE.Object3D) {
-                scene.add(entry.labelObject);
-            }
+        } else if (entry.labelObject instanceof THREE.Object3D) {
+            scene.add(entry.labelObject);
         }
-        allPhotoEntries.push(entry);
+
+        entries.push(entry);
     });
 
-    // Generate steps
-    const adventureSteps: { [key: string]: any } = {};
-    sceneItems.forEach((item, index) => {
-        const vantage = vantagePointForItem(item);
-        //const stepId = `view_${item.id}`;
-        const stepId = item.id;
+    debugLog('photoEntries', entries);
+    return entries;
+}
 
-        adventureSteps[stepId] = {
-            id: stepId,
-            camera: {
-                position: vantage.position,
-                lookAt: vantage.lookAt,
-            },
+// ---------------------------------------------------------------------------
+// 2 · buildAdventureSteps  →  pure data construction
+// ---------------------------------------------------------------------------
+function buildAdventureSteps(items: Item[]): Record<string, AdventureStep> {
+    const steps: Record<string, AdventureStep> = {};
+
+    items.forEach((item) => {
+        const vantage = vantagePointForItem(item);
+        steps[item.id] = {
+            id: item.id,
+            camera: { position: vantage.position, lookAt: vantage.lookAt },
             text: item.caption,
-            choices: item.choices || null, // Use item.choices if it exists
+            choices: item.choices ?? null,
         };
     });
 
-    // Link them in a linear chain (but only IF the step doesn't already have predefined choices).
-    const stepIds = Object.keys(adventureSteps);
-    console.log("Step IDs:", stepIds);
-    for (let i = 0; i < stepIds.length; i++) {
-        const currentId = stepIds[i];
-        if (!adventureSteps[currentId].choices) {
-            const nextId = stepIds[(i + 1) % stepIds.length]; // cyclical
-            const prevId = stepIds[(i - 1 + stepIds.length) % stepIds.length];
-            adventureSteps[currentId].choices = { left: prevId, right: nextId };
-            console.log("Linking steps:", currentId, "->", nextId, "and", prevId);
-        }
-    }
-
-    return {adventureSteps, allPhotoEntries};
+    debugLog('adventureSteps-initial', steps);
+    return steps;
 }
 
+// ---------------------------------------------------------------------------
+// 3 · linkStepsLinear  →  mutates the step map if needed
+// ---------------------------------------------------------------------------
+function linkStepsLinear(steps: Record<string, AdventureStep>): void {
+    const ids = Object.keys(steps);
+    ids.forEach((id, idx) => {
+        if (steps[id].choices) return; // already linked manually
+        const next = ids[(idx + 1) % ids.length];
+        const prev = ids[(idx - 1 + ids.length) % ids.length];
 
+        steps[id].choices = { left: prev, right: next };
+        debugLog('linkSteps', { from: id, left: prev, right: next });
+    });
+}
+
+// ---------------------------------------------------------------------------
+// Orchestrator  (what callers will use)
+// ---------------------------------------------------------------------------
+export function buildSceneItems(
+    scene: THREE.Scene,
+    sceneItems: Item[],
+    worldWidth = 4,
+    worldHeight = 3,
+    css3DRenderer: any = null
+) {
+    // 1. meshes + labels
+    const allPhotoEntries = buildPhotoEntries(scene, sceneItems, worldWidth, worldHeight, css3DRenderer);
+
+    // 2. convert step objects
+    const adventureSteps = buildAdventureSteps(sceneItems);
+
+    // 3. default linear links (mutates in place)
+    linkStepsLinear(adventureSteps);
+
+    return { adventureSteps, allPhotoEntries };
+}
 
 /*
 Summary & Extensions
