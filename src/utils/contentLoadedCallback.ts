@@ -13,6 +13,13 @@ import { startRenderLoop } from './startRenderLoop';
 // TODO Update this as they have deprecated the old way of doing this
 import { update as tweenUpdate } from '@tweenjs/tween.js';
 
+import {
+  assert,
+  assertString,
+  assertObject,
+  debugLog,
+} from './assertUtils';
+
 /**
  * Callback function to be executed when the content is loaded.
  * It sets up the Three.js scene, prepares the drawing context,
@@ -31,6 +38,9 @@ export async function contentLoadedCallback(
         console.error(`No drawing found for ${drawingName}`);
         return;
     }
+    assertString(drawingName, 'drawingName');
+    //assertObject<ThreeJSDrawing>(threeJSDrawing, 'threeJSDrawing');
+    assertObject(threeJSDrawing, 'threeJSDrawing');
 
     // --- 1. IO-heavy pieces kept tiny so they're easy to stub ---
     // readDataSelected()
@@ -38,22 +48,36 @@ export async function contentLoadedCallback(
     // Returns: dataSelected (string or null)
     const dataSelected = readDataSelected();
 
+    assert(
+        typeof dataSelected === 'string' || dataSelected === null,
+        `[dataSelected] expected string | null, got ${typeof dataSelected}`
+    );
+    debugLog('dataSelected', dataSelected);
+
     // parseQueryParams(window.location.search)
     // Params: window.location.search (string)
     // Returns: query (object with parsed query parameters)
     const query = parseQueryParams(window.location.search);
+    assertObject(query, 'query');
+    debugLog('query', query);
 
     // parseDebugFlag(query, debug)
     // Params: query (object), debug (boolean)
     // Returns: debug (boolean)
     debug = parseDebugFlag(query, debug);
+    debugLog('debug flag', debug);
 
     // --- 2. Pure helpers ---
     // buildSceneConfig(defaultSceneConfig, threeJSDrawing.sceneConfig, query)
     // Params: defaultSceneConfig (SceneConfig), threeJSDrawing.sceneConfig (Partial<SceneConfig> | undefined), query (QueryOptions)
     // Returns: sceneConfig (object with merged scene configuration)
     const sceneConfig = buildSceneConfig(defaultSceneConfig, threeJSDrawing.sceneConfig, query);
-    const overlays    = toOverlayElements(threeJSDrawing.sceneElements);
+    assertObject(sceneConfig, 'sceneConfig');
+    debugLog('sceneConfig', sceneConfig);
+
+    const overlays = toOverlayElements(threeJSDrawing.sceneElements);
+    assert(Array.isArray(overlays), '[overlays] expected array');
+    debugLog('overlays', overlays);
 
     // Ensure all required properties are present by merging with defaultSceneConfig
     const mergedSceneConfig = { ...defaultSceneConfig, ...sceneConfig };
@@ -65,6 +89,15 @@ export async function contentLoadedCallback(
     const {
         scene, camera, renderer, controls, stats, css2DRenderer, css3DRenderer
     } = await setupScene('c', overlays, mergedSceneConfig);
+    debugLog('sceneElements', {
+        scene,
+        camera,
+        renderer,
+        controls,
+        stats,
+        css2DRenderer,
+        css3DRenderer,
+    });
 
     // --- 4. Context preparation ---
     // prepareDrawingContext(threeJSDrawing, scene, camera, renderer, controls, css2DRenderer, css3DRenderer, query)
@@ -82,6 +115,12 @@ export async function contentLoadedCallback(
         console.warn(`No valid draw functions found for ${drawingName}.`);
         return;
     }
+
+    assert(
+        drawFuncObjs.length > 0,
+        `No valid draw functions found for ${drawingName}`
+    );
+    debugLog('drawFuncObjs', drawFuncObjs);
 
     // --- 5. Run draw functions ---
     // runDrawFuncs(drawFuncObjs, { scene, camera, drawing: threeJSDrawing, dataSelected })
@@ -109,4 +148,6 @@ export async function contentLoadedCallback(
         threejsDrawing: threeJSDrawing, outlineEffectEnabled: typeof sceneConfig.outlineEffect === 'boolean' ? sceneConfig.outlineEffect : false,
         tweenUpdate
     });
+
+    debugLog('🚀 Render loop started', { drawingName });
 }
