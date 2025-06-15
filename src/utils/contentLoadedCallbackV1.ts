@@ -46,8 +46,7 @@ export function parseEnvironment(drawingName: string, threejsDrawing: ThreeJSDra
     const debugMode: boolean = (DEBUG) || queryOptions.debug === true;
 
     // Merge threejsDrawing.sceneConfig with defaults
-    let sceneConfig = { ...defaultSceneConfig, ...(threejsDrawing.sceneConfig || {}) };
-    buildSceneConfig(sceneConfig, queryOptions);
+    let sceneConfig = buildSceneConfig(defaultSceneConfig, threejsDrawing.sceneConfig, queryOptions);
 
     const overlayElements = toOverlayElements(threejsDrawing.sceneElements);
 
@@ -77,9 +76,9 @@ export async function contentLoadedCallback(drawingName: string, threejsDrawing:
         throw new Error(`Drawing data is not available for ${drawingName}.`);
     }
 
-    const { dataSelected, queryOptions, debugMode, sceneConfig, overlayElements } = parseEnvironment();
+    const { dataSelected, queryOptions, debugMode, sceneConfig, overlayElements } = parseEnvironment(drawingName, threejsDrawing, debugMode = false);
 
-    addListeners(drawing);
+    addListeners(threejsDrawing);
 
     console.log('About to setup scene with config:', sceneConfig);
     // TODO: Define this returned object as a type...
@@ -93,12 +92,12 @@ export async function contentLoadedCallback(drawingName: string, threejsDrawing:
 
     console.log('Drawing context prepared:', threejsDrawing.data);
 
-    await runDrawFuncs(Array.isArray(drawing.drawFuncs) ? drawing.drawFuncs : [], {scene, camera, drawing, dataSelected});
+    await runDrawFuncs(Array.isArray(threejsDrawing.drawFuncs) ? threejsDrawing.drawFuncs : [], {scene, camera, drawing: threejsDrawing, dataSelected});
 
     console.log(`All draw functions executed for ${drawingName}.`);
 
     startRenderLoop(renderer, {
         scene, camera, controls, stats, css2DRenderer, css3DRenderer,
-        drawing, outline: sceneConfig.outlineEffect
+        threejsDrawing, outline: sceneConfig.outlineEffect
     });
 }

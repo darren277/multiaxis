@@ -29,14 +29,21 @@ export async function contentLoadedCallback(
     const sceneConfig = buildSceneConfig(defaultSceneConfig, threeJSDrawing.sceneConfig, query);
     const overlays    = toOverlayElements(threeJSDrawing.sceneElements);
 
+    // Ensure all required properties are present by merging with defaultSceneConfig
+    const mergedSceneConfig = { ...defaultSceneConfig, ...sceneConfig };
+
     // --- 3. Imperative orchestration (minimal logic) ---
     const {
         scene, camera, renderer, controls, stats, css2DRenderer, css3DRenderer
-    } = await setupScene('c', overlays, sceneConfig);
+    } = await setupScene('c', overlays, mergedSceneConfig);
 
     await prepareDrawingContext(threeJSDrawing, scene, camera, renderer, controls, css2DRenderer, css3DRenderer, query);
 
-    await runDrawFuncs(Array.isArray(threeJSDrawing.drawFuncs) ? threeJSDrawing.drawFuncs : [], {scene, camera, threeJSDrawing, dataSelected});
+    const drawFuncsArray = Array.isArray(threeJSDrawing.drawFuncs) ? threeJSDrawing.drawFuncs : [];
+    const drawFuncObjs = drawFuncsArray
+        .map(f => typeof f === 'function' ? { func: f } : f)
+        .filter(f => typeof f.func === 'function');
+    await runDrawFuncs(drawFuncObjs as any, {scene, camera, drawing: threeJSDrawing, dataSelected});
 
     //if (debug) enableDebug(scene, camera, renderer, threeJSDrawing);
 
@@ -45,6 +52,9 @@ export async function contentLoadedCallback(
     addListeners(threeJSDrawing, { scene, controls, renderer });
     startRenderLoop(renderer, {
         scene, camera, controls, stats, css2DRenderer, css3DRenderer,
-        threeJSDrawing, outline: sceneConfig.outlineEffect
+        threejsDrawing: threeJSDrawing, outlineEffectEnabled: typeof sceneConfig.outlineEffect === 'boolean' ? sceneConfig.outlineEffect : false,
+        tweenUpdate: function (): void {
+            throw new Error('Function not implemented.');
+        }
     });
 }

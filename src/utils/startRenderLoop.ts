@@ -11,7 +11,7 @@ type Renderables = {
     css2DRenderer?: any; // CSS2DRenderer or similar
     css3DRenderer?: any; // CSS3DRenderer or similar
     tweenUpdate: () => void; // Function to update tweens
-    outlineEffectEnabled?: boolean; // Whether to enable outline effect
+    outlineEffectEnabled: boolean; // Whether to enable outline effect
 };
 
 export function startRenderLoop(renderer: THREE.WebGLRenderer, renderables: Renderables) {
@@ -34,7 +34,7 @@ export function startRenderLoop(renderer: THREE.WebGLRenderer, renderables: Rend
 
     renderer.setAnimationLoop((
         timestamp: number,
-        frame: number | undefined,
+        frame?: XRFrame,
     ) => {
         // Update controls (if using OrbitControls or similar)
         if (controls) {
@@ -46,7 +46,9 @@ export function startRenderLoop(renderer: THREE.WebGLRenderer, renderables: Rend
         }
 
         // Update camera projection if needed
-        camera.updateProjectionMatrix();
+        if ('updateProjectionMatrix' in camera && typeof (camera as any).updateProjectionMatrix === 'function') {
+            (camera as any).updateProjectionMatrix();
+        }
 
         tweenUpdate();
 

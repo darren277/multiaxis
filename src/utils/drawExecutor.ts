@@ -11,7 +11,7 @@ type DrawFuncObj = {
 
 type DrawOptions = {
     scene: THREE.Scene;
-    camera: THREE.Camera;
+    camera: THREE.PerspectiveCamera;
     drawing: ThreeJSDrawing;
     dataSelected?: string;
 }
@@ -22,5 +22,19 @@ export async function runDrawFuncs(
 ) {
     const { scene, camera, drawing, dataSelected } = opts;
 
-    await Promise.all(funcs.map(f => f.dataSrc ? loadThenDraw(scene, f.func, f.dataSrc, f.dataType ? undefined : camera, drawing, dataSelected) : f.func(scene, drawing)));
+    await Promise.all(
+        funcs.map(f =>
+            f.dataSrc
+                ? loadThenDraw(
+                    scene,
+                    f.func,
+                    f.dataSrc as string, // Type assertion, but better to fallback
+                    f.dataType ?? '',
+                    camera,
+                    drawing,
+                    dataSelected ?? ''
+                )
+                : f.func(scene, drawing)
+        )
+    );
 }

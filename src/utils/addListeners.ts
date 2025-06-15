@@ -2,8 +2,7 @@ import { onClickNav } from '../config/navigation';
 import { ThreeJSDrawing } from '../threejsDrawing';
 
 export function addListeners(
-    threejsDrawing: ThreeJSDrawing
-) {
+threejsDrawing: ThreeJSDrawing, p0: unknown) {
     const { scene, renderer, camera, controls } = threejsDrawing.data;
 
     // Add event listener for navigation
