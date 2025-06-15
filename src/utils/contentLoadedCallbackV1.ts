@@ -61,7 +61,7 @@ export async function contentLoadedCallback(drawingName: string, threejsDrawing:
         addNavigation(threejsDrawing)
     }
 
-    addCustomListeners(drawing, { scene, controls, renderer });
+    addListeners(drawing);
 
     startRenderLoop(renderer, {
         scene, camera, controls, stats, css2DRenderer, css3DRenderer,
