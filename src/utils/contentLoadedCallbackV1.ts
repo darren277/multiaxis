@@ -10,6 +10,11 @@ export async function contentLoadedCallback(drawingName: string, threejsDrawing:
 
     const queryOptions: QueryOptions = parseQueryParams(window.location.search);
 
+    // Add navigation cubes if defined
+    if (queryOptions.nav) {
+        addNavigation(threejsDrawing)
+    }
+
     const debugMode: boolean = (DEBUG) || queryOptions.debug === true;
 
     addListeners(drawing);
@@ -38,6 +43,10 @@ export async function contentLoadedCallback(drawingName: string, threejsDrawing:
         css3DRenderer?: any
     };
 
+    if (debugMode) {
+        drawHelpers(scene, threejsDrawing);
+    }
+
     console.log('Scene setup complete:', scene, camera, renderer, controls, stats, css2DRenderer, css3DRenderer);
 
     await prepareDrawingContext(threejsDrawing, scene, camera, renderer, controls, css2DRenderer, css3DRenderer, queryOptions);
@@ -55,15 +64,6 @@ export async function contentLoadedCallback(drawingName: string, threejsDrawing:
     await runDrawFuncs(Array.isArray(drawing.drawFuncs) ? drawing.drawFuncs : [], {scene, camera, drawing, dataSelected});
 
     console.log(`All draw functions executed for ${drawingName}.`);
-
-    if (debugMode) {
-        drawHelpers(scene, threejsDrawing);
-    }
-
-    // Add navigation cubes if defined
-    if (queryOptions.nav) {
-        addNavigation(threejsDrawing)
-    }
 
     startRenderLoop(renderer, {
         scene, camera, controls, stats, css2DRenderer, css3DRenderer,
