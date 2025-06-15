@@ -1,24 +1,16 @@
-export function startRenderLoop(renderer, {
-        scene,
-        camera,
-        controls,
-        threejsDrawing,
-        stats,
-        css2DRenderer,
-        css3DRenderer,
-        tweenUpdate,
-        outlineEffectEnabled = false,
-    }: {
-        scene: THREE.Scene;
-        camera: THREE.Camera;
-        controls?: any; // OrbitControls or similar
-        threejsDrawing: ThreeJSDrawing;
-        stats?: any; // Stats.js or similar
-        css2DRenderer?: any; // CSS2DRenderer or similar
-        css3DRenderer?: any; // CSS3DRenderer or similar
-        tweenUpdate: () => void; // Function to update tweens
-        outlineEffectEnabled?: boolean; // Whether to enable outline effect
-}) {
+type Renderables = {
+    scene: THREE.Scene;
+    camera: THREE.Camera;
+    controls?: any; // OrbitControls or similar
+    threejsDrawing: ThreeJSDrawing;
+    stats?: any; // Stats.js or similar
+    css2DRenderer?: any; // CSS2DRenderer or similar
+    css3DRenderer?: any; // CSS3DRenderer or similar
+    tweenUpdate: () => void; // Function to update tweens
+    outlineEffectEnabled?: boolean; // Whether to enable outline effect
+};
+
+export function startRenderLoop(renderer: THREE.WebGLRenderer, renderables: Renderables) {
     let effect: OutlineEffect | undefined = undefined;
     if (outlineEffectEnabled) {
         effect = new OutlineEffect(renderer);
