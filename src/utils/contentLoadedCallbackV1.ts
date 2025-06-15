@@ -22,10 +22,27 @@ export function parseEnvironment() {
     return { dataSelected, queryOptions, debugMode, sceneConfig, overlayElements };
 }
 
-export async function contentLoadedCallback(drawingName: string, threejsDrawing: ThreeJSDrawing) {
+export function checkDrawingData(drawingName: string, threejsDrawing: ThreeJSDrawing) {
     if (!drawingName || !threejsDrawing) {
         console.error(`No drawing found for ${drawingName}`);
-        return;
+        return false;
+    }
+
+    const funcs = Array.isArray(threejsDrawing.drawFuncs) ? threejsDrawing.drawFuncs : [];
+
+    if (funcs.length === 0) {
+        console.warn(`No draw functions found for ${drawingName}.`);
+        return false;
+    }
+    console.log(`Found ${funcs.length} draw functions for ${drawingName}.`);
+
+    return true;
+}
+
+export async function contentLoadedCallback(drawingName: string, threejsDrawing: ThreeJSDrawing) {
+    const validDrawing = checkDrawingData(drawingName, threejsDrawing);
+    if (!validDrawing) {
+        throw new Error(`Drawing data is not available for ${drawingName}.`);
     }
 
     const { dataSelected, queryOptions, debugMode, sceneConfig, overlayElements } = parseEnvironment();
@@ -61,14 +78,6 @@ export async function contentLoadedCallback(drawingName: string, threejsDrawing:
     await prepareDrawingContext(threejsDrawing, scene, camera, renderer, controls, css2DRenderer, css3DRenderer, queryOptions);
 
     console.log('Drawing context prepared:', threejsDrawing.data);
-
-    const funcs = Array.isArray(threejsDrawing.drawFuncs) ? threejsDrawing.drawFuncs : [];
-
-    if (funcs.length === 0) {
-        console.warn(`No draw functions found for ${drawingName}.`);
-        return;
-    }
-    console.log(`Found ${funcs.length} draw functions for ${drawingName}.`);
 
     await runDrawFuncs(Array.isArray(drawing.drawFuncs) ? drawing.drawFuncs : [], {scene, camera, drawing, dataSelected});
 
