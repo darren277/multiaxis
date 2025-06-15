@@ -26,7 +26,7 @@ export async function contentLoadedCallback(drawingName: string, threejsDrawing:
 
     buildSceneConfig(sceneConfig, queryOptions);
 
-    cosnt overlayElements = toOverlayElements(drawing.sceneElements);
+    const overlayElements = toOverlayElements(drawing.sceneElements);
 
     console.log('About to setup scene with config:', sceneConfig);
     // TODO: Define this returned object as a type...
