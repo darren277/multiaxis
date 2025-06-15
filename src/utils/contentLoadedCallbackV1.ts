@@ -48,20 +48,7 @@ export async function contentLoadedCallback(drawingName: string, threejsDrawing:
     }
     console.log(`Found ${funcs.length} draw functions for ${drawingName}.`);
 
-    await Promise.all(funcs.map((drawFuncObj: any) =>
-        drawFuncObj.dataSrc
-          ? loadThenDraw(
-              scene,
-              drawFuncObj.func,
-              drawFuncObj.dataSrc,
-              drawFuncObj.dataType ?? undefined,
-              camera,
-              threejsDrawing,
-              dataSelected
-            )
-          : drawFuncObj.func(scene, threejsDrawing)
-      )
-    );
+    await runDrawFuncs(Array.isArray(drawing.drawFuncs) ? drawing.drawFuncs : [], {scene, camera, drawing, dataSelected});
 
     console.log(`All draw functions executed for ${drawingName}.`);
 
