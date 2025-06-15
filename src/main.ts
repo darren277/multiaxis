@@ -1,4 +1,5 @@
-import { contentLoadedCallback } from './utils/contentLoadedCallbackV1';
+//import { contentLoadedCallback } from './utils/contentLoadedCallbackV1';
+import { contentLoadedCallback } from './utils/contentLoadedCallback';
 
 import { ThreeJSDrawing } from './types';
 import { REVISION } from 'three';

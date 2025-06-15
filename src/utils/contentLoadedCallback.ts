@@ -10,6 +10,18 @@ import { addListeners } from './addListeners';
 import { startRenderLoop } from './startRenderLoop';
 // const outlineEffectEnabled = sceneConfig && sceneConfig.outlineEffect || false;
 
+// TODO Update this as they have deprecated the old way of doing this
+import { update as tweenUpdate } from '@tweenjs/tween.js';
+
+/**
+ * Callback function to be executed when the content is loaded.
+ * It sets up the Three.js scene, prepares the drawing context,
+ * and starts the render loop.
+ *
+ * @param drawingName - The name of the drawing to load.
+ * @param threeJSDrawing - The ThreeJSDrawing object containing scene elements and draw functions.
+ * @param debug - Optional flag to enable debug mode (default: false).
+ */
 export async function contentLoadedCallback(
     drawingName: string,
     threeJSDrawing: ThreeJSDrawing,
@@ -53,8 +65,6 @@ export async function contentLoadedCallback(
     startRenderLoop(renderer, {
         scene, camera, controls, stats, css2DRenderer, css3DRenderer,
         threejsDrawing: threeJSDrawing, outlineEffectEnabled: typeof sceneConfig.outlineEffect === 'boolean' ? sceneConfig.outlineEffect : false,
-        tweenUpdate: function (): void {
-            throw new Error('Function not implemented.');
-        }
+        tweenUpdate
     });
 }
