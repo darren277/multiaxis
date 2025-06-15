@@ -10,11 +10,6 @@ export async function contentLoadedCallback(drawingName: string, threejsDrawing:
 
     const queryOptions: QueryOptions = parseQueryParams(window.location.search);
 
-    // Add navigation cubes if defined
-    if (queryOptions.nav) {
-        addNavigation(threejsDrawing)
-    }
-
     const debugMode: boolean = (DEBUG) || queryOptions.debug === true;
 
     addListeners(drawing);
@@ -23,7 +18,6 @@ export async function contentLoadedCallback(drawingName: string, threejsDrawing:
 
     // Merge threejsDrawing.sceneConfig with defaults
     let sceneConfig = { ...defaultSceneConfig, ...(threejsDrawing.sceneConfig || {}) };
-
     buildSceneConfig(sceneConfig, queryOptions);
 
     const overlayElements = toOverlayElements(drawing.sceneElements);
@@ -39,6 +33,12 @@ export async function contentLoadedCallback(drawingName: string, threejsDrawing:
         css2DRenderer?: any,
         css3DRenderer?: any
     };
+
+    // Add navigation cubes if defined
+    if (queryOptions.nav) {
+        addNavigation(threejsDrawing)
+    }
+
 
     addOptionals(scene, drawing);
 
