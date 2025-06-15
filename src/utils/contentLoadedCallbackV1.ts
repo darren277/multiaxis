@@ -1,9 +1,10 @@
-export async function contentLoadedCallback(drawingName: string, threejsDrawing: ThreeJSDrawing) {
-    if (!drawingName || !threejsDrawing) {
-        console.error(`No drawing found for ${drawingName}`);
-        return;
-    }
+/*
+    Essential sequence of events:
+    1. Check HTML meta tags for data selected.
+    2. Parse query parameters to get options.
+*/
 
+export function parseEnvironment() {
     const dataSelected = readDataSelect();
 
     console.log(`Drawing name: ${drawingName}. Data selected: ${dataSelected}`);
@@ -12,15 +13,24 @@ export async function contentLoadedCallback(drawingName: string, threejsDrawing:
 
     const debugMode: boolean = (DEBUG) || queryOptions.debug === true;
 
-    addListeners(drawing);
-
-    // Define the default scene config with all required properties
-
     // Merge threejsDrawing.sceneConfig with defaults
     let sceneConfig = { ...defaultSceneConfig, ...(threejsDrawing.sceneConfig || {}) };
     buildSceneConfig(sceneConfig, queryOptions);
 
     const overlayElements = toOverlayElements(drawing.sceneElements);
+
+    return { dataSelected, queryOptions, debugMode, sceneConfig, overlayElements };
+}
+
+export async function contentLoadedCallback(drawingName: string, threejsDrawing: ThreeJSDrawing) {
+    if (!drawingName || !threejsDrawing) {
+        console.error(`No drawing found for ${drawingName}`);
+        return;
+    }
+
+    const { dataSelected, queryOptions, debugMode, sceneConfig, overlayElements } = parseEnvironment();
+
+    addListeners(drawing);
 
     console.log('About to setup scene with config:', sceneConfig);
     // TODO: Define this returned object as a type...
