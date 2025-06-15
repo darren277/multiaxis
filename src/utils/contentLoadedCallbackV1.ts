@@ -17,7 +17,7 @@
 
 import { ThreeJSDrawing } from '../threejsDrawing';
 import { defaultSceneConfig, setupScene } from '../config/sceneSetup';
-import { parseQueryParams } from '../config/utils';
+import { parseQueryParams, prepareDrawingContext } from '../config/utils';
 import { buildSceneConfig } from './sceneConfig';
 import { toOverlayElements } from './overlay';
 import { runDrawFuncs } from './drawExecutor';
@@ -25,6 +25,7 @@ import { addListeners } from './addListeners';
 import { startRenderLoop } from './startRenderLoop';
 import { QueryOptions } from '../types';
 import { readDataSelected } from './queries';
+import { addOptionals } from './addOptionals';
 
 type SceneElements = {
     scene: any,
@@ -76,14 +77,16 @@ export async function contentLoadedCallback(drawingName: string, threejsDrawing:
         throw new Error(`Drawing data is not available for ${drawingName}.`);
     }
 
-    const { dataSelected, queryOptions, debugMode, sceneConfig, overlayElements } = parseEnvironment(drawingName, threejsDrawing, debugMode = false);
-
-    addListeners(threejsDrawing);
+    const { dataSelected, queryOptions, debugMode, sceneConfig, overlayElements } = parseEnvironment(drawingName, threejsDrawing, false);
 
     console.log('About to setup scene with config:', sceneConfig);
     // TODO: Define this returned object as a type...
-    let { scene, camera, renderer, controls, stats, css2DRenderer, css3DRenderer } = await setupScene('c', overlayElements, sceneConfig) as SceneElements;
+    // Ensure all required sceneConfig properties are present
+    const mergedSceneConfig = { ...defaultSceneConfig, ...sceneConfig };
+    let { scene, camera, renderer, controls, stats, css2DRenderer, css3DRenderer } = await setupScene('c', overlayElements, mergedSceneConfig) as SceneElements;
 
+    addListeners(threejsDrawing, { scene, controls, renderer });
+    
     addOptionals(scene, threejsDrawing, queryOptions, debugMode);
 
     console.log('Scene setup complete:', scene, camera, renderer, controls, stats, css2DRenderer, css3DRenderer);
@@ -92,12 +95,18 @@ export async function contentLoadedCallback(drawingName: string, threejsDrawing:
 
     console.log('Drawing context prepared:', threejsDrawing.data);
 
-    await runDrawFuncs(Array.isArray(threejsDrawing.drawFuncs) ? threejsDrawing.drawFuncs : [], {scene, camera, drawing: threejsDrawing, dataSelected});
+    const drawFuncObjs = Array.isArray(threejsDrawing.drawFuncs)
+        ? threejsDrawing.drawFuncs.map(f => ({ func: f }))
+        : [];
+    await runDrawFuncs(drawFuncObjs as any, {scene, camera, drawing: threejsDrawing, dataSelected});
 
     console.log(`All draw functions executed for ${drawingName}.`);
 
     startRenderLoop(renderer, {
         scene, camera, controls, stats, css2DRenderer, css3DRenderer,
-        threejsDrawing, outline: sceneConfig.outlineEffect
+        threejsDrawing: threejsDrawing, outlineEffectEnabled: typeof sceneConfig.outlineEffect === 'boolean' ? sceneConfig.outlineEffect : false,
+        tweenUpdate: function (): void {
+            throw new Error('Function not implemented.');
+        }
     });
 }
