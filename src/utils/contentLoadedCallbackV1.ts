@@ -19,13 +19,7 @@ export async function contentLoadedCallback(drawingName: string, threejsDrawing:
 
     buildSceneConfig(sceneConfig, queryOptions);
 
-    // Convert sceneElements to OverlayElement[] if necessary
-    const overlayElements = (threejsDrawing.sceneElements ?? []).map((el: any) => ({
-        tagName: el.tagName ?? 'div',
-        className: el.className,
-        id: el.id,
-        attrs: el.attrs
-    }));
+    cosnt overlayElements = toOverlayElements(drawing.sceneElements);
 
     console.log('About to setup scene with config:', sceneConfig);
 
