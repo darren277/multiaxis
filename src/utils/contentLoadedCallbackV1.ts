@@ -29,9 +29,6 @@ export async function contentLoadedCallback(drawingName: string, threejsDrawing:
     cosnt overlayElements = toOverlayElements(drawing.sceneElements);
 
     console.log('About to setup scene with config:', sceneConfig);
-
-    addOptionals(scene, drawing);
-
     // TODO: Define this returned object as a type...
     let { scene, camera, renderer, controls, stats, css2DRenderer, css3DRenderer } = await setupScene('c', overlayElements, sceneConfig) as {
         scene: any,
@@ -42,6 +39,8 @@ export async function contentLoadedCallback(drawingName: string, threejsDrawing:
         css2DRenderer?: any,
         css3DRenderer?: any
     };
+
+    addOptionals(scene, drawing);
 
     if (debugMode) {
         drawHelpers(scene, threejsDrawing);
