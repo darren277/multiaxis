@@ -1,13 +1,6 @@
-import { defaultSceneConfig, setupScene } from './config/sceneSetup';
-import { prepareDrawingContext, drawHelpers, parseQueryParams } from './config/utils';
-import { loadThenDraw } from './config/loadThenDraw';
-import { OutlineEffect } from 'three/examples/jsm/effects/OutlineEffect.js';
-import { drawNavCubes, onClickNav, ALL_CUBE_DEFS } from './config/navigation';
-import {update as tweenUpdate} from '@tweenjs/tween.js'
+import { contentLoadedCallback } from './utils/contentLoadedCallbackV1';
 
-import { contentLoadedCallback } from './config/contentLoadedCallbackV1';
-
-import { QueryOptions, ThreeJSDrawing, ALL_CUBE_DEFS as ALL_CUBE_DEFS_TYPE } from './types';
+import { ThreeJSDrawing } from './types';
 import { REVISION } from 'three';
 console.log('Three.js version (main):', REVISION);
 import { THREEJS_DRAWINGS } from './drawings';

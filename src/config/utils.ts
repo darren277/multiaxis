@@ -1,6 +1,6 @@
 import * as THREE from 'three'; // for texture loading
 import { ThreeJSDrawing } from '../threejsDrawing';
-import { ClickAndKeyControls } from './config/clickControlHelper';
+import { ClickAndKeyControls } from '../config/clickControlHelper';
 
 function drawTestCube(scene: THREE.Scene) {
     const geometry = new THREE.BoxGeometry(1, 1, 1);

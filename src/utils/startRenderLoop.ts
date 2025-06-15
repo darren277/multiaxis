@@ -1,3 +1,7 @@
+import * as THREE from 'three';
+import { ThreeJSDrawing } from '../threejsDrawing';
+import { OutlineEffect } from 'three/examples/jsm/effects/OutlineEffect.js';
+
 type Renderables = {
     scene: THREE.Scene;
     camera: THREE.Camera;
@@ -11,6 +15,18 @@ type Renderables = {
 };
 
 export function startRenderLoop(renderer: THREE.WebGLRenderer, renderables: Renderables) {
+    const {
+        scene,
+        camera,
+        controls,
+        threejsDrawing,
+        stats,
+        css2DRenderer,
+        css3DRenderer,
+        tweenUpdate,
+        outlineEffectEnabled = false, // Default to false if not provided
+    } = renderables;
+
     let effect: OutlineEffect | undefined = undefined;
     if (outlineEffectEnabled) {
         effect = new OutlineEffect(renderer);

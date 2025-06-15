@@ -8,6 +8,8 @@ const overlayElements = (threejsDrawing.sceneElements ?? []).map((el: any) => ({
 }));
 */
 
+import { OverlayElement } from '../config/sceneSetup';
+
 export function toOverlayElements(raw: any[] = []): OverlayElement[] {
     return raw.map(el => ({
         tagName: el.tagName ?? 'div',

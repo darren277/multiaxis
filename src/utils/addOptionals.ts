@@ -1,4 +1,10 @@
-export function addOptionals(scene, drawing) {
+import * as THREE from 'three';
+import { addNavigation } from './addNavigation';
+import { drawHelpers } from '../config/utils';
+import { ThreeJSDrawing } from '../threejsDrawing';
+import { QueryOptions } from '../types';
+
+export function addOptionals(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing, queryOptions: QueryOptions, debugMode = false) {
     // Add navigation cubes if defined
     if (queryOptions.nav) {
         addNavigation(threejsDrawing)

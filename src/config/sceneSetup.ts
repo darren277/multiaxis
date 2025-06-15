@@ -16,7 +16,7 @@ export const defaultSceneConfig = {
     outlineEffect: false
 }
 
-type OverlayElement = {
+export type OverlayElement = {
     tagName: string;
     className?: string;
     id?: string;

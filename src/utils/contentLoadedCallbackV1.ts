@@ -4,6 +4,17 @@
     2. Parse query parameters to get options.
 */
 
+import { ThreeJSDrawing } from '../threejsDrawing';
+import { defaultSceneConfig, setupScene } from '../config/sceneSetup';
+import { parseQueryParams } from '../config/utils';
+import { buildSceneConfig } from './sceneConfig';
+import { toOverlayElements } from './overlay';
+import { runDrawFuncs } from './drawExecutor';
+import { addListeners } from './addListeners';
+import { startRenderLoop } from './startRenderLoop';
+import { QueryOptions } from '../types';
+import { readDataSelected } from './queries';
+
 type SceneElements = {
     scene: any,
     camera: any,
@@ -14,8 +25,8 @@ type SceneElements = {
     css3DRenderer?: any
 }
 
-export function parseEnvironment() {
-    const dataSelected = readDataSelect();
+export function parseEnvironment(drawingName: string, threejsDrawing: ThreeJSDrawing, DEBUG = false) {
+    const dataSelected = readDataSelected();
 
     console.log(`Drawing name: ${drawingName}. Data selected: ${dataSelected}`);
 
@@ -27,7 +38,7 @@ export function parseEnvironment() {
     let sceneConfig = { ...defaultSceneConfig, ...(threejsDrawing.sceneConfig || {}) };
     buildSceneConfig(sceneConfig, queryOptions);
 
-    const overlayElements = toOverlayElements(drawing.sceneElements);
+    const overlayElements = toOverlayElements(threejsDrawing.sceneElements);
 
     return { dataSelected, queryOptions, debugMode, sceneConfig, overlayElements };
 }

@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { Logger } from './config/logger';
 
 export interface SceneElement {
     [key: string]: unknown;
@@ -76,6 +77,8 @@ export interface SceneConfig {
 }
 
 export interface ThreeJSDrawing {
+    name: string;
+    log?: Logger;
     dataSources: any;
     camera: any;
     sceneElements: SceneElement[];

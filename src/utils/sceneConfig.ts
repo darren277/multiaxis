@@ -13,6 +13,9 @@ if (queryOptions) {
     }
 */
 
+import { SceneConfig } from "../threejsDrawing";
+import { QueryOptions } from "../types";
+
 export function buildSceneConfig(
     defaults: SceneConfig,
     drawingCfg: Partial<SceneConfig> | undefined,
