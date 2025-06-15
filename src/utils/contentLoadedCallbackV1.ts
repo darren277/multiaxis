@@ -12,6 +12,8 @@ export async function contentLoadedCallback(drawingName: string, threejsDrawing:
 
     const debugMode: boolean = (DEBUG) || queryOptions.debug === true;
 
+    addListeners(drawing);
+
     // Define the default scene config with all required properties
 
     // Merge threejsDrawing.sceneConfig with defaults
@@ -60,8 +62,6 @@ export async function contentLoadedCallback(drawingName: string, threejsDrawing:
     if (queryOptions.nav) {
         addNavigation(threejsDrawing)
     }
-
-    addListeners(drawing);
 
     startRenderLoop(renderer, {
         scene, camera, controls, stats, css2DRenderer, css3DRenderer,
