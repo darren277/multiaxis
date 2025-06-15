@@ -1,5 +1,11 @@
 export function addOptionals(scene, drawing) {
-    // Currently does nothing but serves as a placeholder for optional features.
+    // Add navigation cubes if defined
+    if (queryOptions.nav) {
+        addNavigation(threejsDrawing)
+    }
+    if (debugMode) {
+        drawHelpers(scene, threejsDrawing);
+    }
 
     // --- OPTION 1: Panoramic cube skybox ---
     //usePanoramicCubeBackground(scene, 'textures/sun_temple_stripe.jpg');

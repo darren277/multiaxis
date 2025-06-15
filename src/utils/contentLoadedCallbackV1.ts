@@ -63,12 +63,7 @@ export async function contentLoadedCallback(drawingName: string, threejsDrawing:
     // TODO: Define this returned object as a type...
     let { scene, camera, renderer, controls, stats, css2DRenderer, css3DRenderer } = await setupScene('c', overlayElements, sceneConfig) as SceneElements;
 
-
-    addOptionals(scene, drawing);
-
-    if (debugMode) {
-        drawHelpers(scene, threejsDrawing);
-    }
+    addOptionals(scene, threejsDrawing, queryOptions, debugMode);
 
     console.log('Scene setup complete:', scene, camera, renderer, controls, stats, css2DRenderer, css3DRenderer);
 
