@@ -20,6 +20,23 @@ import {
   debugLog,
 } from './assertUtils';
 
+/*
+    Essential sequence of events:
+    A) Parse environment:
+        1. Check HTML meta tags for data selected.
+        2. Parse query parameters to get options.
+        3. Check env vars for debug mode.
+    B) Setup scene:
+        1. Merge scene config with defaults.
+        2. Build scene config based on query options.
+        3. Convert drawing.sceneElements to overlay elements.
+        4. Setup scene (instantiating THREE.Scene, THREE.Camera, THREE.WebGLRenderer, and optional CSS renderers) with any overlay elements.
+    C) Add any optional elements (navigation, debug, etc) to the scene.
+    D) Prepare drawing context: Attach all THREE objects from `setupScene()` to the drawing data.
+    E) Load any data and execute drawing functions.
+    F) Start the render loop.
+*/
+
 /**
  * Callback function to be executed when the content is loaded.
  * It sets up the Three.js scene, prepares the drawing context,
