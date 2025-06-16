@@ -1,4 +1,3 @@
-//import { contentLoadedCallback } from './utils/contentLoadedCallbackV1';
 import { contentLoadedCallback } from './utils/contentLoadedCallback';
 
 import { ThreeJSDrawing } from './types';
@@ -33,8 +32,13 @@ async function onContentLoaded() {
 
     const drawingName = loadDrawingName();
 
+    if (!drawingName) {
+        // Error already logged in loadDrawingName
+        return;
+    }
+
     try {
-        const drawingLoader = (THREEJS_DRAWINGS as unknown as ThreeJSDrawingsMap)[drawingName];
+        const drawingLoader = (THREEJS_DRAWINGS as unknown as ThreeJSDrawingsMap)[drawingName] as unknown as (() => Promise<ThreeJSDrawing>);
         if (!drawingLoader) {
             console.error(`No drawing found for ${drawingName}`);
             return;
@@ -45,9 +49,9 @@ async function onContentLoaded() {
             console.error(`Drawing loader for ${drawingName} is not a function.`);
             return;
         }
-        // @ts-ignore-next-line
+        
         const drawing = await drawingLoader();
-        contentLoadedCallback(drawingName, drawing as unknown as ThreeJSDrawing);
+        contentLoadedCallback(drawingName, drawing as ThreeJSDrawing);
     } catch (error) {
         console.warn(`Error loading drawing ${drawingName}:`, error);
         if (INCLUDE_LOCAL) {
