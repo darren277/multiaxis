@@ -7,8 +7,8 @@ import { THREEJS_DRAWINGS } from './drawings';
 import type { ThreeJSDrawingsMap } from './types';
 
 // TODO: Make these both env vars...
-const DEBUG = false;
-const INCLUDE_LOCAL = false;
+export const DEBUG = false;
+export const Flags = { includeLocal: false };
 
 export function loadDrawingName() {
     const drawingNameMeta = document.querySelector('meta[name="threejs_drawing_name"]');
@@ -54,7 +54,7 @@ export async function onContentLoaded() {
         contentLoadedCallback(drawingName, drawing as ThreeJSDrawing);
     } catch (error) {
         console.warn(`Error loading drawing ${drawingName}:`, error);
-        if (INCLUDE_LOCAL) {
+        if (Flags.includeLocal) {
             console.log('Trying local drawings...');
             import('./drawings_local.js').then(({ LOCAL_THREEJS_DRAWINGS }) => {
                 const localDrawing: (() => Promise<ThreeJSDrawing>) | undefined = (LOCAL_THREEJS_DRAWINGS as unknown as Record<string, () => Promise<ThreeJSDrawing>>)[drawingName];
