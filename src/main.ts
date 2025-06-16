@@ -11,18 +11,29 @@ import type { ThreeJSDrawingsMap } from './types';
 const DEBUG = false;
 const INCLUDE_LOCAL = false;
 
-document.addEventListener('DOMContentLoaded', async () => {
-    console.log("👀 Available drawings in THREEJS_DRAWINGS:", THREEJS_DRAWINGS);
-
+function loadDrawingName() {
     const drawingNameMeta = document.querySelector('meta[name="threejs_drawing_name"]');
     if (!drawingNameMeta) {
         console.error('Meta tag "threejs_drawing_name" not found.');
         return;
     }
     const drawingName = (drawingNameMeta as HTMLMetaElement).content;
+    if (!drawingName) {
+        console.error('No drawing name found in meta tag.');
+        return;
+    }
+
+    console.log(`Drawing name loaded from meta tag: ${drawingName}`);
+
+    return drawingName;
+};
+
+document.addEventListener('DOMContentLoaded', async () => {
+    console.log("👀 Available drawings in THREEJS_DRAWINGS:", THREEJS_DRAWINGS);
+
+    const drawingName = loadDrawingName();
 
     try {
-        // ignore for now
         const drawingLoader = (THREEJS_DRAWINGS as unknown as ThreeJSDrawingsMap)[drawingName];
         if (!drawingLoader) {
             console.error(`No drawing found for ${drawingName}`);
