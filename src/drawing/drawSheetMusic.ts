@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { drawBasicLights } from './reusables/drawLights';
-import TWEEN from '@tweenjs/tween.js'
+import * as TWEEN from '@tweenjs/tween.js'
 
 import { AudioListener, Audio, AudioLoader } from 'three';
 import { ThreeJSDrawing } from "../types";
@@ -93,6 +93,8 @@ let startTime: number | null = null;
  * @param {Object} data The parsed JSON data
  */
 function drawSheetMusic(scene: THREE.Scene, data: any) {
+    const tweenGroup = data.tweenGroup;
+
     // 1) Parse the tempo & note info from your data
     //    MIDO typically gives you microseconds_per_beat or 'tempo'
     //    in microseconds (e.g. 600000 => 0.6s per quarter note => 100BPM).
@@ -210,21 +212,27 @@ const clickableKeys: THREE.Mesh[] = [];
 
 const keyZdelta = 5.0;
 
-function onKeyClick(keyMesh: THREE.Mesh) {
+function onKeyClick(tweenGroup: TWEEN.Group, keyMesh: THREE.Mesh) {
     const originalZ = keyMesh.position.z;
 
     // Animate down
-    new TWEEN.Tween(keyMesh.position)
+    const downTween = new TWEEN.Tween(keyMesh.position)
         .to({ z: originalZ - keyZdelta }, 100)
         .easing(TWEEN.Easing.Quadratic.Out)
         .onComplete(() => {
             // Animate up
-            new TWEEN.Tween(keyMesh.position)
+            const upTween = new TWEEN.Tween(keyMesh.position)
                 .to({ z: originalZ }, 100)
                 .easing(TWEEN.Easing.Quadratic.In)
                 .start();
+            
+            // Add the up tween to the tween group
+            tweenGroup.add(upTween);
         })
         .start();
+    
+    // Add the down tween to the tween group
+    tweenGroup.add(downTween);
 
     console.log('keyMesh', keyMesh);
     //let note = keyMesh.userData.note;
@@ -244,7 +252,7 @@ function onKeyClick(keyMesh: THREE.Mesh) {
     if (sound) sound.play();
 }
 
-function onMouseClick(event: MouseEvent, camera: THREE.Camera, domElement: HTMLElement) {
+function onMouseClick(tweenGroup: TWEEN.Group, event: MouseEvent, camera: THREE.Camera, domElement: HTMLElement) {
     // Normalize mouse coordinates
     const rect = domElement.getBoundingClientRect();
     mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
@@ -254,7 +262,7 @@ function onMouseClick(event: MouseEvent, camera: THREE.Camera, domElement: HTMLE
     const intersects = raycaster.intersectObjects(clickableKeys);
 
     if (intersects.length > 0) {
-        onKeyClick(intersects[0].object as THREE.Mesh);
+        onKeyClick(tweenGroup, intersects[0].object as THREE.Mesh);
     }
 }
 
@@ -368,8 +376,8 @@ const musicDrawing = {
     // domElement.addEventListener('click', (e) => onMouseClick(e, camera, domElement));
     'eventListeners': {
         'click': (event: MouseEvent, data: any) => {
-            const { scene, renderer, camera } = data;
-            onMouseClick(event, camera, renderer.domElement);
+            const { scene, renderer, camera, tweenGroup } = data;
+            onMouseClick(tweenGroup, event, camera, renderer.domElement);
         },
     },
     'animationCallback': (renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawing: ThreeJSDrawing, camera: THREE.Camera) => {

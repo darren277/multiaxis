@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { ThreeJSDrawing } from '../threejsDrawing';
 import { OutlineEffect } from 'three/examples/jsm/effects/OutlineEffect.js';
+import { Group } from '@tweenjs/tween.js';
 
 type Renderables = {
     scene: THREE.Scene;
@@ -10,7 +11,9 @@ type Renderables = {
     stats?: any; // Stats.js or similar
     css2DRenderer?: any; // CSS2DRenderer or similar
     css3DRenderer?: any; // CSS3DRenderer or similar
-    tweenUpdate: () => void; // Function to update tweens
+    css3DScene?: THREE.Scene; // Scene for CSS3DRenderer
+    //tweenUpdate: () => void; // Function to update tweens
+    tweenGroup?: Group; // Tween.js or similar
     outlineEffectEnabled: boolean; // Whether to enable outline effect
 };
 
@@ -23,7 +26,8 @@ export function startRenderLoop(renderer: THREE.WebGLRenderer, renderables: Rend
         stats,
         css2DRenderer,
         css3DRenderer,
-        tweenUpdate,
+        css3DScene,
+        tweenGroup = new Group(), // Default to a new Group if not provided
         outlineEffectEnabled = false, // Default to false if not provided
     } = renderables;
 
@@ -50,7 +54,7 @@ export function startRenderLoop(renderer: THREE.WebGLRenderer, renderables: Rend
             (camera as any).updateProjectionMatrix();
         }
 
-        tweenUpdate();
+        tweenGroup.update(timestamp);
 
         if (stats) {
             stats.update();
@@ -59,10 +63,14 @@ export function startRenderLoop(renderer: THREE.WebGLRenderer, renderables: Rend
         renderer.render(scene, camera);
 
         if (css2DRenderer) {
-            css2DRenderer.render(css2DRenderer.scene, camera);
+            css2DRenderer.render(scene, camera);
         }
 
-        if (css3DRenderer) {
+        if (css3DRenderer && css3DScene) {
+            css3DRenderer.render(css3DScene, camera);
+        }
+
+        if (css3DRenderer && css3DRenderer.scene) {
             css3DRenderer.render(css3DRenderer.scene, camera);
         }
 

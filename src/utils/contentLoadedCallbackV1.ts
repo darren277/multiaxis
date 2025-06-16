@@ -34,7 +34,9 @@ type SceneElements = {
     controls?: any,
     stats?: { update: () => void },
     css2DRenderer?: any,
-    css3DRenderer?: any
+    css3DRenderer?: any,
+    css3DScene?: any,
+    tweenGroup?: any
 }
 
 export function parseEnvironment(drawingName: string, threejsDrawing: ThreeJSDrawing, DEBUG = false) {
@@ -83,17 +85,17 @@ export async function contentLoadedCallback(drawingName: string, threejsDrawing:
     // TODO: Define this returned object as a type...
     // Ensure all required sceneConfig properties are present
     const mergedSceneConfig = { ...defaultSceneConfig, ...sceneConfig };
-    let { scene, camera, renderer, controls, stats, css2DRenderer, css3DRenderer } = await setupScene('c', overlayElements, mergedSceneConfig) as SceneElements;
+    let { scene, camera, renderer, controls, stats, css2DRenderer, css3DRenderer, css3DScene, tweenGroup } = await setupScene('c', overlayElements, mergedSceneConfig) as SceneElements;
 
-    addListeners(threejsDrawing, { scene, controls, renderer });
-    
     addOptionals(scene, threejsDrawing, queryOptions, debugMode);
 
-    console.log('Scene setup complete:', scene, camera, renderer, controls, stats, css2DRenderer, css3DRenderer);
+    console.log('Scene setup complete:', scene, camera, renderer, controls, stats, css2DRenderer, css3DRenderer, css3DScene, tweenGroup);
 
-    await prepareDrawingContext(threejsDrawing, scene, camera, renderer, controls, css2DRenderer, css3DRenderer, queryOptions);
+    await prepareDrawingContext(threejsDrawing, scene, camera, renderer, controls, css2DRenderer, css3DRenderer, css3DScene, tweenGroup, queryOptions);
 
     console.log('Drawing context prepared:', threejsDrawing.data);
+    
+    addListeners(threejsDrawing);
 
     const drawFuncObjs = Array.isArray(threejsDrawing.drawFuncs)
         ? threejsDrawing.drawFuncs.map(f => ({ func: f }))
@@ -105,8 +107,6 @@ export async function contentLoadedCallback(drawingName: string, threejsDrawing:
     startRenderLoop(renderer, {
         scene, camera, controls, stats, css2DRenderer, css3DRenderer,
         threejsDrawing: threejsDrawing, outlineEffectEnabled: typeof sceneConfig.outlineEffect === 'boolean' ? sceneConfig.outlineEffect : false,
-        tweenUpdate: function (): void {
-            throw new Error('Function not implemented.');
-        }
+        tweenGroup
     });
 }

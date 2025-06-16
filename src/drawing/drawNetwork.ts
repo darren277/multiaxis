@@ -2,12 +2,13 @@ import * as THREE from 'three';
 import { forceSimulation, forceManyBody, forceLink, forceCenter, forceX, forceY, forceZ } from 'd3-force-3d';
 import { hierarchy, tree } from 'd3-hierarchy';
 import type { HierarchyPointNode } from 'd3-hierarchy';
-import TWEEN from '@tweenjs/tween.js'
+import * as TWEEN from '@tweenjs/tween.js'
 
 
 const FLOOR_Y = 0.5; // height of the ground plane
 
 type TweenFunctionParams = {
+    tweenGroup: TWEEN.Group;
     camera: THREE.Camera;
     controls?: any; // Optional, if using controls like OrbitControls
     toPos: { x: number, y: number, z: number };
@@ -16,6 +17,7 @@ type TweenFunctionParams = {
 };
 
 function tweenCamera(
+    tweenGroup: TWEEN.Group,
     camera: THREE.Camera,
     controls: any,
     toPos: { x: number, y: number, z: number },
@@ -24,7 +26,7 @@ function tweenCamera(
 ) {
     const from = { x: camera.position.x, y: camera.position.y, z: camera.position.z };
 
-    new TWEEN.Tween(from).to(toPos, duration).easing(TWEEN.Easing.Quadratic.InOut)
+    const tween = new TWEEN.Tween(from).to(toPos, duration).easing(TWEEN.Easing.Quadratic.InOut)
         .onUpdate(() => {
             camera.position.set(from.x, from.y, from.z);
             controls?.update();
@@ -36,6 +38,8 @@ function tweenCamera(
             }
         })
         .start();
+    
+    tweenGroup.add(tween);
 }
 
 // ground plane = XY plane
@@ -669,12 +673,12 @@ function buildAdjacencyMap(links: GraphLink[]): Map<number, number[]> {
     return map;
 }
 
-function handleUp(camera: THREE.Camera, controls: any, nodeMap: Map<number, GraphNode>, adjacencyMap: Map<number, number[]>) {
+function handleUp(tweenGroup: TWEEN.Group, camera: THREE.Camera, controls: any, nodeMap: Map<number, GraphNode>, adjacencyMap: Map<number, number[]>) {
     if (!navState.current) {
         // First move → go to root (lowest ID)
         const root = [...nodeMap.values()].reduce((a, b) => a.data.id < b.data.id ? a : b);
         navState.current = root;
-        tweenCamera(camera, controls, { ...rootPosition(root) }, null);
+        tweenCamera(tweenGroup, camera, controls, { ...rootPosition(root) }, null);
         return;
     }
 
@@ -689,10 +693,10 @@ function handleUp(camera: THREE.Camera, controls: any, nodeMap: Map<number, Grap
     navState.current = next;
     navState.selectionIndex = 0;
 
-    tweenCamera(camera, controls, { ...rootPosition(next) }, null);
+    tweenCamera(tweenGroup, camera, controls, { ...rootPosition(next) }, null);
 }
 
-function handleLeft(camera: THREE.Camera, controls: any, adjacencyMap: Map<number, number[]>, nodeMap: Map<number, GraphNode>, selector: any) {
+function handleLeft(tweenGroup: TWEEN.Group, camera: THREE.Camera, controls: any, adjacencyMap: Map<number, number[]>, nodeMap: Map<number, GraphNode>, selector: any) {
     const currentId = navState.current?.data.id;
     const neighbors = adjacencyMap.get(navState.current?.data.id) || [];
     if (neighbors.length > 1) {
@@ -701,11 +705,11 @@ function handleLeft(camera: THREE.Camera, controls: any, adjacencyMap: Map<numbe
         const nextId = neighbors[navState.selectionIndex];
         const nextNode = nodeMap.get(nextId);
 
-        handleSideways(camera, controls, nextId, nextNode, selector);
+        handleSideways(tweenGroup, camera, controls, nextId, nextNode, selector);
     }
 }
 
-function handleRight(camera: THREE.Camera, controls: any, adjacencyMap: Map<number, number[]>, nodeMap: Map<number, GraphNode>, selector: any) {
+function handleRight(tweenGroup: TWEEN.Group, camera: THREE.Camera, controls: any, adjacencyMap: Map<number, number[]>, nodeMap: Map<number, GraphNode>, selector: any) {
     const currentId = navState.current?.data.id;
     const neighbors = adjacencyMap.get(navState.current?.data.id) || [];
     if (neighbors.length > 1) {
@@ -714,11 +718,11 @@ function handleRight(camera: THREE.Camera, controls: any, adjacencyMap: Map<numb
         const nextId = neighbors[navState.selectionIndex];
         const nextNode = nodeMap.get(nextId);
 
-        handleSideways(camera, controls, nextId, nextNode, selector);
+        handleSideways(tweenGroup, camera, controls, nextId, nextNode, selector);
     }
 }
 
-function handleSideways(camera: THREE.Camera, controls: any, nextId: number, nextNode: GraphNode | undefined, selector: any) {
+function handleSideways(tweenGroup: TWEEN.Group, camera: THREE.Camera, controls: any, nextId: number, nextNode: GraphNode | undefined, selector: any) {
     const previewHeight = 5;
 
     if (nextNode) {
@@ -726,19 +730,19 @@ function handleSideways(camera: THREE.Camera, controls: any, nextId: number, nex
         const xyz1 = {x: nextNode.x ?? 0, y: previewHeight, z: nextNode.y ?? 0};
         if (navState.current) {
             const xyz2 = {x: navState.current.x ?? 0, y: navState.current.y ?? 0.5, z: navState.current.y ?? 0};
-            tweenCamera(camera, controls, xyz1, xyz2, 500); // shorter duration for preview
+            tweenCamera(tweenGroup, camera, controls, xyz1, xyz2, 500); // shorter duration for preview
         }
     }
 }
 
-function handleDown(camera: THREE.Camera, controls: any, nodeMap: Map<number, GraphNode>) {
+function handleDown(tweenGroup: TWEEN.Group, camera: THREE.Camera, controls: any, nodeMap: Map<number, GraphNode>) {
     if (navState.path.length === 0) return;
     const prev = navState.path.pop();
     if (!prev) return;
     navState.current = prev;
     navState.selectionIndex = 0;
 
-    tweenCamera(camera, controls, { ...rootPosition(prev) }, null);
+    tweenCamera(tweenGroup, camera, controls, { ...rootPosition(prev) }, null);
 }
 
 function rootPosition(node: GraphNode) {
@@ -750,18 +754,18 @@ function rootPosition(node: GraphNode) {
 }
 
 
-function setupKeyboardNavigation(camera: THREE.Camera, controls: any, nodeMap: Map<number, GraphNode>, adjacencyMap: Map<number, number[]>, selector: any) {
+function setupKeyboardNavigation(tweenGroup: TWEEN.Group, camera: THREE.Camera, controls: any, nodeMap: Map<number, GraphNode>, adjacencyMap: Map<number, number[]>, selector: any) {
     document.addEventListener('keydown', (e) => {
         if (e.key === 'ArrowUp') {
-            handleUp(camera, controls, nodeMap, adjacencyMap);
+            handleUp(tweenGroup, camera, controls, nodeMap, adjacencyMap);
         } else if (e.key === 'ArrowLeft') {
             console.log('left', navState.selectionIndex, adjacencyMap);
-            handleLeft(camera, controls, adjacencyMap, nodeMap, selector);
+            handleLeft(tweenGroup, camera, controls, adjacencyMap, nodeMap, selector);
         } else if (e.key === 'ArrowRight') {
             console.log('right', navState.selectionIndex, adjacencyMap);
-            handleRight(camera, controls, adjacencyMap, nodeMap, selector);
+            handleRight(tweenGroup, camera, controls, adjacencyMap, nodeMap, selector);
         } else if (e.key === 'ArrowDown') {
-            handleDown(camera, controls, nodeMap);
+            handleDown(tweenGroup, camera, controls, nodeMap);
         }
     });
 }
@@ -775,6 +779,8 @@ function setupKeyboardNavigation(camera: THREE.Camera, controls: any, nodeMap: M
  * @param {any} threejsDrawing - Optional reference used by calling framework
  */
 function drawNetwork(scene: THREE.Scene, data: Graph, threejsDrawing: any) {
+    const tweenGroup = threejsDrawing.data.tweenGroup;
+    
     const FLOOR_SIZE = 200;
     // or, define it in `data.metadata`...
 
@@ -826,7 +832,7 @@ function drawNetwork(scene: THREE.Scene, data: Graph, threejsDrawing: any) {
     selector.rotation.x = Math.PI / 2;
     scene.add(selector);
 
-    setupKeyboardNavigation(camera, controls, nodeMap, adjacencyMap, selector);
+    setupKeyboardNavigation(tweenGroup, camera, controls, nodeMap, adjacencyMap, selector);
 }
 
 const networkDrawing = {

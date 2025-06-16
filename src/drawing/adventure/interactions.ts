@@ -1,28 +1,29 @@
 import * as THREE from 'three';
+import * as TWEEN from '@tweenjs/tween.js';
 import { goToStep } from './helpers';
 
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 
 // Event listeners...
-function onAdventureKeyDown_BIDIRECTIONAL_ONLY(camera: THREE.Camera, event: KeyboardEvent, adventureSteps: { [key: string]: any }, controls: any, currentStepId: string) {
+function onAdventureKeyDown_BIDIRECTIONAL_ONLY(tweenGroup: TWEEN.Group, camera: THREE.Camera, event: KeyboardEvent, adventureSteps: { [key: string]: any }, controls: any, currentStepId: string) {
     const stepData = adventureSteps[currentStepId];
     if (!stepData) return;
 
     if (event.key === "ArrowLeft") {
         const nextStep = stepData.choices.left;
-        if (nextStep) return goToStep(camera, nextStep, adventureSteps, controls);
+        if (nextStep) return goToStep(tweenGroup, camera, nextStep, adventureSteps, controls);
     }
     else if (event.key === "ArrowRight") {
         const nextStep = stepData.choices.right;
-        if (nextStep) return goToStep(camera, nextStep, adventureSteps, controls);
+        if (nextStep) return goToStep(tweenGroup, camera, nextStep, adventureSteps, controls);
     } else if (event.key === "DownArrow") {
         console.log("Go back (not yet implemented).");
     }
 }
 
 
-function onAdventureKeyDown(camera: THREE.Camera, event: KeyboardEvent, adventureSteps: { [key: string]: any }, controls: any, currentStepId: string) {
+function onAdventureKeyDown(tweenGroup: TWEEN.Group, camera: THREE.Camera, event: KeyboardEvent, adventureSteps: { [key: string]: any }, controls: any, currentStepId: string) {
     // In this case, UpArrow is "next", DownArrow is "previous", and LeftArrow and RightArrow are specifically defined for each step.
     const stepData = adventureSteps[currentStepId];
     if (!stepData) return;
@@ -37,7 +38,7 @@ function onAdventureKeyDown(camera: THREE.Camera, event: KeyboardEvent, adventur
     } else if (event.key === "ArrowUp") {
         nextStep = stepData.choices.up;
     }
-    if (nextStep) return goToStep(camera, nextStep, adventureSteps, controls);
+    if (nextStep) return goToStep(tweenGroup, camera, nextStep, adventureSteps, controls);
 }
 
 

@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import TWEEN from '@tweenjs/tween.js'
+import * as TWEEN from '@tweenjs/tween.js'
 import { ThreeJSDrawing } from "../threejsDrawing";
 
 declare global {
@@ -296,17 +296,23 @@ function shuffleArray(array: any[]) {
 }
 
 
-function animateCardSwap(card: THREE.Mesh, targetPos: THREE.Vector3, onComplete?: () => void) {
+function animateCardSwap(tweenGroup: TWEEN.Group, card: THREE.Mesh, targetPos: THREE.Vector3, onComplete?: () => void) {
     const liftHeight = 0.5; // how high to lift the card
 
     // 1) Lift up
     const liftTween = new TWEEN.Tween(card.position).to({ y: card.position.y + liftHeight }, 300).easing(TWEEN.Easing.Cubic.Out);
 
+    tweenGroup.add(liftTween);
+
     // 2) Move horizontally
     const moveTween = new TWEEN.Tween(card.position).to({ x: targetPos.x, z: targetPos.z }, 600).easing(TWEEN.Easing.Cubic.InOut);
 
+    tweenGroup.add(moveTween);
+
     // 3) Drop down
     const dropTween = new TWEEN.Tween(card.position).to({ y: targetPos.y }, 300).easing(TWEEN.Easing.Cubic.In);
+
+    tweenGroup.add(dropTween);
 
     // Chain them together: lift -> move -> drop
     liftTween.chain(moveTween);
@@ -320,7 +326,7 @@ function animateCardSwap(card: THREE.Mesh, targetPos: THREE.Vector3, onComplete?
 }
 
 
-function shuffleAndAnimate(cards: THREE.Mesh[], cardPositions: THREE.Vector3[]) {
+function shuffleAndAnimate(tweenGroup: TWEEN.Group, cards: THREE.Mesh[], cardPositions: THREE.Vector3[]) {
     // Create an array of indices [0..cards.length-1]
     const indices = Array.from({ length: cards.length }, (_, i) => i);
     shuffleArray(indices); // randomize
@@ -332,24 +338,24 @@ function shuffleAndAnimate(cards: THREE.Mesh[], cardPositions: THREE.Vector3[]) 
         const targetPos = cardPositions[newIndex]; // e.g., a Vector3
 
         // Animate the card from current position to target position
-        animateCardSwap(card, targetPos);
+        animateCardSwap(tweenGroup, card, targetPos);
     }
 }
 
 
-function swapCardsOld(cards: THREE.Mesh[], i: number, j: number, onComplete?: () => void) {
+function swapCardsOld(tweenGroup: TWEEN.Group, cards: THREE.Mesh[], i: number, j: number, onComplete?: () => void) {
     const cardA = cards[i];
     const cardB = cards[j];
     const posA = cardA.position.clone();
     const posB = cardB.position.clone();
 
     // Animate cardA -> posB
-    animateCardSwap(cardA, posB, () => {
+    animateCardSwap(tweenGroup, cardA, posB, () => {
         // Once cardA finishes dropping, do we consider cardB movement?
     });
 
     // Animate cardB -> posA
-    animateCardSwap(cardB, posA, () => {
+    animateCardSwap(tweenGroup, cardB, posA, () => {
         // Once cardB finishes dropping, swap references in array
         [cards[i], cards[j]] = [cards[j], cards[i]];
         if (onComplete) onComplete();
@@ -360,7 +366,7 @@ function swapCardsOld(cards: THREE.Mesh[], i: number, j: number, onComplete?: ()
  * Returns true if we actually launched a swap, false if one of the two
  * cards is busy.
  */
-function swapCards(cards: THREE.Mesh[], i: number, j: number, onComplete?: () => void) {
+function swapCards(tweenGroup: TWEEN.Group, cards: THREE.Mesh[], i: number, j: number, onComplete?: () => void) {
     if (i === j) return false;                    // same index – ignore
 
     const cardA = cards[i];
@@ -378,13 +384,13 @@ function swapCards(cards: THREE.Mesh[], i: number, j: number, onComplete?: () =>
     const liftHeight = 0.6;
     const tempPos = posA.clone().add(new THREE.Vector3(0, liftHeight, 0));
 
-    animateCardSwap(cardA, tempPos, () => {
+    animateCardSwap(tweenGroup, cardA, tempPos, () => {
 
         // slide B into A’s slot
-        animateCardSwap(cardB, posA, () => {
+        animateCardSwap(tweenGroup, cardB, posA, () => {
 
             // 3drop A into B’s slot
-            animateCardSwap(cardA, posB, () => {
+            animateCardSwap(tweenGroup, cardA, posB, () => {
                 // final bookkeeping
                 [cards[i], cards[j]] = [cards[j], cards[i]];
                 cardA.userData.busy = cardB.userData.busy = false;
@@ -491,7 +497,7 @@ function calculateHandValue(dealtCards: Set<number>, cardsArray: any[]) {
     return totalValue;
 }
 
-function animationCallback(cards: THREE.Mesh[]) {
+function animationCallback(tweenGroup: TWEEN.Group, cards: THREE.Mesh[]) {
     const SWAPS_PER_PRESS = 10;
     let launched = 0;
     const maxTries = SWAPS_PER_PRESS * 3;   // prevent infinite loop
@@ -499,7 +505,7 @@ function animationCallback(cards: THREE.Mesh[]) {
     for (let tries = 0; tries < maxTries && launched < SWAPS_PER_PRESS; tries++) {
         const i = Math.floor(Math.random() * cards.length);
         const j = Math.floor(Math.random() * cards.length);
-        if (swapCards(cards, i, j)) launched++;
+        if (swapCards(tweenGroup, cards, i, j)) launched++;
     }
 }
 
@@ -507,6 +513,12 @@ function animationCallback(cards: THREE.Mesh[]) {
 
 
 function drawCards(scene: THREE.Scene, data: any, threejsDrawing: any) {
+    const tweenGroup = threejsDrawing.data.tweenGroup as TWEEN.Group;
+    if (!tweenGroup) {
+        console.error('No tweenGroup found in threejsDrawing.data');
+        return;
+    }
+
     const cards = data.cards || [];
     const metadata = data.metadata || {};
     // cards format: `"ace_of_spaces": { "name": "Ace of Spades", "texture": "ace_of_spades.png", "backTexture": "cards/back_texture.png" }`
@@ -526,7 +538,7 @@ function drawCards(scene: THREE.Scene, data: any, threejsDrawing: any) {
 
     renderCards(scene, cardsArray, cfg).then(async cardMeshes => {
         const cardPositions = await generateCardPositions(cardsArray.length, 3, 4); // spacing of 3 units
-        shuffleAndAnimate(cardMeshes, cardPositions);
+        shuffleAndAnimate(tweenGroup, cardMeshes, cardPositions);
         threejsDrawing.data.cards = cardMeshes;
         threejsDrawing.data.cardPositions = cardPositions;
         window.cardPositions = cardPositions;
@@ -663,9 +675,15 @@ const cardsDrawing = {
             return;
         }
 
+        const tweenGroup = threejsDrawing.data.tweenGroup as TWEEN.Group;
+        if (!tweenGroup) {
+            console.error('No tweenGroup found in threejsDrawing.data');
+            return;
+        }
+
         if (isSpacePressed) {
             if (Array.isArray(threejsDrawing.data.cards)) {
-                animationCallback(threejsDrawing.data.cards);
+                animationCallback(tweenGroup, threejsDrawing.data.cards);
             }
             isSpacePressed = false; // remove this line if you want it to shuffle continuously while space is held
         }

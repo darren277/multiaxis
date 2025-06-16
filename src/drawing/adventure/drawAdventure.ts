@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import * as TWEEN from '@tweenjs/tween.js';
 
 import {onAdventureKeyDown, onClick} from './interactions';
 import {createCaptionedItem, Item} from './createItems';
@@ -7,6 +8,7 @@ import { precomputeBackgroundPlanes, goToStep } from './helpers';
 
 import { CSS3DObject } from 'three/examples/jsm/renderers/CSS3DRenderer.js';
 import { assert, debugLog } from '../../utils/assertUtils';
+import { EventListenerContext } from '../../utils/addListeners';
 
 type LabelObject = CSS3DObject | HTMLDivElement;
 
@@ -121,7 +123,8 @@ function buildPhotoEntries(
     items: Item[],
     worldWidth: number,
     worldHeight: number,
-    css3DRenderer?: any
+    css3DRenderer?: any,
+    css3DScene?: THREE.Scene
 ): PhotoEntry[] {
     const entries: PhotoEntry[] = [];
 
@@ -140,10 +143,24 @@ function buildPhotoEntries(
 
         if (entry.mesh) scene.add(entry.mesh);
 
-        if (css3DRenderer) {
-            css3DRenderer.scene.add(entry.labelObject);
+        if (css3DRenderer && css3DScene) {
+            /*
+            Argument of type 'CSS3DObject | HTMLDivElement' is not assignable to parameter of type 'Object3D<Object3DEventMap>'.
+            Type 'HTMLDivElement' is missing the following properties from type 'Object3D<Object3DEventMap>': isObject3D, uuid, name, type, and 66 more.
+            */
+           if (entry.labelObject instanceof THREE.Object3D) {
+                console.log('-=-=-=-=-=-=-=- Adding labelObject to CSS3DScene:', entry.labelObject);
+                css3DScene.add(entry.labelObject);
+                // TODO: We're doing this twice for debugging purposes...
+                css3DRenderer.scene.add(entry.labelObject);
+           } else {
+                console.warn('!?!?!?!?!?!?!?!?!?! Expected labelObject to be a CSS3DObject or HTMLDivElement, but got:', entry.labelObject);
+           }
         } else if (entry.labelObject instanceof THREE.Object3D) {
+            console.log('!!!!-=-=-=-=-=-=-=- Adding labelObject to scene:', entry.labelObject);
             scene.add(entry.labelObject);
+        } else {
+            console.warn(';;;;;;;;;;; Expected labelObject to be a THREE.Object3D, but got:', entry.labelObject);
         }
 
         entries.push(entry);
@@ -196,10 +213,11 @@ export function buildSceneItems(
     sceneItems: Item[],
     worldWidth = 4,
     worldHeight = 3,
-    css3DRenderer: any = null
+    css3DRenderer: any = null,
+    css3DScene: THREE.Scene | undefined = undefined
 ) {
     // 1. meshes + labels
-    const allPhotoEntries = buildPhotoEntries(scene, sceneItems, worldWidth, worldHeight, css3DRenderer);
+    const allPhotoEntries = buildPhotoEntries(scene, sceneItems, worldWidth, worldHeight, css3DRenderer, css3DScene);
 
     // 2. convert step objects
     const adventureSteps = buildAdventureSteps(sceneItems);
@@ -260,7 +278,8 @@ function constructElement(document: Document, tagName: string, id: string, attrs
 async function drawAdventure(scene: THREE.Scene, data: any, threejsDrawing: any) {
     const use3DRenderer = !!threejsDrawing.data.use3DRenderer;
     const css3DRenderer = use3DRenderer ? threejsDrawing.data.css3DRenderer : null;
-    const {adventureSteps, allPhotoEntries} = buildSceneItems(scene, data.sceneItems, threejsDrawing.data.worldWidth, threejsDrawing.data.worldHeight, css3DRenderer);
+    const css3DScene = use3DRenderer ? threejsDrawing.data.css3DScene : null;
+    const {adventureSteps, allPhotoEntries} = buildSceneItems(scene, data.sceneItems, threejsDrawing.data.worldWidth, threejsDrawing.data.worldHeight, css3DRenderer, css3DScene);
 
     // build data.otherItems...
     const otherItems = data.otherItems.map((item: Item) => {
@@ -279,7 +298,7 @@ async function drawAdventure(scene: THREE.Scene, data: any, threejsDrawing: any)
         // Mesh gets added inside of function: scene.add(mesh);
         if (use3DRenderer && css3DRenderer) {
             console.log('-------- Adding labelObject to CSS3DRenderer scene');
-            threejsDrawing.data.css3DRenderer.scene.add(labelObject);
+            threejsDrawing.data.css3DScene.add(labelObject);
         } else {
             if (css3DRenderer) {
                 css3DRenderer.scene.add(entry.labelObject);
@@ -327,6 +346,7 @@ const adventureDrawing = {
             //{camera, event, adventureSteps, controls}
             const {camera, data, controls} = other;
             const {adventureSteps, currentStepId} = data;
+            const tweenGroup = data.tweenGroup as TWEEN.Group;
             // `currentStepId`: Kinda messy like this but it works for now.
             // TODO: `uiState` and `data` should probably be different entities as one is mutable and the other is not.
             // Not super important, though.
@@ -335,13 +355,15 @@ const adventureDrawing = {
             e.preventDefault();
 
             // COMMENT OUT FOLLOWING LINE FOR DEBUG VIA CLICK CONTROL HELPER...
-            const nextStepId = onAdventureKeyDown(camera, e, adventureSteps, controls, currentStepId);
+            const nextStepId = onAdventureKeyDown(tweenGroup, camera, e, adventureSteps, controls, currentStepId);
             if (!nextStepId) return;
             data.currentStepId = nextStepId;
         },
-        'click': (e: MouseEvent, other: any) => {
+        'click': (e: MouseEvent, other: EventListenerContext) => {
             const {renderer, camera, scene, data, controls} = other;
             onClick(scene, renderer, camera, e);
+
+            const { tweenGroup } = data;
 
             const label = e.target && (e.target as Element).closest
                 ? (e.target as Element).closest('.caption-label-3d, .label-child')
@@ -364,7 +386,7 @@ const adventureDrawing = {
             if (!nextStepId) return;
 
             data.currentStepId = nextStepId;
-            goToStep(camera, nextStepId, data.adventureSteps, controls);
+            goToStep(tweenGroup, camera, nextStepId, data.adventureSteps, controls);
         },
     },
     'animationCallback': (renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawing: any, camera: THREE.Camera) => {

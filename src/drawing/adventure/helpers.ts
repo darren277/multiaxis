@@ -1,10 +1,10 @@
-import TWEEN from '@tweenjs/tween.js'
+import * as TWEEN from '@tweenjs/tween.js'
 import * as THREE from 'three';
 import { ThreeJSDrawing } from '../../threejsDrawing';
 
 
-function tweenCameraToView(camera: THREE.Camera, view: { position: THREE.Vector3 }, lookAt: THREE.Vector3, duration = 2000) {
-    new TWEEN.Tween(camera.position)
+function tweenCameraToView(tweenGroup: TWEEN.Group, camera: THREE.Camera, view: { position: THREE.Vector3 }, lookAt: THREE.Vector3, duration = 2000) {
+    const cameraTween = new TWEEN.Tween(camera.position)
         .to({ x: view.position.x, y: view.position.y, z: view.position.z }, duration)
         .easing(TWEEN.Easing.Quadratic.Out)
         .onUpdate(() => {
@@ -19,6 +19,8 @@ function tweenCameraToView(camera: THREE.Camera, view: { position: THREE.Vector3
 //            }
         })
         .start();
+    
+    tweenGroup.add(cameraTween);
 
     // For lookAt, you could keep a separate vector and tween that,
     // then in your render loop do camera.lookAt( thatVector ).
@@ -27,7 +29,7 @@ function tweenCameraToView(camera: THREE.Camera, view: { position: THREE.Vector3
 let autoNextTimeoutId: string | number | NodeJS.Timeout | null | undefined = null;
 
 // Function to set camera to a particular view
-function goToStep(camera: THREE.Camera, stepId: string, adventureSteps: { [key: string]: any }, controls: any) {
+function goToStep(tweenGroup: TWEEN.Group, camera: THREE.Camera, stepId: string, adventureSteps: { [key: string]: any }, controls: any) {
     const stepData = adventureSteps[stepId];
 
     if (!stepData) {
@@ -42,7 +44,7 @@ function goToStep(camera: THREE.Camera, stepId: string, adventureSteps: { [key: 
     }
 
     // Move camera
-    tweenCameraToView(camera, stepData.camera, stepData.camera.lookAt);
+    tweenCameraToView(tweenGroup, camera, stepData.camera, stepData.camera.lookAt);
     camera.lookAt(stepData.camera.lookAt);
 
     // If using OrbitControls
@@ -64,7 +66,7 @@ function goToStep(camera: THREE.Camera, stepId: string, adventureSteps: { [key: 
     // If the step has an autoNext property, schedule it
     if (stepData.autoNext) {
         autoNextTimeoutId = setTimeout(() => {
-           goToStep(camera, stepData.autoNext.step, adventureSteps, controls);
+           goToStep(tweenGroup,camera, stepData.autoNext.step, adventureSteps, controls);
         }, stepData.autoNext.delay);
     }
 

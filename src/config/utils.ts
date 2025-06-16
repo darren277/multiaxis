@@ -1,6 +1,7 @@
 import * as THREE from 'three'; // for texture loading
 import { ThreeJSDrawing } from '../threejsDrawing';
 import { ClickAndKeyControls } from '../config/clickControlHelper';
+import { Group } from '@tweenjs/tween.js';
 
 function drawTestCube(scene: THREE.Scene) {
     const geometry = new THREE.BoxGeometry(1, 1, 1);
@@ -64,7 +65,18 @@ function pixelToWorldUnits(pixelSize: number, distance: number, camera: THREE.Pe
     return pixelSize * pixelHeightInWorld;
 }
 
-async function prepareDrawingContext(threejsDrawing: ThreeJSDrawing, scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.WebGLRenderer, controls: any, css2DRenderer: any = null, css3DRenderer: any = null, queryOptions: any = {}) {
+async function prepareDrawingContext(
+    threejsDrawing: ThreeJSDrawing,
+    scene: THREE.Scene,
+    camera: THREE.Camera,
+    renderer: THREE.WebGLRenderer,
+    controls: any,
+    css2DRenderer: any = null,
+    css3DRenderer: any = null,
+    css3DScene: THREE.Scene | null = null,
+    tweenGroup?: Group,
+    queryOptions: any = {}
+) {
     // ensure data exists
     if (threejsDrawing.data == null || typeof threejsDrawing.data !== 'object') {
         threejsDrawing.data = {};
@@ -78,6 +90,8 @@ async function prepareDrawingContext(threejsDrawing: ThreeJSDrawing, scene: THRE
         controls,
         css2DRenderer,
         css3DRenderer,
+        css3DScene,
+        tweenGroup,
         queryOptions,
     });
     return threejsDrawing;

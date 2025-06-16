@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import * as TWEEN from '@tweenjs/tween.js';
 import {
     importOrbitControls, importPointerLockControls, importTrackballControls, importCSS3DRenderer, importCSS2DRenderer,
     importVRButton, importStats
@@ -28,6 +29,8 @@ export type SceneElements = {
     stats?: any;
     css2DRenderer?: any;
     css3DRenderer?: any;
+    css3DScene?: THREE.Scene;
+    tweenGroup?: TWEEN.Group;
 };
 
 export type OverlayElement = {
@@ -97,6 +100,15 @@ async function makeCssRenderers(
     if (is3D) {
         const CSS3DRenderer = await importCSS3DRenderer();
         css3DRenderer = new CSS3DRenderer();
+        
+        const css3DScene = new THREE.Scene();
+        css3DRenderer.scene = css3DScene;
+
+        css3DRenderer.setSize(container.clientWidth, container.clientHeight);
+        css3DRenderer.domElement.style.position = 'absolute';
+        css3DRenderer.domElement.style.top = container.offsetTop + 'px';
+        css3DRenderer.domElement.style.left = container.offsetLeft + 'px';
+
         css3DRenderer.domElement.style.pointerEvents = 'none';
         container.appendChild(css3DRenderer.domElement);
     }
@@ -217,6 +229,8 @@ export async function setupScene(
         false
     );
 
+    const tweenGroup = new TWEEN.Group();
+
     // ── 8 · Return fully‑typed bundle ───────────────────────────────
     return {
         scene,
@@ -224,7 +238,9 @@ export async function setupScene(
         renderer,
         controls,
         stats,
+        tweenGroup,
         css2DRenderer,
         css3DRenderer,
+        css3DScene: css3DRenderer ? new THREE.Scene() : undefined,
     };
 }

@@ -11,7 +11,7 @@ import { startRenderLoop } from './startRenderLoop';
 // const outlineEffectEnabled = sceneConfig && sceneConfig.outlineEffect || false;
 
 // TODO Update this as they have deprecated the old way of doing this
-import { update as tweenUpdate } from '@tweenjs/tween.js';
+//import { update as tweenUpdate } from '@tweenjs/tween.js';
 
 import {
   assert,
@@ -85,9 +85,9 @@ export async function contentLoadedCallback(
     // --- 3. Imperative orchestration (minimal logic) ---
     // setupScene('c', overlays, mergedSceneConfig)
     // Params: 'c' (string), overlays (OverlayElement[]), mergedSceneConfig (SceneConfig)
-    // Returns: sceneElements (SceneElements object containing scene, camera, renderer, controls, stats, css2DRenderer, css3DRenderer)
+    // Returns: sceneElements (SceneElements object containing scene, camera, renderer, controls, stats, css2DRenderer, css3DRenderer, css3DScene, tweenGroup)
     const {
-        scene, camera, renderer, controls, stats, css2DRenderer, css3DRenderer
+        scene, camera, renderer, controls, stats, css2DRenderer, css3DRenderer, css3DScene, tweenGroup
     } = await setupScene('c', overlays, mergedSceneConfig);
     debugLog('sceneElements', {
         scene,
@@ -97,14 +97,16 @@ export async function contentLoadedCallback(
         stats,
         css2DRenderer,
         css3DRenderer,
+        css3DScene,
+        tweenGroup
     });
 
     // --- 4. Context preparation ---
-    // prepareDrawingContext(threeJSDrawing, scene, camera, renderer, controls, css2DRenderer, css3DRenderer, query)
+    // prepareDrawingContext(threeJSDrawing, scene, camera, renderer, controls, css2DRenderer, css3DRenderer, css3DScene, tweenGroup, query)
     // Params: threeJSDrawing (ThreeJSDrawing), scene (THREE.Scene), camera (THREE.Camera), renderer (THREE.WebGLRenderer),
-    //         controls (any), css2DRenderer (any), css3DRenderer (any), query (QueryOptions)
+    //         controls (any), css2DRenderer (any), css3DRenderer (any), css3DScene (any), tweenGroup (Group), query (QueryOptions)
     // Returns: void (prepares the drawing context by populating threeJSDrawing.data with scene references)
-    await prepareDrawingContext(threeJSDrawing, scene, camera, renderer, controls, css2DRenderer, css3DRenderer, query);
+    await prepareDrawingContext(threeJSDrawing, scene, camera, renderer, controls, css2DRenderer, css3DRenderer, css3DScene, tweenGroup, query);
 
     const drawFuncsArray = Array.isArray(threeJSDrawing.drawFuncs) ? threeJSDrawing.drawFuncs : [];
     const drawFuncObjs = drawFuncsArray
@@ -137,16 +139,16 @@ export async function contentLoadedCallback(
     // addListeners(threeJSDrawing, { scene, controls, renderer })
     // Params: threeJSDrawing (ThreeJSDrawing), context (object with scene, controls, renderer)
     // Returns: void (adds event listeners to the scene, controls, and renderer)
-    addListeners(threeJSDrawing, { scene, controls, renderer });
+    addListeners(threeJSDrawing);
 
     // --- 7. Animation Loop ---
     // startRenderLoop(renderer, { scene, camera, controls, stats, css2DRenderer, css3DRenderer, threejsDrawing, tweenUpdate })
     // Params: renderer (THREE.WebGLRenderer), renderables (object with scene, camera, controls, stats, css2DRenderer, css3DRenderer, threejsDrawing, tweenUpdate)
     // Returns: void (starts the render loop for the Three.js scene)
     startRenderLoop(renderer, {
-        scene, camera, controls, stats, css2DRenderer, css3DRenderer,
+        scene, camera, controls, stats, css2DRenderer, css3DRenderer, css3DScene: css3DRenderer ? css3DScene : undefined,
         threejsDrawing: threeJSDrawing, outlineEffectEnabled: typeof sceneConfig.outlineEffect === 'boolean' ? sceneConfig.outlineEffect : false,
-        tweenUpdate
+        tweenGroup
     });
 
     debugLog('🚀 Render loop started', { drawingName });

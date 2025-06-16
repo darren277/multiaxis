@@ -1,9 +1,17 @@
+import * as THREE from 'three';
 import { onClickNav } from '../config/navigation';
 import { ThreeJSDrawing } from '../threejsDrawing';
 
-export function addListeners(
-threejsDrawing: ThreeJSDrawing, p0: unknown) {
-    const { scene, renderer, camera, controls } = threejsDrawing.data;
+export type EventListenerContext = {
+    scene: THREE.Scene;
+    camera: THREE.Camera;
+    renderer: THREE.WebGLRenderer;
+    controls?: any; // OrbitControls or similar
+    data: any; // Additional data if needed
+};
+
+export function addListeners(threejsDrawing: ThreeJSDrawing) {
+    const { scene, renderer, camera } = threejsDrawing.data;
 
     // Add event listener for navigation
     window.addEventListener('click', (event) => {
@@ -18,7 +26,7 @@ threejsDrawing: ThreeJSDrawing, p0: unknown) {
         for (const [eventName, eventFunc] of Object.entries(threejsDrawing.eventListeners)) {
             window.addEventListener(eventName, (e) => {
                 if (typeof eventFunc === 'function') {
-                    eventFunc(e, {data: threejsDrawing.data, controls, renderer, scene});
+                    eventFunc(e, { renderer, scene, camera, data: threejsDrawing.data } as EventListenerContext);
                 }
             });
         }
