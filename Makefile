@@ -7,6 +7,15 @@ s3:
 	aws s3 cp src/drawings.js s3://$(BUCKET_NAME)/scripts/threejs/drawings.js
 
 
+s3-bundle:
+	aws s3 sync dist/ s3://$(BUCKET_NAME)/scripts/bundled/
+
+deploy:
+	tsc
+	npx vitest
+	yarn build
+	aws s3 sync dist/ s3://$(BUCKET_NAME)/scripts/bundled/
+
 s3-data:
 	aws s3 cp data/adventure1.json s3://$(BUCKET_NAME)/scripts/threejs/data/adventure1.json
 	aws s3 cp data/adventure2.json s3://$(BUCKET_NAME)/scripts/threejs/data/adventure2.json
