@@ -1,25 +1,14 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
-const myDrawingSpy = vi.fn().mockResolvedValue({ local: true });
-const loadLocalSpy = vi.fn().mockResolvedValue({ myDrawing: myDrawingSpy });
-
-vi.mock('../src/utils/loadLocal', () => ({
-    loadLocalDrawings: loadLocalSpy
-}));
-
 vi.mock('../src/utils/contentLoadedCallback', () => ({
     // a spy for our callback
     contentLoadedCallback: vi.fn()
 }));
 
-vi.mock('../drawings_local', () => {
-    // By throwing in the factory, we simulate a failed import.
-    throw new Error('Simulated import failure');
-});
-
 import { loadDrawingName, onContentLoaded, Flags } from '../src/main';
 import * as drawings from '../src/drawings';
 import { contentLoadedCallback } from '../src/utils/contentLoadedCallback';
+import * as loadLocalModule from '../src/utils/loadLocal';
 
 describe('loadDrawingName', () => {
     let metaElement: HTMLMetaElement;
@@ -106,6 +95,14 @@ describe('onContentLoaded', () => {
     });
 
     it('should fall back to local drawing if Flags.includeLocal is true and original fails', async () => {
+        const myDrawingSpy = vi.fn().mockResolvedValue({ local: true });
+        const loadLocalDrawingsSpy = vi.fn().mockResolvedValue({
+            myDrawing: myDrawingSpy
+        });
+
+        // Mock the import to return our local drawings
+        vi.spyOn(loadLocalModule, 'loadLocalDrawings').mockImplementation(() => loadLocalDrawingsSpy());
+
         // enable fallback
         Flags.includeLocal = true;
 
@@ -119,37 +116,33 @@ describe('onContentLoaded', () => {
         await onContentLoaded();
 
         await vi.runAllTimers();
-        
-        expect(loadLocalSpy).toHaveBeenCalledTimes(1);
-        
+
+        expect(loadLocalDrawingsSpy).toHaveBeenCalledTimes(1);
+
         // TODO: Should these even be called?
         //expect(myDrawingSpy).toHaveBeenCalledTimes(1);
         //expect(contentLoadedCallback).toHaveBeenCalledWith('myDrawing', { local: true });
     });
 
     it('should log error if both global and local fail', async () => {
-        // AssertionError: expected "error" to be called with arguments
-
         Flags.includeLocal = true;
 
         metaElement.content = 'myDrawing';
 
-        const primary = vi.fn().mockRejectedValue(new Error('oops'));
-        (drawings.THREEJS_DRAWINGS as any).myDrawing = primary;
-
         const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-        await onContentLoaded();
+        // Global drawing fails
+        const globalLoader = vi.fn().mockRejectedValue(new Error('oops'));
+        (drawings.THREEJS_DRAWINGS as any).myDrawing = globalLoader;
 
-        // ----> 3. Flush promises to ensure the catch block has run
-        await vi.runAllTimers();
-
-        expect(consoleError).toHaveBeenCalledWith(
-            'Error loading local drawings:',
-            expect.any(Error) // The error message will contain 'Simulated import failure'
+        // Simulate dynamic import failure
+        vi.spyOn(loadLocalModule, 'loadLocalDrawings').mockRejectedValue(
+            new Error('Simulated import failure')
         );
 
-        // Optional: you can be more specific with the error
+        await onContentLoaded();
+        await vi.runAllTicks(); // flush microtasks
+
         expect(consoleError).toHaveBeenCalledWith(
             'Error loading local drawings:',
             expect.objectContaining({ message: 'Simulated import failure' })

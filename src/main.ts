@@ -56,9 +56,20 @@ export async function onContentLoaded() {
         console.warn(`Error loading drawing ${drawingName}:`, error);
         if (Flags.includeLocal) {
             console.log('Trying local drawings...');
+            console.log('[TEST DEBUG] in fallback branch, Flags.includeLocal=', Flags.includeLocal);
             const { loadLocalDrawings } = await import('./utils/loadLocal');
-            const localMap = await loadLocalDrawings();
-            if (!localMap) return;
+            let localMap;
+            try {
+                localMap = await loadLocalDrawings();
+            }
+            catch (err) {
+                console.error('Error loading local drawings:', err);
+                return;
+            }
+            if (!localMap) {
+                console.log('[TEST DEBUG] loadLocalDrawings returned null');
+                return;
+            }
             const localDrawing: (() => Promise<ThreeJSDrawing>) | undefined = (localMap as unknown as Record<string, () => Promise<ThreeJSDrawing>>)[drawingName];
             if (!localDrawing) {
                 console.error(`No local drawing found for ${drawingName}`);
