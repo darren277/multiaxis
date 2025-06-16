@@ -1,5 +1,25 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { loadDrawingName, onContentLoaded } from '../src/main'; // Adjust the import path as necessary
+
+const myDrawingSpy = vi.fn().mockResolvedValue({ local: true });
+const loadLocalSpy = vi.fn().mockResolvedValue({ myDrawing: myDrawingSpy });
+
+vi.mock('../src/utils/loadLocal', () => ({
+    loadLocalDrawings: loadLocalSpy
+}));
+
+vi.mock('../src/utils/contentLoadedCallback', () => ({
+    // a spy for our callback
+    contentLoadedCallback: vi.fn()
+}));
+
+vi.mock('../drawings_local', () => {
+    // By throwing in the factory, we simulate a failed import.
+    throw new Error('Simulated import failure');
+});
+
+import { loadDrawingName, onContentLoaded, Flags } from '../src/main';
+import * as drawings from '../src/drawings';
+import { contentLoadedCallback } from '../src/utils/contentLoadedCallback';
 
 describe('loadDrawingName', () => {
     let metaElement: HTMLMetaElement;
