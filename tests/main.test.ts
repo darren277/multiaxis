@@ -128,19 +128,31 @@ describe('onContentLoaded', () => {
     });
 
     it('should log error if both global and local fail', async () => {
-        // @ts-ignore
-        global.THREEJS_DRAWINGS = {
-            mockDrawing: vi.fn().mockRejectedValue(new Error('fail')),
-        };
+        // AssertionError: expected "error" to be called with arguments
 
-        // @ts-ignore
-        global.INCLUDE_LOCAL = true;
+        Flags.includeLocal = true;
 
-        vi.stubGlobal('import', vi.fn(() => Promise.reject(new Error('import failed'))));
+        metaElement.content = 'myDrawing';
+
+        const primary = vi.fn().mockRejectedValue(new Error('oops'));
+        (drawings.THREEJS_DRAWINGS as any).myDrawing = primary;
+
         const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
 
         await onContentLoaded();
 
-        expect(consoleError).toHaveBeenCalledWith('Error loading local drawings:', expect.any(Error));
+        // ----> 3. Flush promises to ensure the catch block has run
+        await vi.runAllTimers();
+
+        expect(consoleError).toHaveBeenCalledWith(
+            'Error loading local drawings:',
+            expect.any(Error) // The error message will contain 'Simulated import failure'
+        );
+
+        // Optional: you can be more specific with the error
+        expect(consoleError).toHaveBeenCalledWith(
+            'Error loading local drawings:',
+            expect.objectContaining({ message: 'Simulated import failure' })
+        );
     });
 });
