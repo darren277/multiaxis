@@ -56,21 +56,16 @@ export async function onContentLoaded() {
         console.warn(`Error loading drawing ${drawingName}:`, error);
         if (Flags.includeLocal) {
             console.log('Trying local drawings...');
-            import('./drawings_local.js').then(({ LOCAL_THREEJS_DRAWINGS }) => {
-                const localDrawing: (() => Promise<ThreeJSDrawing>) | undefined = (LOCAL_THREEJS_DRAWINGS as unknown as Record<string, () => Promise<ThreeJSDrawing>>)[drawingName];
-                if (!localDrawing) {
-                    console.error(`No local drawing found for ${drawingName}`);
-                    return;
-                }
-                if (localDrawing) {
-                    localDrawing().then((threejsDrawing: ThreeJSDrawing) => {
-                        contentLoadedCallback(drawingName, threejsDrawing);
-                    });
-                } else {
-                    console.error(`No drawing found for ${drawingName}`);
-                }
-            }).catch(error => {
-                console.error('Error loading local drawings:', error);
+            const { loadLocalDrawings } = await import('./utils/loadLocal');
+            const localMap = await loadLocalDrawings();
+            if (!localMap) return;
+            const localDrawing: (() => Promise<ThreeJSDrawing>) | undefined = (localMap as unknown as Record<string, () => Promise<ThreeJSDrawing>>)[drawingName];
+            if (!localDrawing) {
+                console.error(`No local drawing found for ${drawingName}`);
+                return;
+            }
+            localDrawing().then((threejsDrawing: ThreeJSDrawing) => {
+                contentLoadedCallback(drawingName, threejsDrawing);
             });
         } else {
             console.error(`No drawing found for ${drawingName} and INCLUDE_LOCAL is false.`);
