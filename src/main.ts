@@ -28,7 +28,7 @@ function loadDrawingName() {
     return drawingName;
 };
 
-document.addEventListener('DOMContentLoaded', async () => {
+async function onContentLoaded() {
     console.log("👀 Available drawings in THREEJS_DRAWINGS:", THREEJS_DRAWINGS);
 
     const drawingName = loadDrawingName();
@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
         console.log(`Loading drawing: ${drawingName}`, drawingLoader);
-        
+
         if (typeof drawingLoader !== 'function') {
             console.error(`Drawing loader for ${drawingName} is not a function.`);
             return;
@@ -72,4 +72,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             console.error(`No drawing found for ${drawingName} and INCLUDE_LOCAL is false.`);
         }
     }
-})
+}
+
+document.addEventListener('DOMContentLoaded', onContentLoaded, false);
