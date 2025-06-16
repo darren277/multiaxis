@@ -5,6 +5,7 @@
     "moduleResolution": "node",
     "outDir": "dist",
     "allowJs": true,
+    "checkJs": true,
     "isolatedModules": true,
     "esModuleInterop": true,
     "strict": true,
