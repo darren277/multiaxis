@@ -80,9 +80,20 @@ describe('onContentLoaded', () => {
     });
 
     it('should call the drawing loader and invoke contentLoadedCallback', async () => {
+        metaElement.content = 'myDrawing';
+
+        const fakeDrawing = { foo: 'bar' };
+        const mockLoader = vi.fn().mockResolvedValue(fakeDrawing);
+        (drawings.THREEJS_DRAWINGS as any).myDrawing = mockLoader;
+
+        // act
         await onContentLoaded();
-        expect(global.THREEJS_DRAWINGS.mockDrawing).toHaveBeenCalled();
-        expect(mockCallback).toHaveBeenCalledWith('mockDrawing', { drawing: 'example' });
+
+        // assert
+        
+        // AssertionError: expected "spy" to be called once, but got 0 times
+        expect(mockLoader).toHaveBeenCalledTimes(1);
+        expect(contentLoadedCallback).toHaveBeenCalledWith('myDrawing', fakeDrawing);
     });
 
     it('should log and exit if no loader is found for drawingName', async () => {
