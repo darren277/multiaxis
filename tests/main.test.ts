@@ -27,6 +27,7 @@ describe('loadDrawingName', () => {
     beforeEach(() => {
         metaElement = document.createElement('meta');
         metaElement.name = 'threejs_drawing_name';
+        metaElement.content = 'myDrawing';
         document.head.appendChild(metaElement);
     });
 
@@ -61,29 +62,21 @@ describe('loadDrawingName', () => {
 
 describe('onContentLoaded', () => {
     let metaElement: HTMLMetaElement;
-        const mockCallback = vi.fn();
 
-        beforeEach(() => {
+    beforeEach(() => {
+        vi.useFakeTimers();
+
         metaElement = document.createElement('meta');
         metaElement.name = 'threejs_drawing_name';
-        metaElement.content = 'mockDrawing';
+        metaElement.content = 'defaultDrawing';
         document.head.appendChild(metaElement);
-
-        // @ts-ignore
-        global.THREEJS_DRAWINGS = {
-            mockDrawing: vi.fn().mockResolvedValue({ drawing: 'example' }),
-        };
-
-        // @ts-ignore
-        global.contentLoadedCallback = mockCallback;
-
-        // @ts-ignore
-        global.INCLUDE_LOCAL = false;
     });
 
     afterEach(() => {
         document.head.innerHTML = '';
         vi.restoreAllMocks();
+
+        vi.useRealTimers();
     });
 
     it('should call the drawing loader and invoke contentLoadedCallback', async () => {
