@@ -1,5 +1,13 @@
 # multiaxis
 
+## TS
+
+`tsc`.
+
+## Vitest
+
+`npx vitest`.
+
 ## About
 
 Well, this project has certainly grown in scope since its inception.
@@ -87,3 +95,9 @@ If you'd like to load your own custom data, simply place the `JSON` file into `d
 ```html
 <meta name="datasrc" content="data" />
 ```
+
+## Build Pipeline
+
+npm run build
+
+For a dry run: `rollup -c --silent --dry-run`.
