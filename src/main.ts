@@ -10,7 +10,7 @@ import type { ThreeJSDrawingsMap } from './types';
 const DEBUG = false;
 const INCLUDE_LOCAL = false;
 
-function loadDrawingName() {
+export function loadDrawingName() {
     const drawingNameMeta = document.querySelector('meta[name="threejs_drawing_name"]');
     if (!drawingNameMeta) {
         console.error('Meta tag "threejs_drawing_name" not found.');
@@ -27,7 +27,7 @@ function loadDrawingName() {
     return drawingName;
 };
 
-async function onContentLoaded() {
+export async function onContentLoaded() {
     console.log("👀 Available drawings in THREEJS_DRAWINGS:", THREEJS_DRAWINGS);
 
     const drawingName = loadDrawingName();
