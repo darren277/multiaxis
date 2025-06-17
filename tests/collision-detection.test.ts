@@ -99,18 +99,22 @@ describe('_setRayFromFeet', () => {
 /* ------------------------------------------------------------------ */
 describe('_firstWalkableHit', () => {
     it('returns the ground hit when player stands on a plane', () => {
-        // create a ground quad
-        const ground = new THREE.Mesh(new THREE.PlaneGeometry(10, 10));
-        ground.rotateX(-Math.PI / 2);        // lay flat
+        // Create a visible ground mesh with face normals pointing up
+        const ground = new THREE.Mesh(new THREE.PlaneGeometry(10, 10), new THREE.MeshBasicMaterial());
+        ground.rotateX(-Math.PI / 2);         // Make it horizontal
         ground.userData.isGround = true;
+        ground.name = 'test_ground';
+        ground.updateMatrixWorld(true);       // <- Required for accurate raycasting
         dummyScene.add(ground);
 
         const player = new THREE.Object3D();
-        player.position.set(0, 1, 0);       // 0.5 above ground
+        player.position.set(0, 1.1, 0);        // Stand 1.1 above ground (PLAYER_SIZE assumed to be ~1)
 
-        (cs as any)._setRayFromFeet(player);                  // set up ray
+        const rayOrigin = (cs as any)._setRayFromFeet(player);
+        (cs as any).ray.far = 2;               // Ensure it's long enough to intersect ground
         const hit = (cs as any)._firstWalkableHit(player, [ground]);
+
         expect(hit).toBeDefined();
-        if (hit) expect(hit.object).toBe(ground);
+        expect(hit!.object.name).toBe('test_ground');
     });
 });
