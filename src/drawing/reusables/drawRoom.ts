@@ -243,10 +243,12 @@ const roomDrawing = {
     ],
     'eventListeners': {
         'keydown': (event: KeyboardEvent, stuff: any) => {
+            event.preventDefault(); // prevent default browser actions
             const keyManager = stuff.data.keyManager;
             onKeyDownWalking(event, keyManager);
         },
         'keyup': (event: KeyboardEvent, stuff: any) => {
+            event.preventDefault(); // prevent default browser actions
             const keyManager = stuff.data.keyManager;
             onKeyUpWalking(event, keyManager);
         },
