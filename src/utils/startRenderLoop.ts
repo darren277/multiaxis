@@ -79,7 +79,7 @@ export function startRenderLoop(renderer: THREE.WebGLRenderer, renderables: Rend
         }
 
         if (threejsDrawing.data.collision) {
-            threejsDrawing.data.collision.update(timestamp);
+            //threejsDrawing.data.collision.update(null, timestamp);
 
             //console.log('Direction:', threejsDrawing.data.collision.keyManager.direction.toArray());
             //console.log('Jump?', threejsDrawing.data.collision.keyManager.consumeJump());

@@ -11,6 +11,30 @@ export const groundRay = new THREE.Raycaster();
 export const tempBox = new THREE.Box3();        // temporary box for the player
 export const tempPosition = new THREE.Vector3(); // for calculating next pos
 
+function isGroundHit(hit: THREE.Intersection) {
+    let obj: THREE.Object3D | null = hit.object;
+    while (obj) {
+        if (obj.userData.isGround) return true;
+        obj = obj.parent;
+    }
+    return false;
+}
+
+function faceNormal(hit: THREE.Intersection) {
+    if (!hit.face) return false;
+    const n = hit.face.normal.clone().applyMatrix3(new THREE.Matrix3().getNormalMatrix(hit.object.matrixWorld)).normalize();
+    return n.y > 0.01; // upward‑facing surface
+}
+
+export function getYawObject(controls: any): THREE.Object3D {
+    const yawObject =
+      controls.object?.quaternion ? controls.object              // camera
+    : controls?._controls?.object?.quaternion ? controls._controls.object
+    : controls;
+
+    return yawObject;
+}
+
 class KeyManager {
     moveForward = false;
     moveBackward = false;
@@ -284,15 +308,20 @@ export class CollisionSystem {
 
     const hits = this.ray.intersectObjects(worldMeshes, true);
     const walkable = hits.find(h => {
-      if (!h.face) return false;
-      const n = h.face.normal.clone().applyMatrix3(new THREE.Matrix3().getNormalMatrix(h.object.matrixWorld)).normalize();
-      return n.y > 0.01; // upward‑facing surface
+        isGroundHit(h) && faceNormal(h)
     });
 
     if (walkable && vel.y <= 0) {
       player.position.y = walkable.point.y + this.cfg.PLAYER_SIZE;
       vel.y = 0;
       canJump(true);
+    }
+
+    // ---------------- fallback ground plane ----------------
+    if (!walkable && player.position.y < GROUND_Y + this.cfg.PLAYER_SIZE) {
+        player.position.y = GROUND_Y + this.cfg.PLAYER_SIZE;
+        vel.y = 0;
+        canJump(true);
     }
   }
 }
@@ -325,8 +354,10 @@ export class CollisionManager {
   }
 
   /** Call from render loop. */
-  update() {
-    const dt = Math.min(this.clock.getDelta(), 0.05); // clamp big steps
+  update(controls?: any, dt?: number, ignore: any = null) {
+    const yawObject = getYawObject(controls);
+
+    const delta = dt ?? Math.min(this.clock.getDelta(), 0.05); // clamp big steps
 
     // 1. INPUT → direction vector & jump flag
     this.input.update();
@@ -338,21 +369,21 @@ export class CollisionManager {
     if (this.input.consumeJump()) this.physics.jump();
 
     // 4. GRAVITY continuous acceleration
-    this.physics.applyGravity(dt);
+    this.physics.applyGravity(delta);
 
     // 5. COLLISIONS – refresh dynamic boxes first
     this.collision.refreshObstacles(this.args.targets);
 
     //    5a. horizontal slide
-    this.collision.slideHorizontal(this.args.player, this.physics.velocity, dt);
+    this.collision.slideHorizontal(this.args.player, this.physics.velocity, delta);
 
     //    5b. vertical move (integrate Y) then clamp to ground
-    this.args.player.position.y += this.physics.velocity.y * dt;
+    this.args.player.position.y += this.physics.velocity.y * delta;
     this.collision.groundClamp(
       this.args.player,
       this.physics.velocity,
       this.args.targets.worldMeshes,
-      dt,
+      delta,
       v => this.input.canJump = v,
     );
   }

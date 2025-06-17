@@ -138,7 +138,10 @@ function simpleBoxClamp(yawObject: { position: { x: any; z: any; }; }, obstacleB
     return bestY;
 }
 
-export function walkingAnimationCallback(scene: THREE.Scene, controls: any, collision: any, elapsed: number, override = false) {
+export function walkingAnimationCallback(scene: THREE.Scene, controls: any, _: any, elapsed: number, override = false) {
+    const collision = (controls?.threejsDrawing?.data?.collision || (controls?.collision));
+    if (!collision) return;
+
     if (controls.isLocked === true || (override === true && controls.name === 'PointerLockControls')) {
         //const delta = clock.getDelta(); // measure time between frames
         //const yawObject = controls.getObject();   // outer object of PLC
