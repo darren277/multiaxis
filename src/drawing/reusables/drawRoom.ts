@@ -223,6 +223,14 @@ export function animateRoom(renderer: THREE.WebGLRenderer, timestamp: number, th
         animateElevator(lift, player, elapsed);
     }
 
+    const collision = threejsDrawing.data.collision;
+    if (!collision) {
+        console.warn('No collision manager found.');
+        return;
+    }
+
+    collision.update(controls); // update input + physics + collisions
+
     updateObstacleBoxes(threejsDrawing.data.staticBoxes, threejsDrawing.data.movingMeshes, threejsDrawing.data.obstacleBoxes);
 
     walkingAnimationCallback(scene as THREE.Scene, controls, threejsDrawing.data.collision, elapsed, true);
