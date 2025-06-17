@@ -67,21 +67,24 @@ export function addGround(threejsDrawing: ThreeJSDrawing, mesh: THREE.Mesh) {
 }
 
 /** Register a static obstacle (mesh or pre‑built Box3). */
-export function addObstacle(threejsDrawingOrStaticBoxes: ThreeJSDrawing | THREE.Box3[], source: THREE.Object3D | THREE.Box3) {
-  if (source instanceof THREE.Box3) {
-    if (Array.isArray(threejsDrawingOrStaticBoxes)) {
-      threejsDrawingOrStaticBoxes.push(source);
+export function addObstacle(threejsDrawing: ThreeJSDrawing, source: THREE.Object3D | THREE.Box3) {
+    if (!threejsDrawing.data) {
+        threejsDrawing.data = {
+            staticBoxes: [],
+            worldMeshes: [],
+            movingMeshes: [],
+        };
+    }
+
+    if (source instanceof THREE.Box3) {
+        threejsDrawing.data.staticBoxes.push(source);
     } else {
-      threejsDrawingOrStaticBoxes.data.staticBoxes.push(source);
+        const box = new THREE.Box3().setFromObject(source);
+        source.userData.box = box;
+        threejsDrawing.data.staticBoxes.push(box);
     }
-  } else {
-    const box = new THREE.Box3().setFromObject(source);
-    source.userData.box = box;
-    if (!Array.isArray(threejsDrawingOrStaticBoxes)) {
-      threejsDrawingOrStaticBoxes.data.staticBoxes.push(box);
-    }
-  }
 }
+
 
 /**
  * Create a ready‑to‑go CollisionManager for this level.

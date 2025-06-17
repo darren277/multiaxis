@@ -55,19 +55,7 @@ export function instantiateCollision(threejsDrawing: ThreeJSDrawing) {
         (obj): obj is THREE.Mesh => obj instanceof THREE.Mesh
     ) ?? [];
 
-    const staticBoxes: THREE.Box3[] =
-    (threejsDrawing.data.staticBoxes as any[] | undefined)
-        ?.reduce<THREE.Box3[]>((out, candidate) => {
-            if (candidate instanceof THREE.Object3D) {
-                // ensure its world matrix is current
-                candidate.updateMatrixWorld(true);
-                const box = new THREE.Box3().setFromObject(candidate);
-                out.push(box);
-            } else {
-                console.warn('Skipping non-Object3D staticBox:', candidate);
-            }
-            return out;
-        }, []) ?? [];
+    const staticBoxes: THREE.Box3[] = threejsDrawing.data.staticBoxes ?? [];
 
     const movingMeshes = (threejsDrawing.data.movingMeshes as THREE.Object3D[] | undefined)?.filter(
         (obj): obj is THREE.Mesh => obj instanceof THREE.Mesh

@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { addObstacle } from './walking';
+import { ThreeJSDrawing } from '../threejsDrawing';
 
 export const WORLD_Y   = new THREE.Vector3(0, 1, 0);
 export const WORLD_X   = new THREE.Vector3(1, 0, 0);
@@ -57,7 +58,7 @@ class KeyManager {
     }
 }
 
-export function extractPerTriangle(staticBoxes: THREE.Box3[], mesh: THREE.Mesh) {
+export function extractPerTriangle(threejsDrawing: ThreeJSDrawing, mesh: THREE.Mesh) {
     const tmpBox = new THREE.Box3();
     const a = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3();
 
@@ -72,7 +73,7 @@ export function extractPerTriangle(staticBoxes: THREE.Box3[], mesh: THREE.Mesh) 
         tmpBox.setFromPoints([a, b, c]);
         if (tmpBox.max.y - tmpBox.min.y > 3) continue; // skip tall walls
 
-        addObstacle(staticBoxes, tmpBox.clone() as any);       // push a tiny box
+        addObstacle(threejsDrawing, tmpBox.clone() as any);       // push a tiny box
         spatialHashStaticBoxes([tmpBox.clone()]);
     }
 }

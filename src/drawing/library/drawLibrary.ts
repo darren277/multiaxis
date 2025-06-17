@@ -33,7 +33,7 @@ const BOOK_CASE_TEXTURES = {
 
 function createBookCaseMesh(
     scene: THREE.Scene,
-    staticBoxes: any[],
+    threejsDrawing: ThreeJSDrawing,
     {
         name,
         textureName,
@@ -86,7 +86,7 @@ function createBookCaseMesh(
     bookCaseMesh.rotation.set(rotation.x, rotation.y, rotation.z);
 
     scene.add(bookCaseMesh);
-    addObstacle(staticBoxes, bookCaseMesh); // add to collision detection
+    addObstacle(threejsDrawing, bookCaseMesh); // add to collision detection
     return bookCaseMesh;
 }
 
@@ -94,7 +94,7 @@ function createBookCaseMesh(
 // Now we can create multiple shelves, labeling them book_case_1a, book_case_1b, etc. Suppose we have two bookcases in “Row 1”, spaced out along the x axis.
 
 
-function createBookCases(scene: THREE.Scene, staticBoxes: any[], width: number, height: number, depth: number, row1StartX: number, spaceBetween: number, caseCount = 3, y_pos = 5, z_pos = 5) {
+function createBookCases(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing, width: number, height: number, depth: number, row1StartX: number, spaceBetween: number, caseCount = 3, y_pos = 5, z_pos = 5) {
     let bookCaseI = 0;
 
     for (let i = 0; i < caseCount; i++) {
@@ -102,7 +102,7 @@ function createBookCases(scene: THREE.Scene, staticBoxes: any[], width: number, 
         const x_pos = row1StartX + i * spaceBetween;   // now 18 per case
 
         createBookCaseMesh(
-        scene, staticBoxes,
+        scene, threejsDrawing,
         {
             name: `book_case_1${String.fromCharCode(97 + i)}`, // e.g., 1a, 1b, 1c
             textureName: `bookcase${bookCaseI+1}` as keyof typeof BOOK_CASE_TEXTURES,
@@ -118,7 +118,7 @@ function createBookCases(scene: THREE.Scene, staticBoxes: any[], width: number, 
         const rotation = new THREE.Vector3(0, Math.PI, 0);
 
         createBookCaseMesh(
-        scene, staticBoxes,
+        scene, threejsDrawing,
         {
             name: `book_case_1${String.fromCharCode(97 + i)}_back`, // e.g., 1a, 1b, 1c
             textureName: `bookcase${bookCaseI+1}` as keyof typeof BOOK_CASE_TEXTURES,

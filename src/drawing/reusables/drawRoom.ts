@@ -48,6 +48,7 @@ function drawRoom(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
     (threejsDrawing.data.ceiling as THREE.Mesh).rotation.x = Math.PI / 2;
     (threejsDrawing.data.ceiling as THREE.Mesh).position.y = 200;
     addObstacle(threejsDrawing, threejsDrawing.data.ceiling);
+    console.log('Static Boxes after ceiling:', threejsDrawing.data.staticBoxes);
 
     // Draw walls
     threejsDrawing.data.southWall = drawFloor(scene, woodMat, 200);
@@ -55,25 +56,29 @@ function drawRoom(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
     (threejsDrawing.data.southWall as THREE.Mesh).rotation.x = -Math.PI / 2; // rotate to horizontal
     (threejsDrawing.data.southWall as THREE.Mesh).position.z = -100;
     (threejsDrawing.data.southWall as THREE.Mesh).position.y = 100;
-    addObstacle(threejsDrawing.data.staticBoxes, threejsDrawing.data.southWall);
+    addObstacle(threejsDrawing, threejsDrawing.data.southWall);
+    console.log('Static Boxes after southWall:', threejsDrawing.data.staticBoxes);
 
     threejsDrawing.data.northWall = drawFloor(scene, woodMat, 200);
     (threejsDrawing.data.northWall as THREE.Mesh).rotation.x = Math.PI;
     (threejsDrawing.data.northWall as THREE.Mesh).position.z = 100;
     (threejsDrawing.data.northWall as THREE.Mesh).position.y = 100;
-    addObstacle(threejsDrawing.data.staticBoxes, threejsDrawing.data.northWall);
+    addObstacle(threejsDrawing, threejsDrawing.data.northWall);
+    console.log('Static Boxes after northWall:', threejsDrawing.data.staticBoxes);
 
     threejsDrawing.data.eastWall = drawFloor(scene, woodMat, 200);
     (threejsDrawing.data.eastWall as THREE.Mesh).rotation.y = Math.PI / 2;
     (threejsDrawing.data.eastWall as THREE.Mesh).position.x = 100;
     (threejsDrawing.data.eastWall as THREE.Mesh).position.y = 100;
-    addObstacle(threejsDrawing.data.staticBoxes, threejsDrawing.data.eastWall);
+    addObstacle(threejsDrawing, threejsDrawing.data.eastWall);
+    console.log('Static Boxes after eastWall:', threejsDrawing.data.staticBoxes);
 
     threejsDrawing.data.westWall = drawFloor(scene, woodMat, 200);
     (threejsDrawing.data.westWall as THREE.Mesh).rotation.y = -Math.PI / 2;
     (threejsDrawing.data.westWall as THREE.Mesh).position.x = -100;
     (threejsDrawing.data.westWall as THREE.Mesh).position.y = 100;
-    addObstacle(threejsDrawing.data.staticBoxes, threejsDrawing.data.westWall);
+    addObstacle(threejsDrawing, threejsDrawing.data.westWall);
+    console.log('Static Boxes after westWall:', threejsDrawing.data.staticBoxes);
 
     // ~~~~~~~~~~~~~~~~~~
     // Draw walls (and sphere)
@@ -82,16 +87,16 @@ function drawRoom(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
     threejsDrawing.data.ballMat = ballMat;
     threejsDrawing.data.cubeMesh = cubeMesh;
     threejsDrawing.data.ballMesh = ballMesh;
-    addObstacle(threejsDrawing.data.staticBoxes, cubeMesh);
-    addObstacle(threejsDrawing.data.staticBoxes, ballMesh);
+    addObstacle(threejsDrawing, cubeMesh);
+    addObstacle(threejsDrawing, ballMesh);
 
     // Draw second floor walkway...
     threejsDrawing.data.secondFloorWalkway = drawPerimeterWalkway(scene, woodMat, 200, 25, 50);
     const { east, west, north, south }: { east: THREE.Mesh, west: THREE.Mesh, north: THREE.Mesh, south: THREE.Mesh } = threejsDrawing.data.secondFloorWalkway;
-    addObstacle(threejsDrawing.data.staticBoxes, east);
-    addObstacle(threejsDrawing.data.staticBoxes, west);
-    addObstacle(threejsDrawing.data.staticBoxes, north);
-    addObstacle(threejsDrawing.data.staticBoxes, south);
+    addObstacle(threejsDrawing, east);
+    addObstacle(threejsDrawing, west);
+    addObstacle(threejsDrawing, north);
+    addObstacle(threejsDrawing, south);
     threejsDrawing.data.worldMeshes.push(east);
     threejsDrawing.data.worldMeshes.push(west);
     threejsDrawing.data.worldMeshes.push(north);
