@@ -79,16 +79,30 @@ export function instantiateCollision(threejsDrawing: ThreeJSDrawing) {
     const collision = new CollisionManager({player: playerObject, targets: {worldMeshes, staticBoxes, movingMeshes}, debugArrow: debugRayHelper});
     //const collision = makeCollisionManager(playerObject, threejsDrawing.data.scene, { debugRay: true });
 
+    const im = collision.keyManager;
+
+    // 2) Prime the jump gate
+    im.canJump = true;
+
+    // 3) Wire ALL keys straight into the InputManager
+    //    (this replaces the need for onKeyDownWalking/onKeyUpWalking wrappers)
+    window.addEventListener('keydown', (e: KeyboardEvent) => {
+        e.preventDefault();      // stop arrows/space from scrolling
+        im.setKeyState(e.code, true);
+    });
+    window.addEventListener('keyup',   (e: KeyboardEvent) => {
+        e.preventDefault();
+        im.setKeyState(e.code, false);
+    });
+
     setInputManager(collision.keyManager);
 
     const legacyKeyManager = makeLegacyKeyManager(collision.keyManager);
+
+    // 4) Store for legacy code as before
     threejsDrawing.data.keyManager = legacyKeyManager;
-    setInputManager(collision.keyManager);
-
-    // Optional: override config if needed (PhysicsConfig is currently fixed, but could be made dynamic)
-    // You can add code here to modify PhysicsConfig directly if using from JSON
-
     threejsDrawing.data.collision = collision;
+    threejsDrawing.data.ready     = true;
 
     playerObject.position.set(
         threejsDrawing.sceneConfig?.startPosition?.x ?? 0,

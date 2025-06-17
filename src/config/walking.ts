@@ -18,6 +18,7 @@ export function setInputManager(manager: InputManager) {
  * Legacy keyboard down handler — wraps new InputManager logic.
  */
 export function onKeyDownWalking(event: KeyboardEvent, keyManager: InputManager) {
+  event.preventDefault();
   if (!sharedInputManager) {
     console.warn('onKeyDownWalking called before InputManager was set.');
     return;
@@ -33,6 +34,7 @@ export function onKeyDownWalking(event: KeyboardEvent, keyManager: InputManager)
  * Legacy keyboard up handler — wraps new InputManager logic.
  */
 export function onKeyUpWalking(event: KeyboardEvent, keyManager: InputManager) {
+  event.preventDefault();
   if (!sharedInputManager) {
     console.warn('onKeyUpWalking called before InputManager was set.');
     return;

@@ -180,21 +180,34 @@ export class InputManager {
   public jumpRequested = false;
   public canJump = false;
 
-  private readonly keys: Record<string, boolean> = {};
+  public readonly keys: Record<string, boolean> = {};
+  
+  public setKeyState(code: string, isPressed: boolean) {
+    this.keys[code] = isPressed;
+  }
 
   constructor(private readonly doc: Document = document) {
     this._bind();
   }
 
-  private _bind() {
-    this.doc.addEventListener('keydown', e => this.keys[e.code] = true);
-    this.doc.addEventListener('keyup',   e => this.keys[e.code] = false);
+  get isShiftDown() {
+    return this.keys['ShiftLeft'] || this.keys['ShiftRight'];
   }
 
-  update() {
+  private _bind() {
+    this.doc.addEventListener('keydown', e => this.setKeyState(e.code, true));
+    this.doc.addEventListener('keyup',   e => this.setKeyState(e.code, false));
+  }
+
+  update(controls?: any) {
     // forward/back & strafe left/right (local XZ plane)
-    const forward = (this.keys['KeyW'] ? 1 : 0) - (this.keys['KeyS'] ? 1 : 0);
-    const strafe  = (this.keys['KeyD'] ? 1 : 0) - (this.keys['KeyA'] ? 1 : 0);
+    const forward = ((this.keys['KeyW'] || this.keys['ArrowUp']) ? 1 : 0) - ((this.keys['KeyS'] || this.keys['ArrowDown']) ? 1 : 0);
+    let strafe  = ((this.keys['KeyA'] || this.keys['ArrowLeft']) ? 1 : 0) - ((this.keys['KeyD'] || this.keys['ArrowRight']) ? 1 : 0);
+
+    // If rotating POV with Shift + Arrow keys, prevent strafe
+    if (this.isShiftDown && (this.keys['ArrowLeft'] || this.keys['ArrowRight'])) {
+        strafe = 0;
+    }
 
     this.direction.set(strafe, 0, forward);
     if (this.direction.lengthSq() > 0) this.direction.normalize();
@@ -236,6 +249,23 @@ export class PhysicsSystem {
   jump() {
     this.velocity.y = this.cfg.JUMP_VELOCITY;
   }
+
+  rotateY(yawObject: THREE.Object3D, angle: number) {
+    yawObject.rotation.y += angle;
+    yawObject.updateMatrixWorld(); // ensure the new rotation is applied
+  }
+}
+
+function getCameraRelativeDirection(cameraObj: THREE.Object3D, inputDir: THREE.Vector3): THREE.Vector3 {
+  const forward = new THREE.Vector3();
+  cameraObj.getWorldDirection(forward);
+  forward.y = 0; forward.normalize();
+
+  const right = new THREE.Vector3().crossVectors(forward, new THREE.Vector3(0, 1, 0)).normalize();
+
+  return new THREE.Vector3()
+    .addScaledVector(forward, inputDir.z)
+    .addScaledVector(right, inputDir.x);
 }
 
 // ----------------------
@@ -404,13 +434,22 @@ export class CollisionManager {
     const delta = dt ?? Math.min(this.clock.getDelta(), 0.05); // clamp big steps
 
     // 1. INPUT → direction vector & jump flag
-    this.input.update();
+    this.input.update(controls);
 
     // 2. PHYSICS – horizontal movement from input
-    this.physics.applyHorizontal(this.input.direction);
+    const cameraDir = getCameraRelativeDirection(yawObject, this.input.direction);
+    this.physics.applyHorizontal(cameraDir);
+
+    // Apply rotation if shift key and left/right arrows are pressed
+    if (this.input.isShiftDown && (this.input.keys['ArrowLeft'] || this.input.keys['ArrowRight'])) {
+        const angle = (this.input.keys['ArrowRight'] ? -1 : 1) * turnSpeed * delta;
+        this.physics.rotateY(yawObject, angle);
+    }
 
     // 3. JUMP impulse
-    if (this.input.consumeJump()) this.physics.jump();
+    if (this.input.consumeJump()) {
+        this.physics.jump();
+    }
 
     // 4. GRAVITY continuous acceleration
     this.physics.applyGravity(delta);
