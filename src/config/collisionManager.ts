@@ -159,11 +159,12 @@ export function checkCollision(
 // Designers can tweak these numbers in one place (or load them from JSON at runtime)
 export const PhysicsConfig = {
   PLAYER_SIZE: 0.5,      // avatar half‑height
+  PLAYER_HEIGHT: 1.8,    // avatar full height
   STEP_DOWN:   0.5,      // curb you can step off without falling
   GRAVITY:     9.81,     // m/s²
-  SPEED:       5,        // walk speed (m/s)
+  SPEED:       10,       // walk speed (m/s)
   TURN_SPEED:  Math.PI,  // rad/s
-  JUMP_VELOCITY: 5,      // m/s (initial upward impulse)
+  JUMP_VELOCITY: 20,      // m/s (initial upward impulse)
 } as const;
 
 // ----------------------
