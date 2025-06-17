@@ -128,363 +128,224 @@ export function checkCollision(
     return false; // no collision
 }
 
-function isGroundHit(hit: THREE.Intersection) {
-    let obj: THREE.Object3D | null = hit.object;
-    while (obj) {
-        if (obj.userData.isGround) return true;
-        obj = obj.parent;
+// ----------------------
+// 1. Config
+// ----------------------
+// Designers can tweak these numbers in one place (or load them from JSON at runtime)
+export const PhysicsConfig = {
+  PLAYER_SIZE: 0.5,      // avatar half‑height
+  STEP_DOWN:   0.5,      // curb you can step off without falling
+  GRAVITY:     9.81,     // m/s²
+  SPEED:       5,        // walk speed (m/s)
+  TURN_SPEED:  Math.PI,  // rad/s
+  JUMP_VELOCITY: 5,      // m/s (initial upward impulse)
+} as const;
+
+// ----------------------
+// 2. Math helpers – one‑time temp vectors to avoid GC pressure
+// ----------------------
+const V_TEMP_A = new THREE.Vector3();
+const V_TEMP_B = new THREE.Vector3();
+const DOWN     = new THREE.Vector3(0, -1, 0);
+
+// ----------------------
+// 3. InputManager – turns keyboard state into a direction vector + jump flag
+// ----------------------
+export class InputManager {
+  public readonly direction = new THREE.Vector3();
+  public jumpRequested = false;
+  public canJump = false;
+
+  private readonly keys: Record<string, boolean> = {};
+
+  constructor(private readonly doc: Document = document) {
+    this._bind();
+  }
+
+  private _bind() {
+    this.doc.addEventListener('keydown', e => this.keys[e.code] = true);
+    this.doc.addEventListener('keyup',   e => this.keys[e.code] = false);
+  }
+
+  update() {
+    // forward/back & strafe left/right (local XZ plane)
+    const forward = (this.keys['KeyW'] ? 1 : 0) - (this.keys['KeyS'] ? 1 : 0);
+    const strafe  = (this.keys['KeyD'] ? 1 : 0) - (this.keys['KeyA'] ? 1 : 0);
+
+    this.direction.set(strafe, 0, forward);
+    if (this.direction.lengthSq() > 0) this.direction.normalize();
+
+    // space bar jump
+    if (this.keys['Space'] && this.canJump) {
+      this.jumpRequested = true;
+      this.canJump = false;
+    }
+  }
+
+  /** Returns true exactly once when a jump was requested. */
+  consumeJump(): boolean {
+    if (this.jumpRequested) {
+      this.jumpRequested = false;
+      return true;
     }
     return false;
+  }
 }
 
-export function getYawObject(controls: any): THREE.Object3D {
-    const yawObject =
-      controls.object?.quaternion ? controls.object              // camera
-    : controls?._controls?.object?.quaternion ? controls._controls.object
-    : controls;
+// ----------------------
+// 4. PhysicsSystem – owns the velocity vector, applies gravity & jumping
+// ----------------------
+export class PhysicsSystem {
+  public readonly velocity = new THREE.Vector3();
 
-    return yawObject;
+  constructor(private readonly cfg = PhysicsConfig) {}
+
+  applyHorizontal(dir: THREE.Vector3) {
+    this.velocity.x = dir.x * this.cfg.SPEED;
+    this.velocity.z = dir.z * this.cfg.SPEED;
+  }
+
+  applyGravity(dt: number) {
+    this.velocity.y -= this.cfg.GRAVITY * dt;
+  }
+
+  jump() {
+    this.velocity.y = this.cfg.JUMP_VELOCITY;
+  }
 }
 
-function applyInput(
-    keyManager: KeyManager,
-    qTmp: THREE.Quaternion,
-    yawObject: THREE.Object3D,
-    direction: THREE.Vector3,
-    velocity: THREE.Vector3,
-    dt: number,
-    speed: number,
-    turnSpeed: number,
-    jumpVelocity: number,
-) {
-    if (keyManager.isShiftDown) {
-        // rotate instead of move...
-        if (keyManager.moveLeft) {
-            qTmp.setFromAxisAngle(WORLD_Y,  turnSpeed * dt);
-            yawObject.quaternion.premultiply(qTmp);
-        }
-        if (keyManager.moveRight) {
-            qTmp.setFromAxisAngle(WORLD_Y, -turnSpeed * dt);
-            yawObject.quaternion.premultiply(qTmp);
-        }
-        // (you could also implement forward/back when shift is down here)
-    } else {
-        // Normal WASD → world‐space velocity.x/z
-        direction.z = Number(keyManager.moveBackward) - Number(keyManager.moveForward);
-        direction.x = Number(keyManager.moveRight)   - Number(keyManager.moveLeft);
-        direction.normalize();
-
-        // build a local move vector and rotate it into world space
-        const moveVector = new THREE.Vector3(direction.x, 0, direction.z).applyQuaternion(yawObject.quaternion);
-
-        // scale by your speed
-        velocity.x = moveVector.x * speed;
-        velocity.z = moveVector.z * speed;
-    }
-
-    // jumping:
-    if (keyManager.canJump && keyManager.jumpPressed) {
-        velocity.y        = jumpVelocity;
-        keyManager.canJump  = false;     // consume your jump
-        keyManager.jumpPressed = false;  // reset the press
-    }
+// ----------------------
+// 5. CollisionSystem – all geometric tests live here
+// ----------------------
+export interface CollisionTargets {
+  worldMeshes: THREE.Mesh[];   // things you can walk on
+  staticBoxes: THREE.Box3[];   // walls, rocks, buildings
+  movingMeshes: THREE.Mesh[];  // lifts, doors – recomputed each frame
 }
 
-const wrappedCheckCollision: typeof checkCollision = (
-    playerSize: number,
-    position: THREE.Vector3,
-    obstacleBoxes: THREE.Box3[] | undefined,
-    ignore: THREE.Box3 | null = null
-) => checkCollision(playerSize, position, obstacleBoxes ?? [], ignore);
+export class CollisionSystem {
+  private readonly obstacleBoxes: THREE.Box3[] = [];
+  private readonly ray = new THREE.Raycaster(undefined, DOWN.clone());
 
-type CollisionManagerParams = {
-    player?: THREE.Object3D,
-    worldMeshes?: THREE.Mesh[],
-    staticBoxes?: THREE.Box3[],
-    movingMeshes?: THREE.Mesh[],
-    obstacleBoxes?: THREE.Box3[],
-    params?: {
-        playerSize?: number,
-        stepDown?: number,
-        gravity?: number,
-        speed?: number,
-        jumpVelocity?: number,
-        checkCollisionFunc?: typeof checkCollision
+  constructor(private readonly cfg = PhysicsConfig, private readonly dbg?: THREE.ArrowHelper) {}
+
+  /** Rebuilds the list of obstacle boxes (call once per frame _before_ movement). */
+  refreshObstacles(targets: CollisionTargets) {
+    this.obstacleBoxes.length = 0;
+
+    // static AABBs
+    targets.staticBoxes.forEach(b => this.obstacleBoxes.push(b));
+
+    // dynamic – reuse/create boxes on the mesh's userData to avoid reallocs
+    targets.movingMeshes.forEach(m => {
+      let box = (m.userData._box as THREE.Box3) || new THREE.Box3();
+      m.userData._box = box;
+      box.setFromObject(m);
+      this.obstacleBoxes.push(box);
+    });
+  }
+
+  /** Cheap AABB‑point test (player represented by a point for horiz. collision). */
+  private _collides(pt: THREE.Vector3): boolean {
+    for (let i = 0; i < this.obstacleBoxes.length; i++) {
+      if (this.obstacleBoxes[i].containsPoint(pt)) return true;
     }
+    return false;
+  }
+
+  /** Slide along X then Z, updating the player's x/z if no collision. */
+  slideHorizontal(player: THREE.Object3D, vel: THREE.Vector3, dt: number) {
+    // test X
+    V_TEMP_A.copy(player.position).addScaledVector(V_TEMP_B.set(vel.x, 0, 0), dt);
+    if (!this._collides(V_TEMP_A)) player.position.x = V_TEMP_A.x;
+
+    // test Z
+    V_TEMP_A.copy(player.position).addScaledVector(V_TEMP_B.set(0, 0, vel.z), dt);
+    if (!this._collides(V_TEMP_A)) player.position.z = V_TEMP_A.z;
+  }
+
+  /**
+   * Ground detection & snapping. Sets canJump(true) when landed.
+   */
+  groundClamp(player: THREE.Object3D, vel: THREE.Vector3, worldMeshes: THREE.Mesh[], dt: number, canJump: (v: boolean) => void) {
+    // ray origin: just above feet
+    V_TEMP_A.copy(player.position);
+    V_TEMP_A.y -= (this.cfg.PLAYER_SIZE - 0.01);
+    this.ray.ray.origin.copy(V_TEMP_A);
+
+    // ray length covers stepDown + any extra fall this frame
+    this.ray.far = this.cfg.STEP_DOWN + Math.abs(vel.y * dt) + 0.2;
+
+    // optional debug arrow
+    if (this.dbg) {
+      this.dbg.position.copy(V_TEMP_A);
+      this.dbg.setLength(this.ray.far);
+    }
+
+    const hits = this.ray.intersectObjects(worldMeshes, true);
+    const walkable = hits.find(h => {
+      if (!h.face) return false;
+      const n = h.face.normal.clone().applyMatrix3(new THREE.Matrix3().getNormalMatrix(h.object.matrixWorld)).normalize();
+      return n.y > 0.01; // upward‑facing surface
+    });
+
+    if (walkable && vel.y <= 0) {
+      player.position.y = walkable.point.y + this.cfg.PLAYER_SIZE;
+      vel.y = 0;
+      canJump(true);
+    }
+  }
+}
+
+// ----------------------
+// 6. CollisionManager – coordinates everything each frame
+// ----------------------
+export interface CollisionManagerArgs {
+  player: THREE.Object3D;      // the avatar/camera wrapper
+  targets: CollisionTargets;   // scene geometry
+  debugArrow?: THREE.ArrowHelper;
 }
 
 export class CollisionManager {
-    playerSize: number = 0.5; // default player size
-    stepDown: number = 0.5;   // how far you can step down
-    gravity: number = 9.81;  // gravity strength
-    speed: number = 5;       // horizontal speed
-    jumpVelocity: number = 5; // vertical jump speed
-    checkCollisionFunc = checkCollision; // default collision function
-    debugRayHelper = new THREE.ArrowHelper(new THREE.Vector3(0, -1, 0), new THREE.Vector3(0, 0, 0), 1, 0xff0000);
-    player: THREE.Object3D<THREE.Object3DEventMap>;
-    worldMeshes: THREE.Mesh<THREE.BufferGeometry<THREE.NormalBufferAttributes>, THREE.Material | THREE.Material[], THREE.Object3DEventMap>[];
-    staticBoxes: THREE.Box3[];
-    movingMeshes: THREE.Mesh<THREE.BufferGeometry<THREE.NormalBufferAttributes>, THREE.Material | THREE.Material[], THREE.Object3DEventMap>[];
-    obstacleBoxes: THREE.Box3[];
-    velocity: THREE.Vector3;
-    direction: THREE.Vector3;
-    DOWN: THREE.Vector3;
-    ray: THREE.Raycaster;
-    clock: THREE.Clock;
-    quatTmp: THREE.Quaternion;
-    keyManager: KeyManager;
-    lastGroundY: number | undefined; // last known ground Y position
+  private readonly input = new InputManager();
+  private readonly physics = new PhysicsSystem();
+  private readonly collision: CollisionSystem;
+  private readonly clock = new THREE.Clock();
 
-    constructor(args?: CollisionManagerParams) {
-        const {
-            player = new THREE.Object3D(),
-            worldMeshes = [],
-            staticBoxes = [],
-            movingMeshes = [],
-            obstacleBoxes = [],
-            params = {}
-        } = args || {};
+  constructor(private readonly args: CollisionManagerArgs) {
+    this.collision = new CollisionSystem(PhysicsConfig, args.debugArrow);
+  }
 
-        this.player        = player;
-        this.worldMeshes   = worldMeshes;
-        this.staticBoxes   = staticBoxes;
-        this.movingMeshes  = movingMeshes;
-        this.obstacleBoxes = obstacleBoxes;
-        this.lastGroundY = undefined;
+  /** Call from render loop. */
+  update() {
+    const dt = Math.min(this.clock.getDelta(), 0.05); // clamp big steps
 
-        // unpack your tuning constants
-        ({
-            playerSize: this.playerSize = 0.5,
-            stepDown: this.stepDown = 0.5,
-            gravity: this.gravity = 9.81,
-            speed: this.speed = 5,
-            jumpVelocity: this.jumpVelocity = 5,
-            checkCollisionFunc: this.checkCollisionFunc = wrappedCheckCollision,
-        } = params);
+    // 1. INPUT → direction vector & jump flag
+    this.input.update();
 
-        this.velocity   = new THREE.Vector3();
-        this.direction  = new THREE.Vector3();
-        this.DOWN       = new THREE.Vector3(0, -1, 0);
-        this.ray        = new THREE.Raycaster();
-        this.clock      = new THREE.Clock();
-        this.quatTmp    = new THREE.Quaternion();
-        this.keyManager = new KeyManager();
+    // 2. PHYSICS – horizontal movement from input
+    this.physics.applyHorizontal(this.input.direction);
 
-        // prime clock...
-        this.clock.getDelta();
-    }
+    // 3. JUMP impulse
+    if (this.input.consumeJump()) this.physics.jump();
 
-    /** Call once per frame */
-    update(controls: any, dt: number, obstacleIgnore: any = null) {
-        //const dt         = Math.min(this.clock.getDelta(), 0.1);
-        //const dt         = this.clock.getDelta();
-        //console.log('dt (s):', dt.toFixed(3), 'vel.x:', this.velocity.x.toFixed(2), 'vel.y:', this.velocity.y.toFixed(2));
+    // 4. GRAVITY continuous acceleration
+    this.physics.applyGravity(dt);
 
-        const yawObject  = getYawObject(controls);
-        const pos        = yawObject.position;
-        const halfHeight = this.playerSize;
+    // 5. COLLISIONS – refresh dynamic boxes first
+    this.collision.refreshObstacles(this.args.targets);
 
-        // —— 1) handle rotation or movement input
-        this._applyInput(controls, yawObject, dt);
+    //    5a. horizontal slide
+    this.collision.slideHorizontal(this.args.player, this.physics.velocity, dt);
 
-        // —— 2) apply horizontal collision
-        this._moveHorizontal(yawObject, dt, obstacleIgnore);
-
-        // —— 3) apply gravity & vertical collision
-        this._applyGravityAndGroundClamp(yawObject, pos, halfHeight, dt);
-
-        // —— 4) refresh obstacle boxes
-        this._updateObstacleBoxes();
-    }
-
-    _applyInput(controls: any, yawObject: THREE.Object3D, dt: number) {
-        // copy your existing WASD / Shift-to-rotate logic here,
-        // writing into this.velocity.x/z or yawObject.quaternion,
-        // using this.direction and this.quatTmp…
-        // then at the end velocity.x,z are set correctly.
-
-        // apply input
-        applyInput(
-            this.keyManager,
-            this.quatTmp,
-            yawObject,
-            this.direction,
-            this.velocity,
-            dt,
-            this.speed,
-            turnSpeed,
-            this.jumpVelocity
-        );
-    }
-
-    _moveHorizontal(yawObject: THREE.Object3D, dt: number, ignore: any = null) {
-        const temp = new THREE.Vector3();
-        // try X
-        temp.copy(yawObject.position).addScaledVector(new THREE.Vector3(this.velocity.x,0,0), dt);
-        if (!this.checkCollisionFunc(this.playerSize, temp, this.obstacleBoxes, ignore)) {
-            yawObject.position.x = temp.x;
-        }
-        // try Z
-        temp.copy(yawObject.position).addScaledVector(new THREE.Vector3(0,0,this.velocity.z), dt);
-        if (!this.checkCollisionFunc(this.playerSize, temp, this.obstacleBoxes, ignore)) {
-            yawObject.position.z = temp.z;
-        }
-    }
-    
-    _applyGravityAndGroundClamp(yawObject: THREE.Object3D, pos: THREE.Vector3, halfHeight: number, dt: number) {
-        // Apply gravity (pos.y is updated)
-        this.velocity.y -= this.gravity * dt;
-        pos.y += this.velocity.y * dt;
-
-        // Set up the down-ray from player's feet
-        const footPos = yawObject.position.clone();
-        // Assuming 'this.playerSize' is the distance from player center to feet (half total height)
-        footPos.y -= (this.playerSize - 0.01); // Ray starts 0.01 units above the player's base
-
-        console.log("--- Frame Update ---");
-        console.log("Initial pos.y:", yawObject.position.y.toFixed(3), "vel.y:", this.velocity.y.toFixed(3));
-        // After gravity:
-        console.log("After gravity pos.y:", pos.y.toFixed(3), "vel.y:", this.velocity.y.toFixed(3));
-        console.log("footPos.y for raycast:", footPos.y.toFixed(3));
-
-        // DETACH from a moving platform if you walked off it (keep this logic)
-        let plat;
-        if (this.player.userData.currentPlatform) {
-            plat = this.player.userData.currentPlatform;
-            if (plat.userData.boxNeedsRefresh) { /* ... */ }
-            const footBox = new THREE.Box3().setFromCenterAndSize(footPos, new THREE.Vector3(this.playerSize * 0.6, 0.1, this.playerSize * 0.6));
-            if (!footBox.intersectsBox(plat.userData.box)) {
-                this.player.userData.currentPlatform = null;
-                if (plat.userData) plat.userData.rider = null; // Check if plat.userData exists
-            }
-        }
-
-        this.ray.set(footPos, this.DOWN);
-        if (this.lastGroundY === undefined) {
-            this.ray.far = 50;
-        } else {
-            this.ray.far = this.stepDown + 1.5; // Should be sufficient for continuous surfaces
-        }
-
-        this.debugRayHelper.setDirection(this.ray.ray.direction);
-        this.debugRayHelper.position.copy(this.ray.ray.origin); // ArrowHelper origin is position
-        this.debugRayHelper.setLength(this.ray.far, 0.2, 0.1); // headLength, headWidth
-        this.debugRayHelper.setColor(0xff0000); // Red
-
-        //const rayTargets = this.player.userData.currentPlatform ? [...this.worldMeshes, this.player.userData.currentPlatform] : this.worldMeshes;
-        //const hits = this.ray.intersectObjects(rayTargets, true);
-
-        console.log('--- Frame Raycast ---');
-        console.log('Player velocity.y:', this.velocity.y.toFixed(3));
-        const currentWorldMeshes = this.worldMeshes.map(m => m.name || m.uuid);
-        const currentPlatform = this.player.userData.currentPlatform ? (this.player.userData.currentPlatform.name || this.player.userData.currentPlatform.uuid) : 'None';
-        console.log('Current worldMeshes:', currentWorldMeshes);
-        console.log('Current platform:', currentPlatform);
-
-        const rayTargets = this.player.userData.currentPlatform ? [...this.worldMeshes, this.player.userData.currentPlatform] : this.worldMeshes;
-        console.log('Raycasting against:', rayTargets.map(m => m.name || m.uuid));
-
-        const hits = this.ray.intersectObjects(rayTargets, true);
-        console.log('Raw hits found:', hits.length);
-        hits.forEach((h, index) => {
-            const normalY = h.face ? h.face.normal.clone().applyMatrix3(new THREE.Matrix3().getNormalMatrix(h.object.matrixWorld)).normalize().y : null;
-            console.log(`  Raw Hit <span class="math-inline">\{index\}\: obj\=</span>{h.object.name}, dist=<span class="math-inline">\{h\.distance\.toFixed\(3\)\}, pointY\=</span>{h.point.y.toFixed(3)}, normalY=${normalY ? normalY.toFixed(3) : 'N/A'}`);
-        });
-
-        const walkableHit = hits.find(i => {
-            if (!i.face) return false;
-            const n = i.face.normal.clone().applyMatrix3(new THREE.Matrix3().getNormalMatrix(i.object.matrixWorld)).normalize();
-            return n.y > 0.01; // Consider a surface walkable if its normal is mostly upward
-        });
-
-        if (walkableHit) {
-            console.log('Walkable hit found on:', walkableHit.object.name);
-        } else if (hits.length > 0) {
-            console.log('Hits occurred, but none were deemed walkable.');
-        } else {
-            console.log('No hits occurred at all.');
-        }
-        console.log('Condition (walkableHit && this.velocity.y <= 0):', (walkableHit && this.velocity.y <= 0));
-
-        if (!walkableHit) {
-            console.log("No walkable ground hit.");
-        }
-
-        if (walkableHit && this.velocity.y <= 0) {
-            const floorY = walkableHit.point.y;
-            const eyeY = floorY + halfHeight; // halfHeight is this.playerSize
-
-            console.log("Hit object:", walkableHit.object.name, "isGround:", walkableHit.object.userData.isGround);
-            console.log("Hit point.y:", walkableHit.point.y.toFixed(3));
-            console.log("Calculated eyeY:", eyeY.toFixed(3));
-            // Log yawObject.position.y right after it's set
-
-            // --- Moving Platform Logic ---
-            // Check if the hit object is a designated platform
-            if (walkableHit.object.userData.isPlatform) {
-                const currentHitPlatform = walkableHit.object;
-                if (this.player.userData.currentPlatform !== currentHitPlatform) {
-                    // Player has landed on a new platform
-                    currentHitPlatform.userData.offsetY = (footPos.y - floorY); // Original calculation, check if still valid
-                                                                             // Or, more simply: currentHitPlatform.userData.offsetY = yawObject.position.y - currentHitPlatform.position.y;
-                    this.player.userData.currentPlatform = currentHitPlatform;
-                    currentHitPlatform.userData.rider = this.player;
-                }
-                // If it's a moving platform, its own animation/movement should handle its base position.
-                // Player's Y might need to be relative to platform's Y + offset.
-                // For simplicity now, we'll snap to hit point, but true moving platform might need:
-                // yawObject.position.y = currentHitPlatform.position.y + currentHitPlatform.userData.offsetY + halfHeight;
-                // For a static curved mesh or one whose Y is directly raycast, eyeY is fine:
-                yawObject.position.y = eyeY;
-
-            } else {
-                // Not a special platform, just regular ground (could be your curved mesh)
-                this.player.userData.currentPlatform = null; // Ensure not attached to a platform if now on regular ground
-                yawObject.position.y = eyeY;
-            }
-
-            this.velocity.y = 0;
-            this.keyManager.canJump = true;
-            this.lastGroundY = floorY;
-            this.player.userData.currentGround = walkableHit.object;
-
-        } else {
-            // Player is in the air (no walkable hit below or moving upwards)
-            this.player.userData.currentGround = null;
-            // If not on a platform due to no hit, ensure platform is also cleared
-            if (!walkableHit || walkableHit.object !== this.player.userData.currentPlatform) {
-                 // this.player.userData.currentPlatform = null; // Already handled if hit non-platform
-            }
-            // canJump remains false if jump was initiated, or becomes false after leaving ground.
-            // If player walks off edge, canJump would be true then become false once airborne for a bit.
-            // The original jump logic handles setting canJump to false.
-        }
-
-        // Fallback ground plane (e.g., if player falls out of the world)
-        const minY = GROUND_Y + halfHeight; // GROUND_Y is your absolute minimum floor
-        if (yawObject.position.y < minY) {
-            // Only snap to minY if not currently grounded on something else higher up
-            if (
-                !this.player.userData.currentGround ||
-                (this.lastGroundY !== undefined && yawObject.position.y < (this.lastGroundY + halfHeight))
-            ) {
-                 yawObject.position.y = minY;
-                 this.velocity.y = 0;
-                 this.keyManager.canJump = true;
-                 this.lastGroundY = GROUND_Y;
-                 this.player.userData.currentGround = null; // Or a conceptual "fallback ground" object
-                 this.player.userData.currentPlatform = null;
-            }
-        }
-    }
-
-    _updateObstacleBoxes() {
-        this.obstacleBoxes.length = 0;
-        this.staticBoxes   .forEach(b => this.obstacleBoxes.push(b));
-        this.movingMeshes  .forEach(m => {
-        if (!m.userData._box) m.userData._box = new THREE.Box3();
-            m.userData._box.setFromObject(m).expandByVector(new THREE.Vector3(0,2,0));
-            this.obstacleBoxes.push(m.userData._box);
-        });
-    }
+    //    5b. vertical move (integrate Y) then clamp to ground
+    this.args.player.position.y += this.physics.velocity.y * dt;
+    this.collision.groundClamp(
+      this.args.player,
+      this.physics.velocity,
+      this.args.targets.worldMeshes,
+      dt,
+      v => this.input.canJump = v,
+    );
+  }
 }
