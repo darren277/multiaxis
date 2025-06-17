@@ -248,144 +248,126 @@ export interface CollisionTargets {
 }
 
 export class CollisionSystem {
+  /* ─── fields ─────────────────────────────────────────────────── */
   private readonly obstacleBoxes: THREE.Box3[] = [];
   private readonly ray = new THREE.Raycaster(undefined, DOWN.clone());
-   lastGroundY: number | undefined;
+  private lastGroundY?: number;
 
-  constructor(private readonly cfg = PhysicsConfig, private readonly dbg?: THREE.ArrowHelper) {}
+  constructor(
+    private readonly cfg  = PhysicsConfig,
+    private readonly dbg?: THREE.ArrowHelper
+  ) {}
 
-  /** Rebuilds the list of obstacle boxes (call once per frame _before_ movement). */
-  refreshObstacles(targets: CollisionTargets) {
+  /* ─── public API ──────────────────────────────────────────────── */
+  refreshObstacles(t: CollisionTargets) {
     this.obstacleBoxes.length = 0;
-
-    // static AABBs
-    targets.staticBoxes.forEach(b => this.obstacleBoxes.push(b));
-
-    // dynamic – reuse/create boxes on the mesh's userData to avoid reallocs
-    targets.movingMeshes.forEach(m => {
-      let box = (m.userData._box as THREE.Box3) || new THREE.Box3();
-      m.userData._box = box;
-      box.setFromObject(m);
-      this.obstacleBoxes.push(box);
-    });
+    t.staticBoxes .forEach(b => this.obstacleBoxes.push(b));
+    t.movingMeshes.forEach(m => this.obstacleBoxes.push(this._boxOf(m)));
   }
 
-  /** Cheap AABB‑point test (player represented by a point for horiz. collision). */
-  private _collides(pt: THREE.Vector3): boolean {
-    for (let i = 0; i < this.obstacleBoxes.length; i++) {
-      if (this.obstacleBoxes[i].containsPoint(pt)) return true;
-    }
-    return false;
+  slideHorizontal(p: THREE.Object3D, v: THREE.Vector3, dt: number) {
+    if (!this._collides(this._nextPos(p, v.x, 0, dt))) p.position.x += v.x * dt;
+    if (!this._collides(this._nextPos(p, 0, v.z, dt))) p.position.z += v.z * dt;
   }
 
-  /** Slide along X then Z, updating the player's x/z if no collision. */
-  slideHorizontal(player: THREE.Object3D, vel: THREE.Vector3, dt: number) {
-    // test X
-    V_TEMP_A.copy(player.position).addScaledVector(V_TEMP_B.set(vel.x, 0, 0), dt);
-    if (!this._collides(V_TEMP_A)) player.position.x = V_TEMP_A.x;
+  groundClamp(
+    p: THREE.Object3D, v: THREE.Vector3, meshes: THREE.Mesh[],
+    dt: number, setCanJump: (b:boolean)=>void
+  ) {
+    this._integrateY(p, v, dt);
+    const foot = this._setRayFromFeet(p);
+    this._showDebugRay();
 
-    // test Z
-    V_TEMP_A.copy(player.position).addScaledVector(V_TEMP_B.set(0, 0, vel.z), dt);
-    if (!this._collides(V_TEMP_A)) player.position.z = V_TEMP_A.z;
+    this._maybeDetach(p, foot);
+    const hit = this._firstWalkableHit(p, meshes);
+
+    hit && v.y <= 0
+      ? this._land(p, v, hit, setCanJump)
+      : this._clampToPlane(p, v, setCanJump);
   }
 
-  /**
-   * Ground detection & snapping. Sets canJump(true) when landed.
-   */
-  groundClamp(player: THREE.Object3D, vel: THREE.Vector3, worldMeshes: THREE.Mesh[], dt: number, setCanJump: (v: boolean) => void) {
-    // 1) Integrate Y
-    vel.y -= this.cfg.GRAVITY * dt;
-    player.position.y += vel.y * dt;
+  /* ─── helpers (<5 lines each) ─────────────────────────────────── */
 
-    // 2) Build foot‐ray origin
-    V_TEMP_A.copy(player.position);
-    V_TEMP_A.y -= (this.cfg.PLAYER_SIZE - 0.01);
-    this.ray.ray.origin.copy(V_TEMP_A);
-    //this.ray.far = this.cfg.STEP_DOWN + Math.abs(vel.y * dt) + 0.2;
-    this.ray.far = 2;
+  /** single AABB for moving mesh */
+  private _boxOf(m: THREE.Mesh) {
+    return (m.userData._box ||= new THREE.Box3()).setFromObject(m);
+  }
 
-    if (this.dbg) {
-        this.dbg.position.copy(V_TEMP_A);
-        this.dbg.setLength(this.ray.far);
-    }
+  private _nextPos(p: THREE.Object3D, dx=0, dz=0, dt=0) {
+    return V_TEMP_A.copy(p.position).addScaledVector(V_TEMP_B.set(dx,dz,0), dt);
+  }
 
-    // 3) DETACH from platform if you've walked off it
-    if (player.userData.currentPlatform) {
-        const plat   = player.userData.currentPlatform;
-        const footBB = new THREE.Box3().setFromCenterAndSize(
-        V_TEMP_A,
-        new THREE.Vector3(this.cfg.PLAYER_SIZE * 0.6, 0.1, this.cfg.PLAYER_SIZE * 0.6)
-        );
-        if (!footBB.intersectsBox(plat.userData.box)) {
-        player.userData.currentPlatform = null;
-        if (plat.userData) plat.userData.rider = null;
-        }
-    }
+  private _collides(pt: THREE.Vector3) {
+    return this.obstacleBoxes.some(b => b.containsPoint(pt));
+  }
 
-    // 4) RAYCAST ground + current platform
-    const targets = player.userData.currentPlatform
-        ? [...worldMeshes, player.userData.currentPlatform]
-        : worldMeshes;
-    const hits = this.ray.intersectObjects(targets, true);
+  private _integrateY(p: THREE.Object3D, v: THREE.Vector3, dt: number) {
+    v.y -= this.cfg.GRAVITY * dt;
+    p.position.y += v.y * dt;
+  }
 
-    // 5) pick the first mesh marked isGround + mostly up-facing
-    const walkable = hits.find(h =>
-        isGroundHit(h) &&
-        faceNormal(h).y > 0.01
+  private _setRayFromFeet(p: THREE.Object3D) {
+    const o = V_TEMP_A.copy(p.position);
+    o.y -= this.cfg.PLAYER_SIZE - 0.01;
+    this.ray.ray.origin.copy(o);
+    this.ray.far = 2;                         // ← test value
+    return o;
+  }
+
+  private _showDebugRay() {
+    if (!this.dbg) return;
+    this.dbg.position.copy(this.ray.ray.origin);
+    this.dbg.setLength(this.ray.far);
+  }
+
+  private _maybeDetach(p: THREE.Object3D, foot: THREE.Vector3) {
+    const plat = p.userData.currentPlatform;
+    if (!plat) return;
+    const box = new THREE.Box3().setFromCenterAndSize(
+      foot, new THREE.Vector3(this.cfg.PLAYER_SIZE*0.6,0.1,this.cfg.PLAYER_SIZE*0.6)
     );
-
-    // 6) LANDED: snap, zero Y, re-attach if platform
-    if (walkable && vel.y <= 0) {
-        const floorY = walkable.point.y;
-        player.position.y = floorY + this.cfg.PLAYER_SIZE;
-        vel.y = 0;
-        setCanJump(true);
-
-        if (walkable.object.userData.isPlatform) {
-        const newPlat = walkable.object;
-        if (player.userData.currentPlatform !== newPlat) {
-            newPlat.userData.offsetY     = player.position.y - newPlat.position.y;
-            player.userData.currentPlatform = newPlat;
-            newPlat.userData.rider          = player;
-        }
-        } else {
-        player.userData.currentPlatform = null;
-        }
-
-        player.userData.currentGround = walkable.object;
-        return; // done
+    if (!box.intersectsBox(plat.userData.box)) {
+      p.userData.currentPlatform = null;
+      plat.userData.rider = null;
     }
+  }
 
-    // 7) FALLBACK to global floor
+  private _rayTargets(p: THREE.Object3D, meshes: THREE.Mesh[]) {
+    return p.userData.currentPlatform
+      ? [...meshes, p.userData.currentPlatform]
+      : meshes;
+  }
+
+  private _firstWalkableHit(p: THREE.Object3D, meshes: THREE.Mesh[]) {
+    return this.ray.intersectObjects(this._rayTargets(p, meshes), true)
+      .find(h => isGroundHit(h) && faceNormal(h).y > 0.01);
+  }
+
+  private _land(
+    p: THREE.Object3D, v: THREE.Vector3,
+    hit: THREE.Intersection, setCanJump:(b:boolean)=>void
+  ) {
+    p.position.y = hit.point.y + this.cfg.PLAYER_SIZE;
+    v.y = 0;  setCanJump(true);
+
+    if (hit.object.userData.isPlatform) {
+      p.userData.currentPlatform = hit.object;
+      hit.object.userData.rider = p;
+    } else p.userData.currentPlatform = null;
+
+    p.userData.currentGround = hit.object;
+    this.lastGroundY = hit.point.y;
+  }
+
+  private _clampToPlane(
+    p: THREE.Object3D, v: THREE.Vector3, setCanJump:(b:boolean)=>void
+  ) {
     const minY = GROUND_Y + this.cfg.PLAYER_SIZE;
-    if (player.position.y < minY) {
-        player.position.y = minY;
-        vel.y = 0;
-        setCanJump(true);
-        player.userData.currentPlatform = null;
-        player.userData.currentGround   = null;
+    if (p.position.y < minY) {
+      p.position.y = minY; v.y = 0; setCanJump(true);
+      p.userData.currentPlatform = null; p.userData.currentGround = null;
     }
-
-    // 8) If we hit a platform, re-attach
-    this.refreshObstacles({
-      worldMeshes: worldMeshes,
-      staticBoxes: [],
-      movingMeshes: [],
-    });
-}
-
-    // private _updateObstacleBoxes() {
-    //     this.obstacleBoxes.length = 0;
-    //     this.staticBoxes.forEach((b: THREE.Box3) => this.obstacleBoxes.push(b));
-
-    //     this.movingMeshes.forEach((m: THREE.Mesh) => {
-    //         if (!m.userData._box) m.userData._box = new THREE.Box3();
-    //         m.userData._box
-    //         .setFromObject(m)
-    //         .expandByVector(new THREE.Vector3(0, 2, 0));
-    //         this.obstacleBoxes.push(m.userData._box);
-    //     });
-    // }
+  }
 }
 
 // ----------------------
