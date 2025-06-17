@@ -1,8 +1,40 @@
 // walking.ts ── TS‑friendly helpers for the refactored physics stack
 //------------------------------------------------------------
 import * as THREE from 'three';
-import { CollisionManager } from './collisionManager';
+import { CollisionManager, InputManager } from './collisionManager';
 import { ThreeJSDrawing } from '../types';
+
+let sharedInputManager: InputManager | null = null;
+
+/**
+ * Call this once with your app's real `InputManager`
+ * so the compatibility wrappers can forward events to it.
+ */
+export function setInputManager(manager: InputManager) {
+  sharedInputManager = manager;
+}
+
+/**
+ * Legacy keyboard down handler — wraps new InputManager logic.
+ */
+export function onKeyDownWalking(event: KeyboardEvent, keyManager: InputManager) {
+  if (!sharedInputManager) {
+    console.warn('onKeyDownWalking called before InputManager was set.');
+    return;
+  }
+  sharedInputManager['keys'][event.code] = true;
+}
+
+/**
+ * Legacy keyboard up handler — wraps new InputManager logic.
+ */
+export function onKeyUpWalking(event: KeyboardEvent, keyManager: InputManager) {
+  if (!sharedInputManager) {
+    console.warn('onKeyUpWalking called before InputManager was set.');
+    return;
+  }
+  sharedInputManager['keys'][event.code] = false;
+}
 
 //------------------------------------------------------------
 // Utilities
@@ -14,13 +46,19 @@ export function addGround(threejsDrawing: ThreeJSDrawing, mesh: THREE.Mesh) {
 }
 
 /** Register a static obstacle (mesh or pre‑built Box3). */
-export function addObstacle(threejsDrawing: ThreeJSDrawing, source: THREE.Object3D | THREE.Box3) {
+export function addObstacle(threejsDrawingOrStaticBoxes: ThreeJSDrawing | THREE.Box3[], source: THREE.Object3D | THREE.Box3) {
   if (source instanceof THREE.Box3) {
-    threejsDrawing.data.staticBoxes.push(source);
+    if (Array.isArray(threejsDrawingOrStaticBoxes)) {
+      threejsDrawingOrStaticBoxes.push(source);
+    } else {
+      threejsDrawingOrStaticBoxes.data.staticBoxes.push(source);
+    }
   } else {
     const box = new THREE.Box3().setFromObject(source);
     source.userData.box = box;
-    threejsDrawing.data.staticBoxes.push(box);
+    if (!Array.isArray(threejsDrawingOrStaticBoxes)) {
+      threejsDrawingOrStaticBoxes.data.staticBoxes.push(box);
+    }
   }
 }
 
@@ -64,3 +102,54 @@ export function makeCollisionManager(
 export function runFrame(collision: CollisionManager) {
   collision.update();
 }
+
+
+function simpleBoxClamp(yawObject: { position: { x: any; z: any; }; }, obstacleBoxes: any) {
+    // ———————————————— simple box clamp ————————————————
+    // snap to the highest static box under your feet
+    const px = yawObject.position.x, pz = yawObject.position.z;
+    let bestY = -Infinity;
+
+    for (const box of obstacleBoxes) {
+        if (px >= box.min.x && px <= box.max.x && pz >= box.min.z && pz <= box.max.z) {
+            bestY = Math.max(bestY, box.max.y);
+        }
+    }
+
+    return bestY;
+}
+
+export function walkingAnimationCallback(scene: THREE.Scene, controls: any, collision: any, elapsed: number, override = false) {
+    if (controls.isLocked === true || (override === true && controls.name === 'PointerLockControls')) {
+        //const delta = clock.getDelta(); // measure time between frames
+        //const yawObject = controls.getObject();   // outer object of PLC
+        //const yawObject = getYawObject(controls);
+        const ignore =
+                collision.player.userData.currentPlatform?.userData.box        // moving lift
+             || collision.player.userData.currentGround?.userData.box          // static ground (walkway, floor)
+             || null;
+
+        collision.update(controls, elapsed, ignore);
+    }
+}
+
+
+export function updateObstacleBoxes(staticBoxes: THREE.Box3[], movingMeshes: THREE.Mesh[], obstacleBoxes: THREE.Box3[]) {
+    obstacleBoxes.length = 0;               // recycle the array
+
+    // 1) copy all the static ones
+    staticBoxes.forEach(b => obstacleBoxes.push(b));
+
+    // 2) refresh & copy each moving mesh
+    movingMeshes.forEach(mesh => {
+        if (!mesh.userData.box) mesh.userData.box = new THREE.Box3();
+        mesh.userData.box.setFromObject(mesh);   // track its new position
+
+        // make it tall enough to collide with the player
+        mesh.userData.box.expandByVector(new THREE.Vector3(0, 2, 0));
+        mesh.userData.box.object = mesh;
+
+        obstacleBoxes.push(mesh.userData.box);
+    });
+}
+

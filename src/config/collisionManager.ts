@@ -316,6 +316,10 @@ export class CollisionManager {
     this.collision = new CollisionSystem(PhysicsConfig, args.debugArrow);
   }
 
+  public get keyManager() {
+    return this.input; 
+  }
+
   /** Call from render loop. */
   update() {
     const dt = Math.min(this.clock.getDelta(), 0.05); // clamp big steps

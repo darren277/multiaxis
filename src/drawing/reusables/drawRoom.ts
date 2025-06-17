@@ -47,7 +47,7 @@ function drawRoom(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
     threejsDrawing.data.ceiling = drawFloor(scene, woodMat, 200);
     (threejsDrawing.data.ceiling as THREE.Mesh).rotation.x = Math.PI / 2;
     (threejsDrawing.data.ceiling as THREE.Mesh).position.y = 200;
-    addObstacle(threejsDrawing.data.staticBoxes as THREE.Box3[], threejsDrawing.data.ceiling);
+    addObstacle(threejsDrawing, threejsDrawing.data.ceiling);
 
     // Draw walls
     threejsDrawing.data.southWall = drawFloor(scene, woodMat, 200);

@@ -77,5 +77,14 @@ export function startRenderLoop(renderer: THREE.WebGLRenderer, renderables: Rend
         if (outlineEffectEnabled && effect) {
             effect.render(scene, camera);
         }
+
+        if (threejsDrawing.data.collision) {
+            threejsDrawing.data.collision.update(timestamp);
+
+            //console.log('Direction:', threejsDrawing.data.collision.keyManager.direction.toArray());
+            //console.log('Jump?', threejsDrawing.data.collision.keyManager.consumeJump());
+
+            threejsDrawing.data.keyManager.syncFromInput();
+        }
     });
 }
