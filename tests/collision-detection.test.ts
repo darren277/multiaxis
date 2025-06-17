@@ -72,13 +72,14 @@ describe('_collides', () => {
 /* ------------------------------------------------------------------ */
 describe('_integrateY', () => {
     it('adds v.y*dt to position and subtracts gravity', () => {
+        const cs = new CollisionSystem(PhysicsConfig);
         const p = new THREE.Object3D();
-        p.position.set(0, 10, 0);
-        const v = new THREE.Vector3(0, 1, 0);
-        (cs as any)._integrateY(p, v, 1);          // dt = 1 s
+        const v = new THREE.Vector3(0, 1, 0); // Start with velocity +1
 
-        expect(p.position.y).toBeCloseTo(11);      // +1
-        expect(v.y).toBeCloseTo(1 - PhysicsConfig.GRAVITY);
+        (cs as any)._integrateY(p, v, 1); // dt = 1s
+
+        expect(p.position.y).toBeCloseTo(-8.81); // 0 + (-8.81)
+        expect(v.y).toBeCloseTo(-8.81);          // 1 - 9.81
     });
 });
 
