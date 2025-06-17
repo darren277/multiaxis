@@ -20,8 +20,8 @@ function isGroundHit(hit: THREE.Intersection) {
     return false;
 }
 
-function faceNormal(hit: THREE.Intersection): THREE.Vector3 | false {
-    if (!hit.face) return false;
+function faceNormal(hit: THREE.Intersection): THREE.Vector3 {
+    if (!hit.face) return new THREE.Vector3();
     const n = hit.face.normal.clone().applyMatrix3(new THREE.Matrix3().getNormalMatrix(hit.object.matrixWorld)).normalize();
     return n; // upward‑facing surface
 }
@@ -293,81 +293,99 @@ export class CollisionSystem {
    * Ground detection & snapping. Sets canJump(true) when landed.
    */
   groundClamp(player: THREE.Object3D, vel: THREE.Vector3, worldMeshes: THREE.Mesh[], dt: number, setCanJump: (v: boolean) => void) {
-    /* ----------  positions & ray ---------- */
+    // 1) Integrate Y
+    vel.y -= this.cfg.GRAVITY * dt;
+    player.position.y += vel.y * dt;
+
+    // 2) Build foot‐ray origin
     V_TEMP_A.copy(player.position);
     V_TEMP_A.y -= (this.cfg.PLAYER_SIZE - 0.01);
     this.ray.ray.origin.copy(V_TEMP_A);
-    this.ray.far = this.cfg.STEP_DOWN + Math.abs(vel.y * dt) + 0.2;
+    //this.ray.far = this.cfg.STEP_DOWN + Math.abs(vel.y * dt) + 0.2;
+    this.ray.far = 2;
 
     if (this.dbg) {
         this.dbg.position.copy(V_TEMP_A);
         this.dbg.setLength(this.ray.far);
     }
 
-    /* ----------  detach from current platform if stepped off ---------- */
+    // 3) DETACH from platform if you've walked off it
     if (player.userData.currentPlatform) {
-        const plat = player.userData.currentPlatform;
-        const footBox = new THREE.Box3().setFromCenterAndSize(
+        const plat   = player.userData.currentPlatform;
+        const footBB = new THREE.Box3().setFromCenterAndSize(
         V_TEMP_A,
         new THREE.Vector3(this.cfg.PLAYER_SIZE * 0.6, 0.1, this.cfg.PLAYER_SIZE * 0.6)
         );
-        if (!footBox.intersectsBox(plat.userData.box)) {
+        if (!footBB.intersectsBox(plat.userData.box)) {
         player.userData.currentPlatform = null;
         if (plat.userData) plat.userData.rider = null;
         }
     }
 
-    /* ----------  raycast (include current platform if still on one) --- */
-    const rayTargets = player.userData.currentPlatform
+    // 4) RAYCAST ground + current platform
+    const targets = player.userData.currentPlatform
         ? [...worldMeshes, player.userData.currentPlatform]
         : worldMeshes;
+    const hits = this.ray.intersectObjects(targets, true);
 
-    const hits = this.ray.intersectObjects(rayTargets, true);
+    // 5) pick the first mesh marked isGround + mostly up-facing
+    const walkable = hits.find(h =>
+        isGroundHit(h) &&
+        faceNormal(h).y > 0.01
+    );
 
-    /* ----------  pick first walkable hit ---------- */
-    const walkable = hits.find(h => {
-        if (!isGroundHit(h)) return false;
-        if (!h.face) return false;
-        const normal = faceNormal(h);
-        return normal !== false && normal.y > 0.01;
-    });
-
-    /* ----------  landed on something? ---------- */
+    // 6) LANDED: snap, zero Y, re-attach if platform
     if (walkable && vel.y <= 0) {
         const floorY = walkable.point.y;
         player.position.y = floorY + this.cfg.PLAYER_SIZE;
         vel.y = 0;
         setCanJump(true);
 
-        /* --- platform attach logic --- */
         if (walkable.object.userData.isPlatform) {
-        const plat = walkable.object;
-        if (player.userData.currentPlatform !== plat) {
-            plat.userData.offsetY = player.position.y - plat.position.y;
-            player.userData.currentPlatform = plat;
-            plat.userData.rider = player;
+        const newPlat = walkable.object;
+        if (player.userData.currentPlatform !== newPlat) {
+            newPlat.userData.offsetY     = player.position.y - newPlat.position.y;
+            player.userData.currentPlatform = newPlat;
+            newPlat.userData.rider          = player;
         }
         } else {
         player.userData.currentPlatform = null;
         }
 
         player.userData.currentGround = walkable.object;
-        this.lastGroundY = floorY;
-        return; // ← we’re done
+        return; // done
     }
 
-    /* ----------  airborne / no walkable hit ---------- */
-    player.userData.currentGround = null;
-
-    /* ----------  fail-safe ground plane ---------- */
-    if (player.position.y < GROUND_Y + this.cfg.PLAYER_SIZE) {
-        player.position.y = GROUND_Y + this.cfg.PLAYER_SIZE;
+    // 7) FALLBACK to global floor
+    const minY = GROUND_Y + this.cfg.PLAYER_SIZE;
+    if (player.position.y < minY) {
+        player.position.y = minY;
         vel.y = 0;
         setCanJump(true);
         player.userData.currentPlatform = null;
-        return;
+        player.userData.currentGround   = null;
     }
-    }
+
+    // 8) If we hit a platform, re-attach
+    this.refreshObstacles({
+      worldMeshes: worldMeshes,
+      staticBoxes: [],
+      movingMeshes: [],
+    });
+}
+
+    // private _updateObstacleBoxes() {
+    //     this.obstacleBoxes.length = 0;
+    //     this.staticBoxes.forEach((b: THREE.Box3) => this.obstacleBoxes.push(b));
+
+    //     this.movingMeshes.forEach((m: THREE.Mesh) => {
+    //         if (!m.userData._box) m.userData._box = new THREE.Box3();
+    //         m.userData._box
+    //         .setFromObject(m)
+    //         .expandByVector(new THREE.Vector3(0, 2, 0));
+    //         this.obstacleBoxes.push(m.userData._box);
+    //     });
+    // }
 }
 
 // ----------------------
@@ -419,12 +437,12 @@ export class CollisionManager {
     this.collision.refreshObstacles(this.args.targets);
 
     //    5a. horizontal slide
-    this.collision.slideHorizontal(this.args.player, this.physics.velocity, delta);
+    this.collision.slideHorizontal(yawObject, this.physics.velocity, delta);
 
     //    5b. vertical move (integrate Y) then clamp to ground
-    this.args.player.position.y += this.physics.velocity.y * delta;
+    yawObject.position.y += this.physics.velocity.y * delta;
     this.collision.groundClamp(
-      this.args.player,
+      yawObject,
       this.physics.velocity,
       this.args.targets.worldMeshes,
       delta,
