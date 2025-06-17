@@ -294,7 +294,7 @@ export class CollisionSystem {
   }
 
   private _nextPos(p: THREE.Object3D, dx=0, dz=0, dt=0) {
-    return V_TEMP_A.copy(p.position).addScaledVector(V_TEMP_B.set(dx,dz,0), dt);
+    return p.position.clone().addScaledVector(new THREE.Vector3(dx, 0, dz), dt);
   }
 
   private _collides(pt: THREE.Vector3) {
