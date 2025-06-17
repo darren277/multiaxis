@@ -20,10 +20,10 @@ function isGroundHit(hit: THREE.Intersection) {
     return false;
 }
 
-function faceNormal(hit: THREE.Intersection) {
+function faceNormal(hit: THREE.Intersection): THREE.Vector3 | false {
     if (!hit.face) return false;
     const n = hit.face.normal.clone().applyMatrix3(new THREE.Matrix3().getNormalMatrix(hit.object.matrixWorld)).normalize();
-    return n.y > 0.01; // upward‑facing surface
+    return n; // upward‑facing surface
 }
 
 export function getYawObject(controls: any): THREE.Object3D {
@@ -250,6 +250,7 @@ export interface CollisionTargets {
 export class CollisionSystem {
   private readonly obstacleBoxes: THREE.Box3[] = [];
   private readonly ray = new THREE.Raycaster(undefined, DOWN.clone());
+   lastGroundY: number | undefined;
 
   constructor(private readonly cfg = PhysicsConfig, private readonly dbg?: THREE.ArrowHelper) {}
 
@@ -291,39 +292,82 @@ export class CollisionSystem {
   /**
    * Ground detection & snapping. Sets canJump(true) when landed.
    */
-  groundClamp(player: THREE.Object3D, vel: THREE.Vector3, worldMeshes: THREE.Mesh[], dt: number, canJump: (v: boolean) => void) {
-    // ray origin: just above feet
+  groundClamp(player: THREE.Object3D, vel: THREE.Vector3, worldMeshes: THREE.Mesh[], dt: number, setCanJump: (v: boolean) => void) {
+    /* ----------  positions & ray ---------- */
     V_TEMP_A.copy(player.position);
     V_TEMP_A.y -= (this.cfg.PLAYER_SIZE - 0.01);
     this.ray.ray.origin.copy(V_TEMP_A);
-
-    // ray length covers stepDown + any extra fall this frame
     this.ray.far = this.cfg.STEP_DOWN + Math.abs(vel.y * dt) + 0.2;
 
-    // optional debug arrow
     if (this.dbg) {
-      this.dbg.position.copy(V_TEMP_A);
-      this.dbg.setLength(this.ray.far);
+        this.dbg.position.copy(V_TEMP_A);
+        this.dbg.setLength(this.ray.far);
     }
 
-    const hits = this.ray.intersectObjects(worldMeshes, true);
+    /* ----------  detach from current platform if stepped off ---------- */
+    if (player.userData.currentPlatform) {
+        const plat = player.userData.currentPlatform;
+        const footBox = new THREE.Box3().setFromCenterAndSize(
+        V_TEMP_A,
+        new THREE.Vector3(this.cfg.PLAYER_SIZE * 0.6, 0.1, this.cfg.PLAYER_SIZE * 0.6)
+        );
+        if (!footBox.intersectsBox(plat.userData.box)) {
+        player.userData.currentPlatform = null;
+        if (plat.userData) plat.userData.rider = null;
+        }
+    }
+
+    /* ----------  raycast (include current platform if still on one) --- */
+    const rayTargets = player.userData.currentPlatform
+        ? [...worldMeshes, player.userData.currentPlatform]
+        : worldMeshes;
+
+    const hits = this.ray.intersectObjects(rayTargets, true);
+
+    /* ----------  pick first walkable hit ---------- */
     const walkable = hits.find(h => {
-        isGroundHit(h) && faceNormal(h)
+        if (!isGroundHit(h)) return false;
+        if (!h.face) return false;
+        const normal = faceNormal(h);
+        return normal !== false && normal.y > 0.01;
     });
 
+    /* ----------  landed on something? ---------- */
     if (walkable && vel.y <= 0) {
-      player.position.y = walkable.point.y + this.cfg.PLAYER_SIZE;
-      vel.y = 0;
-      canJump(true);
+        const floorY = walkable.point.y;
+        player.position.y = floorY + this.cfg.PLAYER_SIZE;
+        vel.y = 0;
+        setCanJump(true);
+
+        /* --- platform attach logic --- */
+        if (walkable.object.userData.isPlatform) {
+        const plat = walkable.object;
+        if (player.userData.currentPlatform !== plat) {
+            plat.userData.offsetY = player.position.y - plat.position.y;
+            player.userData.currentPlatform = plat;
+            plat.userData.rider = player;
+        }
+        } else {
+        player.userData.currentPlatform = null;
+        }
+
+        player.userData.currentGround = walkable.object;
+        this.lastGroundY = floorY;
+        return; // ← we’re done
     }
 
-    // ---------------- fallback ground plane ----------------
-    if (!walkable && player.position.y < GROUND_Y + this.cfg.PLAYER_SIZE) {
+    /* ----------  airborne / no walkable hit ---------- */
+    player.userData.currentGround = null;
+
+    /* ----------  fail-safe ground plane ---------- */
+    if (player.position.y < GROUND_Y + this.cfg.PLAYER_SIZE) {
         player.position.y = GROUND_Y + this.cfg.PLAYER_SIZE;
         vel.y = 0;
-        canJump(true);
+        setCanJump(true);
+        player.userData.currentPlatform = null;
+        return;
     }
-  }
+    }
 }
 
 // ----------------------
