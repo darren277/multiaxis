@@ -43,9 +43,14 @@ describe('_boxOf', () => {
 /* ------------------------------------------------------------------ */
 describe('_nextPos', () => {
     it('returns the player position advanced by v*dt', () => {
+        const cs = new CollisionSystem(PhysicsConfig);
         const p = new THREE.Object3D();
-        p.position.set(0, 0, 0);
-        const out = (cs as any)._nextPos(p, 1, 2, 0.5); // dx=1, dz=2
+        p.position.set(0, 0, 0); // ensure origin
+
+        const out = (cs as any)._nextPos(p, 1, 2, 0.5); // dx = 1, dz = 2, dt = 0.5
+
+        console.log('Returned nextPos:', out.toArray());
+
         expect(out.x).toBeCloseTo(0.5);  // 1 * 0.5
         expect(out.z).toBeCloseTo(1.0);  // 2 * 0.5
     });
