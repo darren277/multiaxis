@@ -64,7 +64,7 @@ export function instantiateCollision(threejsDrawing: ThreeJSDrawing) {
                 const box = new THREE.Box3().setFromObject(candidate);
                 out.push(box);
             } else {
-                console.warn('Skipping non‑Object3D staticBox:', candidate);
+                console.warn('Skipping non-Object3D staticBox:', candidate);
             }
             return out;
         }, []) ?? [];
@@ -78,6 +78,8 @@ export function instantiateCollision(threejsDrawing: ThreeJSDrawing) {
 
     const collision = new CollisionManager({player: playerObject, targets: {worldMeshes, staticBoxes, movingMeshes}, debugArrow: debugRayHelper});
     //const collision = makeCollisionManager(playerObject, threejsDrawing.data.scene, { debugRay: true });
+
+    setInputManager(collision.keyManager);
 
     const legacyKeyManager = makeLegacyKeyManager(collision.keyManager);
     threejsDrawing.data.keyManager = legacyKeyManager;

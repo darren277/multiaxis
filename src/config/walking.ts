@@ -22,7 +22,11 @@ export function onKeyDownWalking(event: KeyboardEvent, keyManager: InputManager)
     console.warn('onKeyDownWalking called before InputManager was set.');
     return;
   }
-  sharedInputManager['keys'][event.code] = true;
+
+  if (keyManager) mutateLegacyFlags(true, event.code, keyManager);
+
+  // 2) Feed the new InputManager if it's ready
+  if (sharedInputManager) (sharedInputManager as any).keys[event.code] = true;
 }
 
 /**
@@ -33,7 +37,22 @@ export function onKeyUpWalking(event: KeyboardEvent, keyManager: InputManager) {
     console.warn('onKeyUpWalking called before InputManager was set.');
     return;
   }
-  sharedInputManager['keys'][event.code] = false;
+
+  if (keyManager) mutateLegacyFlags(false, event.code, keyManager);
+
+  // 2) Feed the new InputManager if it's ready
+  if (sharedInputManager) (sharedInputManager as any).keys[event.code] = false;
+}
+
+function mutateLegacyFlags(down: boolean, code: string, km: any) {
+  switch (code) {
+    case 'ShiftLeft': case 'ShiftRight': km.isShiftDown = down; break;
+    case 'KeyW': case 'ArrowUp':         km.moveForward  = down; break;
+    case 'KeyA': case 'ArrowLeft':       km.moveLeft     = down; break;
+    case 'KeyS': case 'ArrowDown':       km.moveBackward = down; break;
+    case 'KeyD': case 'ArrowRight':      km.moveRight    = down; break;
+    case 'Space': if (down && km.canJump) km.jumpPressed = true; break;
+  }
 }
 
 //------------------------------------------------------------

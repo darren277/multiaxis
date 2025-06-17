@@ -311,9 +311,13 @@ export class CollisionManager {
   private readonly physics = new PhysicsSystem();
   private readonly collision: CollisionSystem;
   private readonly clock = new THREE.Clock();
+  public player: THREE.Object3D; // the avatar/camera wrapper
 
   constructor(private readonly args: CollisionManagerArgs) {
     this.collision = new CollisionSystem(PhysicsConfig, args.debugArrow);
+
+    // For backwards compatibility, store the player object
+    this.player = args.player;
   }
 
   public get keyManager() {
