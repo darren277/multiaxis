@@ -9,6 +9,11 @@ import { drawMultipleSvgs } from './reusables/drawSvg';
 import { ThreeJSDrawing } from '../types';
 
 function drawComplex(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
+    if (!threejsDrawing.uniqueId) {
+        threejsDrawing.uniqueId = Math.random();
+        console.log(`%c[LIFECYCLE] Main threejsDrawing object tagged with ID: ${threejsDrawing.uniqueId}`, 'color: blue; font-weight: bold;');
+    }
+
     // Draw the library
     drawLibrary(scene, threejsDrawing);
 
@@ -55,7 +60,17 @@ const complexDrawing = {
             //if (target && target.classList.contains('tv-screen')) {
             //    tvOnClick(event, {camera: null, data: null, controls: null, renderer: null, scene: null});
             //}
-            tvOnClick(event, data.scene, data.camera, data.renderer, data.data);
+            console.log(`[EVENT] Click handler sees ID: ${data.uniqueId}`);
+            console.log('TV click event:', data);
+            const wasTvClickHandled = tvOnClick(event, data.scene, data.camera, data.renderer, data);
+
+            if (wasTvClickHandled) {
+                // ...then stop this event from propagating to any other listeners
+                // (like the one that enables Pointer Lock).
+                event.stopPropagation();
+                console.log("TV click handled, stopping event propagation.");
+                return; 
+            }
         },
         //'mousemove': (event) => {},
         'keydown': (event: KeyboardEvent, data: any) => {

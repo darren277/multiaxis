@@ -1,6 +1,8 @@
 import * as THREE from "three";
 import { ThreeJSDrawing } from "../../threejsDrawing";
 
+const URL_PREFIX = 'https://darrenmackenzie-chalice-bucket.s3.us-east-1.amazonaws.com/scripts/threejs/';
+
 function renderVideoTexture(video: HTMLVideoElement, texture: THREE.VideoTexture) {
     // This function will be called to render the video texture
     if (video.readyState >= 2) {
@@ -209,12 +211,15 @@ function drawTV(scene: THREE.Scene, data: any, threejsDrawing: ThreeJSDrawing) {
     });
 
     const video = document.createElement('video');
-    video.src = 'textures/monitor/real.mp4';
+    video.src = URL_PREFIX+'textures/real.mp4';
     video.crossOrigin = 'anonymous';
     video.loop = true;
     video.muted = true;
 
     video.addEventListener('loadedmetadata', () => {
+        console.log(`%c[LIFECYCLE] "loadedmetadata" EVENT FIRED.`, 'color: green; font-weight: bold;');
+        console.log(`[EVENT] "loadedmetadata" callback sees ID: ${threejsDrawing.uniqueId}`);
+        
         const screenMesh = gltfScene.getObjectByName('Screen_1_low_Material001_0');
         if (!screenMesh) return;
 
@@ -225,15 +230,27 @@ function drawTV(scene: THREE.Scene, data: any, threejsDrawing: ThreeJSDrawing) {
         video.play();
         //threejsDrawing.data = { video, texture, plane, material };
         if (!threejsDrawing.data || !threejsDrawing.data.videoPlaylist) {
-            threejsDrawing.data = {...threejsDrawing.data,
+            // Use Object.assign to MODIFY the existing data object
+            Object.assign(threejsDrawing.data, {
                 video,
                 texture,
                 material,
                 screenMesh,
                 videoPlaying: true,
                 videoIndex: 0,
-                videoPlaylist: videos           // ← set once
-            };
+                videoPlaylist: videos
+            });
+
+            window.addEventListener('click', (event) => {
+                // Pass the necessary arguments from the threejsDrawing object.
+                onClick(
+                    event,
+                    threejsDrawing.data.scene as THREE.Scene,
+                    threejsDrawing.data.camera as THREE.Camera,
+                    threejsDrawing.data.renderer as THREE.WebGLRenderer,
+                    threejsDrawing.data
+                );
+            });
         } else {
             // 3. on later metadata events, just keep pointers up‑to‑date
             threejsDrawing.data.texture = texture;
@@ -268,22 +285,22 @@ const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 
 const videos = [
-    'textures/monitor/real.mp4',
-    'textures/BigBuckBunny_320x180.mp4',
-    'textures/monitor/real.mp4',
-    'textures/sunrise.mp4',
-    'textures/monitor/real.mp4',
-    'textures/CleanSocialVideoSalesLetter.mp4',
-    'textures/monitor/real.mp4',
-    'textures/monitor/real.mp4',
-    'textures/turtle.mp4',
-    'textures/monitor/real.mp4',
-    'textures/winnie-the-pooh-ariel.mp4',
-    'textures/monitor/real.mp4',
-    'textures/monitor/real.mp4',
-    'textures/seagull.mp4',
-    'textures/monitor/real.mp4',
-    'textures/seagulls.mp4',
+    URL_PREFIX+'textures/real.mp4',
+    URL_PREFIX+'textures/BigBuckBunny.mp4',
+    URL_PREFIX+'textures/real.mp4',
+    URL_PREFIX+'textures/sunrise.mp4',
+    URL_PREFIX+'textures/real.mp4',
+    URL_PREFIX+'textures/CleanSocialVideoSalesLetter.mp4',
+    URL_PREFIX+'textures/real.mp4',
+    URL_PREFIX+'textures/real.mp4',
+    URL_PREFIX+'textures/turtle.mp4',
+    URL_PREFIX+'textures/real.mp4',
+    URL_PREFIX+'textures/winnie-the-pooh-ariel.mp4',
+    URL_PREFIX+'textures/real.mp4',
+    URL_PREFIX+'textures/real.mp4',
+    URL_PREFIX+'textures/seagull.mp4',
+    URL_PREFIX+'textures/real.mp4',
+    URL_PREFIX+'textures/seagulls.mp4',
 ];
 
 
@@ -307,7 +324,7 @@ function handleVideoChange(data: any) {
 }
 
 
-function onClick(event: MouseEvent, scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.WebGLRenderer, data: any) {
+function onClick(event: MouseEvent, scene: THREE.Scene, camera: THREE.Camera, renderer: THREE.WebGLRenderer, threejsDrawing: ThreeJSDrawing): boolean {
     // Convert mouse click position to normalized device coordinates (-1 to +1)
     const canvas = renderer.domElement;
     const rect = canvas.getBoundingClientRect();
@@ -327,19 +344,21 @@ function onClick(event: MouseEvent, scene: THREE.Scene, camera: THREE.Camera, re
 
         if (intersected.name === 'TV_Front_Switch_1_low_Material001_0') {
             console.log('Button pressed! Changing video...');
-            handleVideoChange(data);
-            break;
+            handleVideoChange(threejsDrawing.data);
+            return true;
         }
         if (intersected.name === 'TV_Front_Switch_8_low_Material001_0') {
-            if (data.video) {
-                data.video.muted = !data.video.muted;
-                console.log(`Video is now ${data.video.muted ? 'muted' : 'unmuted'}`);
+            if (threejsDrawing.data.video) {
+                threejsDrawing.data.video.muted = !threejsDrawing.data.video.muted;
+                console.log(`Video is now ${threejsDrawing.data.video.muted ? 'muted' : 'unmuted'}`);
             } else {
                 console.warn('No video element found to toggle mute');
             }
-            break;
+            return true;
         }
     }
+    console.log('No interactive object clicked');
+    return false; // No interactive object clicked
 }
 
 const tvDrawing = {
@@ -350,9 +369,10 @@ const tvDrawing = {
 //        keyup:   (e, data) => onKey(e, data)
 //    },
     eventListeners: {
-        click: (e: MouseEvent, data: any) => {
-            onClick(e, data.scene, data.camera, data.renderer, data.data);
-        }
+        // click: (e: MouseEvent, data: any) => {
+        //     console.log('TV click event:', e, data);
+        //     onClick(e, data.scene, data.camera, data.renderer, data.data);
+        // }
     },
     animationCallback: (renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawing: ThreeJSDrawing, camera: THREE.Camera) => {
         const data = threejsDrawing.data;
