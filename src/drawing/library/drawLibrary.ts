@@ -6,6 +6,8 @@ import { onKeyDownWalking, onKeyUpWalking, walkingAnimationCallback, addObstacle
 import { drawRoom, animateRoom } from '../reusables/drawRoom';
 import { ThreeJSDrawing } from '../../threejsDrawing';
 import { Library, Resource } from './types';
+import { extractPerTriangle } from '../../config/collisionManager';
+import { instantiateCollision } from '../../config/instantiateCollision';
 
 function drawFloor(scene: THREE.Scene) {
     const floorGeometry = new THREE.PlaneGeometry(200, 200);
@@ -86,7 +88,8 @@ function createBookCaseMesh(
     bookCaseMesh.rotation.set(rotation.x, rotation.y, rotation.z);
 
     scene.add(bookCaseMesh);
-    addObstacle(threejsDrawing, bookCaseMesh); // add to collision detection
+    addObstacle(threejsDrawing, bookCaseMesh, scene); // add to collision detection
+    //extractPerTriangle(threejsDrawing, bookCaseMesh as THREE.Mesh);
     return bookCaseMesh;
 }
 

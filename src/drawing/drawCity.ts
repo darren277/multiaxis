@@ -112,7 +112,7 @@ function drawCity(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
                 console.log('child.geometry', child.geometry);
             }
             if (child instanceof THREE.Mesh && OBSTACLES.includes(child.name)) {
-                extractPerTriangle(threejsDrawing.data.staticBoxes, child);
+                extractPerTriangle(threejsDrawing.data.staticBoxes, child, scene);
             }
         });
 
