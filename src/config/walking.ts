@@ -66,8 +66,13 @@ export function addGround(threejsDrawing: ThreeJSDrawing, mesh: THREE.Mesh) {
   threejsDrawing.data.worldMeshes.push(mesh);
 }
 
+function createBox3Helper(box: THREE.Box3, scene: THREE.Scene) {
+    const helper = new THREE.Box3Helper(box, 0xffff00); // Yellow color
+    scene.add(helper);
+}
+
 /** Register a static obstacle (mesh or pre‑built Box3). */
-export function addObstacle(threejsDrawing: ThreeJSDrawing, source: THREE.Object3D | THREE.Box3) {
+export function addObstacle(threejsDrawing: ThreeJSDrawing, source: THREE.Object3D | THREE.Box3, scene: THREE.Scene) {
     if (!threejsDrawing.data) {
         threejsDrawing.data = {
             staticBoxes: [],
@@ -78,8 +83,19 @@ export function addObstacle(threejsDrawing: ThreeJSDrawing, source: THREE.Object
 
     if (source instanceof THREE.Box3) {
         threejsDrawing.data.staticBoxes.push(source);
+
+        //createBox3Helper(source, scene);
     } else {
         const box = new THREE.Box3().setFromObject(source);
+
+        console.log(`[Obstacle Created] Name: ${source.name}, Min: ${box.min.x.toFixed(2)}, ${box.min.y.toFixed(2)}, ${box.min.z.toFixed(2)}, Max: ${box.max.x.toFixed(2)}, ${box.max.y.toFixed(2)}, ${box.max.z.toFixed(2)}`);
+
+        //createBox3Helper(box, scene);
+
+        // Make the box taller to ensure it collides with the player,
+        // even if the mesh's base is at y=0.
+        box.max.y += 3; // Add 3 units to the top of the box.
+        
         source.userData.box = box;
         threejsDrawing.data.staticBoxes.push(box);
     }
