@@ -209,7 +209,7 @@ export class InputManager {
   update(controls?: any) {
     // forward/back & strafe left/right (local XZ plane)
     const forward = ((this.keys['KeyW'] || this.keys['ArrowUp']) ? 1 : 0) - ((this.keys['KeyS'] || this.keys['ArrowDown']) ? 1 : 0);
-    let strafe  = ((this.keys['KeyA'] || this.keys['ArrowLeft']) ? 1 : 0) - ((this.keys['KeyD'] || this.keys['ArrowRight']) ? 1 : 0);
+    let strafe  = ((this.keys['KeyD'] || this.keys['ArrowRight']) ? 1 : 0) - ((this.keys['KeyA'] || this.keys['ArrowLeft']) ? 1 : 0);
 
     // If rotating POV with Shift + Arrow keys, prevent strafe
     if (this.isShiftDown && (this.keys['ArrowLeft'] || this.keys['ArrowRight'])) {
@@ -449,7 +449,7 @@ export class CollisionManager {
 
     // Apply rotation if shift key and left/right arrows are pressed
     if (this.input.isShiftDown && (this.input.keys['ArrowLeft'] || this.input.keys['ArrowRight'])) {
-        const angle = (this.input.keys['ArrowRight'] ? -1 : 1) * turnSpeed * delta;
+        const angle = (this.input.keys['ArrowLeft'] ? -1 : 1) * turnSpeed * delta;
         this.physics.rotateY(yawObject, angle);
     }
 
