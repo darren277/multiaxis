@@ -244,7 +244,7 @@ function drawLibrary(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
     const camera = threejsDrawing.data.camera;
     const renderer = threejsDrawing.data.renderer;
 
-    drawResources(scene, library, resources, row1StartX, row0StartZ, camera as THREE.Camera, renderer as THREE.WebGLRenderer);
+    drawResources(scene, library, resources, row1StartX, row0StartZ, camera as THREE.Camera, renderer as THREE.WebGLRenderer, threejsDrawing.data.controls);
 
     scene.updateMatrixWorld(true);
 
@@ -256,7 +256,7 @@ const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 
 
-function drawResources(scene: THREE.Scene, library: Library, resources: Resource[], row1StartX: number, row0StartZ: number, camera: THREE.Camera, renderer: THREE.WebGLRenderer) {
+function drawResources(scene: THREE.Scene, library: Library, resources: Resource[], row1StartX: number, row0StartZ: number, camera: THREE.Camera, renderer: THREE.WebGLRenderer, controls: any) {
     // Sort the resources alphabetically by name
     const sorted = sortAlphabeticallyByName([...resources]);
 
@@ -322,7 +322,7 @@ function drawResources(scene: THREE.Scene, library: Library, resources: Resource
     });
 
     console.log(
-        'Book‑case centres X:',
+        'Book-case centres X:',
         [...Array(DATA.library.numberOfCases).keys()].map(i => worldX(row1StartX, DATA.library, i))
     );
 
@@ -330,29 +330,65 @@ function drawResources(scene: THREE.Scene, library: Library, resources: Resource
     window.addEventListener('click', onClick, false);
 
     function onClick(event: MouseEvent) {
-        // normalised device coords
-        const rect = renderer.domElement.getBoundingClientRect();   // ← key line
-        mouse.x =  ( (event.clientX - rect.left) / rect.width  ) * 2 - 1;
-        mouse.y = -( (event.clientY - rect.top ) / rect.height ) * 2 + 1;
+        const clickedElement = event.target as HTMLElement;
+
+        const c = controls as { isLocked: boolean };
+
+        if (c && c.isLocked === true) {
+            mouse.x = 0;
+            mouse.y = 0; // don't use the mouse position if pointer is locked
+        } else {
+            // If not locked, use the actual mouse position
+            const rect = renderer.domElement.getBoundingClientRect();
+            mouse.x =  ( (event.clientX - rect.left) / rect.width  ) * 2 - 1;
+            mouse.y = -( (event.clientY - rect.top ) / rect.height ) * 2 + 1;
+        }
 
         raycaster.setFromCamera(mouse, camera);
-        const hit = raycaster.intersectObjects(resourceMeshes, /* recursive = */ false)[0];
-        if (hit) showOverlay(hit.object.userData.resource);
+        const hit = raycaster.intersectObjects(resourceMeshes, false)[0];
+        
+        if (hit) {
+            // A 3D object was hit, show the overlay and stop the event
+            // from triggering pointer lock.
+            showOverlay(hit.object.userData.resource);
+            event.stopPropagation();
+        }
+
+        // 1. Check if the user clicked the close button.
+        if (clickedElement.id === 'overlayCloseButton') {
+            const overlay = document.getElementById('resourceOverlay');
+            if (overlay) overlay.style.display = 'none';
+            
+            // Stop the event from doing anything else (like locking the pointer).
+            event.stopPropagation();
+            return;
+        }
+
+        // 2. Check if the user clicked anywhere inside the overlay container.
+        //    If so, do nothing. This prevents re-opening the overlay when clicking its content.
+        if (clickedElement.closest('#resourceOverlay')) {
+            // We don't need to close it, just stop the event from proceeding.
+            event.stopPropagation();
+            return;
+        }
     }
 }
 
 function showOverlay(resource: Resource) {
-    const overlayTitle = document.getElementById('overlayTitle');
-    if (overlayTitle) overlayTitle.textContent = resource.name;
+    const overlay = document.getElementById('resourceOverlay');
+    if (!overlay) return;
 
-    const overlayAuthorYear = document.getElementById('overlayAuthorYear');
-    if (overlayAuthorYear) overlayAuthorYear.textContent = `${resource.author} • ${resource.year}`;
-
-    const overlayBody = document.getElementById('overlayBody');
-    if (overlayBody) overlayBody.innerHTML = resource.description || '<em>No description yet.</em>';
-
-    const resourceOverlay = document.getElementById('resourceOverlay');
-    if (resourceOverlay) resourceOverlay.style.display = 'block';
+    // --- MODIFICATION: Build the content with a close button ---
+    overlay.innerHTML = `
+        <div class="overlay-content">
+            <button id="overlayCloseButton" class="overlay-close-button">&times;</button>
+            <h3 id="overlayTitle">${resource.name}</h3>
+            <p id="overlayAuthorYear">${resource.author} • ${resource.year}</p>
+            <div id="overlayBody">${resource.description || '<em>No description yet.</em>'}</div>
+        </div>
+    `;
+    
+    overlay.style.display = 'block';
 }
 
 // document.addEventListener('keydown', onKeyDownWalking);

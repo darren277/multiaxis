@@ -135,6 +135,23 @@ async function makeControls(
     case 'walking': {
         const PointerLockControls = await importPointerLockControls();
         const c = new PointerLockControls(camera, renderer.domElement);
+
+        const crosshair = document.getElementById('crosshair');
+
+        c.addEventListener('lock', () => {
+            console.log('Pointer locked. Showing crosshair.');
+            if (crosshair) {
+                crosshair.style.display = 'block';
+            }
+        });
+
+        c.addEventListener('unlock', () => {
+            console.log('Pointer unlocked. Hiding crosshair.');
+            if (crosshair) {
+                crosshair.style.display = 'none';
+            }
+        });
+        
         document.body.addEventListener('click', () => c.lock());
         scene.add(c.object);
         return c;
