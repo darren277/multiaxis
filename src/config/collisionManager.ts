@@ -4,7 +4,8 @@ import { ThreeJSDrawing } from '../threejsDrawing';
 
 export const WORLD_Y   = new THREE.Vector3(0, 1, 0);
 export const WORLD_X   = new THREE.Vector3(1, 0, 0);
-export const GROUND_Y  = 0.25; // height of the ground plane
+//export const GROUND_Y  = 0.25; // height of the ground plane
+export const GROUND_Y  = 1.0;
 export const turnSpeed = Math.PI / 2;      // 90 ° per second
 
 export const groundRay = new THREE.Raycaster();
@@ -158,8 +159,8 @@ export function checkCollision(
 // ----------------------
 // Designers can tweak these numbers in one place (or load them from JSON at runtime)
 export const PhysicsConfig = {
-  PLAYER_SIZE: 0.5,      // avatar half‑height
-  PLAYER_HEIGHT: 1.8,    // avatar full height
+  PLAYER_SIZE: 1.5,      // avatar half‑height
+  PLAYER_HEIGHT: 3.0,    // avatar full height
   STEP_DOWN:   0.5,      // curb you can step off without falling
   GRAVITY:     9.81,     // m/s²
   SPEED:       10,       // walk speed (m/s)
