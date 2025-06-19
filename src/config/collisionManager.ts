@@ -59,7 +59,9 @@ class KeyManager {
     }
 }
 
-export function extractPerTriangle(threejsDrawing: ThreeJSDrawing, mesh: THREE.Mesh) {
+export function extractPerTriangle(threejsDrawing: ThreeJSDrawing, mesh: THREE.Mesh, scene: THREE.Scene) {
+    mesh.updateMatrixWorld();
+
     const tmpBox = new THREE.Box3();
     const a = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3();
 
