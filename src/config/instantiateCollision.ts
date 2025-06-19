@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { CollisionManager, InputManager } from '../config/collisionManager';
+import { CollisionManager, InputManager, spatialHashStaticBoxes } from '../config/collisionManager';
 import { ThreeJSDrawing } from '../threejsDrawing';
 import { makeCollisionManager, setInputManager } from './walking';
 
@@ -57,12 +57,19 @@ export function instantiateCollision(threejsDrawing: ThreeJSDrawing) {
 
     const staticBoxes: THREE.Box3[] = threejsDrawing.data.staticBoxes ?? [];
 
+    console.log(`[Instantiate Collision] Found ${staticBoxes.length} total static boxes to process. The last one added was for object:`, staticBoxes[staticBoxes.length-1]);
+
+    console.log(`Populating spatial hash with ${staticBoxes.length} static boxes.`);
+    spatialHashStaticBoxes(staticBoxes);
+
     const movingMeshes = (threejsDrawing.data.movingMeshes as THREE.Object3D[] | undefined)?.filter(
         (obj): obj is THREE.Mesh => obj instanceof THREE.Mesh
     ) ?? [];
 
     const debugRayHelper = new THREE.ArrowHelper();
     (threejsDrawing.data.scene as THREE.Scene).add(debugRayHelper);
+
+    console.warn('Instantiating CollisionManager with static boxes:', staticBoxes.length, 'boxes,', staticBoxes);
 
     const collision = new CollisionManager({player: playerObject, targets: {worldMeshes, staticBoxes, movingMeshes}, debugArrow: debugRayHelper});
     //const collision = makeCollisionManager(playerObject, threejsDrawing.data.scene, { debugRay: true });
