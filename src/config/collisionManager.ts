@@ -72,9 +72,10 @@ export function extractPerTriangle(threejsDrawing: ThreeJSDrawing, mesh: THREE.M
         c.fromBufferAttribute(pos, i + 2).applyMatrix4(mesh.matrixWorld);
 
         tmpBox.setFromPoints([a, b, c]);
-        if (tmpBox.max.y - tmpBox.min.y > 3) continue; // skip tall walls
 
-        addObstacle(threejsDrawing, tmpBox.clone() as any);       // push a tiny box
+        //if (tmpBox.max.y - tmpBox.min.y > 3) continue; // skip tall walls
+
+        addObstacle(threejsDrawing, tmpBox.clone() as any, scene);       // push a tiny box
         spatialHashStaticBoxes([tmpBox.clone()]);
     }
 }
