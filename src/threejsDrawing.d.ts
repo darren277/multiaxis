@@ -77,6 +77,7 @@ export interface SceneConfig {
 }
 
 export interface ThreeJSDrawing {
+    uniqueId?: number;
     name: string;
     log?: Logger;
     dataSources: any;
