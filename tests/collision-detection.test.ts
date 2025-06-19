@@ -92,11 +92,14 @@ describe('_integrateY', () => {
 /*  _setRayFromFeet() + _showDebugRay()                               */
 /* ------------------------------------------------------------------ */
 describe('_setRayFromFeet', () => {
-    it('places ray origin just below player center', () => {
+    it('sets the ray origin to the player object center', () => {
         const p = new THREE.Object3D();
         p.position.set(0, 2, 0);
+
         const origin = (cs as any)._setRayFromFeet(p);
-        expect(origin.y).toBeCloseTo(2 - PhysicsConfig.PLAYER_SIZE + 0.01);
+
+        // The returned origin's y-coordinate should now match the player's position y-coordinate.
+        expect(origin.y).toBe(2);
     });
 });
 
