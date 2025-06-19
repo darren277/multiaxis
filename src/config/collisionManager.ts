@@ -107,7 +107,7 @@ export function spatialHashStaticBoxes(staticBoxes: THREE.Box3[]) {
     });
 }
 
-function nearbyBoxes(px: number, pz: number) {
+export function nearbyBoxes(px: number, pz: number) {
     const gx = Math.floor(px / tileSize);
     const gz = Math.floor(pz / tileSize);
     const out: THREE.Box3[] = [];
