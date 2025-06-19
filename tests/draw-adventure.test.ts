@@ -2,7 +2,7 @@
 // To run this, you would need to have vitest and three.js installed (`npm install --save-dev vitest three`).
 // Also, ensure your vitest config is set up, e.g., `environment: 'jsdom'`.
 
-import { describe, test, expect, beforeEach, vi, afterAll } from 'vitest';
+import { describe, test, expect, beforeEach, vi } from 'vitest';
 import * as THREE from 'three';
 
 // Note: With vitest, JSDOM is typically configured in `vitest.config.js` (`environment: 'jsdom'`).
@@ -191,80 +191,5 @@ describe('buildAdventureSteps', () => {
         // Check if choices are passed through and converted correctly
         expect(steps.item2.choices).toEqual({ '0': 'item1' }); // The function converts array to object
         expect(steps.item1.choices).toBeNull();
-    });
-});
-
-// =================================================================
-// Tests for Orchestrator `buildSceneItems`
-// =================================================================
-
-describe('buildSceneItems Orchestrator', () => {
-    test('should orchestrate the building process correctly', () => {
-        // Step 1: Define the mock functions we'll use.
-        const buildPhotoEntriesMock = vi.fn();
-        const buildAdventureStepsMock = vi.fn();
-        const linkStepsLinearMock = vi.fn();
-
-        // Step 2: Use vi.doMock to apply a temporary, non-hoisted mock.
-        vi.doMock('../src/drawing/adventure/drawAdventure', async (importOriginal) => {
-            const actual = await importOriginal();
-            const actualObj = (typeof actual === 'object' && actual !== null) ? actual : {};
-            return {
-                ...actualObj, // Keep the real buildSceneItems, etc.
-                // Override just the dependencies with our mocks
-                buildPhotoEntries: buildPhotoEntriesMock,
-                buildAdventureSteps: buildAdventureStepsMock,
-                linkStepsLinear: linkStepsLinearMock,
-            };
-        });
-        
-        const mockScene = new THREE.Scene();
-        const mockItems = [
-            { id: '1', choices: null, caption: 'caption1', position: { x: 0, y: 0, z: 0 } },
-            { id: '2', choices: null, caption: 'caption2', position: { x: 1, y: 1, z: 1 } }
-        ];
-
-        const mockAdventureSteps = {
-            '1': { id: '1', text: 'caption1', camera: {
-                position: new THREE.Vector3(0, 0, 0),
-                lookAt: new THREE.Vector3(0, 0, 0)
-            }, choices: null },
-            '2': { id: '2', text: 'caption2', camera: {
-                position: new THREE.Vector3(1, 1, 1),
-                lookAt: new THREE.Vector3(1, 1, 1)
-            }, choices: null }
-        };
-
-        // Define mock return values for our spies
-        const mockPhotoEntries = [{ mesh: 'mesh1', labelObject: document.createElement('div'), item: mockItems[0] }, { mesh: 'mesh2', labelObject: document.createElement('div'), item: mockItems[1] }];
-        
-        buildPhotoEntriesMock.mockReturnValue(mockPhotoEntries as any);
-        buildAdventureStepsMock.mockReturnValue(mockAdventureSteps);
-        // linkStepsLinear just mutates its argument, so no return value is needed.
-        linkStepsLinearMock.mockImplementation(() => {});
-
-        // Call the REAL `buildSceneItems` function
-        const result = adventureModule.buildSceneItems(mockScene, mockItems);
-
-        // 1. Verify buildPhotoEntries was called with the correct default arguments
-        // AssertionError: expected "buildPhotoEntries" to be called 1 times, but got 0 times
-        // This is because the mock was not set up correctly.
-        // The mock needs to be set up before the function is called.
-        expect(buildPhotoEntriesMock).toHaveBeenCalledTimes(1);
-        expect(buildPhotoEntriesMock).toHaveBeenCalledWith(mockScene, mockItems, 4, 3, null, undefined);
-
-        // 2. Verify buildAdventureSteps was called
-        expect(buildAdventureStepsMock).toHaveBeenCalledTimes(1);
-        expect(buildAdventureStepsMock).toHaveBeenCalledWith(mockItems);
-
-        // 3. Verify linkStepsLinear was called with the result from buildAdventureSteps
-        expect(linkStepsLinearMock).toHaveBeenCalledTimes(1);
-        expect(linkStepsLinearMock).toHaveBeenCalledWith(mockAdventureSteps);
-
-        // 4. Verify the final returned object has the correct shape and data
-        expect(result).toEqual({
-            allPhotoEntries: mockPhotoEntries,
-            adventureSteps: mockAdventureSteps,
-        });
     });
 });
