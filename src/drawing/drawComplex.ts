@@ -116,7 +116,7 @@ const complexDrawing = {
     },
     'sceneConfig': {
         'cssRendererEnabled': 'DUAL',
-        'startPosition': { x: 0, y: 10, z: 0 },
+        'startPosition': { x: 20, y: 20, z: 20 },
         'lookAt': { x: 0, y: 10, z: 10 },
     }
 }
