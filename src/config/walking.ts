@@ -86,6 +86,9 @@ export function addObstacle(threejsDrawing: ThreeJSDrawing, source: THREE.Object
 
         //createBox3Helper(source, scene);
     } else {
+        // Ensure the object's world matrix is updated before creating the box.
+        source.updateMatrixWorld();
+
         const box = new THREE.Box3().setFromObject(source);
 
         console.log(`[Obstacle Created] Name: ${source.name}, Min: ${box.min.x.toFixed(2)}, ${box.min.y.toFixed(2)}, ${box.min.z.toFixed(2)}, Max: ${box.max.x.toFixed(2)}, ${box.max.y.toFixed(2)}, ${box.max.z.toFixed(2)}`);
