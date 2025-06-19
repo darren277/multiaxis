@@ -125,6 +125,8 @@ function drawRoom(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
     threejsDrawing.data.movingMeshes.push(elevator);
     threejsDrawing.data.worldMeshes.push(elevator);
 
+    (elevator as THREE.Mesh).userData.isGround = true;
+
     (scene as THREE.Scene).updateMatrixWorld(true);
     threejsDrawing.data.worldMeshes.forEach((m: { matrixWorldNeedsUpdate: any; uuid: string | any[]; name: any; }) => {console.assert(!m.matrixWorldNeedsUpdate, `${m.uuid.slice(0,8)} still dirty (${m.name || 'unnamed'})`);});
 
