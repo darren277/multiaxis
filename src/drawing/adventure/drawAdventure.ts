@@ -26,7 +26,7 @@ const vector = new THREE.Vector3(); // reuse this
  * @param {THREE.WebGLRenderer} renderer
  * @param {number} yOffset        How far (world units) below the anchor to show the label.  Negative = downward.
  */
-function updateLabelPosition(anchor: THREE.Object3D | THREE.Vector3 | { x: number, y: number, z: number }, labelEl: HTMLElement, camera: THREE.Camera, renderer: THREE.WebGLRenderer, yOffset = -1.8) {
+export function updateLabelPosition(anchor: THREE.Object3D | THREE.Vector3 | { x: number, y: number, z: number }, labelEl: HTMLElement, camera: THREE.Camera, renderer: THREE.WebGLRenderer, yOffset = -1.8) {
     /* ---------------------------------------------------------------
     * 1.  Resolve a Vector3
     * ------------------------------------------------------------- */
@@ -83,7 +83,7 @@ const Z = 6; // 6 units in front of the item, along the negative Z axis
 
 const Y_FACTOR = 0; // Adjust this factor to position the camera above the item
 
-function vantagePointForItem(item: Item): {position: THREE.Vector3, lookAt: THREE.Vector3} {
+export function vantagePointForItem(item: Item): {position: THREE.Vector3, lookAt: THREE.Vector3} {
     // Where the item is
     const itemPos = new THREE.Vector3(item.position.x, item.position.y + Y_FACTOR, item.position.z);
 
@@ -118,7 +118,7 @@ export type AdventureStep = {
 // 1 · buildPhotoEntries  →  THREE‑related side effects only
 // ---------------------------------------------------------------------------
 // const allPhotoEntries: { mesh: THREE.Mesh<THREE.PlaneGeometry, THREE.MeshBasicMaterial, THREE.Object3DEventMap> | null; labelObject: any; item: { id: string; image?: string; video?: string; caption: string; position: { x: number; y: number; z: number; }; customClasses?: string; dataAttributes?: { [key: string]: string; }; }; }[] = [];
-function buildPhotoEntries(
+export function buildPhotoEntries(
     scene: THREE.Scene,
     items: Item[],
     worldWidth: number,
@@ -173,7 +173,7 @@ function buildPhotoEntries(
 // ---------------------------------------------------------------------------
 // 2 · buildAdventureSteps  →  pure data construction
 // ---------------------------------------------------------------------------
-function buildAdventureSteps(items: Item[]): Record<string, AdventureStep> {
+export function buildAdventureSteps(items: Item[]): Record<string, AdventureStep> {
     const steps: Record<string, AdventureStep> = {};
 
     items.forEach((item) => {
@@ -193,7 +193,7 @@ function buildAdventureSteps(items: Item[]): Record<string, AdventureStep> {
 // ---------------------------------------------------------------------------
 // 3 · linkStepsLinear  →  mutates the step map if needed
 // ---------------------------------------------------------------------------
-function linkStepsLinear(steps: Record<string, AdventureStep>): void {
+export function linkStepsLinear(steps: Record<string, AdventureStep>): void {
     const ids = Object.keys(steps);
     ids.forEach((id, idx) => {
         if (steps[id].choices) return; // already linked manually
@@ -241,7 +241,7 @@ Summary & Extensions
 */
 
 
-function drawMassiveBackdrop(scene: THREE.Scene) {
+export function drawMassiveBackdrop(scene: THREE.Scene) {
     const bgLoader = new THREE.TextureLoader();
 
     const position = [0.0, 0.0, -20.0];
@@ -275,7 +275,7 @@ function constructElement(document: Document, tagName: string, id: string, attrs
 }
 
 
-async function drawAdventure(scene: THREE.Scene, data: any, threejsDrawing: any) {
+export async function drawAdventure(scene: THREE.Scene, data: any, threejsDrawing: any) {
     const use3DRenderer = !!threejsDrawing.data.use3DRenderer;
     const css3DRenderer = use3DRenderer ? threejsDrawing.data.css3DRenderer : null;
     const css3DScene = use3DRenderer ? threejsDrawing.data.css3DScene : null;
