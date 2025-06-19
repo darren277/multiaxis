@@ -298,7 +298,9 @@ export class CollisionSystem {
   /* ─── public API ──────────────────────────────────────────────── */
   refreshObstacles(t: CollisionTargets) {
     this.obstacleBoxes.length = 0;
-    t.staticBoxes .forEach(b => this.obstacleBoxes.push(b));
+    t.staticBoxes.forEach((b) => {
+        this.obstacleBoxes.push(b)
+    });
     t.movingMeshes.forEach(m => this.obstacleBoxes.push(this._boxOf(m)));
   }
 
@@ -334,8 +336,20 @@ export class CollisionSystem {
     return p.position.clone().addScaledVector(new THREE.Vector3(dx, 0, dz), dt);
   }
 
-  private _collides(pt: THREE.Vector3) {
-    return this.obstacleBoxes.some(b => b.containsPoint(pt));
+  private _collides(pt: THREE.Vector3): boolean {
+    const playerBox = new THREE.Box3().setFromCenterAndSize(
+        pt,
+        new THREE.Vector3(this.cfg.PLAYER_SIZE, this.cfg.PLAYER_HEIGHT, this.cfg.PLAYER_SIZE)
+    );
+
+    for (const ob of this.obstacleBoxes) {
+        // We only care about potential collisions to reduce log spam
+        if (playerBox.intersectsBox(ob)) {
+            return true;
+        }
+    }
+    
+    return false;
   }
 
   private _integrateY(p: THREE.Object3D, v: THREE.Vector3, dt: number) {
@@ -343,11 +357,16 @@ export class CollisionSystem {
     p.position.y += v.y * dt;
   }
 
-  private _setRayFromFeet(p: THREE.Object3D) {
+  private _setRayFromFeet(p: THREE.Object3D): THREE.Vector3 {
     const o = V_TEMP_A.copy(p.position);
-    o.y -= this.cfg.PLAYER_SIZE - 0.01;
+
+    // The ray should start from the player's center...
     this.ray.ray.origin.copy(o);
-    this.ray.far = 2;                         // ← test value
+
+    // ...and be long enough to reach the ground well below the player's feet.
+    // The length is the player's half-height plus a generous step-down distance.
+    this.ray.far = this.cfg.PLAYER_SIZE + this.cfg.STEP_DOWN;
+
     return o;
   }
 
@@ -383,14 +402,17 @@ export class CollisionSystem {
   private _land(
     p: THREE.Object3D, v: THREE.Vector3,
     hit: THREE.Intersection, setCanJump:(b:boolean)=>void
-  ) {
+) {
+    // The player's center should be their half-height (PLAYER_SIZE) above the ground.
     p.position.y = hit.point.y + this.cfg.PLAYER_SIZE;
     v.y = 0;  setCanJump(true);
 
     if (hit.object.userData.isPlatform) {
-      p.userData.currentPlatform = hit.object;
-      hit.object.userData.rider = p;
-    } else p.userData.currentPlatform = null;
+        p.userData.currentPlatform = hit.object;
+        hit.object.userData.rider = p;
+    } else {
+        p.userData.currentPlatform = null;
+    }
 
     p.userData.currentGround = hit.object;
     this.lastGroundY = hit.point.y;
@@ -468,7 +490,8 @@ export class CollisionManager {
     this.collision.slideHorizontal(yawObject, this.physics.velocity, delta);
 
     //    5b. vertical move (integrate Y) then clamp to ground
-    yawObject.position.y += this.physics.velocity.y * delta;
+    // REDUNDANT LINE: yawObject.position.y += this.physics.velocity.y * delta;
+
     this.collision.groundClamp(
       yawObject,
       this.physics.velocity,
