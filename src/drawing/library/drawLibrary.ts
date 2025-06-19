@@ -225,7 +225,7 @@ function drawLibrary(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
         const zPos = row0StartZ + i * rowSpacing;   // –92, –81.5, …
         createBookCases(
             scene,
-            threejsDrawing.data.staticBoxes ?? [],
+            threejsDrawing,
             width, height, depth,
             row1StartX,
             //spaceBetweenRows,                       // 10 → wrong
