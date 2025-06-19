@@ -166,9 +166,10 @@ export const PhysicsConfig = {
   PLAYER_HEIGHT: 3.0,    // avatar full height
   STEP_DOWN:   0.5,      // curb you can step off without falling
   GRAVITY:     9.81,     // m/s²
-  SPEED:       10,       // walk speed (m/s)
+  SPEED:       20,       // walk speed (m/s)
   TURN_SPEED:  Math.PI,  // rad/s
-  JUMP_VELOCITY: 20,      // m/s (initial upward impulse)
+  //JUMP_VELOCITY: 20,      // m/s (initial upward impulse)
+  JUMP_VELOCITY: 12,      // m/s (initial upward impulse)
 } as const;
 
 // ----------------------
