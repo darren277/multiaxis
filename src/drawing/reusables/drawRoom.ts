@@ -139,7 +139,7 @@ function drawRoom(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
 //    gui.add(lightingParams, 'shadows');
 //    gui.open();
 
-    instantiateCollision(threejsDrawing);
+    console.log('Room drawing complete. Static Boxes:', threejsDrawing.data.staticBoxes.length, threejsDrawing.data.staticBoxes);
 }
 
 function animateElevator(lift: THREE.Mesh, player: THREE.Object3D, elapsed: number) {

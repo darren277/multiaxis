@@ -247,6 +247,8 @@ function drawLibrary(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
     drawResources(scene, library, resources, row1StartX, row0StartZ, camera as THREE.Camera, renderer as THREE.WebGLRenderer);
 
     scene.updateMatrixWorld(true);
+
+    instantiateCollision(threejsDrawing);
 }
 
 
