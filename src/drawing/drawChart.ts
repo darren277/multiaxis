@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import * as TWEEN from '@tweenjs/tween.js';
 
 import { TextGeometry} from 'three/examples/jsm/geometries/TextGeometry.js';
 import { Font, FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
@@ -8,6 +9,7 @@ import { determineLabelCoordinates } from '../config/utils';
 import chartConfig from './chartConfig';
 import { ThreeJSDrawing } from "../types.js";
 
+import { showOverlay } from './chart/chartOverlay';
 
 const surrounding_opacity = 0.1;
 
@@ -153,16 +155,128 @@ function drawChart( scene: THREE.Scene, data: any, state: any, config = chartCon
     });
 }
 
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+let currentIntersected: THREE.Object3D | null = null;
+
+//const SCALE_FACTOR = 1.5;
+const SCALE_FACTOR = 1.1;
+
+//const SCALE_UP_DURATION = 350;
+//const SCALE_DOWN_DURATION = 500;
+const SCALE_UP_DURATION = 1000;
+const SCALE_DOWN_DURATION = 1000;
+
+function triggerPulse(tweenGroup: TWEEN.Group, object: THREE.Object3D) {
+    // 1. Check the lock: If the object is already animating, do nothing.
+    if (object.userData.isPulsating) {
+        return;
+    }
+
+    // 2. Set the lock: Immediately flag the object as busy.
+    object.userData.isPulsating = true;
+
+    const originalScale = object.userData.originalScale;
+    const targetScale = originalScale.clone().multiplyScalar(SCALE_FACTOR);
+
+    // 3. Create the two tweens for the pulse effect.
+    const scaleUpTween = new TWEEN.Tween(object.scale, tweenGroup)
+        .to(targetScale, SCALE_UP_DURATION)
+        .easing(TWEEN.Easing.Circular.Out);
+
+    const scaleDownTween = new TWEEN.Tween(object.scale, tweenGroup)
+        .to(originalScale, SCALE_DOWN_DURATION)
+        .easing(TWEEN.Easing.Bounce.Out);
+
+    // 4. Chain them together: When scaleUp finishes, scaleDown will start automatically.
+    scaleUpTween.chain(scaleDownTween);
+
+    // 5. Unlock the object upon completion of the ENTIRE sequence.
+    // We add the onComplete callback to the *last* tween in the chain.
+    scaleDownTween.onComplete(() => {
+        object.userData.isPulsating = false;
+    });
+
+    // 6. Start the first tween to kick off the whole sequence.
+    scaleUpTween.start();
+}
+
 const multiAxisDrawing = {
     'sceneElements': [],
     'drawFuncs': [
         {'func': drawChart, 'dataSrc': 'data', 'dataType': 'json'}
     ],
-    'eventListeners': null,
+    'eventListeners': {
+        'mousemove': (event: MouseEvent, context: any) => {
+            // Handle mouse move events on the chart
+            // Calculate mouse position in normalized device coordinates
+            // (-1 to +1) for both components
+            mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+            mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+        },
+        'click': (event: MouseEvent, context: any) => {
+            console.log('context', context);
+            const camera = context.camera;
+            
+            // We can reuse the same mouse coordinates from the mousemove handler
+            raycaster.setFromCamera(mouse, camera);
+            const intersects = raycaster.intersectObjects(context.data.interactiveObjects);
+
+            if (intersects.length > 0) {
+                const clickedObject = intersects[0].object;
+
+                console.log('Clicked on object:', clickedObject);
+
+                // Check if the clicked object has HTML content
+                if (clickedObject.userData.htmlContent) {
+                    console.log('Clicked on object with HTML content:', clickedObject.userData.htmlContent);
+                    showOverlay(clickedObject.userData.htmlContent);
+                }
+            }
+        },
+    },
     'animationCallback': (renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawing: ThreeJSDrawing, camera: THREE.Camera) => {
+        (threejsDrawing.data.tweenGroup as TWEEN.Group).update(timestamp);
+        
+        raycaster.setFromCamera(mouse, camera);
+        const intersects = raycaster.intersectObjects(threejsDrawing.data.interactiveObjects);
+
+        if (intersects.length > 0) {
+            const firstIntersected = intersects[0].object;
+
+            // Check if the mouse has moved to a NEW object.
+            if (currentIntersected !== firstIntersected) {
+                // This is our "mouse enter" event. Trigger the pulse animation.
+                triggerPulse(threejsDrawing.data.tweenGroup, firstIntersected);
+                
+                // Set the new object as the currently intersected one.
+                currentIntersected = firstIntersected;
+            }
+        } else {
+            // The mouse is not over any object, so we reset the state.
+            currentIntersected = null;
+        }
+
+        for (const obj of threejsDrawing.data.interactiveObjects) {
+            const randomScale = 0.5 + Math.random() * 0.5; // Random scale between 0.5 and 1.0
+            // add a very very slow rotation to all objects...
+            //obj.rotation.x += 0.001 * randomScale;
+            obj.rotation.y += 0.001 * randomScale;
+            //obj.rotation.z += 0.001 * randomScale;
+        }
     },
     'data': {
         'sheetMusic': null,
+        'interactiveObjects': []
+    },
+    'sceneConfig': {
+        'startPosition': {
+            'x': -50,
+            'y': 50,
+            'z': 200
+        },
+        'clippingPlane': 200000,
+        //'cssRenderer': '2D',
     }
 };
 
