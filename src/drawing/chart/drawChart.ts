@@ -4,12 +4,12 @@ import * as TWEEN from '@tweenjs/tween.js';
 import { TextGeometry} from 'three/examples/jsm/geometries/TextGeometry.js';
 import { Font, FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
 
-import { determineLabelCoordinates } from '../config/utils';
+import { determineLabelCoordinates } from '../../config/utils';
 
 import chartConfig from './chartConfig';
-import { ThreeJSDrawing } from "../types.js";
+import { ThreeJSDrawing } from "../../types.js";
 
-import { showOverlay } from './chart/chartOverlay';
+import { showOverlay } from './chartOverlay';
 
 const surrounding_opacity = 0.1;
 

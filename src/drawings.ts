@@ -2,7 +2,7 @@ const THREEJS_DRAWINGS = {
     'room': () => import('./drawing/reusables/drawRoom.js').then(m => m.roomDrawing),
     'adventure': () => import('./drawing/adventure/drawAdventure.js').then(m => m.adventureDrawing),
     'music': () => import('./drawing/drawSheetMusic.js').then(m => m.musicDrawing),
-    'multiaxis': () => import('./drawing/drawChart.js').then(m => m.multiAxisDrawing),
+    'multiaxis': () => import('./drawing/chart/drawChart.js').then(m => m.multiAxisDrawing),
     'cayley': () => import('./drawing/drawGraph.js').then(m => m.cayleyDrawing),
     'force': () => import('./drawing/drawGraph.js').then(m => m.forceDrawing),
     'geo': () => import('./drawing/drawGeo.js').then(m => m.geoDrawing),
