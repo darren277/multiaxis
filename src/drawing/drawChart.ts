@@ -80,22 +80,47 @@ function drawChart( scene: THREE.Scene, data: any, state: any, config = chartCon
 
         // --- 3) Plot data points ---
         graphData.points.forEach((point: any) => {
-            // point is like [ x, y, z, color, { size, label } ]
+            // point is like [ x, y, z, color, { size, label, icon } ]
+            const icon = point[4]?.icon;
+            let pointObject: THREE.Object3D; // Use a generic THREE.Object3D type
 
-            // geometry & material
-            const pointGeometry = config.points.geometry(point);
-            // translate geometry to correct location
-            pointGeometry.translate(point[0], point[1], point[2]);
+            if (icon) {
+                const pointGeometry = config.points.geometry(point);
+                
+                // --- Create a Sprite for the icon ---
+                const pointMaterial = config.points.material(point) as unknown as THREE.MeshBasicMaterial;
+                pointObject = new THREE.Mesh(pointGeometry, pointMaterial);
 
-            const pointMaterial = config.points.material(point);
-            const pointMesh = new THREE.Mesh(pointGeometry, pointMaterial);
-            scene.add(pointMesh);
+                pointObject.userData.htmlContent = point[4]?.htmlContent;
 
-            // If there is a label for this point, draw it
+                pointObject.position.set(point[0], point[1], point[2]);
+
+                // Scale the sprite. The 'size' property can control how large the icon appears.
+                const size = point[4]?.size ?? 1.0; // Default size of 1x1
+                pointObject.scale.set(size, size, 1);
+
+                // Store the original scale for the un-hover effect
+                pointObject.userData.originalScale = pointObject.scale.clone();
+                
+                // *** ADD THE OBJECT TO OUR INTERACTIVE LIST ***
+                state.data.interactiveObjects.push(pointObject);
+            } else {
+                // --- Create a Mesh for the geometry (original logic) ---
+                const pointGeometry = config.points.geometry(point);
+                // translate geometry to correct location
+                pointGeometry.translate(point[0], point[1], point[2]);
+                const pointMaterial = config.points.material(point);
+                pointObject = new THREE.Mesh(pointGeometry, pointMaterial);
+            }
+            
+            scene.add(pointObject);
+
+            // If there is a label for this point, draw it (no changes needed here)
             if (point[4]?.label) {
+                // ... your existing label code remains the same
                 const labelGeo = new TextGeometry(point[4].label, {
                     font,
-                    size: config.pointLabels.size(point), // call the function
+                    size: config.pointLabels.size(point),
                     depth: config.pointLabels.depth,
                 });
                 const labelCoordinates = determineLabelCoordinates(

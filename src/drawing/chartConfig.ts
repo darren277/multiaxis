@@ -94,14 +94,61 @@ export default {
     },
 
     points: {
-        geometry: (pointData: { size: number; }[]) => {
-            // If you want to pick geometry by some attribute in the point data, do so here.
-            // By default, just always use a sphere:
+        geometry: (pointData: { size: number; icon: string }[]) => {
             const size = pointData[4]?.size ?? 0.1;
+            const icon = pointData[4]?.icon;
+
+            if (icon) {
+                // You may need to rotate it if you want it oriented differently.
+                // For example: geometry.rotateX(Math.PI / 2) to make it lie flat.
+                const thickness = 0.01;
+                return new BoxGeometry(size, size, thickness);
+            }
+
             return new SphereGeometry(size);
         },
         material: (pointData: any[]) => {
-            // Color from the point data
+            const icon = pointData[4]?.icon;
+            if (icon) {
+                const textureLoader = new TextureLoader();
+                const texture = textureLoader.load(icon);
+
+                // Use MeshBasicMaterial, which is compatible with PlaneGeometry and Mesh.
+                // Add `transparent: true` to allow for transparency in your PNG file.
+                // return new MeshBasicMaterial({
+                //     map: texture,
+                //     //transparent: true,
+                //     side: DoubleSide,
+                //     //alphaTest: 0.5,
+                //     //depthWrite: false
+                // });
+
+                // return new ShaderMaterial({
+                //     uniforms: {
+                //         map: { value: texture },
+                //     },
+                //     vertexShader,
+                //     fragmentShader,
+                //     transparent: true,
+                //     side: DoubleSide,
+                // });
+
+                const customBackgroundColor = new Color(0x0d204d); // A nice dark blue
+                const customBackgroundAlpha = 0.75; // 75% opacity
+
+                return new ShaderMaterial({
+                    uniforms: {
+                        map: { value: texture },
+                        backgroundColor: { value: customBackgroundColor },
+                        backgroundAlpha: { value: customBackgroundAlpha },
+                    },
+                    vertexShader,
+                    fragmentShader,
+                    transparent: true,
+                    side: DoubleSide,
+                });
+            }
+
             const color = pointData[3];
             return new MeshBasicMaterial({ color });
         },
