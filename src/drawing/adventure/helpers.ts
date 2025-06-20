@@ -34,8 +34,12 @@ function tweenCameraToView(
     // then in your render loop do camera.lookAt( thatVector ).
 }
 
-let autoNextTimeoutId: string | number | NodeJS.Timeout | null | undefined =
-    null
+let autoNextTimeoutId:
+    | string
+    | number
+    | ReturnType<typeof setTimeout>
+    | null
+    | undefined = null
 
 // Function to set camera to a particular view
 function goToStep(

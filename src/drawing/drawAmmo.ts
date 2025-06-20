@@ -22,7 +22,7 @@ interface ConvexObjectBreaker {
     ) => THREE.Mesh[]
 }
 
-interface Ammo {
+interface IAmmo {
     btDefaultMotionState: any
     (): Promise<any>
     btDefaultCollisionConfiguration: any
@@ -44,7 +44,7 @@ interface Ammo {
     btCollisionObject: any
 }
 
-let Ammo: Ammo | null = null
+let Ammo: IAmmo | null = null
 
 //let Ammo: any; // Ammo.js will be loaded asynchronously
 console.debug('Ammo.js loaded', Ammo)
@@ -114,7 +114,7 @@ function drawAmmo(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
         objectsToRemove[i] = null
     }
 
-    Ammo &&
+    if (Ammo) {
         Ammo().then(function (AmmoLib: any) {
             Ammo = AmmoLib
 
@@ -122,6 +122,7 @@ function drawAmmo(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
             initPhysics(threejsDrawing)
             createObjects(scene, threejsDrawing.data.physicsWorld)
         })
+    }
 }
 
 function initGraphics(scene: THREE.Scene) {
@@ -166,7 +167,7 @@ function initPhysics(threejsDrawing: ThreeJSDrawing) {
         threejsDrawing.data.collisionConfiguration,
     )
     ;(
-        threejsDrawing.data.physicsWorld as Ammo['btDiscreteDynamicsWorld']
+        threejsDrawing.data.physicsWorld as IAmmo['btDiscreteDynamicsWorld']
     ).setGravity(new Ammo.btVector3(0, -gravityConstant, 0))
 
     transformAux1 = new Ammo.btTransform()
@@ -341,7 +342,7 @@ function createObjects(scene: THREE.Scene, physicsWorld: any) {
 
 function createParalellepipedWithPhysics(
     scene: THREE.Scene,
-    physicsWorld: Ammo['btDiscreteDynamicsWorld'],
+    physicsWorld: IAmmo['btDiscreteDynamicsWorld'],
     sx: number,
     sy: number,
     sz: number,
@@ -382,7 +383,7 @@ function createParalellepipedWithPhysics(
 
 function createDebrisFromBreakableObject(
     scene: THREE.Scene,
-    physicsWorld: Ammo['btDiscreteDynamicsWorld'],
+    physicsWorld: IAmmo['btDiscreteDynamicsWorld'],
     object: THREE.Mesh,
 ) {
     if (!Ammo) {
@@ -418,7 +419,7 @@ function createDebrisFromBreakableObject(
 
 function removeDebris(
     scene: THREE.Scene,
-    physicsWorld: Ammo['btDiscreteDynamicsWorld'],
+    physicsWorld: IAmmo['btDiscreteDynamicsWorld'],
     object: THREE.Mesh,
 ) {
     scene.remove(object)
@@ -427,7 +428,7 @@ function removeDebris(
 
 function createConvexHullPhysicsShape(
     coords: Float32Array,
-): Ammo['btConvexHullShape'] {
+): IAmmo['btConvexHullShape'] {
     if (!Ammo) {
         throw new Error('Ammo.js is not loaded.')
     }
@@ -443,9 +444,9 @@ function createConvexHullPhysicsShape(
 
 function createRigidBody(
     scene: THREE.Scene,
-    physicsWorld: Ammo['btDiscreteDynamicsWorld'],
+    physicsWorld: IAmmo['btDiscreteDynamicsWorld'],
     object: THREE.Mesh,
-    physicsShape: Ammo['btCollisionShape'],
+    physicsShape: IAmmo['btCollisionShape'],
     mass: number,
     pos: THREE.Vector3,
     quat: THREE.Quaternion,
@@ -524,8 +525,8 @@ function createMaterial(color: number) {
 
 function updatePhysics(
     scene: THREE.Scene,
-    physicsWorld: Ammo['btDiscreteDynamicsWorld'],
-    dispatcher: Ammo['btCollisionDispatcher'],
+    physicsWorld: IAmmo['btDiscreteDynamicsWorld'],
+    dispatcher: IAmmo['btCollisionDispatcher'],
     deltaTime: number,
     numObjectsToRemove: number,
 ) {

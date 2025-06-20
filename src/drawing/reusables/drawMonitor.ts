@@ -148,7 +148,6 @@ class EventEmitter {
             return false
         }
 
-        const that = this
         let finalResult: any = null
         let result = null
 
@@ -170,8 +169,8 @@ class EventEmitter {
                     this.callbacks[namespace][name.value] instanceof Array
                 ) {
                     this.callbacks[namespace][name.value].forEach(
-                        function (callback) {
-                            result = callback.apply(that, args)
+                        (callback) => {
+                            result = callback.apply(this, args)
 
                             if (typeof finalResult === 'undefined') {
                                 finalResult = result
@@ -189,13 +188,11 @@ class EventEmitter {
                 return this
             }
 
-            this.callbacks[name.namespace][name.value].forEach(
-                function (callback) {
-                    result = callback.apply(that, args)
+            this.callbacks[name.namespace][name.value].forEach((callback) => {
+                result = callback.apply(this, args)
 
-                    if (typeof finalResult === 'undefined') finalResult = result
-                },
-            )
+                if (typeof finalResult === 'undefined') finalResult = result
+            })
         }
 
         return finalResult

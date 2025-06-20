@@ -163,8 +163,9 @@ function drawQuantumCallback(
     scene.add(draw_line(0, 20, 0, -2, 18, 0))
     scene.add(draw_line(0, 20, 0, 2, 18, 0))
 
-    var arrow2 = draw_line(0, 0, 0, 0, 0, -20)
-    scene.add(arrow2)
+    // TODO: Why do you have a duplicate arrow2?
+    //var arrow2 = draw_line(0, 0, 0, 0, 0, -20)
+    //scene.add(arrow2)
 
     scene.add(draw_line(0, 0, -20, 0, -2, -18))
     scene.add(draw_line(0, 0, -20, 0, 2, -18))

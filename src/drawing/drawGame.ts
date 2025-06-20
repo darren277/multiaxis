@@ -169,7 +169,7 @@ function updateEnemies(delta: number, data: any, camera: THREE.Camera) {
                 )
                     e.userData.state = STATE_CHASE
                 break
-            case STATE_CHASE:
+            case STATE_CHASE: {
                 if (!enemyLOS(e, camera, data.walls)) {
                     e.userData.state = STATE_IDLE
                     break
@@ -182,6 +182,7 @@ function updateEnemies(delta: number, data: any, camera: THREE.Camera) {
                 dir.normalize()
                 e.position.addScaledVector(dir, ENEMY_SPEED * delta)
                 break
+            }
         }
         e.lookAt(camera.position)
     })

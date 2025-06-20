@@ -81,7 +81,7 @@ function createPlaceholderPiece(
                 new THREE.MeshStandardMaterial({ color }),
             )
             break
-        case 'bishop':
+        case 'bishop': {
             mesh = new THREE.Mesh(
                 new THREE.SphereGeometry(0.3, 32, 32),
                 new THREE.MeshStandardMaterial({ color }),
@@ -94,7 +94,8 @@ function createPlaceholderPiece(
             baseBishop.position.y = 0.15
             group.add(baseBishop)
             break
-        case 'queen':
+        }
+        case 'queen': {
             mesh = new THREE.Mesh(
                 new THREE.SphereGeometry(0.4, 32, 32),
                 new THREE.MeshStandardMaterial({ color }),
@@ -107,7 +108,8 @@ function createPlaceholderPiece(
             baseQueen.position.y = 0.2
             group.add(baseQueen)
             break
-        case 'king':
+        }
+        case 'king': {
             mesh = new THREE.Mesh(
                 new THREE.SphereGeometry(0.4, 32, 32),
                 new THREE.MeshStandardMaterial({ color }),
@@ -125,6 +127,7 @@ function createPlaceholderPiece(
             cross.position.y = 0.9
             group.add(baseKing, cross)
             break
+        }
         default:
             mesh = new THREE.Mesh(
                 new THREE.BoxGeometry(0.5, 0.5, 0.5),

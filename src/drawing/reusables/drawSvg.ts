@@ -99,7 +99,7 @@ function renderLinearGradient(
     return material
 }
 
-interface Path extends THREE.Path {
+interface IPath extends THREE.Path {
     userData?: {
         style?: {
             fill?: string
@@ -113,7 +113,7 @@ interface Path extends THREE.Path {
     [key: string]: any // Allow additional properties
 }
 
-function isGiantWhiteBox(path: Path) {
+function isGiantWhiteBox(path: IPath) {
     const style = path.userData?.style || {}
     const fillColor = style.fill || style.stroke || ''
     const isGiantWhiteBox =
@@ -331,14 +331,14 @@ class Path {
     path: THREE.Path
     color: THREE.Color
 
-    constructor(path: Path) {
+    constructor(path: THREE.Path) {
         this.path = path
         this.color = determineColor(path) || new THREE.Color(0x888888)
     }
 }
 
-function determineColor(path: Path) {
-    const style = path.userData?.style || {}
+function determineColor(path: THREE.Path) {
+    const style = (path as any).userData?.style || {}
     // Some color fields might be inherited:
     //   - path.color        => usually the fill color
     //   - style.fill        => e.g. "rgb(255,204,0)" or "#ffcc00" or "none"

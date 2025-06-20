@@ -190,7 +190,7 @@ export const PhysicsConfig = {
 } as const
 
 // ----------------------
-// 2. Math helpers – one‑time temp vectors to avoid GC pressure
+// 2. Math helpers - one‑time temp vectors to avoid GC pressure
 // ----------------------
 const V_TEMP_A = new THREE.Vector3()
 const V_TEMP_B = new THREE.Vector3()
@@ -359,9 +359,11 @@ export class CollisionSystem {
         this._maybeDetach(p, foot)
         const hit = this._firstWalkableHit(p, meshes)
 
-        hit && v.y <= 0
-            ? this._land(p, v, hit, setCanJump)
-            : this._clampToPlane(p, v, setCanJump)
+        if (hit && v.y <= 0) {
+            this._land(p, v, hit, setCanJump)
+        } else {
+            this._clampToPlane(p, v, setCanJump)
+        }
     }
 
     /* ─── helpers (<5 lines each) ─────────────────────────────────── */
