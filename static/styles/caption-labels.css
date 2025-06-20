@@ -1,3 +1,71 @@
+/* --- Base Banner Styles --- */
+.banner {
+    display: flex;
+    align-items: center;
+    gap: 1em;
+    background-color: #333;
+    color: white;
+    padding: 15px 25px;
+    border-radius: 12px;
+    width: fit-content;
+    cursor: pointer;
+    font-family: sans-serif;
+    transition: transform 0.2s ease-out;
+}
+
+.banner:hover {
+    transform: scale(1.05);
+}
+
+.banner-icon .big-arrow {
+    font-size: 3em;
+    margin: 0;
+    line-height: 1;
+}
+
+.banner-content h3,
+.banner-content p {
+    margin: 0;
+}
+
+.banner-content h3 {
+    font-size: 1.2em;
+    margin-bottom: 4px;
+}
+
+.banner-content p {
+    font-size: 0.9em;
+    opacity: 0.8;
+}
+
+
+/* --- LAYOUT VARIATIONS --- */
+
+/* For a Right-Side Banner */
+.banner.right-side-banner {
+    flex-direction: row-reverse; /* Flips the order of icon and content */
+}
+
+/* For a Top-Side Banner */
+.banner.top-side-banner {
+    flex-direction: column; /* Stacks icon and content vertically */
+    width: 220px; /* Give vertical banners a consistent width */
+}
+
+/* For a Bottom-Side Banner */
+.banner.bottom-side-banner {
+    flex-direction: column-reverse; /* Stacks them vertically and flips the order */
+    width: 220px;
+}
+
+/* For vertical layouts, centered text often looks better. */
+.banner.top-side-banner .banner-content,
+.banner.bottom-side-banner .banner-content {
+    text-align: center;
+}
+
+
+
 .caption-label {
     position: absolute;
     transform: translate(-50%, 0); /* center horizontally */
