@@ -1,67 +1,74 @@
-// eslint.config.cjs
-const globals = require('globals'); // For globals like browser, node etc. if needed
-
-// Import the recommended configurations directly
-const eslintRecommended = require('@eslint/js').configs.recommended;
-const tsEslintPlugin = require('@typescript-eslint/eslint-plugin');
-const tsEslintParser = require('@typescript-eslint/parser');
-const prettierConfig = require('eslint-config-prettier');
-const prettierPlugin = require('eslint-plugin-prettier');
+const globals = require('globals')
+const eslintRecommended = require('@eslint/js').configs.recommended
+const tsEslintPlugin = require('@typescript-eslint/eslint-plugin')
+const tsEslintParser = require('@typescript-eslint/parser')
+const prettierConfig = require('eslint-config-prettier')
+const prettierPlugin = require('eslint-plugin-prettier')
 
 module.exports = [
-    // 1. ESLint Recommended Rules
-    eslintRecommended,
-
-    // 2. TypeScript ESLint Recommended Rules
     {
-        files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'], // Apply to these file types
+        files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
         languageOptions: {
             parser: tsEslintParser,
             parserOptions: {
                 ecmaVersion: 2020,
                 sourceType: 'module',
-                project: './tsconfig.json', // Adjust path if tsconfig.json is not in the root
-                // If you're using React:
-                // ecmaFeatures: {
-                //   jsx: true,
-                // },
+                project: './tsconfig.json',
             },
-            // If you need global variables (e.g., for Node.js or browser)
             globals: {
-                ...globals.browser, // For 'window', 'document', etc. if your code runs in a browser
-                ...globals.node, // For 'console', 'process', etc. if your code runs in Node.js
-                // Add any other custom globals your project defines:
-                // myCustomGlobal: 'readonly', // Example: if you have a global 'myCustomGlobal'
+                ...globals.browser,
+                ...globals.node,
             },
         },
         plugins: {
             '@typescript-eslint': tsEslintPlugin,
         },
         rules: {
+            ...eslintRecommended.rules,
+            ...tsEslintPlugin.configs['eslint-recommended'].rules,
             ...tsEslintPlugin.configs.recommended.rules,
-            ...tsEslintPlugin.configs['eslint-recommended'].rules, // This turns off conflicting ESLint base rules
-            // Add any custom TypeScript-specific rules here
+
+            // These two lines are correct and should be here to explicitly turn off base rules.
+            semi: 'off',
+            '@typescript-eslint/semi': 'off',
+
+            // Other rules:
+
+            'no-unused-vars': 'off',
+            '@typescript-eslint/no-unused-vars': [
+                'warn',
+                { argsIgnorePattern: '^_' },
+            ],
         },
-        // If you're using React, include settings here:
-        // settings: {
-        //   react: {
-        //     version: 'detect',
-        //   },
-        // },
     },
 
-    // 3. Prettier Plugin and Config (Always last to override formatting rules)
+    // This is the Prettier integration block.
+    // This is where the final, definitive override for 'semi' will happen.
     {
-        files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'], // Apply to these file types
+        files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
         plugins: {
             prettier: prettierPlugin,
         },
         rules: {
-            // Disable ESLint rules that conflict with Prettier
+            // These rules disable ESLint stylistic rules that conflict with Prettier.
             ...prettierConfig.rules,
-            // Enable eslint-plugin-prettier rules
-            ...prettierPlugin.configs.recommended.rules,
-            // You might need to add specific overrides if Prettier isn't enforcing something
+
+            // This enables the 'prettier/prettier' rule.
+            // This is the rule that now causes your "missing semicolon" complaint.
+            ...prettierPlugin.configs.recommended.rules, // <-- This includes 'prettier/prettier'
+
+            // Explicitly tell the 'prettier/prettier' rule to *not* enforce semicolons.
+            // This directly influences what the 'prettier/prettier' rule flags.
+            'prettier/prettier': [
+                'error',
+                {
+                    semi: false,
+                    endOfLine: 'lf',
+                    // Add any other Prettier options from your .prettierrc here if you want
+                    // them to explicitly control what 'prettier/prettier' ESLint rule checks.
+                    // e.g., singleQuote: true, trailingComma: 'all', etc.
+                },
+            ],
         },
     },
-];
+]
