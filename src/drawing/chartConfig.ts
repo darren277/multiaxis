@@ -1,4 +1,4 @@
-import { BoxGeometry, MeshBasicMaterial, SphereGeometry } from 'three';
+import * as THREE from "three";
 
 /**
  * Each section of this config can be swapped with a different config if you want a different "look" or different geometry types, fonts, etc.
@@ -55,8 +55,8 @@ export default {
     fontUrl: '/threejs/drawing/helvetiker_regular.typeface.json',
 
     surroundingBox: {
-        geometry: (xSize: number | undefined, ySize: number | undefined, zSize: number | undefined) => new BoxGeometry(xSize, ySize, zSize),
-        material: () => new MeshBasicMaterial({
+        geometry: (xSize: number | undefined, ySize: number | undefined, zSize: number | undefined) => new THREE.BoxGeometry(xSize, ySize, zSize),
+        material: () => new THREE.MeshBasicMaterial({
             color: 0x00ff00,
             transparent: true,
             opacity: 0.1,
@@ -67,21 +67,21 @@ export default {
         // Optionally store geometry “factory” functions by axis label
         geometry: (axisLabel: string, axisLength: number | undefined) => {
             if (axisLabel === 'x') {
-                return new BoxGeometry(axisLength, 0.1, 0.1);
+                return new THREE.BoxGeometry(axisLength, 0.1, 0.1);
             } else if (axisLabel === 'y') {
-                return new BoxGeometry(0.1, axisLength, 0.1);
+                return new THREE.BoxGeometry(0.1, axisLength, 0.1);
             } else {
-                return new BoxGeometry(0.1, 0.1, axisLength);
+                return new THREE.BoxGeometry(0.1, 0.1, axisLength);
             }
         },
-        material: () => new MeshBasicMaterial({ color: 0x00ff00 }),
+        material: () => new THREE.MeshBasicMaterial({ color: 0x00ff00 }),
     },
 
     axisLabels: {
         // For textual labels on the axes
         size: 1,
         depth: 0.01,
-        material: (label: any) => new MeshBasicMaterial({ color: 0x00ff00 }),
+        material: (label: any) => new THREE.MeshBasicMaterial({ color: 0x00ff00 }),
         // If you wanted different colors for x, y, z labels, you might define a function
         // material: (axisLabel) => new MeshBasicMaterial({
         //   color: (axisLabel === 'x' ? 0xff0000 : 0x00ff00)
@@ -89,8 +89,8 @@ export default {
     },
 
     axisTicks: {
-        geometry: () => new BoxGeometry(0.1, 0.1, 0.1),
-        material: () => new MeshBasicMaterial({ color: 0x00ffff }),
+        geometry: () => new THREE.BoxGeometry(0.1, 0.1, 0.1),
+        material: () => new THREE.MeshBasicMaterial({ color: 0x00ffff }),
     },
 
     points: {
@@ -102,15 +102,15 @@ export default {
                 // You may need to rotate it if you want it oriented differently.
                 // For example: geometry.rotateX(Math.PI / 2) to make it lie flat.
                 const thickness = 0.01;
-                return new BoxGeometry(size, size, thickness);
+                return new THREE.BoxGeometry(size, size, thickness);
             }
 
-            return new SphereGeometry(size);
+            return new THREE.SphereGeometry(size);
         },
         material: (pointData: any[]) => {
             const icon = pointData[4]?.icon;
             if (icon) {
-                const textureLoader = new TextureLoader();
+                const textureLoader = new THREE.TextureLoader();
                 const texture = textureLoader.load(icon);
 
                 // Use MeshBasicMaterial, which is compatible with PlaneGeometry and Mesh.
@@ -133,10 +133,10 @@ export default {
                 //     side: DoubleSide,
                 // });
 
-                const customBackgroundColor = new Color(0x0d204d); // A nice dark blue
+                const customBackgroundColor = new THREE.Color(0x0d204d); // A nice dark blue
                 const customBackgroundAlpha = 0.75; // 75% opacity
 
-                return new ShaderMaterial({
+                return new THREE.ShaderMaterial({
                     uniforms: {
                         map: { value: texture },
                         backgroundColor: { value: customBackgroundColor },
@@ -145,12 +145,12 @@ export default {
                     vertexShader,
                     fragmentShader,
                     transparent: true,
-                    side: DoubleSide,
+                    side: THREE.DoubleSide,
                 });
             }
 
             const color = pointData[3];
-            return new MeshBasicMaterial({ color });
+            return new THREE.MeshBasicMaterial({ color });
         },
     },
 
@@ -159,7 +159,7 @@ export default {
         depth: 0.01,
         material: (pointData: any[]) => {
             // Reuse the point’s color or pick something else
-            return new MeshBasicMaterial({ color: pointData[3] });
+            return new THREE.MeshBasicMaterial({ color: pointData[3] });
         },
     },
 };
