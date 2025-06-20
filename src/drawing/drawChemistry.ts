@@ -5,6 +5,8 @@ import { CSS2DRenderer, CSS2DObject } from 'three/examples/jsm/renderers/CSS2DRe
 import { drawBasicLights } from './reusables/drawLights';
 import { ThreeJSDrawing } from "../threejsDrawing";
 
+import { Logger } from '../config/logger';
+
 let labelRenderer: CSS2DRenderer;
 
 export const molGraph = {
@@ -169,6 +171,12 @@ function drawAllEdges(scene: THREE.Scene) {
 
 
 function drawChemistry(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
+    const log = new Logger('chemistry');
+    log.info(`running draw function for chemistryDrawing`);
+    log.info(`threejsDrawing: ${JSON.stringify(threejsDrawing)}`);
+
+    threejsDrawing.log = log;
+
     // Add basic lights
     drawBasicLights(scene, threejsDrawing);
 
@@ -206,6 +214,7 @@ const chemistryDrawing = {
     'drawFuncs': [
         {'func': drawChemistry, 'dataSrc': null, 'dataType': 'pdb'}
     ],
+    'log': null,
     'eventListeners': null,
     'animationCallback': (renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawing: ThreeJSDrawing, camera: THREE.Camera) => {
         const t = timestamp * 0.001;
