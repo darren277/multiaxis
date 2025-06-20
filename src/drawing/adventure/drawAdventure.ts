@@ -72,33 +72,34 @@ export function updateLabelPosition(anchor: THREE.Object3D | THREE.Vector3 | { x
 }
 
 
-const X = 0;
-//const X = 12;
+// --- NEW ZOOM CONTROL ---
+// This is the single value you can tweak to adjust the camera distance.
+// 1.0 = default distance
+// 1.5 = 50% further away (zoomed out)
+// 0.75 = 25% closer (zoomed in)
+//const OVERALL_ZOOM_MULTIPLIER = 1.0;
+const OVERALL_ZOOM_MULTIPLIER = 1.5;
 
-const Y = 0;
-//const Y = -12;
+// These constants now define the BASE camera offset before the multiplier is applied.
+const BASE_X_OFFSET = 0;
+const BASE_Y_OFFSET = 0;
+const BASE_Z_OFFSET = 8; // The neutral distance, which we will scale.
 
-//const Z = 6;
-const Z = 6; // 6 units in front of the item, along the negative Z axis
+const Y_FACTOR = 0; // This adjusts the look-at point's height, not zoom.
 
-const Y_FACTOR = 0; // Adjust this factor to position the camera above the item
-
-export function vantagePointForItem(item: Item): {position: THREE.Vector3, lookAt: THREE.Vector3} {
-    // Where the item is
+export function vantagePointForItem(item: Item): { position: THREE.Vector3, lookAt: THREE.Vector3 } {
     const itemPos = new THREE.Vector3(item.position.x, item.position.y + Y_FACTOR, item.position.z);
 
-    console.log("Vantage point for item:", item.id, "at position", itemPos);
+    // Create a vector for the base camera offset
+    const baseOffset = new THREE.Vector3(BASE_X_OFFSET, BASE_Y_OFFSET, BASE_Z_OFFSET);
 
-    // Define a small offset so the camera is in front of the plane
-    // For example, 6 units “in front” along the negative Z axis
-    const offset = new THREE.Vector3(X, Y, Z);
+    // Scale the offset by our multiplier to get the final offset
+    const finalOffset = baseOffset.clone().multiplyScalar(OVERALL_ZOOM_MULTIPLIER);
 
-    // We'll assume the plane faces the camera’s negative Z by default
-    // So the camera is itemPos + offset
-    const cameraPos = itemPos.clone().add(offset);
+    // Add the final, scaled offset to the item's position to get the camera position
+    const cameraPos = itemPos.clone().add(finalOffset);
 
-    // The camera will look directly at the item
-    return {position: cameraPos, lookAt: itemPos};
+    return { position: cameraPos, lookAt: itemPos };
 }
 
 export type PhotoEntry = {
@@ -182,7 +183,9 @@ export function buildAdventureSteps(items: Item[]): Record<string, AdventureStep
             id: item.id,
             camera: { position: vantage.position, lookAt: vantage.lookAt },
             text: item.caption,
-            choices: item.choices ?? null,
+            choices: Array.isArray(item.choices)
+                ? Object.fromEntries(item.choices.map((choice: string, idx: number) => [String(idx), choice]))
+                : (item.choices ?? null),
         };
     });
 
@@ -316,7 +319,22 @@ export async function drawAdventure(scene: THREE.Scene, data: any, threejsDrawin
     threejsDrawing.data.otherItems = otherItems;
 
     //threejsDrawing.data.currentStepId = `view_${data.sceneItems[0].id}`;
-    threejsDrawing.data.currentStepId = data.sceneItems[0].id;
+    const firstStepId = data.sceneItems[0].id;
+    threejsDrawing.data.currentStepId = firstStepId;
+
+    // Set the initial camera position and lookAt to match the first slide perfectly.
+    // This ensures the view is "straight on" from the very beginning, overriding any defaults.
+    const camera = threejsDrawing.data.camera;
+    const firstStep = adventureSteps[firstStepId];
+    if (camera && firstStep) {
+        camera.position.copy(firstStep.camera.position);
+        camera.lookAt(firstStep.camera.lookAt);
+        // If OrbitControls are in use, its target must also be updated.
+        if (threejsDrawing.data.controls) {
+            threejsDrawing.data.controls.target.copy(firstStep.camera.lookAt);
+            threejsDrawing.data.controls.update();
+        }
+    }
 
     // Draw ambient light...
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
@@ -465,7 +483,7 @@ const adventureDrawing = {
         //'controller': 'orbital','
         'cssRendererEnabled': 'DUAL',
         // looking slightly higher up...
-        'lookAt': new THREE.Vector3(0, 1.5, 0),
+        //'lookAt': new THREE.Vector3(0, 0, 0),
     }
 }
 

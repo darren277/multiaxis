@@ -2,7 +2,7 @@ import * as THREE from 'three'; // for any references you still need
 import { CSS3DObject } from 'three/examples/jsm/renderers/CSS3DRenderer.js';
 
 export type Item = {
-    choices: null;
+    choices: null | string[]; // e.g. ['left', 'right', 'up', 'down']
     id: string;
     image?: string; // URL to the image
     video?: string; // URL to the video

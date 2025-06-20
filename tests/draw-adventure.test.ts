@@ -106,10 +106,11 @@ describe('updateLabelPosition', () => {
 
 describe('vantagePointForItem', () => {
     // These constants must match the ones in the implementation file.
+    const OVERALL_ZOOM_MULTIPLIER = 1.5;
     const Y_FACTOR = 0;
     const X = 0;
     const Y = 0;
-    const Z = 6;
+    const Z = 8;
 
     test('should calculate the correct camera position and lookAt point', () => {
         const item = {
@@ -127,7 +128,10 @@ describe('vantagePointForItem', () => {
 
         // Expected camera position is lookAt + offset
         const expectedPosition = expectedLookAt.clone().add(new THREE.Vector3(X, Y, Z));
-        expect(vantagePoint.position).toEqual(expectedPosition);
+
+        const finalOffset = new THREE.Vector3(X, Y, Z).multiplyScalar(OVERALL_ZOOM_MULTIPLIER);
+        const cameraPos = expectedLookAt.clone().add(finalOffset);
+        expect(vantagePoint.position).toEqual(cameraPos);
     });
 });
 
