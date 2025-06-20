@@ -1,41 +1,57 @@
-import * as THREE from "three";
-import { ThreeJSDrawing } from "../../threejsDrawing";
+import * as THREE from 'three'
+import { ThreeJSDrawing } from '../../threejsDrawing'
 
-export function drawLights(scene: THREE.Scene, lightingParams: any, bulbLuminousPowers: any, hemiLuminousIrradiances: any) {
+export function drawLights(
+    scene: THREE.Scene,
+    lightingParams: any,
+    bulbLuminousPowers: any,
+    hemiLuminousIrradiances: any,
+) {
     // Create the bulb light
-    const bulbGeometry = new THREE.SphereGeometry(0.02, 16, 8);
+    const bulbGeometry = new THREE.SphereGeometry(0.02, 16, 8)
     const bulbMat = new THREE.MeshStandardMaterial({
         emissive: 0xffffee,
         emissiveIntensity: 1,
-        color: 0x000000
-    });
-    const bulbLight = new THREE.PointLight(0xffee88, 1, 100, 2);
-    bulbLight.add(new THREE.Mesh(bulbGeometry, bulbMat));
-    bulbLight.position.set(0, 2, 0);
-    bulbLight.castShadow = true;
-    scene.add(bulbLight);
+        color: 0x000000,
+    })
+    const bulbLight = new THREE.PointLight(0xffee88, 1, 100, 2)
+    bulbLight.add(new THREE.Mesh(bulbGeometry, bulbMat))
+    bulbLight.position.set(0, 2, 0)
+    bulbLight.castShadow = true
+    scene.add(bulbLight)
 
     // Create the hemisphere light
-    const hemiLight = new THREE.HemisphereLight(0xddeeff, 0x0f0e0d, 0.02);
-    scene.add(hemiLight);
+    const hemiLight = new THREE.HemisphereLight(0xddeeff, 0x0f0e0d, 0.02)
+    scene.add(hemiLight)
 
     // Return references so we can update them in animate()
-    return { bulbLight, bulbMat, hemiLight };
+    return { bulbLight, bulbMat, hemiLight }
 }
 
 type Light = {
-    bulbLight: THREE.PointLight;
-    bulbMat: THREE.MeshStandardMaterial;
-    hemiLight: THREE.HemisphereLight;
-};
+    bulbLight: THREE.PointLight
+    bulbMat: THREE.MeshStandardMaterial
+    hemiLight: THREE.HemisphereLight
+}
 
 // Optional: a helper function to update lights in animate()
-export function updateLights({bulbLight, bulbMat, hemiLight, lightingParams, bulbLuminousPowers, hemiLuminousIrradiances}: Light & { lightingParams: any, bulbLuminousPowers: any, hemiLuminousIrradiances: any }) {
+export function updateLights({
+    bulbLight,
+    bulbMat,
+    hemiLight,
+    lightingParams,
+    bulbLuminousPowers,
+    hemiLuminousIrradiances,
+}: Light & {
+    lightingParams: any
+    bulbLuminousPowers: any
+    hemiLuminousIrradiances: any
+}) {
     // e.g., update intensities based on GUI
-    bulbLight.power = bulbLuminousPowers[lightingParams.bulbPower];
-    bulbMat.emissiveIntensity = bulbLight.intensity / Math.pow(0.02, 2.0);
+    bulbLight.power = bulbLuminousPowers[lightingParams.bulbPower]
+    bulbMat.emissiveIntensity = bulbLight.intensity / Math.pow(0.02, 2.0)
 
-    hemiLight.intensity = hemiLuminousIrradiances[lightingParams.hemiIrradiance];
+    hemiLight.intensity = hemiLuminousIrradiances[lightingParams.hemiIrradiance]
 }
 
 // ref for lumens: http://www.power-sure.com/lumens.htm
@@ -47,8 +63,8 @@ export const bulbLuminousPowers = {
     '400 lm (40W)': 400,
     '180 lm (25W)': 180,
     '20 lm (4W)': 20,
-    'Off': 0
-};
+    Off: 0,
+}
 
 // ref for solar irradiances: https://en.wikipedia.org/wiki/Lux
 export const hemiLuminousIrradiances = {
@@ -62,45 +78,46 @@ export const hemiLuminousIrradiances = {
     '400 lx (Sunrise/Sunset)': 400,
     '1000 lx (Overcast)': 1000,
     '18000 lx (Daylight)': 18000,
-    '50000 lx (Direct Sun)': 50000
-};
+    '50000 lx (Direct Sun)': 50000,
+}
 
 export const lightingParams = {
     shadows: true,
     exposure: 0.68,
     bulbPower: Object.keys(bulbLuminousPowers)[4],
-    hemiIrradiance: Object.keys(hemiLuminousIrradiances)[2]
-};
-
-
-export function drawBasicLights(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
-    const light = new THREE.DirectionalLight(0xffffff, 1);
-    light.position.set(5, 5, 5);
-    scene.add(light);
-
-    const ambient = new THREE.AmbientLight(0x404040);
-    scene.add(ambient);
+    hemiIrradiance: Object.keys(hemiLuminousIrradiances)[2],
 }
 
+export function drawBasicLights(
+    scene: THREE.Scene,
+    threejsDrawing: ThreeJSDrawing,
+) {
+    const light = new THREE.DirectionalLight(0xffffff, 1)
+    light.position.set(5, 5, 5)
+    scene.add(light)
+
+    const ambient = new THREE.AmbientLight(0x404040)
+    scene.add(ambient)
+}
 
 export function drawSun(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing) {
-    const sunLight = new THREE.DirectionalLight(0xffffff, 10.0); // color, intensity
-    sunLight.position.set(100, 300, 100); // x, y, z — higher Y for "sun above"
+    const sunLight = new THREE.DirectionalLight(0xffffff, 10.0) // color, intensity
+    sunLight.position.set(100, 300, 100) // x, y, z — higher Y for "sun above"
 
     // Optional: Add helper to visualize the direction
-    const helper = new THREE.DirectionalLightHelper(sunLight, 10);
-    scene.add(helper);
+    const helper = new THREE.DirectionalLightHelper(sunLight, 10)
+    scene.add(helper)
 
     // Optional: Enable shadows
-    sunLight.castShadow = true;
-    sunLight.shadow.mapSize.width = 2048;
-    sunLight.shadow.mapSize.height = 2048;
-    sunLight.shadow.camera.left = -50;
-    sunLight.shadow.camera.right = 50;
-    sunLight.shadow.camera.top = 50;
-    sunLight.shadow.camera.bottom = -50;
-    sunLight.shadow.camera.far = 500;
+    sunLight.castShadow = true
+    sunLight.shadow.mapSize.width = 2048
+    sunLight.shadow.mapSize.height = 2048
+    sunLight.shadow.camera.left = -50
+    sunLight.shadow.camera.right = 50
+    sunLight.shadow.camera.top = 50
+    sunLight.shadow.camera.bottom = -50
+    sunLight.shadow.camera.far = 500
 
     // Add to scene
-    scene.add(sunLight);
+    scene.add(sunLight)
 }
