@@ -13,18 +13,18 @@ if (queryOptions) {
     }
 */
 
-import { SceneConfig } from "../threejsDrawing";
-import { QueryOptions } from "../types";
+import { SceneConfig } from '../threejsDrawing'
+import { QueryOptions } from '../types'
 
 export function buildSceneConfig(
     defaults: SceneConfig,
     drawingCfg: Partial<SceneConfig> | undefined,
-    query: QueryOptions
+    query: QueryOptions,
 ): SceneConfig {
-    let cfg = { ...defaults, ...(drawingCfg ?? {}) };
+    let cfg = { ...defaults, ...(drawingCfg ?? {}) }
 
-    if (query.controls === 'walking') cfg.controller = 'walking';
-    if (query.prev === 'town') cfg.startPosition = { x: 0, y: 10, z: -80 };
+    if (query.controls === 'walking') cfg.controller = 'walking'
+    if (query.prev === 'town') cfg.startPosition = { x: 0, y: 10, z: -80 }
 
-    return cfg;
+    return cfg
 }

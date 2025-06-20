@@ -1,16 +1,21 @@
-import * as THREE from 'three';
-import { addNavigation } from './addNavigation';
-import { drawHelpers } from '../config/utils';
-import { ThreeJSDrawing } from '../threejsDrawing';
-import { QueryOptions } from '../types';
+import * as THREE from 'three'
+import { addNavigation } from './addNavigation'
+import { drawHelpers } from '../config/utils'
+import { ThreeJSDrawing } from '../threejsDrawing'
+import { QueryOptions } from '../types'
 
-export function addOptionals(scene: THREE.Scene, threejsDrawing: ThreeJSDrawing, queryOptions: QueryOptions, debugMode = false) {
+export function addOptionals(
+    scene: THREE.Scene,
+    threejsDrawing: ThreeJSDrawing,
+    queryOptions: QueryOptions,
+    debugMode = false,
+) {
     // Add navigation cubes if defined
     if (queryOptions.nav) {
         addNavigation(threejsDrawing)
     }
     if (debugMode) {
-        drawHelpers(scene, threejsDrawing);
+        drawHelpers(scene, threejsDrawing)
     }
 
     // --- OPTION 1: Panoramic cube skybox ---

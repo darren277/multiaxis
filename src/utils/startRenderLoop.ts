@@ -1,23 +1,26 @@
-import * as THREE from 'three';
-import { ThreeJSDrawing } from '../threejsDrawing';
-import { OutlineEffect } from 'three/examples/jsm/effects/OutlineEffect.js';
-import { Group } from '@tweenjs/tween.js';
+import * as THREE from 'three'
+import { ThreeJSDrawing } from '../threejsDrawing'
+import { OutlineEffect } from 'three/examples/jsm/effects/OutlineEffect.js'
+import { Group } from '@tweenjs/tween.js'
 
 type Renderables = {
-    scene: THREE.Scene;
-    camera: THREE.Camera;
-    controls?: any; // OrbitControls or similar
-    threejsDrawing: ThreeJSDrawing;
-    stats?: any; // Stats.js or similar
-    css2DRenderer?: any; // CSS2DRenderer or similar
-    css3DRenderer?: any; // CSS3DRenderer or similar
-    css3DScene?: THREE.Scene; // Scene for CSS3DRenderer
+    scene: THREE.Scene
+    camera: THREE.Camera
+    controls?: any // OrbitControls or similar
+    threejsDrawing: ThreeJSDrawing
+    stats?: any // Stats.js or similar
+    css2DRenderer?: any // CSS2DRenderer or similar
+    css3DRenderer?: any // CSS3DRenderer or similar
+    css3DScene?: THREE.Scene // Scene for CSS3DRenderer
     //tweenUpdate: () => void; // Function to update tweens
-    tweenGroup?: Group; // Tween.js or similar
-    outlineEffectEnabled: boolean; // Whether to enable outline effect
-};
+    tweenGroup?: Group // Tween.js or similar
+    outlineEffectEnabled: boolean // Whether to enable outline effect
+}
 
-export function startRenderLoop(renderer: THREE.WebGLRenderer, renderables: Renderables) {
+export function startRenderLoop(
+    renderer: THREE.WebGLRenderer,
+    renderables: Renderables,
+) {
     const {
         scene,
         camera,
@@ -29,53 +32,58 @@ export function startRenderLoop(renderer: THREE.WebGLRenderer, renderables: Rend
         css3DScene,
         tweenGroup = new Group(), // Default to a new Group if not provided
         outlineEffectEnabled = false, // Default to false if not provided
-    } = renderables;
+    } = renderables
 
-    let effect: OutlineEffect | undefined = undefined;
+    let effect: OutlineEffect | undefined = undefined
     if (outlineEffectEnabled) {
-        effect = new OutlineEffect(renderer);
+        effect = new OutlineEffect(renderer)
     }
 
-    renderer.setAnimationLoop((
-        timestamp: number,
-        frame?: XRFrame,
-    ) => {
+    renderer.setAnimationLoop((timestamp: number, frame?: XRFrame) => {
         // Update controls (if using OrbitControls or similar)
         if (controls) {
-            controls.update();
+            controls.update()
         }
 
         if (threejsDrawing.animationCallback) {
-            threejsDrawing.animationCallback(renderer, timestamp, threejsDrawing, camera);
+            threejsDrawing.animationCallback(
+                renderer,
+                timestamp,
+                threejsDrawing,
+                camera,
+            )
         }
 
         // Update camera projection if needed
-        if ('updateProjectionMatrix' in camera && typeof (camera as any).updateProjectionMatrix === 'function') {
-            (camera as any).updateProjectionMatrix();
+        if (
+            'updateProjectionMatrix' in camera &&
+            typeof (camera as any).updateProjectionMatrix === 'function'
+        ) {
+            ;(camera as any).updateProjectionMatrix()
         }
 
-        tweenGroup.update(timestamp);
+        tweenGroup.update(timestamp)
 
         if (stats) {
-            stats.update();
+            stats.update()
         }
 
-        renderer.render(scene, camera);
+        renderer.render(scene, camera)
 
         if (css2DRenderer) {
-            css2DRenderer.render(scene, camera);
+            css2DRenderer.render(scene, camera)
         }
 
         if (css3DRenderer && css3DScene) {
-            css3DRenderer.render(css3DScene, camera);
+            css3DRenderer.render(css3DScene, camera)
         }
 
         if (css3DRenderer && css3DRenderer.scene) {
-            css3DRenderer.render(css3DRenderer.scene, camera);
+            css3DRenderer.render(css3DRenderer.scene, camera)
         }
 
         if (outlineEffectEnabled && effect) {
-            effect.render(scene, camera);
+            effect.render(scene, camera)
         }
 
         if (threejsDrawing.data.collision) {
@@ -84,7 +92,7 @@ export function startRenderLoop(renderer: THREE.WebGLRenderer, renderables: Rend
             //console.log('Direction:', threejsDrawing.data.collision.keyManager.direction.toArray());
             //console.log('Jump?', threejsDrawing.data.collision.keyManager.consumeJump());
 
-            threejsDrawing.data.keyManager.syncFromInput();
+            threejsDrawing.data.keyManager.syncFromInput()
         }
-    });
+    })
 }
