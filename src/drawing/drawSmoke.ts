@@ -1,11 +1,10 @@
-import * as THREE from "three";
+import * as THREE from 'three'
 
-import noiseModule from 'noisejs';
-import { ThreeJSDrawing } from "../types";
+import noiseModule from 'noisejs'
+import { ThreeJSDrawing } from '../types'
 
-const Noise = noiseModule.Noise;
-const noise = new Noise(Math.random());
-
+const Noise = noiseModule.Noise
+const noise = new Noise(Math.random())
 
 const smokeFragmentShaderOld = `
 uniform sampler2D iChannel0;
@@ -51,8 +50,7 @@ void main() {
 
     gl_FragColor = vec4(vec3(b), 1.0);
 }
-`;
-
+`
 
 const smokeFragmentShader = `
 uniform sampler2D iChannel0;
@@ -145,65 +143,66 @@ void main() {
     p.y -= iTime * 0.1; // drift upwards slowly
     p.x += perlin(p * 2.0).x * 0.2; // wiggle horizontally
 }
-`;
+`
 
 function generatePerlinData(width: number, height: number, scale = 0.1) {
-    const size = width * height;
-    const data = new Float32Array(4 * size); // RGBA float data
+    const size = width * height
+    const data = new Float32Array(4 * size) // RGBA float data
 
     for (let y = 0; y < height; y++) {
         for (let x = 0; x < width; x++) {
-            const value = noise.perlin2(x * scale, y * scale); // [-1, 1]
-            const idx = (y * width + x) * 4;
+            const value = noise.perlin2(x * scale, y * scale) // [-1, 1]
+            const idx = (y * width + x) * 4
 
-            const normalized = (value + 1) / 2; // [0, 1]
-            data[idx] = normalized;     // R
-            data[idx + 1] = normalized; // G
-            data[idx + 2] = normalized; // B
-            data[idx + 3] = 1.0;        // A
+            const normalized = (value + 1) / 2 // [0, 1]
+            data[idx] = normalized // R
+            data[idx + 1] = normalized // G
+            data[idx + 2] = normalized // B
+            data[idx + 3] = 1.0 // A
         }
     }
 
-    return data;
+    return data
 }
 
-const loader = new THREE.TextureLoader();
+const loader = new THREE.TextureLoader()
 
-const width = 64;
-const height = 64;
-const perlinData = generatePerlinData(width, height);
+const width = 64
+const height = 64
+const perlinData = generatePerlinData(width, height)
 
 const noiseTexture = new THREE.DataTexture(
     perlinData,
     width,
     height,
     THREE.RGBAFormat,
-    THREE.FloatType
-);
-noiseTexture.needsUpdate = true;
-noiseTexture.wrapS = noiseTexture.wrapT = THREE.RepeatWrapping;
+    THREE.FloatType,
+)
+noiseTexture.needsUpdate = true
+noiseTexture.wrapS = noiseTexture.wrapT = THREE.RepeatWrapping
 //const noiseTexture = loader.load('perlin_noise.png');
 //const baseTexture = loader.load('smoke_base.jpg');
 //baseTexture.wrapS = baseTexture.wrapT = RepeatWrapping;
 
 type SmokeUniforms = {
-    iResolution: { value: THREE.Vector2 },
-    iTime: { value: number },
-    iMouse: { value: THREE.Vector2 },
+    iResolution: { value: THREE.Vector2 }
+    iTime: { value: number }
+    iMouse: { value: THREE.Vector2 }
     //iChannel0?: { value: THREE.Texture },
-    mode: { value: number },
+    mode: { value: number }
     iChannel1: { value: THREE.DataTexture }
-};
+}
 
 const uniforms: SmokeUniforms = {
-    iResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+    iResolution: {
+        value: new THREE.Vector2(window.innerWidth, window.innerHeight),
+    },
     iTime: { value: 0 },
     iMouse: { value: new THREE.Vector2(0, 0) },
     //iChannel0: { value: baseTexture },
     mode: { value: 0 }, // start with radial
-    iChannel1: { value: noiseTexture }
-};
-
+    iChannel1: { value: noiseTexture },
+}
 
 // smokeFragmentShader
 const smokeMaterial = new THREE.ShaderMaterial({
@@ -247,8 +246,8 @@ const smokeMaterial = new THREE.ShaderMaterial({
 
             gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
         }
-    `
-});
+    `,
+})
 
 /*
 Optional: Animate the Noise Dynamically
@@ -263,20 +262,20 @@ noiseTexture.needsUpdate = true;
 */
 
 function drawSmoke(scene: THREE.Scene) {
-    const geometry = new THREE.PlaneGeometry(10, 10);
-    const pos = geometry.attributes.position;
+    const geometry = new THREE.PlaneGeometry(10, 10)
+    const pos = geometry.attributes.position
 
     for (let i = 0; i < pos.count; i++) {
-        const y = pos.getY(i);
-        const taper = 1.0 - Math.abs(y / 5); // height = 10 → range from -5 to 5
-        const x = pos.getX(i);
-        pos.setX(i, x * taper);
+        const y = pos.getY(i)
+        const taper = 1.0 - Math.abs(y / 5) // height = 10 → range from -5 to 5
+        const x = pos.getX(i)
+        pos.setX(i, x * taper)
     }
 
-    pos.needsUpdate = true;
+    pos.needsUpdate = true
 
-    const smokePlane = new THREE.Mesh(geometry, smokeMaterial);
-    scene.add(smokePlane);
+    const smokePlane = new THREE.Mesh(geometry, smokeMaterial)
+    scene.add(smokePlane)
 
     // Radial
     //uniforms.mode.value = 0;
@@ -285,28 +284,31 @@ function drawSmoke(scene: THREE.Scene) {
     // FBM
     //uniforms.mode.value = 2;
     // Twisted FBM
-    uniforms.mode.value = 3;
+    uniforms.mode.value = 3
 
     // TODO: Look back at file history to see if anything got cutoff / lost here...
-};
+}
 
 const smokeDrawing = {
-    'sceneElements': [],
-    'drawFuncs': [
-        {'func': drawSmoke, 'dataSrc': null}
-    ],
-    'eventListeners': null,
-    'animationCallback': (renderer: THREE.WebGLRenderer, timestamp: number, threejsDrawing: ThreeJSDrawing, camera: THREE.Camera) => {
-        const uniforms: SmokeUniforms = threejsDrawing.data.uniforms as SmokeUniforms;
-        uniforms.iTime.value += 0.01;
+    sceneElements: [],
+    drawFuncs: [{ func: drawSmoke, dataSrc: null }],
+    eventListeners: null,
+    animationCallback: (
+        renderer: THREE.WebGLRenderer,
+        timestamp: number,
+        threejsDrawing: ThreeJSDrawing,
+        camera: THREE.Camera,
+    ) => {
+        const uniforms: SmokeUniforms = threejsDrawing.data
+            .uniforms as SmokeUniforms
+        uniforms.iTime.value += 0.01
 
         // const value = noise.perlin3(x * scale, y * scale, time * 0.1);
     },
-    'data': {
-        'uniforms': uniforms,
+    data: {
+        uniforms: uniforms,
     },
-    'sceneConfig': {
-    }
+    sceneConfig: {},
 }
 
-export { smokeDrawing };
+export { smokeDrawing }
