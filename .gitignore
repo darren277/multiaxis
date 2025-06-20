@@ -1,11 +1,14 @@
 *venv*
 .idea/
 
+node_modules/
+
 # For locally hosted or experimental animations.
 animations_local.py
 src/textures/*_local*
 data/*_local*
 src/drawings_local.js
+src/drawings_local.ts
 
 data/experimental*.json
 EXPERIMENTS.md
@@ -39,3 +42,4 @@ src/imagery/Crystal Method - Vapor Trail.mp3
 
 src/imagery/custom_svg/
 
+dist/

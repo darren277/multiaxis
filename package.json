@@ -1,0 +1,58 @@
+{
+  "name": "multiaxis",
+  "version": "1.0.0",
+  "description": "A whole bunch of ThreeJS scenes.",
+  "homepage": "https://github.com/darren277/multiaxis#readme",
+  "bugs": {
+    "url": "https://github.com/darren277/multiaxis/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/darren277/multiaxis.git"
+  },
+  "license": "ISC",
+  "author": "Darren MacKenzie",
+  "type": "module",
+  "main": "rollup.config.js",
+  "scripts": {
+    "build": "rollup -c",
+    "build:watch": "rollup -c -w",
+    "test": "vitest",
+    "test:watch": "vitest --watch"
+  },
+  "dependencies": {
+    "@rollup/plugin-commonjs": "^28.0.3",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^12.1.2",
+    "@tweenjs/tween.js": "^25.0.0",
+    "3d-force-graph": "^1.77.0",
+    "ammo.js": "^0.0.10",
+    "d3-force-3d": "^3.0.6",
+    "d3-hierarchy": "^3.1.2",
+    "lil-gui": "^0.20.0",
+    "noisejs": "^2.1.0",
+    "perlin-noise": "^0.0.1",
+    "rollout": "^0.1.0",
+    "rollup": "^4.43.0",
+    "stats.js": "^0.17.0",
+    "three": "^0.177.0",
+    "three-spritetext": "^1.9.6",
+    "tslib": "^2.8.1"
+  },
+  "devDependencies": {
+    "@rollup/plugin-replace": "^6.0.2",
+    "@types/d3-hierarchy": "^3.1.7",
+    "@types/three": "^0.177.0",
+    "@typescript-eslint/eslint-plugin": "^8.34.1",
+    "@typescript-eslint/parser": "^8.34.1",
+    "@vitest/ui": "^3.2.3",
+    "eslint": "^9.29.0",
+    "eslint-config-prettier": "^10.1.5",
+    "eslint-plugin-prettier": "^5.5.0",
+    "happy-dom": "^18.0.1",
+    "prettier": "^3.5.3",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.3"
+  }
+}
