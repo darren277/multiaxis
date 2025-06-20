@@ -37,6 +37,7 @@ module.exports = [
             // TODO: In a future PR, re-enable this rule.
             '@typescript-eslint/no-explicit-any': 'off',
 
+            // TODO: In a future PR, re-enable this rule.
             'no-unused-vars': 'off',
             '@typescript-eslint/no-unused-vars': [
                 'warn',
