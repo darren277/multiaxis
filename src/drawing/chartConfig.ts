@@ -3,6 +3,53 @@ import { BoxGeometry, MeshBasicMaterial, SphereGeometry } from 'three';
 /**
  * Each section of this config can be swapped with a different config if you want a different "look" or different geometry types, fonts, etc.
  */
+const vertexShader = `
+    varying vec2 vUv;
+    void main() {
+        vUv = uv;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }
+`;
+
+const fragmentShaderAlt = `
+    uniform sampler2D map;
+    varying vec2 vUv;
+
+    void main() {
+        vec4 texColor = texture2D(map, vUv);
+
+        // If the texture is mostly transparent, discard it to avoid black boxes
+        if (texColor.a < 0.1) {
+            discard;
+        }
+
+        // Sharpen the alpha channel using smoothstep
+        // This creates a crisp edge, effectively a "better" alphaTest
+        float sharpAlpha = smoothstep(0.1, 0.2, texColor.a);
+
+        gl_FragColor = vec4(texColor.rgb, sharpAlpha);
+    }
+`;
+
+const fragmentShader = `
+    uniform sampler2D map;
+    uniform vec3 backgroundColor;
+    uniform float backgroundAlpha;
+    varying vec2 vUv;
+
+    void main() {
+        vec4 texColor = texture2D(map, vUv);
+
+        // Check if the pixel from the texture is transparent
+        if (texColor.a < 0.1) {
+            // If so, draw our custom background color and alpha instead.
+            gl_FragColor = vec4(backgroundColor, backgroundAlpha);
+        } else {
+            // Otherwise, draw the pixel from the icon texture as normal.
+            gl_FragColor = texColor;
+        }
+    }
+`;
 
 export default {
     fontUrl: '/threejs/drawing/helvetiker_regular.typeface.json',
