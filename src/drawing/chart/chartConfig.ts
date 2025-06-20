@@ -1,4 +1,4 @@
-import * as THREE from "three";
+import * as THREE from 'three'
 
 /**
  * Each section of this config can be swapped with a different config if you want a different "look" or different geometry types, fonts, etc.
@@ -9,7 +9,7 @@ const vertexShader = `
         vUv = uv;
         gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
     }
-`;
+`
 
 const fragmentShaderAlt = `
     uniform sampler2D map;
@@ -29,7 +29,7 @@ const fragmentShaderAlt = `
 
         gl_FragColor = vec4(texColor.rgb, sharpAlpha);
     }
-`;
+`
 
 const fragmentShader = `
     uniform sampler2D map;
@@ -49,29 +49,34 @@ const fragmentShader = `
             gl_FragColor = texColor;
         }
     }
-`;
+`
 
 export default {
     fontUrl: '/threejs/drawing/helvetiker_regular.typeface.json',
 
     surroundingBox: {
-        geometry: (xSize: number | undefined, ySize: number | undefined, zSize: number | undefined) => new THREE.BoxGeometry(xSize, ySize, zSize),
-        material: () => new THREE.MeshBasicMaterial({
-            color: 0x00ff00,
-            transparent: true,
-            opacity: 0.1,
-        }),
+        geometry: (
+            xSize: number | undefined,
+            ySize: number | undefined,
+            zSize: number | undefined,
+        ) => new THREE.BoxGeometry(xSize, ySize, zSize),
+        material: () =>
+            new THREE.MeshBasicMaterial({
+                color: 0x00ff00,
+                transparent: true,
+                opacity: 0.1,
+            }),
     },
 
     axis: {
         // Optionally store geometry “factory” functions by axis label
         geometry: (axisLabel: string, axisLength: number | undefined) => {
             if (axisLabel === 'x') {
-                return new THREE.BoxGeometry(axisLength, 0.1, 0.1);
+                return new THREE.BoxGeometry(axisLength, 0.1, 0.1)
             } else if (axisLabel === 'y') {
-                return new THREE.BoxGeometry(0.1, axisLength, 0.1);
+                return new THREE.BoxGeometry(0.1, axisLength, 0.1)
             } else {
-                return new THREE.BoxGeometry(0.1, 0.1, axisLength);
+                return new THREE.BoxGeometry(0.1, 0.1, axisLength)
             }
         },
         material: () => new THREE.MeshBasicMaterial({ color: 0x00ff00 }),
@@ -81,7 +86,8 @@ export default {
         // For textual labels on the axes
         size: 1,
         depth: 0.01,
-        material: (label: any) => new THREE.MeshBasicMaterial({ color: 0x00ff00 }),
+        material: (label: any) =>
+            new THREE.MeshBasicMaterial({ color: 0x00ff00 }),
         // If you wanted different colors for x, y, z labels, you might define a function
         // material: (axisLabel) => new MeshBasicMaterial({
         //   color: (axisLabel === 'x' ? 0xff0000 : 0x00ff00)
@@ -95,23 +101,23 @@ export default {
 
     points: {
         geometry: (pointData: { size: number; icon: string }[]) => {
-            const size = pointData[4]?.size ?? 0.1;
-            const icon = pointData[4]?.icon;
+            const size = pointData[4]?.size ?? 0.1
+            const icon = pointData[4]?.icon
 
             if (icon) {
                 // You may need to rotate it if you want it oriented differently.
                 // For example: geometry.rotateX(Math.PI / 2) to make it lie flat.
-                const thickness = 0.01;
-                return new THREE.BoxGeometry(size, size, thickness);
+                const thickness = 0.01
+                return new THREE.BoxGeometry(size, size, thickness)
             }
 
-            return new THREE.SphereGeometry(size);
+            return new THREE.SphereGeometry(size)
         },
         material: (pointData: any[]) => {
-            const icon = pointData[4]?.icon;
+            const icon = pointData[4]?.icon
             if (icon) {
-                const textureLoader = new THREE.TextureLoader();
-                const texture = textureLoader.load(icon);
+                const textureLoader = new THREE.TextureLoader()
+                const texture = textureLoader.load(icon)
 
                 // Use MeshBasicMaterial, which is compatible with PlaneGeometry and Mesh.
                 // Add `transparent: true` to allow for transparency in your PNG file.
@@ -133,8 +139,8 @@ export default {
                 //     side: DoubleSide,
                 // });
 
-                const customBackgroundColor = new THREE.Color(0x0d204d); // A nice dark blue
-                const customBackgroundAlpha = 0.75; // 75% opacity
+                const customBackgroundColor = new THREE.Color(0x0d204d) // A nice dark blue
+                const customBackgroundAlpha = 0.75 // 75% opacity
 
                 return new THREE.ShaderMaterial({
                     uniforms: {
@@ -146,20 +152,20 @@ export default {
                     fragmentShader,
                     transparent: true,
                     side: THREE.DoubleSide,
-                });
+                })
             }
 
-            const color = pointData[3];
-            return new THREE.MeshBasicMaterial({ color });
+            const color = pointData[3]
+            return new THREE.MeshBasicMaterial({ color })
         },
     },
 
     pointLabels: {
-        size: (pointData: { size: any; }[]) => (pointData[4]?.size ?? 1), // maybe the label text size depends on the point size
+        size: (pointData: { size: any }[]) => pointData[4]?.size ?? 1, // maybe the label text size depends on the point size
         depth: 0.01,
         material: (pointData: any[]) => {
             // Reuse the point’s color or pick something else
-            return new THREE.MeshBasicMaterial({ color: pointData[3] });
+            return new THREE.MeshBasicMaterial({ color: pointData[3] })
         },
     },
-};
+}
