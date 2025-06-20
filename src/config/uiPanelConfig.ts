@@ -7,10 +7,11 @@ export default {
             text: 'Orbit: ON',
             onClick: (state: any, event: MouseEvent) => {
                 // We'll toggle the orbit controls in here
-                state.orbitEnabled = !state.orbitEnabled;
-                state.controls.enabled = state.orbitEnabled;
+                state.orbitEnabled = !state.orbitEnabled
+                state.controls.enabled = state.orbitEnabled
                 if (event.target) {
-                    (event.target as HTMLElement).innerText = state.orbitEnabled ? 'Orbit: ON' : 'Orbit: OFF';
+                    ;(event.target as HTMLElement).innerText =
+                        state.orbitEnabled ? 'Orbit: ON' : 'Orbit: OFF'
                 }
             },
         },
@@ -23,12 +24,12 @@ export default {
             step: 1,
             onChange: (state: any, event: Event) => {
                 // Maybe we adjust the camera position magnitude
-                const val = parseFloat((event.target as HTMLInputElement).value);
+                const val = parseFloat((event.target as HTMLInputElement).value)
                 // e.g., keep camera at (val, val, val)
-                state.camera.position.set(val, val, val);
+                state.camera.position.set(val, val, val)
             },
         },
-    // Add more UI elements (checkboxes, text inputs, etc.) as needed
+        // Add more UI elements (checkboxes, text inputs, etc.) as needed
         // tempo-slider
         {
             type: 'slider',
@@ -38,16 +39,16 @@ export default {
             value: 1.0,
             step: 0.1,
             onChange: (state: any, event: Event) => {
-                const val = parseFloat((event.target as HTMLInputElement).value);
-                state.tempoScale = val;
+                const val = parseFloat((event.target as HTMLInputElement).value)
+                state.tempoScale = val
                 //state.tempoValue.textContent = `${val.toFixed(2)}x`;
 
                 // Update the tempo value in the UI
-                const tempoValue = document.getElementById('tempo-value');
+                const tempoValue = document.getElementById('tempo-value')
                 if (tempoValue) {
-                    tempoValue.textContent = `${val.toFixed(2)}x`;
+                    tempoValue.textContent = `${val.toFixed(2)}x`
                 }
             },
         },
     ],
-};
+}
