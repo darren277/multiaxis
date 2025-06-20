@@ -33,6 +33,8 @@ module.exports = [
             '@typescript-eslint/semi': 'off',
 
             // Other rules:
+
+            // TODO: In a future PR, re-enable this rule.
             '@typescript-eslint/no-explicit-any': 'off',
 
             'no-unused-vars': 'off',
