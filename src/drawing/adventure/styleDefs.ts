@@ -1,4 +1,3 @@
-
 const drawAdventureElements = [
     {
         tagName: 'div',
@@ -11,8 +10,8 @@ const drawAdventureElements = [
             width: '100%',
             height: '100%',
             pointerEvents: 'none',
-            zIndex: '1'
-        }
+            zIndex: '1',
+        },
     },
     {
         tagName: 'div',
@@ -25,8 +24,8 @@ const drawAdventureElements = [
             width: '100%',
             height: '100%',
             pointerEvents: 'none',
-            zIndex: '1'
-        }
+            zIndex: '1',
+        },
     },
     {
         tagName: 'div',
@@ -34,8 +33,8 @@ const drawAdventureElements = [
         className: '',
         attrs: {
             pointerEvents: 'none',
-            zIndex: '1'
-        }
+            zIndex: '1',
+        },
     },
     {
         tagName: 'div',
@@ -47,10 +46,9 @@ const drawAdventureElements = [
             left: '10px',
             color: '#fff',
             fontSize: '20px',
-            pointerEvents: 'none'
-        }
-    }
+            pointerEvents: 'none',
+        },
+    },
 ]
 
-
-export {drawAdventureElements};
+export { drawAdventureElements }
