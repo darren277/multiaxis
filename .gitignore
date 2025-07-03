@@ -1,6 +1,8 @@
 *venv*
 .idea/
 
+.vscode/
+
 node_modules/
 
 # For locally hosted or experimental animations.
