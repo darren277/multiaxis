@@ -515,6 +515,7 @@ const infographicsDrawing = {
                 camera.position.set(0, 5, 20)
                 camera.lookAt(new THREE.Vector3(0, 0, 0))
                 controls.update()
+                return
             }
 
             const tweenGroup = data.tweenGroup
@@ -529,58 +530,26 @@ const infographicsDrawing = {
                 return
             }
 
-            if (e.key === '1') {
-                // Tween to first destination
-                const cs1 = new THREE.Vector3(
-                    destinations[0].cameraStop[0],
-                    destinations[0].cameraStop[1],
-                    destinations[0].cameraStop[2],
-                )
+            // Helper function for tweening camera
+            function tweenCameraToDestination(camera: THREE.Camera, controls: any, tweenGroup: any, destination: any, duration = 1000) {
+                const cameraStop = new THREE.Vector3(...destination.cameraStop)
+                const lookAt = new THREE.Vector3(...destination.overlayPosition)
                 tweenGroup.add(
                     new TWEEN.Tween(camera.position)
-                        .to(cs1, 1000)
+                        .to(cameraStop, duration)
                         .easing(TWEEN.Easing.Quadratic.InOut)
-                        .start(),
+                        .onComplete(() => {
+                            camera.lookAt(lookAt)
+                            controls.update()
+                        })
+                        .start()
                 )
-            } else if (e.key === '2') {
-                // Tween to second destination
-                const cs2 = new THREE.Vector3(
-                    destinations[1].cameraStop[0],
-                    destinations[1].cameraStop[1],
-                    destinations[1].cameraStop[2],
-                )
-                tweenGroup.add(
-                    new TWEEN.Tween(camera.position)
-                        .to(cs2, 1000)
-                        .easing(TWEEN.Easing.Quadratic.InOut)
-                        .start(),
-                )
-            } else if (e.key === '3') {
-                // Tween to third destination
-                const cs3 = new THREE.Vector3(
-                    destinations[2].cameraStop[0],
-                    destinations[2].cameraStop[1],
-                    destinations[2].cameraStop[2],
-                )
-                tweenGroup.add(
-                    new TWEEN.Tween(camera.position)
-                        .to(cs3, 1000)
-                        .easing(TWEEN.Easing.Quadratic.InOut)
-                        .start(),
-                )
-            } else if (e.key === '4') {
-                // Tween to fourth destination
-                const cs4 = new THREE.Vector3(
-                    destinations[3].cameraStop[0],
-                    destinations[3].cameraStop[1],
-                    destinations[3].cameraStop[2],
-                )
-                tweenGroup.add(
-                    new TWEEN.Tween(camera.position)
-                        .to(cs4, 1000)
-                        .easing(TWEEN.Easing.Quadratic.InOut)
-                        .start(),
-                )
+            }
+
+            // Map keys '1'-'4' to destination indices 0-3
+            const keyToIndex: { [key: string]: number } = { '1': 0, '2': 1, '3': 2, '4': 3 }
+            if (e.key in keyToIndex && destinations[keyToIndex[e.key]]) {
+                tweenCameraToDestination(camera, controls, tweenGroup, destinations[keyToIndex[e.key]])
             }
         },
     },
