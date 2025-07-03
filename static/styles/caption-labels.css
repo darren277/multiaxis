@@ -74,7 +74,6 @@
     background: rgba(0, 0, 0, 0.7);
     padding: 4px 8px;
     border-radius: 25px;
-    white-space: nowrap;
     pointer-events: none;
     z-index: 10;
     box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.5);
@@ -91,7 +90,9 @@
 
     /* Set a known pixel size to control world-space scaling */
     width: auto;
-    max-width: 300px;
+
+    /* TODO: Re-add this but with a more responsive approach: max-width: 300px; */
+
     /* font-size: 16px; */
 
     /* Keep the same readable styles */
@@ -101,7 +102,6 @@
     padding: 4px 8px;
     border-radius: 12px;
 
-    white-space: nowrap;
     text-align: center;
 
     /* Optional 3D-friendly touchups */
