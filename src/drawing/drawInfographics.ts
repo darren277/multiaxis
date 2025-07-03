@@ -31,8 +31,16 @@ type QueueItem = {
 /**
  * Helper to compute a camera stop position for a node, so the camera is always a fixed distance in front of the node (along +z) and slightly above.
  */
-function getCameraStopForNode(nodePos: THREE.Vector3, distance = 15, yOffset = 2) {
-    return new THREE.Vector3(nodePos.x, nodePos.y + yOffset, nodePos.z + distance)
+function getCameraStopForNode(
+    nodePos: THREE.Vector3,
+    distance = 15,
+    yOffset = 2,
+) {
+    return new THREE.Vector3(
+        nodePos.x,
+        nodePos.y + yOffset,
+        nodePos.z + distance,
+    )
 }
 
 /**
@@ -115,7 +123,9 @@ export function generateTreeLayout(
 
             // Set the final 3D positions
             layoutNode.position.set(x, y, z)
-            layoutNode.cameraStop.copy(getCameraStopForNode(layoutNode.position))
+            layoutNode.cameraStop.copy(
+                getCameraStopForNode(layoutNode.position),
+            )
         })
     })
 
@@ -531,7 +541,13 @@ const infographicsDrawing = {
             }
 
             // Helper function for tweening camera
-            function tweenCameraToDestination(camera: THREE.Camera, controls: any, tweenGroup: any, destination: any, duration = 1000) {
+            function tweenCameraToDestination(
+                camera: THREE.Camera,
+                controls: any,
+                tweenGroup: any,
+                destination: any,
+                duration = 1000,
+            ) {
                 const cameraStop = new THREE.Vector3(...destination.cameraStop)
                 const lookAt = new THREE.Vector3(...destination.overlayPosition)
                 tweenGroup.add(
@@ -542,14 +558,24 @@ const infographicsDrawing = {
                             camera.lookAt(lookAt)
                             controls.update()
                         })
-                        .start()
+                        .start(),
                 )
             }
 
             // Map keys '1'-'4' to destination indices 0-3
-            const keyToIndex: { [key: string]: number } = { '1': 0, '2': 1, '3': 2, '4': 3 }
+            const keyToIndex: { [key: string]: number } = {
+                '1': 0,
+                '2': 1,
+                '3': 2,
+                '4': 3,
+            }
             if (e.key in keyToIndex && destinations[keyToIndex[e.key]]) {
-                tweenCameraToDestination(camera, controls, tweenGroup, destinations[keyToIndex[e.key]])
+                tweenCameraToDestination(
+                    camera,
+                    controls,
+                    tweenGroup,
+                    destinations[keyToIndex[e.key]],
+                )
             }
         },
     },
