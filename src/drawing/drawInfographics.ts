@@ -556,7 +556,7 @@ const infographicsDrawing = {
                         .easing(TWEEN.Easing.Quadratic.InOut)
                         .onComplete(() => {
                             camera.lookAt(lookAt)
-                            controls.update()
+                            controls && controls.update()
                         })
                         .start(),
                 )
