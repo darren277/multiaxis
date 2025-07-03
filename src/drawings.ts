@@ -74,6 +74,10 @@ const THREEJS_DRAWINGS = {
     city: () => import('./drawing/drawCity.js').then((m) => m.cityDrawing),
     familytree: () =>
         import('./drawing/drawFamilyTree.js').then((m) => m.familyTreeDrawing),
+    infographics: () =>
+        import('./drawing/drawInfographics.js').then(
+            (m) => m.infographicsDrawing,
+        ),
 }
 
 export { THREEJS_DRAWINGS }
