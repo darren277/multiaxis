@@ -29,6 +29,13 @@ type QueueItem = {
 }
 
 /**
+ * Helper to compute a camera stop position for a node, so the camera is always a fixed distance in front of the node (along +z) and slightly above.
+ */
+function getCameraStopForNode(nodePos: THREE.Vector3, distance = 15, yOffset = 2) {
+    return new THREE.Vector3(nodePos.x, nodePos.y + yOffset, nodePos.z + distance)
+}
+
+/**
  * Generates 3D layout coordinates for a decision tree.
  * @param {object} rootNode The root node of the decision tree.
  * @param {object} [options] Configuration options.
@@ -42,7 +49,7 @@ export function generateTreeLayout(
 ) {
     const levelHeight = options.levelHeight || 8
     const nodeSpacing = options.nodeSpacing || 10
-    const cameraOffset = new THREE.Vector3(0, 2, 15) // How far the camera is from the overlay
+    // const cameraOffset = new THREE.Vector3(0, 2, 15) // How far the camera is from the overlay
 
     type LayoutNode = {
         id: string
@@ -108,7 +115,7 @@ export function generateTreeLayout(
 
             // Set the final 3D positions
             layoutNode.position.set(x, y, z)
-            layoutNode.cameraStop.copy(layoutNode.position).add(cameraOffset)
+            layoutNode.cameraStop.copy(getCameraStopForNode(layoutNode.position))
         })
     })
 
