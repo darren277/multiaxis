@@ -5,6 +5,8 @@
 
 node_modules/
 
+__pycache__/
+
 # For locally hosted or experimental animations.
 animations_local.py
 src/textures/*_local*
