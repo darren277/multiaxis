@@ -78,6 +78,8 @@ const THREEJS_DRAWINGS = {
         import('./drawing/drawInfographics.js').then(
             (m) => m.infographicsDrawing,
         ),
+    anatomy: () =>
+        import('./drawing/drawAnatomy.js').then((m) => m.anatomyDrawing),
 }
 
 export { THREEJS_DRAWINGS }
