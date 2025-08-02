@@ -87,23 +87,23 @@ export function initAnatomyControls(
             /* ───── Orbit & pan fall back to OrbitControls keys
              * We only need to override if we want num-pad duplication ── */
             case 'orbitLeft':
-                controls.rotateLeft(Math.PI / 12)
+                ;(controls as any).rotateLeft(Math.PI / 12)
                 break
             case 'orbitRight':
-                controls.rotateLeft(-Math.PI / 12)
+                ;(controls as any).rotateLeft(-Math.PI / 12)
                 break
             case 'orbitUp':
-                controls.rotateUp(Math.PI / 12)
+                ;(controls as any).rotateUp(Math.PI / 12)
                 break
             case 'orbitDown':
-                controls.rotateUp(-Math.PI / 12)
+                ;(controls as any).rotateUp(-Math.PI / 12)
                 break
 
             case 'zoomIn':
-                controls.dollyIn(1.2)
+                ;(controls as any).dollyIn(1.2)
                 break
             case 'zoomOut':
-                controls.dollyOut(1.2)
+                ;(controls as any).dollyOut(1.2)
                 break
 
             /* ───── Framing ───── */
