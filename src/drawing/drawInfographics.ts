@@ -33,14 +33,14 @@ type QueueItem = {
  */
 function getCameraStopForNode(
     nodePos: THREE.Vector3,
-    distance = 15,
-    yOffset = 2,
+    camera: THREE.PerspectiveCamera,
+    radius = 0.5,
+    padding = 1.2, // extra space around the node
 ) {
-    return new THREE.Vector3(
-        nodePos.x,
-        nodePos.y + yOffset,
-        nodePos.z + distance,
-    )
+    const fov = THREE.MathUtils.degToRad(camera.fov)
+    const dist = (radius * padding) / Math.tan(fov / 2)
+
+    return nodePos.clone().add(new THREE.Vector3(0, 0, dist))
 }
 
 /**
@@ -54,6 +54,7 @@ function getCameraStopForNode(
 export function generateTreeLayout(
     rootNode: TreeNode,
     options: TreeOptions = {},
+    camera: THREE.PerspectiveCamera,
 ) {
     const levelHeight = options.levelHeight || 8
     const nodeSpacing = options.nodeSpacing || 10
@@ -124,7 +125,7 @@ export function generateTreeLayout(
             // Set the final 3D positions
             layoutNode.position.set(x, y, z)
             layoutNode.cameraStop.copy(
-                getCameraStopForNode(layoutNode.position),
+                getCameraStopForNode(layoutNode.position, camera),
             )
         })
     })
@@ -395,10 +396,14 @@ function drawInfographics(
         }
 
         // Generate layout for a decision tree
-        const treeLayout = generateTreeLayout(data.tree, {
-            levelHeight: 8,
-            nodeSpacing: 10,
-        })
+        const treeLayout = generateTreeLayout(
+            data.tree,
+            {
+                levelHeight: 8,
+                nodeSpacing: 10,
+            },
+            threejsDrawing.data.camera as THREE.PerspectiveCamera,
+        )
 
         // Add nodes as CSS3D overlays
         for (const node of treeLayout.nodes) {
