@@ -14,6 +14,7 @@ import { startRenderLoop } from './startRenderLoop'
 //import { update as tweenUpdate } from '@tweenjs/tween.js';
 
 import { assert, assertString, assertObject, debugLog } from './assertUtils'
+import { addOptionals } from './addOptionals'
 
 /*
     Essential sequence of events:
@@ -182,6 +183,8 @@ export async function contentLoadedCallback(
     // Params: threeJSDrawing (ThreeJSDrawing), context (object with scene, controls, renderer)
     // Returns: void (adds event listeners to the scene, controls, and renderer)
     addListeners(threeJSDrawing)
+
+    addOptionals(scene, threeJSDrawing, query, debug)
 
     // --- 7. Animation Loop ---
     // startRenderLoop(renderer, { scene, camera, controls, stats, css2DRenderer, css3DRenderer, threejsDrawing, tweenUpdate })
