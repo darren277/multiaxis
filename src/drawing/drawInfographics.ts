@@ -7,6 +7,7 @@ import { drawBasicLights } from './reusables/drawLights'
 import { ThreeJSDrawing } from '../types'
 import * as NEURAL_NETWORKS from './educational/neuralNetworks'
 import { drawGraphV2 } from './drawGraph'
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 
 type TreeNode = {
     id: string
@@ -548,20 +549,46 @@ const infographicsDrawing = {
             // Helper function for tweening camera
             function tweenCameraToDestination(
                 camera: THREE.Camera,
-                controls: any,
-                tweenGroup: any,
-                destination: any,
+                controls: OrbitControls,
+                tweenGroup: TWEEN.Group,
+                destination: {
+                    cameraStop: number[]
+                    overlayPosition: number[]
+                },
                 duration = 1000,
             ) {
-                const cameraStop = new THREE.Vector3(...destination.cameraStop)
-                const lookAt = new THREE.Vector3(...destination.overlayPosition)
+                const endPos = new THREE.Vector3(...destination.cameraStop)
+                const endTgt = new THREE.Vector3(...destination.overlayPosition)
+
+                endTgt.y -= 10.0 // try -1.0 or -1.5 to bring the target point lower
+                endPos.z += 10.0 // Adjust this value to move the camera further back
+
+                // Capture where we are now
+                const startPos = camera.position.clone()
+                const startTgt = controls.target.clone()
+
+                // Helper object that TWEEN will mutate
+                const params = { t: 0 }
+
                 tweenGroup.add(
-                    new TWEEN.Tween(camera.position)
-                        .to(cameraStop, duration)
+                    new TWEEN.Tween(params)
+                        .to({ t: 1 }, duration)
                         .easing(TWEEN.Easing.Quadratic.InOut)
-                        .onComplete(() => {
-                            camera.lookAt(lookAt)
-                            controls && controls.update()
+                        .onUpdate(() => {
+                            // Interpolate position and target
+                            camera.position.lerpVectors(
+                                startPos,
+                                endPos,
+                                params.t,
+                            )
+                            controls.target.lerpVectors(
+                                startTgt,
+                                endTgt,
+                                params.t,
+                            )
+
+                            // Keep camera oriented properly
+                            controls.update()
                         })
                         .start(),
                 )
