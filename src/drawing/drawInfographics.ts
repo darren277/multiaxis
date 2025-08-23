@@ -185,6 +185,10 @@ function renderCSS3DOverlay(
     scene.add(pivot)
 
     threejsDrawing.data.css3DOverlay = css3DObject
+
+    pivot.userData.isBillboard = true
+    threejsDrawing.data.overlayPivots ??= []
+    threejsDrawing.data.overlayPivots.push(pivot)
 }
 
 function drawLegend(scene: THREE.Scene, legendData: { [key: string]: string }) {
@@ -616,7 +620,18 @@ const infographicsDrawing = {
         timestamp: number,
         threejsDrawing: ThreeJSDrawing,
         camera: THREE.Camera,
-    ) => {},
+    ) => {
+        // Keep every overlay facing the camera
+        threejsDrawing.data.overlayPivots?.forEach((p: THREE.Object3D) => {
+            p.lookAt(camera.position)
+        })
+
+        // If you use CSS3DRenderer, also re‑render it here
+        threejsDrawing.data.css3DRenderer?.render(
+            threejsDrawing.data.css3DScene,
+            camera,
+        )
+    },
     data: {
         simulation: null,
         dragging: false,
