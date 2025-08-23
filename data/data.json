@@ -7,9 +7,53 @@
         ],
     "points":
         [
-            [1, 2, 3, "red", {"size": 1.0, "label":  "point 1"}],
-            [2, 3, 4, "blue", {"size": 0.8, "label":  "point 2"}],
-            [3, 4, 5, "green", {"size": 0.4, "label":  "point 3"}],
-            [4, 5, 6, "yellow", {"size": 1.1, "label":  "point 4"}]
+            [1, 2, 3, "red",
+                {
+                    "size": 1.0, "label":  "Kubelet",
+                    "icon":  "https://darrenmackenzie-chalice-bucket.s3.us-east-1.amazonaws.com/icons/resources/k8s/controlplane/kubelet.png",
+                    "htmlContent": "<h3>Kubelet</h3><p>The Kubelet is the primary node agent that runs on each node in a Kubernetes cluster. It ensures that containers are running in a Pod and communicates with the Kubernetes API server.</p>"
+                }],
+            [2, 3, 4, "blue",
+                {
+                    "size": 0.8, "label":  "Python",
+                    "icon":  "https://darrenmackenzie-chalice-bucket.s3.us-east-1.amazonaws.com/icons/resources/programming/language/python.png",
+                    "htmlContent": "<h3>Python</h3><p>Python is a versatile programming language known for its readability and wide range of applications, from web development to data science.</p>"
+                }],
+            [3, 4, 5, "green",
+                {
+                    "size": 0.4, "label":  "JavaScript",
+                    "icon":  "https://darrenmackenzie-chalice-bucket.s3.us-east-1.amazonaws.com/icons/resources/programming/language/javascript.png",
+                    "htmlContent": "<h3>JavaScript</h3><p>JavaScript is a high-level, dynamic programming language commonly used for web development to create interactive effects within web browsers.</p>"
+                }],
+            [4, 5, 6, "yellow",
+                {
+                    "size": 1.1, "label":  "Go",
+                    "icon":  "https://darrenmackenzie-chalice-bucket.s3.us-east-1.amazonaws.com/icons/resources/programming/language/go.png",
+                    "htmlContent": "<h3>Go</h3><p>Go, also known as Golang, is a statically typed, compiled programming language designed for simplicity and efficiency, often used in cloud services and distributed systems.</p>"
+                }],
+            [5, 6, 7, "purple",
+                {
+                    "size": 0.9, "label":  "Java",
+                    "icon":  "https://darrenmackenzie-chalice-bucket.s3.us-east-1.amazonaws.com/icons/resources/programming/language/java.png",
+                    "htmlContent": "<h3>Java</h3><p>Java is a high-level, class-based, object-oriented programming language that is designed to have as few implementation dependencies as possible, making it a popular choice for enterprise applications.</p>"
+                }],
+            [6, 7, 8, "orange",
+                {
+                    "size": 1.2, "label": "Rust",
+                    "icon":  "https://darrenmackenzie-chalice-bucket.s3.us-east-1.amazonaws.com/icons/resources/programming/language/rust.png",
+                    "htmlContent": "<h3>Rust</h3><p>Rust is a systems programming language focused on safety and performance, particularly safe concurrency, making it ideal for system-level programming.</p>"
+                }],
+            [7, 8, 9, "cyan",
+                {
+                    "size": 0.6, "label":  "C++",
+                    "icon":  "https://darrenmackenzie-chalice-bucket.s3.us-east-1.amazonaws.com/icons/resources/programming/language/cpp.png",
+                    "htmlContent": "<h3>C++</h3><p>C++ is a general-purpose programming language created as an extension of the C programming language, known for its performance and efficiency in system/software development.</p>"
+                }],
+            [8, 9, 10, "magenta",
+                {
+                    "size": 1.3, "label":  "Ruby",
+                    "icon":  "https://darrenmackenzie-chalice-bucket.s3.us-east-1.amazonaws.com/icons/resources/programming/language/ruby.png",
+                    "htmlContent": "<h3>Ruby</h3><p>Ruby is a dynamic, open-source programming language with a focus on simplicity and productivity, known for its elegant syntax and powerful web development framework, Ruby on Rails.</p>"
+                }]
         ]
 }
