@@ -11,7 +11,7 @@ export type EventListenerContext = {
 }
 
 export function addListeners(threejsDrawing: ThreeJSDrawing) {
-    const { scene, renderer, camera } = threejsDrawing.data
+    const { scene, renderer, camera, controls } = threejsDrawing.data
 
     // Add event listener for navigation
     window.addEventListener('click', (event) => {
@@ -33,6 +33,7 @@ export function addListeners(threejsDrawing: ThreeJSDrawing) {
                         scene,
                         camera,
                         data: threejsDrawing.data,
+                        controls,
                     } as EventListenerContext)
                 }
             })

@@ -8,6 +8,7 @@ import {
 } from 'd3-force-3d'
 import { drawBasicLights } from './reusables/drawLights'
 import { ThreeJSDrawing } from '../threejsDrawing'
+import * as NEURAL_NETWORKS from './educational/neuralNetworks'
 
 function drawGraph(scene: THREE.Scene, data: any, state: any) {
     console.log('data', data)
@@ -39,6 +40,92 @@ function drawGraph(scene: THREE.Scene, data: any, state: any) {
         const end = nodeMap[edge.target]
 
         const points = [start, end]
+        const geometry = new THREE.BufferGeometry().setFromPoints(points)
+        const material = new THREE.LineBasicMaterial({
+            color: edge.color || 0xffffff,
+        })
+
+        const line = new THREE.Line(geometry, material)
+        scene.add(line)
+    })
+}
+
+type NodeV2Type = {
+    id: string
+    type: string
+    position?: [number, number, number]
+}
+
+type EdgeV2Type = {
+    source: string
+    target: string
+    color?: string
+}
+
+type GraphDataV2Type = {
+    nodes: NodeV2Type[]
+    edges: EdgeV2Type[]
+}
+
+function lookUpNodePosition(
+    node: NodeV2Type,
+    center: THREE.Vector3,
+): THREE.Vector3 {
+    const x = node.position ? node.position[0] + center.x : center.x
+    const y = node.position ? node.position[1] + center.y : center.y
+    const z = node.position ? node.position[2] + center.z : center.z
+    return new THREE.Vector3(x, y, z)
+}
+
+export function drawGraphV2(
+    scene: THREE.Scene,
+    data: GraphDataV2Type,
+    center: THREE.Vector3 = new THREE.Vector3(0, 0, 0),
+) {
+    console.log('data', data)
+    const nodeMap: { [key: string]: THREE.Vector3 } = {}
+
+    data.nodes.forEach((node: any) => {
+        const x = node.position[0] + center.x
+        const y = node.position[1] + center.y
+        const z = node.position[2] + center.z
+
+        const cellClass: NEURAL_NETWORKS.ICell = NEURAL_NETWORKS.CELL_MAP[
+            node.type
+        ] as NEURAL_NETWORKS.ICell
+        if (
+            !cellClass ||
+            !(cellClass.prototype instanceof NEURAL_NETWORKS.Cell) ||
+            cellClass === NEURAL_NETWORKS.Cell
+        ) {
+            console.warn(`Unknown or abstract cell type: ${node.type}`)
+            return
+        }
+        const cell = new cellClass()
+
+        const geometry = new THREE.SphereGeometry(0.2, 16, 16)
+        const material = new THREE.MeshStandardMaterial({ color: cell.color })
+        const sphere = new THREE.Mesh(geometry, material)
+
+        sphere.position.set(x, y, z)
+        scene.add(sphere)
+
+        nodeMap[node] = new THREE.Vector3(x, y, z)
+    })
+
+    // Add edges
+    data.edges.forEach((edge: any) => {
+        const sourceNode = data.nodes.find((n) => n.id === edge.source)
+        const targetNode = data.nodes.find((n) => n.id === edge.target)
+        if (!sourceNode || !targetNode) {
+            console.warn(`Edge source or target node not found:`, edge)
+            return
+        }
+        const points = [
+            lookUpNodePosition(sourceNode, center),
+            lookUpNodePosition(targetNode, center),
+        ]
+
         const geometry = new THREE.BufferGeometry().setFromPoints(points)
         const material = new THREE.LineBasicMaterial({
             color: edge.color || 0xffffff,

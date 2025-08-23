@@ -1,9 +1,13 @@
 import { pixelToWorldUnits, loadDataSource } from './utils'
 import * as THREE from 'three'
 
+type DrawFunc = {
+    (scene: THREE.Scene, data: any, threejsDrawing: any): void
+}
+
 async function loadThenDraw(
     scene: THREE.Scene,
-    func: Function,
+    func: DrawFunc,
     dataSrc: string,
     dataType: string,
     camera: THREE.PerspectiveCamera,

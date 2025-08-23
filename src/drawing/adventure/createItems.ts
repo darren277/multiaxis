@@ -148,6 +148,9 @@ function create3DLabelWithAnimation(
     return labelObject
 }
 
+//const CAPTION_MARGIN = 0.2 // tweak this if you want more/less gap
+const CAPTION_MARGIN = 2.0
+
 function createCaptionedItem(
     scene: THREE.Scene,
     item: Item,
@@ -219,8 +222,8 @@ function createCaptionedItem(
         if (mesh && mesh.geometry?.parameters?.height) {
             halfHeight = mesh.geometry.parameters.height / 2
         }
-        const margin = 0.2 // tweak this if you want more/less gap
-        const offsetY = -(halfHeight + margin)
+
+        const offsetY = -(halfHeight + CAPTION_MARGIN)
 
         // 3) position the labelObject under the mesh
         labelObject.position.copy(basePos).add(new THREE.Vector3(0, offsetY, 0))

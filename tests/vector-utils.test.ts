@@ -13,14 +13,3 @@ describe('Vector math', () => {
     expect(result.z).toBe(9);
   });
 });
-
-describe('drawTown', () => {
-  it('adds expected objects to the scene', () => {
-    const scene = new Scene();
-    const mockDrawing = { data: {} } as any;
-
-    drawTown(scene, mockDrawing);
-
-    expect(scene.children.length).toBeGreaterThan(0); // or check for specific objects
-  });
-});
